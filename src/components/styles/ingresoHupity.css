@@ -1,0 +1,17 @@
+.icon-right{
+    position: absolute;
+    top: 30px;
+}
+
+.bar-top{
+    position: relative;
+   
+    top: 10px;
+}
+
+.color-Calendario{
+    background:#d42626;
+}
+.bt-chat-icon{
+    background: linear-gradient(to right, #55b242 0%, #418a33 100%);
+}
