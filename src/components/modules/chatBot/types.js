@@ -6,6 +6,8 @@ export const SET_ACTIVE_CHAT = "SET_ACTIVE_CHAT",
       SET_THEME = "SET_THEME",
       CHAT_ON = "CHAT_ON",
       CHAT_OFF = "CHAT_OFF",
-      CHAT_UBI = "CHAT_UBI";
+      CHAT_UBI = "CHAT_UBI",
+      COLOR_THEME= "COLOR_THEME",
+      USER_ROL = "USER_ROL";
     
       

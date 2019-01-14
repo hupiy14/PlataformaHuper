@@ -59,7 +59,8 @@ export const StatusFeed = ({ statusUpdates }) => (
     <h1>Currently</h1>
     <ul>
       {statusUpdates.map((c) => (
-        <Update updateContent={c} />
+        <Update key={c}  updateContent={c} />
+      
       ))}
     </ul>
   </div>

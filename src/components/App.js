@@ -12,11 +12,7 @@ import ingreso from './modules/ingreso';
 import dashboard from './DashBoard';
 import Hupps from './modules/Hupps';
 
-import ChatHuper from './modules/chatBot/connecteApp';
-import connectedHome from './modules/chatBot/homePage';
-import connectedProfile from './modules/chatBot/profilePage';
-import connectedContacts from './modules/chatBot/contactsPage';
-import chatHuper from './modules/chatBot/paginaInicio';
+import Prueba from './utilidades/PruebaFirebase';
 
 import './modules/chatBot/chatHupApp.css';
 
@@ -47,7 +43,7 @@ class App extends React.Component {
                                     <div>
                                         <Header />
 
-
+                                    
 
                                         <Switch>
                                             <Route path="/" exact component={hupityIngreso} />
@@ -55,7 +51,7 @@ class App extends React.Component {
                                             <Route path="/dashboard" component={dashboard} />
                                             <Route path="/hupps" exact component={Hupps} />
 
-                        
+
                                         </Switch>
 
 

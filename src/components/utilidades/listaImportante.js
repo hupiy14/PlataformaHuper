@@ -5,14 +5,14 @@ class listImportante extends React.Component {
     render() {
         return (
 
-
-
+       
             <div className="ui relaxed divided list">
+               <h3>{this.props.titulo}</h3>
                 <div className="item">
-                    <i className="large github middle aligned icon"></i>
+                    <i className={`large middle ${this.props.icono} aligned icon`}></i>
                     <div className="content">
-                        <a className="header">Semantic-Org/Semantic-UI</a>
-                        <div className="description">Updated 10 mins ago</div>
+                        <a className="header">{this.props.title}</a>
+                        <div className="description">{this.props.description}</div>
                         <div className="ui indicating progress" data-value="100" data-total="200">
                             <div className="bar">
                                 <div className="progress"></div>
@@ -22,17 +22,17 @@ class listImportante extends React.Component {
                     </div>
                 </div>
                 <div className="item">
-                    <i className="large github middle aligned icon"></i>
+                    <i className={`large middle ${this.props.icono} aligned icon`}></i>
                     <div className="content">
-                        <a className="header">Semantic-Org/Semantic-UI-Docs</a>
-                        <div className="description">Updated 22 mins ago</div>
+                        <a className="header">{this.props.title2}</a>
+                        <div className="description">{this.props.description2}</div>
                     </div>
                 </div>
                 <div className="item">
-                    <i className="large github middle aligned icon"></i>
+                    <i className={`large middle ${this.props.icono} aligned icon`}></i>
                     <div className="content">
-                        <a className="header">Semantic-Org/Semantic-UI-Meteor</a>
-                        <div className="description">Updated 34 mins ago</div>
+                        <a className="header">{this.props.title3}</a>
+                        <div className="description">{this.props.description3}</div>
                     </div>
                 </div>
             </div>

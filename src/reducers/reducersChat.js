@@ -105,7 +105,7 @@ export const contactsPage = (
 }
 
 //settings reducer
-export const settings = (settings = { theme: "yellow" }, action) => {
+export const settings = (settings = { theme: "blue" }, action) => {
     switch (action.type) {
         case SET_THEME:
             return Object.assign({}, settings, {

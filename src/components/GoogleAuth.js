@@ -1,11 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { signIn, signOut } from '../actions';
+import { signIn, signOut, userRolIn } from '../actions';
 import DashBoard from './DashBoard';
 import { Link } from 'react-router-dom';
 import history from '../history';
 
 import '../components/styles/ingresoHupity.css';
+import firebase from 'firebase';
 
 class GoogleAuth extends React.Component {
 
@@ -14,6 +15,7 @@ class GoogleAuth extends React.Component {
             window.gapi.client.init({
                 clientId: '114346141609-03hh8319khfkq8o3fc6m2o02vr4v14m3.apps.googleusercontent.com',
                 scope: 'email'
+
             }).then(() => {
                 this.auth = window.gapi.auth2.getAuthInstance();
 
@@ -24,12 +26,51 @@ class GoogleAuth extends React.Component {
     }
 
     onAuthChange = isSignedIn => {
+        //   console.log(this.auth.currentUser.get().w3.ig);
+    let x;
+        console.log('funcion ');
         if (isSignedIn) {
+
+            const nameRef = firebase.database().ref().child('Usuario').child(this.auth.currentUser.get().getId());
+            nameRef.on('value', (snapshot) => {
+
+                if(snapshot.val()){
+                   this.props.userRolIn('3');
+                }
+                else{
+                    this.auth.signOut();
+                }
+            /*  if()
+              else
+              {}
+*/
+
+            })
+
+
             this.props.signIn(this.auth.currentUser.get().getId());
         } else {
             this.props.signOut();
         }
+
+
+        if (x)
+            this.props.signOut();
+
+
+
+        /*   if (isSignedIn) {        
+               this.props.signIn(this.auth.currentUser.get().getId());
+           } else {
+               this.props.signOut();
+           }*/
     };
+
+
+
+
+
+
 
     onSignInClick = () => {
         this.auth.signIn();
@@ -39,13 +80,14 @@ class GoogleAuth extends React.Component {
     };
 
     renderAuthButton() {
+
         if (this.props.isSignedIn === null) {
             return null;
         } else if (this.props.isSignedIn) {
             history.push('/dashboard');
             return (
                 <button onClick={this.onSignOutClick} className="ui red google button bar-top">
-                    <i className="google icom" />
+                    <i className="google icon" />
                     Sing Out
             </button>
             );
@@ -53,7 +95,7 @@ class GoogleAuth extends React.Component {
             history.push('/login');
             return (
                 <button onClick={this.onSignInClick} className="ui red google button">
-                    <i className="google icom" />
+                    <i className="google icon" />
                     Sing In with Google
           </button>
 
@@ -71,4 +113,4 @@ const mapStateToProps = (state) => {
     return { isSignedIn: state.auth.isSignedIn };
 };
 
-export default connect(mapStateToProps, { signIn, signOut })(GoogleAuth);
+export default connect(mapStateToProps, { signIn, signOut, userRolIn })(GoogleAuth);

@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import '../components/styles/ingresoHupity.css';
 import ChatHup from './modules/chatBot/paginaInicio';
 
+
 import { chatOn, chatOff } from '../actions';
 
 
@@ -15,29 +16,32 @@ class MenuChat extends React.Component {
             return (
                 <ChatHup />
             );
-        } 
+        }
     }
 
 
     onChat = () => {
-        if (this.props.isChat) {        
-                this.props.chatOff();
-               
+        if (this.props.isChat) {
+            this.props.chatOff();
+
         } else {
             this.props.chatOn();
-              
+
         }
     };
 
 
 
     render() {
+   
+         
+        
         return (
 
             <div>
-               
+
                 <div className="foot-chat" >
-                    <button onClick={this.onChat} className= "massive ui blue circular comment alternate outline icon button">
+                    <button onClick={this.onChat} className="massive ui blue circular comment alternate outline icon button">
                         <i className="comment alternate outline icon"></i>
                     </button>
 

@@ -17,16 +17,16 @@ export const contacts = [
     chatID: "13",
     thread: [{
       text: "Hola Monica", 
-      from: "1"
+      from: "6"
       },{
       text: "Que haces?", 
-      from: "1"
+      from: "6"
       },{
       text: "tarea 1 configuración React", 
-      from: "6"
+      from: "1"
       },{
       text: "Impacta el objetvio de la semana", 
-      from: "6"
+      from: "1"
     }],
     participants: "6"
   }

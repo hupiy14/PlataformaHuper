@@ -12,6 +12,11 @@
 .color-Calendario{
     background:#d42626;
 }
-.bt-chat-icon{
+.bt-chat{
     background: linear-gradient(to right, #55b242 0%, #418a33 100%);
+}
+
+.tamaño-Calendario{
+    display: relative;
+    height: 25%;
 }

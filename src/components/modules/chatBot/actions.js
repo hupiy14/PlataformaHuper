@@ -5,7 +5,8 @@ import {
     SUBMIT_MESSAGE, 
     UPDATE_FILTER,
     SET_THEME,
-    CHAT_UBI
+    CHAT_UBI,
+    COLOR_THEME
     
 } from './types';
 
@@ -49,5 +50,11 @@ export const setActiveChat = (contactID) => ({
 export const setUbicacion = ubicacion => async dispatch => { 
   
   dispatch({ type: CHAT_UBI, payload: ubicacion });
+
+};
+
+export const setColorTheme = Color => async dispatch => { 
+  
+  dispatch({ type: COLOR_THEME, payload: Color });
 
 };

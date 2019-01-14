@@ -6,34 +6,34 @@ class listAdjuntos extends React.Component {
         return (
 
             <div>
-                <h3>Archivos Compartidos</h3>
+                <h3>Ultimos archivos compartidos</h3>
                 <div className="ui list">
                     <div className="item">
                         <i className="file alternate icon" />
                         <div className="content">
                             <a className="header">Rachel</a>
-                            <div className="description">Estrategia de desarrollo App web <a><b>Arrested Development</b></a> just now.</div>
+                            <div className="description">Estrategia de desarrollo App web <a><b>Puedes consultarlo con un click</b></a> justo ahora.</div>
                         </div>
                     </div>
                     <div className="item">
                         <i className="file alternate icon" />
                         <div className="content">
                             <a className="header">Pablo</a>
-                            <div className="description">Cronograma de desarrollo <a><b>Arrested Development</b></a> just now.</div>
+                            <div className="description">Cronograma de desarrollo <a><b>Puedes consultarlo con un click</b></a> justo ahora.</div>
                         </div>
                     </div>
                     <div className="item">
                         <i className="file alternate icon" />
                         <div className="content">
                             <a className="header">Luis</a>
-                            <div className="description">CVs Actualizados <a><b>Arrested Development</b></a> just now.</div>
+                            <div className="description">CVs Actualizados <a><b>Puedes consultarlo con un click</b></a> justo ahora.</div>
                         </div>
                     </div>
                     <div className="item">
                         <i className="file alternate icon" />
                         <div className="content">
                             <a className="header">Rachel</a>
-                            <div className="description">Cambio Parametros de diseño <a><b>Arrested Development</b></a> just now.</div>
+                            <div className="description">Cambio Parametros de diseño <a><b>Puedes consultarlo con un click</b></a> justo ahora.</div>
                         </div>
                     </div>
                 </div>

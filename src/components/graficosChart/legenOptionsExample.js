@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 
 import randomColor from '../../lib/randomColor';
 import randomScalingFactor from '../../lib/randomScalingFactor'
+import { labelsMonths, label1, label2, label3, datos, titleGrafica } from './variablesChart';
 
 const MONTHS = [
     "January",
@@ -22,52 +23,20 @@ const MONTHS = [
 ]
 
 const data = {
-    labels: [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July"
-    ],
+    labels: labelsMonths,
     datasets: [
         {
-            label: "My First dataset",
-            data: [
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor()
-            ],
+            label: label1,
+            data: datos,
             fill: false,
             borderDash: [5, 5]
         }, {
             hidden: true,
-            label: 'hidden dataset',
-            data: [
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor()
-            ]
+            label: label2,
+            data: datos
         }, {
-            label: "My Second dataset",
-            data: [
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor(),
-                randomScalingFactor()
-            ]
+            label: label3,
+            data: datos
         }
     ]
 }
@@ -76,7 +45,7 @@ const options = {
     responsive: true,
     title: {
         display: true,
-        text: 'Chart.js Line Chart'
+        text: titleGrafica
     },
     tooltips: {
         mode: 'label'
@@ -120,9 +89,13 @@ for (let dataset of data.datasets) {
 
 class legenExample extends React.Component {
     render() {
+
+      
+
+
         return (
             <React.Fragment>
-             
+             <h3>Grafica 1</h3>
                 <Line data={data} options={options} />
             </React.Fragment>
         )
