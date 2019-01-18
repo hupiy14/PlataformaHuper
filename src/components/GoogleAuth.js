@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { signIn, signOut, userRolIn } from '../actions';
+import { signIn, signOut, userRolIn, nombreUsuario } from '../actions';
 import DashBoard from './DashBoard';
 import { Link } from 'react-router-dom';
 import history from '../history';
@@ -21,29 +21,38 @@ class GoogleAuth extends React.Component {
 
                 this.onAuthChange(this.auth.isSignedIn.get());
                 this.auth.isSignedIn.listen(this.onAuthChange);
+                //   console.log(this.auth.currentUser.get().getId());
             });
         });
     }
 
     onAuthChange = isSignedIn => {
-        //   console.log(this.auth.currentUser.get().w3.ig);
-    let x;
-        console.log('funcion ');
+        if (this.auth.currentUser.get().w3)
+            this.props.nombreUsuario(this.auth.currentUser.get().w3.ofa);
+        //console.log(this.auth.currentUser.get().w3.ig);
+
+        let x;
+
         if (isSignedIn) {
 
             const nameRef = firebase.database().ref().child('Usuario').child(this.auth.currentUser.get().getId());
             nameRef.on('value', (snapshot) => {
 
-                if(snapshot.val()){
-                   this.props.userRolIn('3');
+                if (snapshot.val()) {
+
+                    const nameRef2 = firebase.database().ref().child('Usuario-Rol').child(this.auth.currentUser.get().getId());
+                    nameRef2.on('value', (snapshot2) => {
+
+                        this.props.userRolIn(snapshot2.val().Rol);
+                    });
                 }
-                else{
+                else {
                     this.auth.signOut();
                 }
-            /*  if()
-              else
-              {}
-*/
+                /*  if()
+                  else
+                  {}
+    */
 
             })
 
@@ -110,7 +119,9 @@ class GoogleAuth extends React.Component {
 };
 
 const mapStateToProps = (state) => {
-    return { isSignedIn: state.auth.isSignedIn };
+    return {
+        isSignedIn: state.auth.isSignedIn
+    };
 };
 
-export default connect(mapStateToProps, { signIn, signOut, userRolIn })(GoogleAuth);
+export default connect(mapStateToProps, { signIn, signOut, userRolIn, nombreUsuario })(GoogleAuth);

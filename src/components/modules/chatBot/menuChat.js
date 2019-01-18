@@ -1,7 +1,7 @@
 import React from 'react';
 import { setUbicacion } from './actions';
 import { connect } from 'react-redux';
-import history from '../../../history';
+
 
 class Menu extends React.Component {
 

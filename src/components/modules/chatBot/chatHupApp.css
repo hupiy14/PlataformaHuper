@@ -6,7 +6,7 @@
 
 .foot-chatH{
     position: fixed;
-    margin: 1em;
+    margin: 0.5em;
     bottom: 5em; 
     right: 2%;
     width: 82em;
@@ -346,10 +346,9 @@ textarea {
 
 .message-input-ch {
   box-sizing: border-box;
-  position: absolute;
-  bottom: 0;
-  margin-bottom: 60px;
-  width: 100%;
+  position: relative;
+  top: 36em;
+  width: 120%;
   left: 0px;
   height: 40px;
   border: 0 none;
@@ -370,9 +369,9 @@ textarea {
   height: 30px;
   width: 30px;
   position: absolute;
-  z-index: 2000;
-  bottom: 65px;
-  right: 5px;
+  z-index: 4000;
+  top: 25.5em;
+  left: 15em;
   font-size: 20px;
   text-align: center;
   border-radius: 50%;
@@ -433,7 +432,7 @@ textarea {
 }
 
 .yellow {
-  background: linear-gradient(to right, #ffd416 0%, #cfa913 100%);
+  background: linear-gradient(to right, #E7DB18 0%, #cfa913 100%);
 }
 
 .green {

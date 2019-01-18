@@ -9,7 +9,7 @@ export default combineReducers({
     auth: authReducer,
     form: formReducer,
     streams: streamReducer,
-    user,
+    user: user,
     contactsPage,
     settings,
     chatReducer

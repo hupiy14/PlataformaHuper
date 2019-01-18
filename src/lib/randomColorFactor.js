@@ -1,3 +1,3 @@
 module.exports = function() {
-    return Math.round(Math.random() * 255)
+    return Math.round(Math.random() * 260) 
   }

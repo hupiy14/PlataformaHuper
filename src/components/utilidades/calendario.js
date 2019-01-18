@@ -35,9 +35,9 @@ class Calendar extends React.Component {
 
 
                     clearIcon={<i name="remove" color="red" />}
-                    minDate="07/01/2019"
-                    maxDate="11/01/2019"
-                    value="10/01/2019"
+                    minDate="14/01/2019"
+                    maxDate="18/01/2019"
+                    value="16/01/2019"
                 />
             </form>
         );

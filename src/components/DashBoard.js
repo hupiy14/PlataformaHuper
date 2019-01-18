@@ -8,6 +8,7 @@ import { createStream } from '../actions';
 //import LineExample from './graficosChart/lineExample';
 import AreaExample from './graficosChart/legenOptionsExample';
 import ListImportan from './utilidades/listaImportante';
+import ListEjemplo from './utilidades/ListaEjemplo';
 import ListAdjuntos from './utilidades/listAdjuntos';
 import Calendario from './utilidades/calendario';
 import CrearGrafica from './utilidades/CrearGrafica';
@@ -20,7 +21,7 @@ import { Line } from 'react-chartjs-2';
 
 class DashBoard extends React.Component {
 
-   
+
 
 
     renderTeletrabajo() {
@@ -52,6 +53,22 @@ class DashBoard extends React.Component {
             randomScalingFactor(),
             randomScalingFactor()
         ];
+        const datosG11 = [
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor()
+        ];
+        const datosG111 = [
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor()
+        ];
         const datosG2 = [
             randomScalingFactor(),
             randomScalingFactor(),
@@ -61,7 +78,43 @@ class DashBoard extends React.Component {
             randomScalingFactor(),
             randomScalingFactor()
         ];
+        const datosG22 = [
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor()
+        ];
+        const datosG222 = [
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor()
+        ];
         const datosG3 = [
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor()
+        ];
+        const datosG33 = [
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor(),
+            randomScalingFactor()
+        ];
+        const datosG333 = [
             randomScalingFactor(),
             randomScalingFactor(),
             randomScalingFactor(),
@@ -86,10 +139,31 @@ class DashBoard extends React.Component {
                                     label2={"Correccón de trabajo"}
                                     label3={"Trabajo Realizado"}
                                     titleGrafica={"Trabajo (Tareas) vs Dias"}
-                                    datos={datosG1}
+                                    datos1={datosG1}
+                                    datos2={datosG11}
+                                    datos3={datosG111}
+                                    numeroGrafica={'2'}
+                                    maxLen={'150'}
                                     TituloGrafica={"Avance Semanal"}
 
                                 />
+                                <br />
+                                <div className="ui divider"></div>
+
+
+                                <CrearGrafica labelsX={labelsMonths}
+                                    label1={"Talento"}
+                                    label2={"Impacto"}
+                                    label3={"Compromiso"}
+                                    titleGrafica={"TIC vs Progreso"}
+                                    datos1={datosG3}
+                                    datos2={datosG33}
+                                    datos3={datosG333}
+                                    maxLen={'110'}
+                                    TituloGrafica={"Talento, Impacto, Compromiso (TIC)"}
+
+                                />
+
                             </div>
                         </div>
                         <div className="column five wide">
@@ -104,28 +178,9 @@ class DashBoard extends React.Component {
                                     description3={'Diseño de la plataforma 3'}
                                     icono={'copy outline'}
                                 />
-
-                            </div>
-                        </div>
-                        <div className="column eleven wide">
-                            <div className="ui segment">
-
-                                <CrearGrafica labelsX={labelsMonths}
-                                    label1={"Planeación de trabajo"}
-                                    label2={"Correccón de trabajo"}
-                                    label3={"Trabajo Realizado"}
-                                    titleGrafica={"Objetivo vs Dias"}
-                                    datos={datosG2}
-                                    TituloGrafica={"Avance de tu trabajo"}
-
-                                />
-
-
-                            </div>
-                        </div>
-                        <div className="column five wide">
-                            <div className="ui segment">
-                                <ListImportan
+                                <br />
+                                <div className="ui divider"></div>
+                                <ListEjemplo
                                     titulo={'Listado de formaciones'}
                                     title={'Formacion de Timebloking'}
                                     title2={'Formacion de Importante-Urgente'}
@@ -134,11 +189,14 @@ class DashBoard extends React.Component {
                                     icono={'leanpub'}
 
                                 />
-
+                                <br />
+                                <div className="ui divider"></div>
                                 <Calendario className="tamaño-Calendario" />
+
 
                             </div>
                         </div>
+
                         <div className="column five wide">
                             <div className="ui segment">
 
@@ -149,26 +207,24 @@ class DashBoard extends React.Component {
                         <div className="column eleven wide">
                             <div className="ui segment">
 
+
                                 <CrearGrafica labelsX={labelsMonths}
-                                    label1={"Talento"}
-                                    label2={"Impacto"}
-                                    label3={"Compromiso"}
-                                    titleGrafica={"TIC vs Progreso"}
-                                    datos={datosG3}
-                                    TituloGrafica={"Talento, Impacto, Compromiso"}
+                                    label1={"Planeación de trabajo"}
+                                    label2={"Correccón de trabajo"}
+                                    label3={"Trabajo Realizado"}
+                                    titleGrafica={"Objetivo vs Meses"}
+                                    datos1={datosG2}
+                                    datos2={datosG22}
+                                    datos3={datosG222}
+                                    maxLen={'150'}
+                                    TituloGrafica={"Avance de tu trabajo"}
 
                                 />
 
-
                             </div>
                         </div>
 
-                        <div className="column eight wide">
-                            <div className="ui segment">
 
-
-                            </div>
-                        </div>
 
                     </div>
 

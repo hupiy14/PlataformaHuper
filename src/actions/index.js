@@ -9,7 +9,9 @@ import {
 import {
     CHAT_ON,
     CHAT_OFF,
-    USER_ROL
+    USER_ROL,
+    NOMBRE_USER,
+   
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
 
@@ -24,6 +26,14 @@ export const signIn = (userId) => {
 };
 
 
+
+export const nombreUsuario = (nombreUser) => {
+
+    return {
+        type: NOMBRE_USER,
+        payload: nombreUser
+    };
+};
 
 export const userRolIn = (userRol) => {
     return {
@@ -55,29 +65,39 @@ export const chatOff = () => {
 const escribirUsuario = (userId) => {
 
 
-    //escribir
+    //escribir  108587547313274842109
     //console.log('envio');
-    //var newPostKey2 = firebase.database().ref().child('Usuario').push().key;
-    //firebase.database().ref(`Usuario-Perfil/1` ).set({
-    //    userId
+  
+    /*
+    var newPostKey2 = firebase.database().ref().child('Usuario-Objetivos').push().key;
+    firebase.database().ref(`Usuario-Objetivos/108587547313274842109/${newPostKey2}` ).set({
+      
+      concepto: 'Realizar la presentacion a Carmen EAE',
+      detalle: 'Practicas en teletrabajo',
+     // adjunto: {...'ninguno'},
+      prioridad: 'Alta'
 
-    //});
+    });
+    
+*/
+
+
     //leer todos
-    var starCountRef = firebase.database().ref('users');
+   /* var starCountRef = firebase.database().ref('users');
     starCountRef.on('value', function (snapshot) {
         console.log(snapshot.val());
     });
 
-
+*/
 
     // A post entry.
-    var postData = {
+  /*  var postData = {
         title: 'titulos 3',
         cambio: 'res'
     };
 
     // Get a key for a new Post.
-    var newPostKey = firebase.database().ref().child('users').child('104639443634977843265').push().key;
+    var newPostKey = firebase.database().ref().child('Rol').push().key;
     console.log(newPostKey);
     // Write the new post's data simultaneously in the posts list and the user's post list.
     var updates = {};

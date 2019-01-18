@@ -16,20 +16,20 @@ class legenExample extends React.Component {
             datasets: [
                 {
                     label: this.props.label1,
-                    data: this.props.datos,
-                    fill: false,
-                    borderDash: [5, 5]
+                    data: this.props.datos1,
+                  //  fill: false,
+                   // borderDash: [5, 5]
                 }, {
                     hidden: true,
                     label: this.props.label2,
-                    data: this.props.datos
+                    data: this.props.datos2
                 }, {
                     label: this.props.label3,
-                    data: this.props.datos
+                    data: this.props.datos3
                 }
             ]
         }
-        
+
         const options = {
             responsive: true,
             title: {
@@ -61,13 +61,13 @@ class legenExample extends React.Component {
                         },
                         ticks: {
                             suggestedMin: -10,
-                            suggestedMax: 250
+                            suggestedMax: this.props.maxLen
                         }
                     }
                 ]
             }
         }
-        
+
         for (let dataset of data.datasets) {
             dataset.borderColor = randomColor(0.4)
             dataset.backgroundColor = randomColor(0.5)
@@ -79,7 +79,7 @@ class legenExample extends React.Component {
 
         return (
             <React.Fragment>
-             <h3 className="center">{this.props.TituloGrafica}</h3>
+                <h3 className="center">{this.props.TituloGrafica}</h3>
                 <Line data={data} options={options} />
             </React.Fragment>
         )

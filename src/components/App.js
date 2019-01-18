@@ -7,7 +7,9 @@ import history from '../history';
 import MenuChat from './MenuChat';
 import Header from './Header';
 
-import hupityIngreso from './hupityIngreso';
+
+
+import hupityIngreso from './ingresoApp';
 import ingreso from './modules/ingreso';
 import dashboard from './DashBoard';
 import Hupps from './modules/Hupps';

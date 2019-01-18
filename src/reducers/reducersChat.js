@@ -2,10 +2,11 @@ import {
     SET_ACTIVE_CHAT,
     START_CHAT,
     END_CHAT,
-    SUBMIT_MESSAGE, 
+    SUBMIT_MESSAGE,
     UPDATE_FILTER,
-    SET_THEME
-    
+    SET_THEME,
+    BORRAR_CHAT
+
 } from '../components/modules/chatBot/types';
 import { defaultUser } from '../components/modules/chatBot/dummyData';
 
@@ -36,7 +37,7 @@ export const user = (user = defaultUser, action) => {
                         return Object.assign({}, c, {
                             thread: c.thread.concat({
                                 text: action.text,
-                                from: userID
+                                from: action.userID
                             })
                         })
                     } else { return c; }
@@ -50,6 +51,22 @@ export const user = (user = defaultUser, action) => {
                     participants: action.participants
                 })
             });
+        case BORRAR_CHAT:
+        
+            var aP = activeChat.participants;
+            console.log({aP});
+            const valorBorrado = {chatID: "13",
+            thread: [],
+            participants: "6"};
+            console.log({valorBorrado});
+            if (action.participants === aP) {
+                return Object.assign({}, user, {
+                    activeChat: valorBorrado,
+                    userChats: [valorBorrado],  
+                 
+                    //userChats: []
+                });
+            }
         case END_CHAT:
             var aP = activeChat.participants;
 
@@ -105,7 +122,7 @@ export const contactsPage = (
 }
 
 //settings reducer
-export const settings = (settings = { theme: "blue" }, action) => {
+export const settings = (settings = { theme: "yellow" }, action) => {
     switch (action.type) {
         case SET_THEME:
             return Object.assign({}, settings, {

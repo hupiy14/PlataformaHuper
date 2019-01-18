@@ -30,32 +30,43 @@ class MenuChat extends React.Component {
         }
     };
 
-
-
-    render() {
-   
-         
-        
-        return (
-
-            <div>
-
+    renderMenu() {
+        if (this.props.isSignedIn) {
+            return (<div>
                 <div className="foot-chat" >
-                    <button onClick={this.onChat} className="massive ui blue circular comment alternate outline icon button">
+                    <button onClick={this.onChat} className="massive ui yellow circular comment alternate outline icon button">
                         <i className="comment alternate outline icon"></i>
                     </button>
 
                 </div>
                 {this.renderAuthButton()}
+            </div>);
+        }
+    }
 
+
+
+    render() {
+
+
+
+        return (
+
+            <div>
+                {this.renderMenu()}
             </div>
+
+
 
         );
     }
 };
 
 const mapStateToProps = (state) => {
-    return { isChat: state.chatReducer.isChat };
+    return {
+        isSignedIn: state.auth.isSignedIn,
+        isChat: state.chatReducer.isChat
+    };
 };
 
 
