@@ -1,5 +1,5 @@
 //import huper from '../apis/huperDB';
-import history from '../history';
+//import history from '../history';
 import {
     SIGN_IN,
     SIGN_OUT
@@ -67,19 +67,40 @@ const escribirUsuario = (userId) => {
 
     //escribir  108587547313274842109
     //console.log('envio');
-  
-    /*
-    var newPostKey2 = firebase.database().ref().child('Usuario-Objetivos').push().key;
-    firebase.database().ref(`Usuario-Objetivos/108587547313274842109/${newPostKey2}` ).set({
-      
-      concepto: 'Realizar la presentacion a Carmen EAE',
-      detalle: 'Practicas en teletrabajo',
-     // adjunto: {...'ninguno'},
-      prioridad: 'Alta'
-
-    });
+    //remove()
     
+    /*
+    var newPostKey2 = firebase.database().ref().child('Notificaciones/108587547313274842109').push().key;
+    firebase.database().ref(`Notificaciones/108587547313274842109/${newPostKey2}` ).set({
+     concepto: 'Animo Huper la semana aun no termina, mira el siguiente link',
+     notificaciones: 'Motivacion Huper',
+     link: 'www.google.com',
+     estado: 'activo',
+     persona: 'Jose Luis',
+     fecha: new Date().toString(),
+    });
+
+   
 */
+    
+    // opciones1: 'libre',
+    // opciones2: '1 hora, 2 horas, 3 horas',    
+     //opciones3: 'inmediata, urgente, normal',
+     //tipoPregunta: '6'
+    //  idTipologiaRol: newPostKey2
+      //  concepto: 'Consulta Tareas',
+      /*detalle: 'Practicas en teletrabajo',
+     // numeroTareas: 0,
+     // adjunto: {...'ninguno'},
+   //   prioridad: 'Inmediata',
+ //     estado: 'activo'
+
+   
+
+});
+
+    
+
 
 
     //leer todos

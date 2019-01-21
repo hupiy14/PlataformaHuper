@@ -14,7 +14,8 @@ import {
     MENSAJE_ENTRADA,
     CONSULTA_PREG_CONTROL,
     BORRAR_CHAT,
-    CONSULTA_DB
+    CONSULTA_DB,
+    TIPO_PREGUNTA
     
 } from './types';
 
@@ -25,6 +26,14 @@ export const consultaPreguntaControls = (consultaPreguntaControl) => {
       payload: consultaPreguntaControl
   };
 };
+export const tipoPreguntas = (tipoPreguntas) => {
+
+  return {
+      type: TIPO_PREGUNTA,
+      payload: tipoPreguntas
+  };
+};
+
 
 export const consultas = (consulta) => {
 

@@ -14,9 +14,8 @@ import ingreso from './modules/ingreso';
 import dashboard from './DashBoard';
 import Hupps from './modules/Hupps';
 
-import Prueba from './utilidades/PruebaFirebase';
-
 import './modules/chatBot/chatHupApp.css';
+import PruebaG from './utilidades/prueba';
 
 
 
@@ -44,7 +43,7 @@ class App extends React.Component {
                                 <Router history={history}>
                                     <div>
                                         <Header />
-
+                                        <PruebaG/>
                                     
 
                                         <Switch>
@@ -67,6 +66,7 @@ class App extends React.Component {
                 </div>
                 <div className="pie-Pagina">
                     <MenuChat />
+                  
                 </div>
 
             </div>

@@ -9,7 +9,7 @@ class Header extends React.Component {
         return (
             <div className="ui secondary pointing menu">
                 <Link to="/dashboard" className="item">
-                    <img className="ui tiny rounded image" src={image} />
+                    <img className="ui tiny rounded image" src={image} id='1' />
                 </Link>
                 <div className="right menu">
                     <Link to="/hupps" className="item">

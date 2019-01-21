@@ -1,9 +1,9 @@
 
 import React from 'react';
-import ChatHuper from './connecteApp';
+//import ChatHuper from './connecteApp';
 import { setTheme, setColorTheme } from './actions';
 import { connect } from 'react-redux';
-import { renderComponent } from 'recompose';
+//import { renderComponent } from 'recompose';
 
 
 class ThemeButton extends React.Component{

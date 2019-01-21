@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { startChat, updateFilter, endChat } from './actions';
 
@@ -65,7 +64,7 @@ class Contacts extends React.Component {
 
                 </div>
                 <i className={chatting(c)
-                  ? "spinner icon   chatting-ch"
+                  ? "spinner icon App-logo huge  chatting-ch"
                   : "hide-ch"}
                   aria-hidden="true"
                 ></i>
@@ -98,9 +97,7 @@ const mapContactsStateToProps = (state) => ({
   userChats: state.user.userChats,
   filterString: state.contactsPage.filterString
 });
-const mapContactsDispatchToProps = () => ({
-  startChat
-})
+
 export default connect(mapContactsStateToProps, { startChat, updateFilter, endChat })(Contacts);
 
 

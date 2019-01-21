@@ -5,11 +5,22 @@ import '../styles/ingresoHupity.css';
 
 class ListEjemplo extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this.state = { spans: 0 };
+        this.imageRef = React.createRef();
+    }
 
     componentDidMount() {
-        // console.log(this.example2);
-
+        this.imageRef.current.addEventListener('load', this.setSpans);
     }
+
+    setSpans = () => {
+        const height = this.imageRef.current.clientHeight;
+        const spans = Math.ceil(height / 10 );
+        this.setState({spans});
+    };
+   
 
     render() {
 
@@ -18,10 +29,10 @@ class ListEjemplo extends React.Component {
 
             <div className="ui card">
                 <div className="image big tamaño-Imagen" >
-                    <img src={this.props.image} />
+                    <img ref= {this.imageRef} src={this.props.image} />
                 </div>
                 <div className="content">
-                    <a className="header">{this.props.title}</a>
+                    <div className="header">{this.props.title}</div>
                     <div className="meta">
                         <span className="date">Joined in 2013</span>
                     </div>

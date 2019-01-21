@@ -11,29 +11,29 @@ class listAdjuntos extends React.Component {
                     <div className="item">
                         <i className="file alternate icon" />
                         <div className="content">
-                            <a className="header">Rachel</a>
-                            <div className="description">Estrategia de desarrollo App web <a><b>Puedes consultarlo con un click</b></a> justo ahora.</div>
+                            <div className="header">Rachel</div>
+                            <div className="description">Estrategia de desarrollo App web <div><b>Puedes consultarlo con un click</b></div> justo ahora.</div>
                         </div>
                     </div>
                     <div className="item">
                         <i className="file alternate icon" />
                         <div className="content">
-                            <a className="header">Pablo</a>
-                            <div className="description">Cronograma de desarrollo <a><b>Puedes consultarlo con un click</b></a> justo ahora.</div>
+                            <div className="header">Pablo</div>
+                            <div className="description">Cronograma de desarrollo <div><b>Puedes consultarlo con un click</b></div> justo ahora.</div>
                         </div>
                     </div>
                     <div className="item">
                         <i className="file alternate icon" />
                         <div className="content">
-                            <a className="header">Luis</a>
-                            <div className="description">CVs Actualizados <a><b>Puedes consultarlo con un click</b></a> justo ahora.</div>
+                            <div className="header">Luis</div>
+                            <div className="description">CVs Actualizados <div><b>Puedes consultarlo con un click</b></div> justo ahora.</div>
                         </div>
                     </div>
                     <div className="item">
                         <i className="file alternate icon" />
                         <div className="content">
-                            <a className="header">Rachel</a>
-                            <div className="description">Cambio Parametros de diseño <a><b>Puedes consultarlo con un click</b></a> justo ahora.</div>
+                            <div className="header">Rachel</div>
+                            <div className="description">Cambio Parametros de diseño <div><b>Puedes consultarlo con un click</b></div> justo ahora.</div>
                         </div>
                     </div>
                 </div>

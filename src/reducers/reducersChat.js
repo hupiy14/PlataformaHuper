@@ -15,8 +15,8 @@ export const user = (user = defaultUser, action) => {
     const {
         activeChat,
         userChats,
-        userID,
-        contacts
+     //   userID,
+     //   contacts
     } = user;
 
     switch (action.type) {

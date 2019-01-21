@@ -11,7 +11,8 @@ import {
     VALOR_INPUT,
     MENSAJE_ENTRADA,
     CONSULTA_PREG_CONTROL,
-    CONSULTA_DB
+    CONSULTA_DB,
+    TIPO_PREGUNTA
 
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -29,7 +30,8 @@ const INITIAL_STATE = {
     valorInput: null,
     mensajeEnt: true,
     consultaPreguntaControl: 1,
-    consultax: null
+    consultax: null,
+    tipoPregunta: null
 };
 
 
@@ -63,8 +65,8 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, consultaPreguntaControl: action.payload };
         case CONSULTA_DB:
             return { ...state, consultax: action.payload };
-
-
+        case TIPO_PREGUNTA:
+            return { ...state, tipoPregunta: action.payload };
 
         default:
             return state;

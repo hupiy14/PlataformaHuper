@@ -1,9 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { createStore } from 'redux';
 import { connect } from 'react-redux';
-import { setActiveChat, submitMessage, numeroPreguntas, valorInputs, consultaPreguntaControls, mensajeEntradas, borrarChats } from './actions';
+import {
+  setActiveChat, submitMessage, numeroPreguntas, valorInputs, consultaPreguntaControls,
+  tipoPreguntas, mensajeEntradas, borrarChats, consultaChats
+} from './actions';
 import BoxDianmico from './boxDinamico';
+import { IconGroup } from 'semantic-ui-react';
+import firebase from 'firebase';
 
 
 
@@ -18,14 +21,308 @@ class Home extends React.Component {
       userID
     );
 
-    if (this.props.numeroPregunta < this.props.consultaPregunta.length-1) {
-      this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-      const mensaje = this.props.consultaPregunta[this.props.numeroPregunta + 1].concepto;
-      this.props.submitMessage(mensaje, activeChat.chatID, this.props.idChatUser);
-    }
-    this.props.consultaPreguntaControls(this.props.consultaPreguntaControl + 1);
+    let valorNPregunta = this.props.numeroPregunta;
+    let consultaBD = this.props.consultaPregunta;
+    let vacio = ' ';
+    // console.log(this.props.consultaPregunta[this.props.numeroPregunta]);
+    if (this.props.consultaPregunta[this.props.numeroPregunta].tipoPregunta === '3') {
+      //    console.log(this.props.valorInput);
+      if (this.props.valorInput === 'Consultar') {
+        this.props.tipoPreguntas('Consulta Detalle Tarea');
+        const chatTrazo = this.props.user.userChats[0].thread
+        const cconsulta = this.props.consultax;
+        let valorConsulta = {};
+        Object.keys(cconsulta).map(function (key, index) {
+          //console.log(cconsulta[key]);
+          const ccconsulta = cconsulta[key];
+          Object.keys(ccconsulta).map(function (key, index) {
+            if (ccconsulta[key].concepto === chatTrazo[2].text) {
 
-    this.props.valorInputs(' ');
+              valorConsulta = ccconsulta[key];
+              return ccconsulta[key];
+            }
+
+          });
+
+        });
+
+        this.props.submitMessage(`Nombre de la tarea: ${valorConsulta.concepto}`, activeChat.chatID, this.props.idChatUser)
+        this.props.submitMessage(`Prioriodad de la tarea: ${valorConsulta.prioridad}`, activeChat.chatID, this.props.idChatUser);
+        this.props.submitMessage(`Tiempo Estimado: ${valorConsulta.tiempoEstimado}`, activeChat.chatID, this.props.idChatUser);
+
+
+      }
+      else if (this.props.valorInput === 'Editar') {
+
+        valorNPregunta = 0;
+        this.props.tipoPreguntas('EditarTarea');
+        vacio = 'x';
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWgES6beV855nYSVLtM');
+        starCountRef.on('value', (snapshot) => {
+          this.props.consultaChats(snapshot.val());
+          consultaBD = snapshot.val();
+
+        });
+
+
+      }
+
+    }
+
+    if (this.props.valorInput === 'Eliminar') {
+
+      console.log('elimiar');
+      const chatTrazo = this.props.user.userChats[0].thread
+      const cconsulta = this.props.consultax;
+      let tarea = {};
+      let idObjetivo = {};
+      let idTarea = {};
+      Object.keys(cconsulta).map(function (key2, index) {
+        const ccconsulta = cconsulta[key2];
+        Object.keys(ccconsulta).map(function (key, index) {
+          //            console.log(ccconsulta[key]);
+          if (chatTrazo[2].text === ccconsulta[key].concepto) {
+            tarea = ccconsulta[key];
+            idObjetivo = key2;
+            idTarea = key;
+          }
+
+        });
+      });
+      valorNPregunta = valorNPregunta + 1;
+      firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${idObjetivo}/${idTarea}`).remove();
+
+    }
+    else if (this.props.valorInput === 'Ninguna') {
+      valorNPregunta = valorNPregunta + 1;
+      this.props.consultaPreguntaControls(valorNPregunta + 1);
+    }
+
+    if (valorNPregunta < consultaBD.length - 1) {
+
+      this.props.numeroPreguntas(valorNPregunta + 1);
+      console.log(valorNPregunta);
+      const mensaje = consultaBD[valorNPregunta + 1].concepto;
+      this.props.submitMessage(mensaje, activeChat.chatID, this.props.idChatUser);
+      // console.log(valorNPregunta);
+    }
+    else {
+
+      //   console.log(this.props.user.userChats[0]);
+      const chatTrazo = this.props.user.userChats[0].thread
+      const tipPrgutna = this.props.tipoPregunta;
+      const consultaInicial = this.props.consultaPregunta;
+      const consultaObj = this.props.consultax;
+      // Object.keys(chatTrazo).map(function (key, index) {
+
+      //if (chatTrazo[key].from !== '6') {
+      console.log(tipPrgutna);
+      if (tipPrgutna === 'Diaria') {
+
+        let postData;
+        let newPostKey2;
+        // let numeroTareaObj = 0;
+
+        Object.keys(consultaObj).map(function (key2, index) {
+
+          if (consultaObj[key2].concepto === chatTrazo[4].text) {
+            consultaObj[key2].numeroTareas = 1 + consultaObj[key2].numeroTareas
+
+            // dto = {...}
+            //    numeroTareaObj = consultaObj[key2].numeroTareas + 1;
+            postData = consultaObj[key2];
+            newPostKey2 = key2;
+          }
+
+        });
+
+        console.log({ newPostKey2 });
+        if (!newPostKey2) {
+          postData = {
+            numeroTareas: 1,
+            concepto: chatTrazo[4].text,
+            estado: 'validar',
+            prioridad: this.props.valorInput
+
+          };
+          newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`).push().key;
+        }
+
+        var updates = {};
+        updates[`Usuario-Objetivos/${this.props.userId}/${newPostKey2}`] = postData;
+        firebase.database().ref().update(updates);
+
+        var newPostKey3 = firebase.database().ref().child('Usuario-Tareas').push().key;
+        firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${newPostKey2}/${newPostKey3}`).set({
+
+          concepto: chatTrazo[2].text,
+          estado: 'activo',
+          prioridad: this.props.valorInput,
+          tiempoEstimado: chatTrazo[6].text
+
+        });
+
+        // console.log(chatTrazo[key].text);
+      }
+      else if (tipPrgutna === 'EditarTarea') {
+        console.log(this.props.consultax);
+
+        const cconsulta = this.props.consultax;
+        let tarea = {};
+        let idObjetivo = {};
+        let idTarea = {};
+        const ultimoValor = this.props.valorInput;
+        Object.keys(cconsulta).map(function (key2, index) {
+          const ccconsulta = cconsulta[key2];
+          Object.keys(ccconsulta).map(function (key, index) {
+            //            console.log(ccconsulta[key]);
+            if (chatTrazo[2].text === ccconsulta[key].concepto) {
+              tarea = ccconsulta[key];
+              if (chatTrazo[6].text === ' Prioridad') {
+                tarea.prioridad = ultimoValor;
+              }
+              else if (chatTrazo[6].text === ' Tiempo Estimado') {
+                tarea.tiempoEstimado = ultimoValor;
+              }
+              else {
+                tarea.concepto = ultimoValor;
+              }
+              idObjetivo = key2;
+              idTarea = key;
+            }
+
+          });
+        });
+
+        var updates = {};
+        updates[`Usuario-Tareas/${this.props.userId}/${idObjetivo}/${idTarea}`] = tarea;
+        firebase.database().ref().update(updates);
+
+      }
+      else if (tipPrgutna === 'TIC Quincenal') {
+        const postData = {
+          FechaTIC: new Date().toString(),
+          Talento: chatTrazo[2].text,
+          Impacto: chatTrazo[4].text,
+          Compromiso: this.props.valorInput
+
+        };
+        var updates = {};
+        const newPostKey2 = firebase.database().ref().child(`Usuario-TIC-EXP/${this.props.userId}`).push().key;
+        updates[`Usuario-TIC-EXP/${this.props.userId}/${newPostKey2}`] = postData;
+        firebase.database().ref().update(updates);
+      }
+      else if (tipPrgutna === 'TIC Objetivos') {
+
+        const cconsulta = this.props.consultax;
+        let idObj;
+        let objetivo;
+        Object.keys(cconsulta).map(function (key, index) {
+          if (cconsulta[key].concepto === chatTrazo[2].text) {
+            idObj = key;
+            objetivo = cconsulta[key];
+          }
+
+        });
+        const postData = {
+          FechaTIC: new Date().toString(),
+          Talento: chatTrazo[4].text,
+          Impacto: chatTrazo[6].text,
+          IdObjetivo: idObj,
+          Objetivo: chatTrazo[2].text,
+          Compromiso: this.props.valorInput
+
+        };
+
+        objetivo.estado = 'finalizado';
+        var updates = {};
+        const newPostKey2 = firebase.database().ref().child(`Usuario-TIC-OBJETIVOS/${this.props.userId}`).push().key;
+        updates[`Usuario-Objetivos/${this.props.userId}/${idObj}`] = objetivo;
+        updates[`Usuario-TIC-OBJETIVOS/${this.props.userId}/${newPostKey2}`] = postData;
+        firebase.database().ref().update(updates);
+      }
+      else if (tipPrgutna === 'Retrospectiva') {
+        const postData = {
+          FechaTIC: new Date().toString(),
+          Obstaculo: chatTrazo[2].text,
+          Recurso: chatTrazo[4] ? chatTrazo[4].text : this.props.valorInput,
+          Descripcion: this.props.valorInput,
+          // Compromiso: this.props.valorInput
+
+        };
+
+        var updates = {};
+        const newPostKey2 = firebase.database().ref().child(`Usuario-Retrospective/${this.props.userId}`).push().key;
+        updates[`Usuario-Retrospective/${this.props.userId}/${newPostKey2}`] = postData;
+        firebase.database().ref().update(updates);
+      }
+
+      else if (tipPrgutna === 'Despedida' && this.props.valorInput === 'Eliminar Tareas') {
+        let cconsulta;
+        var updates = {};
+        let tarea = {};
+        const usuario = this.props.userId;
+        const starCountRef = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
+        starCountRef.on('value', (snapshot) => {
+          cconsulta = snapshot.val();
+          Object.keys(cconsulta).map(function (key2, index) {
+            const ccconsulta = cconsulta[key2];
+            Object.keys(ccconsulta).map(function (key, index) {
+              if (ccconsulta[key].estado === 'activo') {
+                
+                tarea = ccconsulta[key];
+                tarea.estado = 'desechadas';
+                updates[`Usuario-Tareas/${usuario}/${key2}/${key}`] = tarea;
+              }
+
+            });
+
+          });
+
+          firebase.database().ref().update(updates);
+        });
+        console.log(cconsulta);
+
+      }
+      else if (tipPrgutna === 'Seguimiento') {
+
+        const cconsulta = this.props.consultax;
+        let tarea = {};
+        const userIDs = this.props.userId;
+        const ultimoValor = this.props.valorInput;
+        Object.keys(cconsulta).map(function (key2, index) {
+          const ccconsulta = cconsulta[key2];
+          Object.keys(ccconsulta).map(function (key, index) {
+            //            console.log(ccconsulta[key]);
+            if (chatTrazo[2].text === ccconsulta[key].concepto) {
+              tarea = ccconsulta[key];
+              tarea.estado = 'trabajando';
+              var updates = {};
+              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = tarea;
+              firebase.database().ref().update(updates);
+            }
+            else if (ultimoValor === ccconsulta[key].concepto) {
+              tarea = ccconsulta[key];
+              tarea.estado = 'finalizado';
+              var updates = {};
+              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = tarea;
+              firebase.database().ref().update(updates);
+            }
+
+          });
+        });
+
+      }
+
+    }
+    //<option value={chatTrazo[key].concepto} key={key} />
+
+    // });
+    //console.log(this.props.valorInput);
+    // }
+    this.props.consultaPreguntaControls(valorNPregunta + 1);
+
+    this.props.valorInputs(vacio);
     // inputX.value = '';
   }
   render() {
@@ -36,7 +333,6 @@ class Home extends React.Component {
       contacts
     } = this.props.user;
 
-    let input;
 
     // chat header name
     let activeName = contacts.filter((c) => (
@@ -54,19 +350,19 @@ class Home extends React.Component {
     ))[0];
 
     // empty thread if no active chat
-   
-    thread = thread === undefined ? [] : thread.thread;
-   
 
-    
-    
+    thread = thread === undefined ? [] : thread.thread;
+
+
+
+
     // all chats
     const chatters = userChats.reduce((prev, next) => {
       prev.push(next.participants)
       return prev;
     }, []);
 
-    
+
 
     return (
       <div>
@@ -136,9 +432,12 @@ class Home extends React.Component {
   };
 };
 const mapHomeStateToProps = (state) => ({
-  
+
+  userId: state.auth.userId,
+  consultax: state.chatReducer.consultax,
   mensajeEnt: state.chatReducer.mensajeEnt,
-   consultaPreguntaControl: state.chatReducer.consultaPreguntaControl,
+  tipoPregunta: state.chatReducer.tipoPregunta,
+  consultaPreguntaControl: state.chatReducer.consultaPreguntaControl,
   valorInput: state.chatReducer.valorInput,
   consultaPregunta: state.chatReducer.consultaPregunta,
   idChatUser: state.chatReducer.idChatUser,
@@ -147,5 +446,5 @@ const mapHomeStateToProps = (state) => ({
 });
 export default connect(mapHomeStateToProps, {
   submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas,
-  consultaPreguntaControls, valorInputs, borrarChats
+  consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats
 })(Home);
