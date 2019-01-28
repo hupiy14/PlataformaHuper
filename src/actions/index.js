@@ -11,6 +11,7 @@ import {
     CHAT_OFF,
     USER_ROL,
     NOMBRE_USER,
+    USUARIO_DETAIL,
    
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -26,6 +27,13 @@ export const signIn = (userId) => {
 };
 
 
+export const usuarioDetails = (usuarioDetail) => {
+
+    return {
+        type: USUARIO_DETAIL,
+        payload: usuarioDetail
+    };
+  };
 
 export const nombreUsuario = (nombreUser) => {
 
@@ -68,20 +76,19 @@ const escribirUsuario = (userId) => {
     //escribir  108587547313274842109
     //console.log('envio');
     //remove()
-    
     /*
-    var newPostKey2 = firebase.database().ref().child('Notificaciones/108587547313274842109').push().key;
-    firebase.database().ref(`Notificaciones/108587547313274842109/${newPostKey2}` ).set({
-     concepto: 'Animo Huper la semana aun no termina, mira el siguiente link',
-     notificaciones: 'Motivacion Huper',
-     link: 'www.google.com',
-     estado: 'activo',
-     persona: 'Jose Luis',
-     fecha: new Date().toString(),
+    
+    var newPostKey2 = firebase.database().ref().child('Empresa-Equipo/-LWBP-0bC5_TSsm79BjK').push().key;
+    //var newPostKey2 = firebase.database().ref().child('Empresa-Equipo/114776566682864207914/-LWoWVihrbAnV5LqojH2').push().key;
+    
+    firebase.database().ref(`Usuario-WS/-LWBP-0bC5_TSsm79BjK/-LXIo5NrqllpsgJRlVZ4/114776566682864207914` ).set({
+     linkWs: '1KW61ZJp-zEoBnvUD4_YcX_pxPbR6rh8o',
+     fechaCreado: new Date().toString(),
     });
 
-   
-*/
+   */
+
+
     
     // opciones1: 'libre',
     // opciones2: '1 hora, 2 horas, 3 horas',    

@@ -3,9 +3,16 @@ import { connect } from 'react-redux';
 import CardFeedback from '../utilidades/cardFeed';
 //import image from '../../images/hupityNewlogo.png';
 import unsplash from '../../apis/unsplash';
+import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs } from '../modules/chatBot/actions';
+
 
 class Hupps extends React.Component {
-    state = { images: [] };
+    state = { images: [], modalOpen: false };
+
+    handleOpen = () => this.setState({ modalOpen: true })
+
+    handleClose = () => this.setState({ modalOpen: false })
+
     componentDidMount() {
         this.onSearchSubmit()
     }
@@ -19,60 +26,81 @@ class Hupps extends React.Component {
         console.log(this.state.images);
     }
 
-    renderGrafico() {
-        if (this.state.images[0]) {
-            return (<div className="four column stackable ui grid">
-                <div className="column  ">
-                    <CardFeedback image={this.state.images[0].urls.regular} 
-                    title={'Diseño branding Hupity'}
-                    descripcion={'logos, colores y tipografia'}
-                    
-                    />
-                </div>
-                <div className="column ">
-                    <CardFeedback image={this.state.images[1].urls.regular} 
-                   title={'Landing Page'}
-                   descripcion={'Diseño y contruccion de la pagina de bienvenida'}
-                    
-                    />
-                </div>
-                <div className="column ">
-                    <CardFeedback image={this.state.images[2].urls.regular} 
-                    title={'Elaboracion del plan financiero'}
-                    descripcion={'Proyeccion de ingresos, gastos e inversion'}
-                    />
-                </div>
-                <div className="column ">
-                    <CardFeedback image={this.state.images[3].urls.regular}
-                        title={'Redaccion de convenios becarios'}
-                        descripcion={'Incorporacion de dos personas al equipo Hupity'} />
-                </div>
-                <div className="column ">
-                    <CardFeedback image={this.state.images[4].urls.regular} 
-                      title={'Automatizacion de los formularios'}
-                      descripcion={'Recoleccion de CVs de los estudiantes'}
-                     />
-                </div>
-                <div className="column ">
-                    <CardFeedback image={this.state.images[5].urls.regular} 
-                    title={'FeedBack '}
-                    descripcion={'Descripcion detallada de la tarea a realizar'}
-                    />
-                </div>
+    renderGrafico(the) {
 
-            </div>);
-        }
-        else {
-            return (<div></div>);
-        }
+        return (
+            <div className="four column stackable ui grid">
+                {this.renderGrafico2(the)}
+            </div>
+        );
+    }
+    renderGrafico2(the) {
+        if (the.state.images[0]) {
+            if (the.props.listaObjetivo && the.props.listaObjetivo.objetivos && the.props.listaObjetivo.tareas) {
+                const cconsulta = this.props.listaObjetivo.objetivos;
+                let x = 0;
 
+                const opciones = Object.keys(cconsulta).map(function (key2, index) {
+
+                    x = x + 1;
+                    let tareas = {};
+                    const tareaO = the.props.listaObjetivo.tareas;
+
+                    Object.keys(tareaO).map(function (key3, index) {
+                        if (key3 === key2)
+                            tareas = tareaO[key3];
+                    })
+
+                    return (
+                        <div className="column  " key={key2}>
+                            <CardFeedback image={the.state.images[x].urls.regular}
+                                title={cconsulta[key2].concepto}
+                                descripcion={cconsulta[key2].detalle}
+                                fechaFin={cconsulta[key2].dateFinalizado ? cconsulta[key2].dateFinalizado : ''}
+                                numeroTareas={cconsulta[key2].numeroTareas}
+                                prioridad={cconsulta[key2].prioridad}
+                                estadox={cconsulta[key2].estado}
+                                tareas={tareas}
+                                objetivoF={cconsulta[key2]}
+                                keyF={key2}
+                               
+
+                                numeroAdjuntos={cconsulta[key2].numeroAdjuntos ? cconsulta[key2].numeroAdjuntos : ''}
+                                numeroComentarios={cconsulta[key2].numeroComentarios ? cconsulta[key2].numeroComentarios : ''}
+                            />
+                        </div>
+
+                    );
+
+
+                })
+                return opciones;
+            }
+            else {
+                return (
+                    <div className="ui form loaderOBJ3">
+                        <div className="ui segment loaderOBJ3">
+                            <div className="ui active inverted dimmer">
+                                <div className="ui text loader">
+                                <h4> No tienes ningun objetivo para ver</h4>
+                               
+                                </div>
+                            </div>
+                            <p></p>
+                        </div>
+                    </div>
+
+                );
+            }
+
+        }
     }
 
     render() {
 
         return (
 
-            <div> {this.renderGrafico()}
+            <div> {this.renderGrafico(this)}
             </div>
         );
 
@@ -80,6 +108,15 @@ class Hupps extends React.Component {
 
 };
 
-export default connect(null)(Hupps);
+const mapAppStateToProps = (state) => (
+    {
 
+        numeroTareasTerminadas: state.chatReducer.numeroTareasTerminadas,
+        popupDetalle: state.chatReducer.popupDetalle,
+        listaObjetivo: state.chatReducer.listaObjetivo,
+        prioridadObj: state.chatReducer.prioridadObj,
+        userId: state.auth.userId,
 
+    });
+
+export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs })(Hupps);

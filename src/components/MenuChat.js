@@ -23,6 +23,7 @@ class MenuChat extends React.Component {
     onChat = () => {
         if (this.props.isChat) {
             this.props.chatOff();
+          
 
         } else {
             this.props.chatOn();
@@ -65,7 +66,8 @@ class MenuChat extends React.Component {
 const mapStateToProps = (state) => {
     return {
         isSignedIn: state.auth.isSignedIn,
-        isChat: state.chatReducer.isChat
+        isChat: state.chatReducer.isChat,
+      
     };
 };
 

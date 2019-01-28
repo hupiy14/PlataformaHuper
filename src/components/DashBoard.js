@@ -10,13 +10,22 @@ import AreaExample from './graficosChart/legenOptionsExample';
 import ListImportan from './utilidades/listaImportante';
 import ListEjemplo from './utilidades/ListaEjemplo';
 import ListAdjuntos from './utilidades/listAdjuntos';
-import Calendario from './utilidades/calendario';
+
+
+import Calendario2 from './utilidades/calendar2';
+
+
 import CrearGrafica from './utilidades/CrearGrafica';
 import './styles/ingresoHupity.css'
 
 
 import randomScalingFactor from '../lib/randomScalingFactor'
 import { Line } from 'react-chartjs-2';
+
+
+
+import SlackPrueba2 from './utilidades/Slack/SlackPrueba';
+import Drive2 from './utilidades/Slack/Drive2';
 
 
 class DashBoard extends React.Component {
@@ -191,16 +200,22 @@ class DashBoard extends React.Component {
                                 />
                                 <br />
                                 <div className="ui divider"></div>
-                                <Calendario className="tamaño-Calendario" />
+                                <Calendario2 className="tamaño-Calendario" />
 
 
                             </div>
                         </div>
 
                         <div className="column five wide">
-                            <div className="ui segment">
+                            <div className="ui segment Cambioo">
 
-                                <ListAdjuntos />
+                                <div className="ui embed " >
+                                <iframe className="yellow2" title="Ultimos archivos subidos" src={`https://drive.google.com/embeddedfolderview?id=${this.props.usuarioDetail.linkws}`}
+                                   
+                                   />
+
+                                </div>
+                            
 
                             </div>
                         </div>
@@ -223,6 +238,7 @@ class DashBoard extends React.Component {
 
                             </div>
                         </div>
+
 
 
 
@@ -250,6 +266,10 @@ class DashBoard extends React.Component {
 };
 
 const mapStateToProps = (state) => {
-    return { userRol: state.chatReducer.userRol };
+    return { 
+        usuarioDetail: state.chatReducer.usuarioDetail,
+        userRol: state.chatReducer.userRol };
 };
 export default connect(mapStateToProps, { createStream })(DashBoard);
+
+///<ListAdjuntos />

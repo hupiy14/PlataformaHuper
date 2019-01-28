@@ -12,6 +12,18 @@ import firebase from 'firebase';
 
 class Home extends React.Component {
 
+  state = { carpeta: null, updates: null }
+
+  //Relaciona la carpeta con el objetivo
+  RelacionarCarpetaObjetivo = (datos, idcarpeta) => {
+    var updates = {};
+    console.log(datos.datos);
+    const dt = { ...datos.datos, carpeta: idcarpeta };
+    console.log(dt);
+    updates[datos.key] = dt;
+    firebase.database().ref().update(updates);
+  }
+
   onSubmit = (activeChat, userID) => {
 
     if (!this.props.valorInput.trim()) { return; }
@@ -111,7 +123,7 @@ class Home extends React.Component {
       //   console.log(this.props.user.userChats[0]);
       const chatTrazo = this.props.user.userChats[0].thread
       const tipPrgutna = this.props.tipoPregunta;
-      const consultaInicial = this.props.consultaPregunta;
+    //  const consultaInicial = this.props.consultaPregunta;
       const consultaObj = this.props.consultax;
       // Object.keys(chatTrazo).map(function (key, index) {
 
@@ -122,34 +134,54 @@ class Home extends React.Component {
         let postData;
         let newPostKey2;
         // let numeroTareaObj = 0;
+        if (consultaObj) {
 
-        Object.keys(consultaObj).map(function (key2, index) {
+          //Edita el objetivo
+          Object.keys(consultaObj).map(function (key2, index) {
 
-          if (consultaObj[key2].concepto === chatTrazo[4].text) {
-            consultaObj[key2].numeroTareas = 1 + consultaObj[key2].numeroTareas
+            if (consultaObj[key2].concepto === chatTrazo[4].text) {
+              consultaObj[key2].numeroTareas = 1 + consultaObj[key2].numeroTareas
 
-            // dto = {...}
-            //    numeroTareaObj = consultaObj[key2].numeroTareas + 1;
-            postData = consultaObj[key2];
-            newPostKey2 = key2;
-          }
+              postData = consultaObj[key2];
+              newPostKey2 = key2;
+            }
 
-        });
+          });
+        }
 
-        console.log({ newPostKey2 });
+        //Crea el objetivo 
         if (!newPostKey2) {
+
+          ///Crea la carpeta en donde se subiran los archivos adjuntos al objetivo
+          //Crear espacio de trabajo para el objetio
+          window.gapi.client.drive.files.create({
+            name: chatTrazo[4].text,
+            mimeType: 'application/vnd.google-apps.folder'
+            //fields: 'id'
+          }).then((response) => {
+            //devuelve lo de la carpeta
+            console.log("Response", response);
+            this.RelacionarCarpetaObjetivo(this.state.updates, response.result.id);
+
+          },
+            function (err) { console.error("Execute error", err); });
+          //   this.props.crearCarpetas(xx);
+          newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`).push().key;
+
           postData = {
             numeroTareas: 1,
             concepto: chatTrazo[4].text,
             estado: 'validar',
-            prioridad: this.props.valorInput
-
+            carpeta: this.state.carpeta,
+            prioridad: 'normal',
           };
-          newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`).push().key;
         }
+
+
 
         var updates = {};
         updates[`Usuario-Objetivos/${this.props.userId}/${newPostKey2}`] = postData;
+        this.setState({ updates: { key: `Usuario-Objetivos/${this.props.userId}/${newPostKey2}`, datos: postData } });
         firebase.database().ref().update(updates);
 
         var newPostKey3 = firebase.database().ref().child('Usuario-Tareas').push().key;
@@ -157,8 +189,8 @@ class Home extends React.Component {
 
           concepto: chatTrazo[2].text,
           estado: 'activo',
-          prioridad: this.props.valorInput,
-          tiempoEstimado: chatTrazo[6].text
+          prioridad: postData.prioridad,
+          tiempoEstimado: this.props.valorInput
 
         });
 
@@ -269,7 +301,7 @@ class Home extends React.Component {
             const ccconsulta = cconsulta[key2];
             Object.keys(ccconsulta).map(function (key, index) {
               if (ccconsulta[key].estado === 'activo') {
-                
+
                 tarea = ccconsulta[key];
                 tarea.estado = 'desechadas';
                 updates[`Usuario-Tareas/${usuario}/${key2}/${key}`] = tarea;
@@ -445,6 +477,6 @@ const mapHomeStateToProps = (state) => ({
   user: state.user
 });
 export default connect(mapHomeStateToProps, {
-  submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas,
+  submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas, 
   consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats
 })(Home);

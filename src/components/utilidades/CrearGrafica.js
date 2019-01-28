@@ -4,8 +4,9 @@ import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
 
 import randomColor from '../../lib/randomColor';
-import randomScalingFactor from '../../lib/randomScalingFactor'
-
+import randomScalingFactor from '../../lib/randomScalingFactor';
+import { Responsive, Segment } from 'semantic-ui-react';
+const randonStyle = require('../../lib/randonStyle')
 
 class legenExample extends React.Component {
 
@@ -17,8 +18,8 @@ class legenExample extends React.Component {
                 {
                     label: this.props.label1,
                     data: this.props.datos1,
-                  //  fill: false,
-                   // borderDash: [5, 5]
+                    //  fill: false,
+                    // borderDash: [5, 5]
                 }, {
                     hidden: true,
                     label: this.props.label2,
@@ -68,20 +69,35 @@ class legenExample extends React.Component {
             }
         }
 
+        let style =  randonStyle();
+
         for (let dataset of data.datasets) {
-            dataset.borderColor = randomColor(0.4)
-            dataset.backgroundColor = randomColor(0.5)
-            dataset.pointBorderColor = randomColor(0.7)
-            dataset.pointBackgroundColor = randomColor(0.5)
+
+            dataset.borderColor = randomColor(0.4, style)
+            dataset.backgroundColor = randomColor(0.5, style)
+            dataset.pointBorderColor = randomColor(0.7, style)
+            dataset.pointBackgroundColor = randomColor(0.5, style)
             dataset.pointBorderWidth = 1
+            style = style + 1;
+            if (style === 4)
+                style = 1;
         }
 
 
         return (
-            <React.Fragment>
-                <h3 className="center">{this.props.TituloGrafica}</h3>
-                <Line data={data} options={options} />
-            </React.Fragment>
+            <Segment.Group>
+                <Responsive as={Segment}>
+
+                    <React.Fragment>
+                        <h3 className="center">{this.props.TituloGrafica}</h3>
+                        <div >
+                            <Line className="ui form" data={data} options={options} />
+                        </div>
+                    </React.Fragment>
+
+                </Responsive>
+            </Segment.Group>
+
         )
     };
 };

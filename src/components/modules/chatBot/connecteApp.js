@@ -27,8 +27,8 @@ class App extends React.Component {
         this.props.chatIdentifiador('6');
         if (this.props.mensajeEnt) {
             const chatID = '13';
-            this.props.tipoPreguntas('Notificaion');
-            /*
+            this.props.tipoPreguntas('Diaria');
+            
             const nameRef2 = firebase.database().ref().child('Mensaje-ChatBot').child('Saludo').child('1');
             nameRef2.on('value', (snapshot2) => {
 
@@ -38,7 +38,7 @@ class App extends React.Component {
                 this.props.submitMessage(result, chatID, '6');
 
 
-            });*/
+            });
 
             //Notificaciones
             /*
@@ -120,7 +120,7 @@ class App extends React.Component {
                       
             */
             //Pregunta Diaria (Listo)
-            /*
+            
              const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWGFo3s87SjzppL7hoF');
              starCountRef.on('value', (snapshot) => {
                  this.props.consultaChats(snapshot.val());
@@ -128,7 +128,7 @@ class App extends React.Component {
                  this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
                 // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
              });
-             */
+             
             // this.props.mensajeEntradas(false);
         }
     }

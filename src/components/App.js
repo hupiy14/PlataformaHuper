@@ -15,8 +15,10 @@ import dashboard from './DashBoard';
 import Hupps from './modules/Hupps';
 
 import './modules/chatBot/chatHupApp.css';
-import PruebaG from './utilidades/prueba';
 
+
+
+//PruebaG
 
 
 
@@ -43,8 +45,7 @@ class App extends React.Component {
                                 <Router history={history}>
                                     <div>
                                         <Header />
-                                        <PruebaG/>
-                                    
+
 
                                         <Switch>
                                             <Route path="/" exact component={hupityIngreso} />
@@ -65,11 +66,13 @@ class App extends React.Component {
                     </div>
                 </div>
                 <div className="pie-Pagina">
+
+                    
                     <MenuChat />
-                  
+
                 </div>
 
-            </div>
+            </div >
 
 
 

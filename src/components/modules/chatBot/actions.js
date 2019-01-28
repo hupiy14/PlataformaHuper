@@ -15,7 +15,14 @@ import {
     CONSULTA_PREG_CONTROL,
     BORRAR_CHAT,
     CONSULTA_DB,
-    TIPO_PREGUNTA
+    TIPO_PREGUNTA,
+    LISTA_FORMACIONES,
+    LISTA_OBJETIVOS,
+    PRIORIDAD_OBJ,
+    POPUP_DETALLE,
+    NUMERO_TAREASTERMINADAS,
+    USUARIO_DETAIL,
+   
     
 } from './types';
 
@@ -24,6 +31,50 @@ export const consultaPreguntaControls = (consultaPreguntaControl) => {
   return {
       type: CONSULTA_PREG_CONTROL,
       payload: consultaPreguntaControl
+  };
+};
+export const usuarioDetails = (usuarioDetail) => {
+
+  return {
+      type: USUARIO_DETAIL,
+      payload: usuarioDetail
+  };
+};
+export const numeroTareasTs = (numeroTareasT) => {
+
+  return {
+      type: NUMERO_TAREASTERMINADAS,
+      payload: numeroTareasT
+  };
+};
+
+
+export const popupDetalles = (popupDetalle) => {
+
+  return {
+      type: POPUP_DETALLE,
+      payload: popupDetalle
+  };
+};
+export const prioridadObjs = (prioridadObj) => {
+
+  return {
+      type: PRIORIDAD_OBJ,
+      payload: prioridadObj
+  };
+};
+export const listaObjetivos = (listaObjetivo) => {
+
+  return {
+      type: LISTA_OBJETIVOS,
+      payload: listaObjetivo
+  };
+};
+export const listaFormaciones = (listaFormacion) => {
+
+  return {
+      type: LISTA_FORMACIONES,
+      payload: listaFormacion
   };
 };
 export const tipoPreguntas = (tipoPreguntas) => {

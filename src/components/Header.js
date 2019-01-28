@@ -13,7 +13,7 @@ class Header extends React.Component {
                 </Link>
                 <div className="right menu">
                     <Link to="/hupps" className="item">
-                        Hupps
+                       <h3>Hupps</h3> 
                 </Link>
                     <GoogleAuth />
                 </div>

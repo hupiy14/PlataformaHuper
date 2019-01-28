@@ -12,7 +12,13 @@ import {
     MENSAJE_ENTRADA,
     CONSULTA_PREG_CONTROL,
     CONSULTA_DB,
-    TIPO_PREGUNTA
+    TIPO_PREGUNTA,
+    LISTA_FORMACIONES,
+    LISTA_OBJETIVOS,
+    PRIORIDAD_OBJ,
+    POPUP_DETALLE,
+    NUMERO_TAREASTERMINADAS,
+    USUARIO_DETAIL,
 
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -31,7 +37,14 @@ const INITIAL_STATE = {
     mensajeEnt: true,
     consultaPreguntaControl: 1,
     consultax: null,
-    tipoPregunta: null
+    tipoPregunta: null,
+    listaFormacion: null,
+    listaObjetivo: null,
+    prioridadObj: 0,
+    popupDetalle: null,
+    numeroTareasTerminadas: 0,
+    usuarioDetail: null,
+
 };
 
 
@@ -67,6 +80,18 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, consultax: action.payload };
         case TIPO_PREGUNTA:
             return { ...state, tipoPregunta: action.payload };
+        case LISTA_FORMACIONES:
+            return { ...state, listaFormacion: action.payload };
+        case LISTA_OBJETIVOS:
+            return { ...state, listaObjetivo: action.payload };
+        case PRIORIDAD_OBJ:
+            return { ...state, prioridadObj: action.payload };
+        case POPUP_DETALLE:
+            return { ...state, popupDetalle: action.payload };
+        case NUMERO_TAREASTERMINADAS:
+            return { ...state, numeroTareasTerminadas: action.payload };
+        case USUARIO_DETAIL:
+            return { ...state, usuarioDetail: action.payload };
 
         default:
             return state;
