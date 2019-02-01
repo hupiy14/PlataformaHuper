@@ -21,10 +21,27 @@ import {
     PRIORIDAD_OBJ,
     POPUP_DETALLE,
     NUMERO_TAREASTERMINADAS,
-    USUARIO_DETAIL,
+    CONSULTA_MENSAJES,
+    CONSULTA_CANALES,
+   
    
     
 } from './types';
+
+export const consultaCanales = (consultaCanal) => {
+
+  return {
+      type: CONSULTA_CANALES,
+      payload: consultaCanal
+  };
+};
+export const consultaMensajes = (consultaMensaje) => {
+
+  return {
+      type: CONSULTA_MENSAJES,
+      payload: consultaMensaje
+  };
+};
 
 export const consultaPreguntaControls = (consultaPreguntaControl) => {
 
@@ -33,13 +50,7 @@ export const consultaPreguntaControls = (consultaPreguntaControl) => {
       payload: consultaPreguntaControl
   };
 };
-export const usuarioDetails = (usuarioDetail) => {
 
-  return {
-      type: USUARIO_DETAIL,
-      payload: usuarioDetail
-  };
-};
 export const numeroTareasTs = (numeroTareasT) => {
 
   return {
@@ -142,7 +153,6 @@ export const numeroPreguntas = (numeroPregunta) => {
 
 
 export const setActiveChat = (contactID) => async dispatch => {
-  console.log('active chat');
   dispatch({ 
     type: SET_ACTIVE_CHAT,
     participants: contactID} );
@@ -158,23 +168,18 @@ export const setActiveChat = (contactID) => async dispatch => {
    });
   };
   
-  export const startChat = (participants) => async dispatch => {
-    const id = "" + new Date().getTime();
-    console.log('mira chat');
-    console.log(participants);
-
+  export const startChat = (participants, chatId) => async dispatch => {
+  //  const id = "Hup" + new Date().getTime();
 
     dispatch({
       type: START_CHAT,
       participants: participants,
-      chatID: id
+      chatID: chatId
     })
   };
   
   export const endChat = (participants) => async dispatch => {
-    console.log('mira termino');
-    console.log(participants);
-    dispatch({
+   dispatch({
     type: END_CHAT,
     participants: participants});
   };

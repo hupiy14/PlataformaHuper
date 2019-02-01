@@ -32,6 +32,7 @@ class ListEjemplo extends React.Component {
 
     renderConstruirObj(iconos, the) {
 
+        console.log(the.props.listaFormacion);
         if (the.props.listaFormacion) {
 
             const cconsulta = the.props.listaFormacion

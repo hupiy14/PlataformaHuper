@@ -48,6 +48,8 @@
 
 
 
+
+
 .loaderOBJ{
   display: flex;
   height: 19em;
@@ -119,10 +121,22 @@
   left: 20%;
 }
 
+
+.ui.secondary.pointing.menu {
+  margin-left: 0;
+  margin-right: 0;
+  border-bottom: 2px solid rgb(240, 179, 87, 0.25);
+}
+
 .tamanoFormaciones{
   position: relative;
   overflow: auto;
   height: 6em;
+}
+.maximo-listE {
+  position: relative;
+  overflow: auto;
+  height: 33em;
 }
 .maximo-list {
   position: relative;

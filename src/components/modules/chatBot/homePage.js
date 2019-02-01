@@ -8,11 +8,134 @@ import BoxDianmico from './boxDinamico';
 import { IconGroup } from 'semantic-ui-react';
 import firebase from 'firebase';
 
+import { Emoji } from 'emoji-mart';
+import randomColor from '../../../lib/randomColor'
+
+
+const timeoutLength = 2500;
 
 
 class Home extends React.Component {
 
-  state = { carpeta: null, updates: null }
+  state = { carpeta: null, updates: null, color: [], client2: null }
+
+
+
+  componentDidMount() {
+    const { SlackOAuthClient } = require('messaging-api-slack')
+    this.setState({
+      client2: SlackOAuthClient.connect(
+        // 'xoxp-482555533539-486285033681-535707706853-443780a32ce31f5f3c8b9b6684e2ad96'
+        'xoxb-482555533539-532878166725-SImPnsMh0QvM2osXpUnMy7Wa'
+      )
+    });
+
+  }
+
+
+
+  //Envio a slack el mensaje 
+  renderEnvioSlack(activeChat, userID) {
+
+    this.props.submitMessage(
+      this.props.valorInput,
+      activeChat.chatID,
+      userID
+    );
+
+
+    if (activeChat.participants !== '6') {
+      let canal = null;
+      console.log(activeChat);
+      if (activeChat.participants === '2') {
+        canal = this.props.consultaCanal.gestor;
+      }
+      else if (activeChat.participants === '3') {
+        canal = this.props.consultaCanal.equipo;
+      }
+
+      this.state.client2.postMessage(
+        canal,
+        {
+          text: this.props.valorInput ,
+          attachments: [
+            {
+              text: this.props.nombreUser,
+              //   fallback: 'You are unable to choose a game',
+              callback_id: 'wopr_game',
+              color: '#FFA303',
+              attachment_type: 'default',
+              /* actions: [
+                 {
+                   name: 'game',
+                   text: 'Chess',
+                   type: 'button',
+                   value: 'chess',
+                 }
+               ]*/
+            },
+          ]
+        }
+
+      );
+    }
+    this.props.valorInputs(' ');
+  }
+
+
+  /// Identificador de usuario y color 
+  renderUsuario(contacts, message) {
+    if (message.from !== '1' && message.from !== '2' && message.from !== '4' && message.from !== '5' && message.from !== '6') {
+      //    return <h3 className='red'> H</h3>; 
+      let varc;
+      let colorU;
+      let col;
+
+      if (this.state.color.find((colores) => (colores.user === message.from))) {
+        colorU = this.state.color.find((colores) => (colores.user === message.from));
+
+      }
+      else {
+
+        const colorx = this.state.color;
+        colorU = { user: message.from, color: randomColor(0.7, 1) };
+        colorx.push(colorU);
+        this.setState({ color: colorx });
+
+      }
+      varc = colorU.user.slice(0, 1);
+      col = ` ${colorU.color}`;
+      return <h3 style={{ color: col }}>{varc}</h3>;
+    }
+    else
+      return contacts.filter((c) => (c.userID === message.from)).map(c => c.userName.slice(0, 1));
+  }
+
+
+  ///Decodificar mensaje y poner los emojis
+  renderTextoEmoji(texto) {
+    let x = 0;
+    let y = 0;
+    const opciones = texto.split(':').map((consulta) => {
+      //  console.log(consulta);
+      y++;
+      if (consulta === ' ')
+        return consulta;
+      x++;
+
+      if (x === 1) {
+        return consulta;
+      }
+      else {
+        x = 0;
+        return (<Emoji key={y} emoji={{ id: consulta, skin: 3 }} size={16} />);
+      }
+    });
+    return opciones;
+  }
+
+
+
 
   //Relaciona la carpeta con el objetivo
   RelacionarCarpetaObjetivo = (datos, idcarpeta) => {
@@ -123,7 +246,7 @@ class Home extends React.Component {
       //   console.log(this.props.user.userChats[0]);
       const chatTrazo = this.props.user.userChats[0].thread
       const tipPrgutna = this.props.tipoPregunta;
-    //  const consultaInicial = this.props.consultaPregunta;
+      //  const consultaInicial = this.props.consultaPregunta;
       const consultaObj = this.props.consultax;
       // Object.keys(chatTrazo).map(function (key, index) {
 
@@ -376,6 +499,7 @@ class Home extends React.Component {
       ? "You're not chatting-ch with anyone!"
       : activeName.userName;
 
+
     // chat thread
     let thread = userChats.filter((c) => (
       c.chatID === activeChat.chatID
@@ -402,9 +526,11 @@ class Home extends React.Component {
           <ul>
             {contacts.filter((c) => (
               chatters.indexOf(c.userID) !== -1)).map((c) => (
-                <li onClick={() => (
+                <li onClick={() => {
                   this.props.setActiveChat(c.userID)
-                )}
+
+
+                }}
                   key={c.userID}
                 >
                   <div key="123" className={activeChat.participants === c.userID
@@ -425,9 +551,10 @@ class Home extends React.Component {
                 ? "user-message"
                 : "contact-message"}
             >
-              <div className="thread-thumbnail-ch">
+              <div className="thread-thumbnail-ch  background-color: black;">
                 <span>
-                  {contacts.filter((c) => (c.userID === message.from)).map(c => c.userName.slice(0, 1))}
+
+                  {this.renderUsuario(contacts, message)}
                 </span>
               </div>
               <li className={i > 0
@@ -435,7 +562,19 @@ class Home extends React.Component {
                   ? "group"
                   : ""
                 : ""}
-              > {message.text}
+              > {this.renderTextoEmoji(message.text)}
+
+
+
+
+
+
+
+
+
+
+
+
               </li>
             </div>
           ))}
@@ -444,7 +583,10 @@ class Home extends React.Component {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            this.onSubmit(activeChat, userID);
+
+            if (activeChat.chatID === '13')//solo para el bot o interno
+              this.onSubmit(activeChat, userID);
+            else this.renderEnvioSlack(activeChat, userID);
           }}
 
           className="ui form">
@@ -467,6 +609,8 @@ const mapHomeStateToProps = (state) => ({
 
   userId: state.auth.userId,
   consultax: state.chatReducer.consultax,
+  nombreUser: state.chatReducer.nombreUser,
+  consultaCanal: state.chatReducer.consultaCanal,
   mensajeEnt: state.chatReducer.mensajeEnt,
   tipoPregunta: state.chatReducer.tipoPregunta,
   consultaPreguntaControl: state.chatReducer.consultaPreguntaControl,
@@ -474,9 +618,9 @@ const mapHomeStateToProps = (state) => ({
   consultaPregunta: state.chatReducer.consultaPregunta,
   idChatUser: state.chatReducer.idChatUser,
   numeroPregunta: state.chatReducer.numeroPregunta,
-  user: state.user
+  user: state.user,
 });
 export default connect(mapHomeStateToProps, {
-  submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas, 
+  submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas,
   consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats
 })(Home);

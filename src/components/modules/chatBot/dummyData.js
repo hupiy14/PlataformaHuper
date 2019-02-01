@@ -5,9 +5,9 @@ export const contacts = [
   { userID: "2", userName: "Gestor" },
   { userID: "3", userName: "Equipo" },
   { userID: "4", userName: "Reporting" },
-  { userID: "5", userName: "Feedback" },
+  { userID: "5", userName: "Notifiaciones" },
   { userID: "6", userName: "ChatBot" },
-  { userID: "7", userName: "Informal" }
+  //{ userID: "7", userName: "Informal" }
   /* {userID: "8", userName: "Ted"},
    {userID: "9", userName: "Marshall"},
    {userID: "10", userName: "Robin"},
@@ -31,7 +31,7 @@ export const defaultChat1 = {
 
 
   //return {
-    chatID: "13",
+   chatID: "13",
    thread: [],
    participants: "6"
   //};
@@ -53,19 +53,25 @@ export const defaultChat1 = {
 }
 
 export const defaultChat2 = {
-  chatID: "14",
+/*  chatID: "14",
   thread: [{
     text: "dude are you ingoring me?",
     from: "4"
   }],
   participants: "4"
+
+
+  */
+ chatID: "8",
+  thread: [],
+  participants: "2"
 }
 
 export const defaultUser = {
 
   userID: "1",
   activeChat: defaultChat1,
-  userChats: [defaultChat1],
+  userChats: [defaultChat1, defaultChat2],
   userName: "Gunther",
   location: "New York City",
   thumbnail: "https://img.buzzfeed.com/buzzfeed-static/static/2014-09/16/0/enhanced/webdr10/grid-cell-24140-1410840984-5.jpg",

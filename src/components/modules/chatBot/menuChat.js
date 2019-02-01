@@ -31,25 +31,30 @@ class Menu extends React.Component {
                         <i className="home icon" onClick={this.onHome} />
 
                     </li>
-                    <li>
-                        <button>
-                            <i className="plus icon"
-                                aria-hidden="true"
-                            ></i>
-                        </button>
-                    </li>
+                   
                     <li>
                         <i className="eye icon" onClick={this.onEye} />
                     </li>
-                    <li>
-                        <i className="sliders icon" onClick={this.onSlider} />
-                    </li>
+                   
                 </ul>
             </div>
         );
     }
 };
 
+/*
+
+ <li>
+                        <button>
+                            <i className="plus icon"
+                                aria-hidden="true"
+                            ></i>
+                        </button>
+                    </li>
+<li>
+<i className="sliders icon" onClick={this.onSlider} />
+</li>
+*/
 const mapStateToProps = (state) => {
     return { isChatUbi: state.chatReducer.isChatUbi };
 };

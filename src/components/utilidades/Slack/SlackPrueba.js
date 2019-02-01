@@ -1,5 +1,7 @@
 import SlackOAuthClient from 'messaging-api-slack';
 import React from 'react';
+import { connect } from 'react-redux';
+import { consultaMensajes }  from '../../modules/chatBot/actions';
 
 
 
@@ -14,20 +16,26 @@ class Slack2 extends React.Component {
         this.setState({
 
             client: SlackOAuthClient.connect(
-               'xoxp-482555533539-486285033681-534095674742-b669a7c9baf19f3fec2357cfdfdfa640'
-//                'xoxb-482555533539-532878166725-PMPWlCVdwsJdG81lOk91PY4g'
+              // 'xoxp-482555533539-486285033681-535707706853-443780a32ce31f5f3c8b9b6684e2ad96'
+                'xoxb-482555533539-532878166725-SImPnsMh0QvM2osXpUnMy7Wa'
             )
         });
 
     }
     render() {
+
+        console.log('llamars');
         if (this.state.client) {
         //    console.log('Crear');
             //obtiene el historico y envia el mensaje
-
+/*
             const cambio = this.state.client.callMethod('channels.history', { channel: 'CE61KKZCZ', count: 10}).then(res => {
-                console.log(res.messages);
+               
+               this.props.consultaMensajes(res.messages);
+                
             });
+
+            */
            // console.log(PromiseValue);
            // cambio.on('PromiseValue', (snapshot2) => {
             //   console.log(snapshot2.val());
@@ -35,10 +43,10 @@ class Slack2 extends React.Component {
             
             //console.log('Crear2')
        //     this.state.client.postMessage('CE61KKZCZ', { text: 'Hello 15!' });
-         /*   this.state.client.postEphemeral('CE61KKZCZ', 'UEA8D0ZL1', { text: 'Hello 2!' });
+         //   this.state.client.postEphemeral('CE61KKZCZ', 'UEA8D0ZL1', { text: 'Hello 2!' });
             this.state.client.postMessage(
                 'CE61KKZCZ',
-                { text: 'Hello!',
+                { text: ':sonrisa_burlona:',
                     attachments: [
                         {
                             text: 'Choose a game to play',
@@ -59,7 +67,7 @@ class Slack2 extends React.Component {
                 }
                
             );
-            */
+            
 
 
 
@@ -85,9 +93,14 @@ class Slack2 extends React.Component {
         }
       
         
-        return (
-            <div>Cambio</div>
-        );
+        return null;
     }
 }
-export default Slack2;
+
+
+const mapAppStateToProps = (state) => (
+    {
+        consultaMensaje: state.chatReducer.consultaMensaje,
+        
+    });
+export default connect(mapAppStateToProps, {consultaMensajes}) (Slack2);

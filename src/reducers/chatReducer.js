@@ -19,6 +19,8 @@ import {
     POPUP_DETALLE,
     NUMERO_TAREASTERMINADAS,
     USUARIO_DETAIL,
+    CONSULTA_MENSAJES,
+    CONSULTA_CANALES,
 
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -44,6 +46,8 @@ const INITIAL_STATE = {
     popupDetalle: null,
     numeroTareasTerminadas: 0,
     usuarioDetail: null,
+    consultaMensaje: null,
+    consultaCanal: null,
 
 };
 
@@ -92,7 +96,10 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, numeroTareasTerminadas: action.payload };
         case USUARIO_DETAIL:
             return { ...state, usuarioDetail: action.payload };
-
+        case CONSULTA_MENSAJES:
+            return { ...state, consultaMensaje: action.payload };
+        case CONSULTA_CANALES:
+            return { ...state, consultaCanal: action.payload };
         default:
             return state;
 
