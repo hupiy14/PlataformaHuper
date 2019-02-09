@@ -22,7 +22,7 @@ import './styles/ingresoHupity.css'
 import randomScalingFactor from '../lib/randomScalingFactor'
 import { Line } from 'react-chartjs-2';
 
-
+import ListaObjetivosE from '../components/gestorModules/listaObjetivosEquipo';
 
 import ListaPersonasEquipo from './utilidades/listaPersonasEquipo';
 
@@ -31,8 +31,8 @@ import ListaPersonasEquipo from './utilidades/listaPersonasEquipo';
 import { Menu, Segment } from 'semantic-ui-react';
 
 
-import GraficaG1 from './gestorModules/CrearGraficaGestor';
-import GraficaG2 from './gestorModules/CreargraficaHistorico';
+import DashGestor from './gestorModules/dashGestor';
+import Grafica from './PruebaP';
 
 
 const labelsDias = [
@@ -136,127 +136,73 @@ const datosG333 = [
 
 
 class DashBoard extends React.Component {
-    state = { activeItem: 'semana', grafica: <GraficaG1 /> }
+
+    state = {
+        activeItem: 'semana',
+        grafica: <CrearGrafica labelsX={labelsDias}
+            label1={"Planeación de trabajo"}
+            label2={"Correccón de trabajo"}
+            label3={"Trabajo Realizado"}
+            titleGrafica={"Trabajo (Tareas) vs Dias"}
+            datos1={datosG1}
+            datos2={datosG11}
+            datos3={datosG111}
+            numeroGrafica={'2'}
+            maxLen={'150'}
+            TituloGrafica={"Avance Semanal"}
+
+        />
+    }
+    renderGestor() {
+
+
+        // console.log(this.props.usuarioDetail);
+        return (
+            <DashGestor />
+
+        );
+    }
 
     handleItemClick = (e, { name }) => {
         this.setState({ activeItem: name })
         if (name === 'historico') {
 
-            const graficaG = <GraficaG2 />;
+            const graficaG =
+                <CrearGrafica labelsX={labelsMonths}
+                    label1={"Planeación de trabajo"}
+                    label2={"Correccón de trabajo"}
+                    label3={"Trabajo Realizado"}
+                    titleGrafica={"Objetivo vs Meses"}
+                    datos1={datosG2}
+                    datos2={datosG22}
+                    datos3={datosG222}
+                    maxLen={'150'}
+                    TituloGrafica={"Avance de tu trabajo"}
+
+                />;
             this.setState({ grafica: graficaG })
         }
         else if (name === 'semana') {
-            const graficaG = <GraficaG1 />;
+            const graficaG = <CrearGrafica labelsX={labelsDias}
+                label1={"Planeación de trabajo"}
+                label2={"Correccón de trabajo"}
+                label3={"Trabajo Realizado"}
+                titleGrafica={"Trabajo (Tareas) vs Dias"}
+                datos1={datosG1}
+                datos2={datosG11}
+                datos3={datosG111}
+                numeroGrafica={'2'}
+                maxLen={'150'}
+                TituloGrafica={"Avance Semanal"}
+
+            />;
             this.setState({ grafica: graficaG })
 
         }
+
     }
 
-
-
-    renderGestor() {
-
-        const { activeItem } = this.state
-        // console.log(this.props.usuarioDetail);
-        return (
-
-            <div>
-                <div className="ui form">
-                    <div className="two column stackable ui grid">
-                        <div className="column eleven wide">
-                            <div className="ui segment ">
-
-
-                                <Menu pointing secondary>
-                                    <Menu.Item name='semana' active={activeItem === 'home'} onClick={this.handleItemClick} />
-                                    <Menu.Item
-                                        name='historico'
-                                        active={activeItem === 'messages'}
-                                        onClick={this.handleItemClick}
-                                    /> 
-                                
-                                </Menu>
-
-                                <Segment attached='bottom'>
-                                    {this.state.grafica}
-                                </Segment>
-
-                            </div>
-                        </div>
-
-                        <div className="column five wide loaderTEAM">
-                            <div className="ui segment loaderTEAM">
-
-
-
-                                <ListaPersonasEquipo
-                                    titulo={'Tu equipo'}
-                                    empresa={this.props.usuarioDetail.usuario.empresa}
-                                    equipo={this.props.usuarioDetail.usuario.equipo}
-                                    icono={'user outline'}
-                                />
-
-                            </div>
-                        </div>
-
-
-
-
-                        <div className="column six wide">
-                            <div className="ui segment">
-
-                                <ListImportan
-                                    titulo={'Listado de objetivos'}
-                                    title={'Obejtivo de la Semana 1'}
-                                    title2={'Obejtivo de la Semana 2'}
-                                    title3={'Obejtivo de la Semana 3'}
-                                    description={'Diseño de la plataforma'}
-                                    description2={'Diseño de la plataforma 2'}
-                                    description3={'Diseño de la plataforma 3'}
-                                    icono={'copy outline'}
-                                />
-
-                            </div>
-                        </div>
-
-                        <div className="column five wide">
-                            <div className="ui segment Cambioo">
-
-                                <div className="ui embed " >
-                                    <iframe className="yellow2" title="Ultimos archivos subidos" src={`https://drive.google.com/embeddedfolderview?id=${this.props.usuarioDetail.linkws}`}
-
-                                    />
-
-                                </div>
-
-
-                            </div>
-                        </div>
-
-                        <div className="column five wide">
-                            <div className="ui segment">
-
-                                <ListEjemplo
-                                    titulo={'Listado de formaciones'}
-                                    title={'Formacion de Timebloking'}
-                                    title2={'Formacion de Importante-Urgente'}
-                                    description={'Mide cada actividad en un espacio dado'}
-                                    description2={'No todas las actividades son ahora'}
-                                    icono={'leanpub'}
-
-                                />
-
-                            </div>
-                        </div>
-
-
-
-
-                    </div>
-                </div >
-            </div >
-        );
-    }
+   
 
     renderTeletrabajador() {
 
@@ -269,33 +215,38 @@ class DashBoard extends React.Component {
                             <div className="ui segment ">
 
 
-                                <CrearGrafica labelsX={labelsDias}
-                                    label1={"Planeación de trabajo"}
-                                    label2={"Correccón de trabajo"}
-                                    label3={"Trabajo Realizado"}
-                                    titleGrafica={"Trabajo (Tareas) vs Dias"}
-                                    datos1={datosG1}
-                                    datos2={datosG11}
-                                    datos3={datosG111}
-                                    numeroGrafica={'2'}
-                                    maxLen={'150'}
-                                    TituloGrafica={"Avance Semanal"}
+                                <Menu pointing secondary>
+                                    <Menu.Item name='semana' active={this.state.activeItem === 'semana'} onClick={this.handleItemClick} />
+                                    <Menu.Item
+                                        name='historico'
+                                        active={this.state.activeItem === 'historico'}
+                                        onClick={this.handleItemClick}
+                                    />
 
-                                />
+
+                                </Menu>
+
+                                <Segment attached='bottom'>
+                                    {this.state.grafica}
+                                </Segment>
+
+
+
+
                                 <br />
                                 <div className="ui divider"></div>
 
 
                                 <CrearGrafica labelsX={labelsMonths}
-                                    label1={"Talento"}
+                                    label1={"Motivacion"}
                                     label2={"Impacto"}
-                                    label3={"Compromiso"}
-                                    titleGrafica={"TIC vs Progreso"}
+                                    label3={"Talento"}
+                                    titleGrafica={"MIT vs Progreso"}
                                     datos1={datosG3}
                                     datos2={datosG33}
                                     datos3={datosG333}
                                     maxLen={'110'}
-                                    TituloGrafica={"Talento, Impacto, Compromiso (TIC)"}
+                                    TituloGrafica={"Motivacion, Impacto, Talento (MIT)"}
 
                                 />
 
@@ -332,38 +283,25 @@ class DashBoard extends React.Component {
                             </div>
                         </div>
 
-                        <div className="column five wide">
+                        <div className="column sixteen wide">
                             <div className="ui segment Cambioo">
-
+                                <h3>Espacio de trabajo</h3>
+                               
                                 <div className="ui embed " >
-                                    <iframe className="yellow2" title="Ultimos archivos subidos" src={`https://drive.google.com/embeddedfolderview?id=${this.props.usuarioDetail.linkws}`}
+
+
+                                    <iframe className="yellow4" title="Ultimos archivos subidos" src={`https://drive.google.com/embeddedfolderview?id=${this.props.usuarioDetail.linkws}#grid`}
 
                                     />
+
+
 
                                 </div>
 
 
                             </div>
                         </div>
-                        <div className="column eleven wide">
-                            <div className="ui segment">
 
-
-                                <CrearGrafica labelsX={labelsMonths}
-                                    label1={"Planeación de trabajo"}
-                                    label2={"Correccón de trabajo"}
-                                    label3={"Trabajo Realizado"}
-                                    titleGrafica={"Objetivo vs Meses"}
-                                    datos1={datosG2}
-                                    datos2={datosG22}
-                                    datos3={datosG222}
-                                    maxLen={'150'}
-                                    TituloGrafica={"Avance de tu trabajo"}
-
-                                />
-
-                            </div>
-                        </div>
 
 
 

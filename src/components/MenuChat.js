@@ -23,7 +23,7 @@ class MenuChat extends React.Component {
     onChat = () => {
         if (this.props.isChat) {
             this.props.chatOff();
-          
+
 
         } else {
             this.props.chatOn();
@@ -33,10 +33,18 @@ class MenuChat extends React.Component {
 
     renderMenu() {
         if (this.props.isSignedIn) {
+
+            ///configuracion responsive
+            let ubicacionChat = "foot-chat";
+            if (window.screen.width < 500) {
+
+                ubicacionChat = "foot-chatX1";
+            }
+
             return (<div>
-                <div className="foot-chat" >
-                    <button onClick={this.onChat} className="massive ui yellow circular comment alternate outline icon button">
-                        <i className="comment alternate outline icon"></i>
+                <div className={ubicacionChat} >
+                    <button onClick={this.onChat} className="massive ui yellow large circular comment alternate outline icon button">
+                        <i className="comment alternate outline large icon"></i>
                     </button>
 
                 </div>
@@ -67,7 +75,7 @@ const mapStateToProps = (state) => {
     return {
         isSignedIn: state.auth.isSignedIn,
         isChat: state.chatReducer.isChat,
-      
+
     };
 };
 

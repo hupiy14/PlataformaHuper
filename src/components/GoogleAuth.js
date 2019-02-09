@@ -1,9 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails } from '../actions';
+import { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails, chatOn, chatOff  } from '../actions';
 import history from '../history';
 import '../components/styles/ingresoHupity.css';
 import firebase from 'firebase';
+const timeoutLength = 5000;
 
 
 
@@ -29,11 +30,17 @@ class GoogleAuth extends React.Component {
                 //   console.log(this.auth.currentUser.get().getId());
             });
         });
-
-
-
-
     }
+
+
+    handleOpen = () => {
+        this.timeout = setTimeout(() => {
+            this.props.chatOn();
+        }, timeoutLength)
+    }
+
+   
+
 
     onAuthChange = isSignedIn => {
         if (this.auth.currentUser.get().w3)
@@ -52,8 +59,8 @@ class GoogleAuth extends React.Component {
                 if (snapshot.val()) {
                     const Usuario = snapshot.val();
 
-                    console.log(Usuario.empresa);
-                    console.log(Usuario.equipo);
+                  //  console.log(Usuario.empresa);
+                   // console.log(Usuario.equipo);
                     console.log(this.auth.currentUser.get().getId());
                     const nameRef3 = firebase.database().ref().child(`Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${this.auth.currentUser.get().getId()}`)
                     nameRef3.on('value', (snapshot3) => {
@@ -65,7 +72,13 @@ class GoogleAuth extends React.Component {
                     const nameRef2 = firebase.database().ref().child('Usuario-Rol').child(this.auth.currentUser.get().getId());
                     nameRef2.on('value', (snapshot2) => {
                         //      console.log(snapshot2.val());
-                        this.props.userRolIn(snapshot2.val().Rol);
+                       
+                        this.props.userRolIn(snapshot2.val().Rol);         
+                        if(snapshot2.val().Rol === '3'){
+                            this.handleOpen();
+                        }
+
+
                     });
                 }
                 else {
@@ -139,4 +152,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails })(GoogleAuth);
+export default connect(mapStateToProps, { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails, chatOn, chatOff })(GoogleAuth);

@@ -18,7 +18,7 @@ import firebase from 'firebase';
 
 class boxDinaminco extends React.Component {
 
-    state = { term: '', flag: false, consultaY: true };
+    state = { term: '', flag: false, consultaY: true, formmessage: 'message-input-ch' };
 
     renderConstruir() {
         let x = 0;
@@ -72,6 +72,8 @@ class boxDinaminco extends React.Component {
 
 
     renderOpcionesDB() {
+
+
         if (!this.props.consultax && this.state.consultaY) {
 
             const starCountRef = firebase.database().ref().child(`${this.props.consultaPregunta[this.props.consultaPreguntaControl].opciones}/${this.props.userId}`);
@@ -90,12 +92,49 @@ class boxDinaminco extends React.Component {
 
 
     renderOpcionesDB2() {
-        if (this.props.consultax && this.state.consultaY) {
+
+
+        if (this.props.equipoConsulta) {
+            let x = 0;
+
+            const cconsulta = this.props.equipoConsulta;
+            let cconsulta2 ;
+            const usuario = this.props.userId;
+
+            const opciones2 = Object.keys(cconsulta).map(function (key2, index) {
+                if (x === 0) {
+                    x = x + 1;
+                    const cconsulta2 = cconsulta[key2];
+              //      console.log(cconsulta2);
+                    const opciones = Object.keys(cconsulta2).map(function (key, index) {
+                        if (usuario === key)
+                            return;
+
+                        return (
+                            <option value={cconsulta2[key].usuario} key={key} />
+                        );
+                    });
+                    return opciones;
+                }
+
+
+            });
+
+            return (
+                <datalist id='opciones'>
+                    {opciones2}
+                </datalist>
+            );
+
+        }
+
+
+        else if (this.props.consultax && this.state.consultaY) {
             //  console.log(this.props.consultax);
             const cconsulta = this.props.consultax;
-            
-            const input = this.props.user.userChats[0].thread[2]? this.props.user.userChats[0].thread[2].text: '';
-           
+
+            const input = this.props.user.userChats[0].thread[2] ? this.props.user.userChats[0].thread[2].text : '';
+
             const opciones = Object.keys(cconsulta).map(function (key, index) {
                 //   console.log(cconsulta[key]);
                 if (!cconsulta[key].estado) {
@@ -154,14 +193,14 @@ class boxDinaminco extends React.Component {
     renderControl() {
 
 
-       // console.log(this.props.consultaPregunta);
+        // console.log(this.props.consultaPregunta);
         if (!this.props.consultaPregunta) {
             //    console.log('1');
 
             return (<input
                 value={this.props.valorInput === ' ' ? '' : this.props.term}
                 onChange={this.onInputChange}
-                className="message-input-ch"
+                className={this.state.formmessage}
                 placeholder="message"
                 rows={10}
                 cols={30}
@@ -171,7 +210,7 @@ class boxDinaminco extends React.Component {
 
         else if (this.props.consultaPregunta.length - 1 < this.props.consultaPreguntaControl && this.props.valorInput === ' ') {
 
-          //  console.log('entro');
+            //  console.log('entro');
             //console.log(this.props.user.userChats[0].thread);
             if (this.state.flag === false)
                 this.setState({ flag: true });
@@ -185,7 +224,7 @@ class boxDinaminco extends React.Component {
             return (<input
                 value={this.props.valorInput === ' ' ? '' : this.props.term}
                 onChange={this.onInputChange}
-                className="message-input-ch"
+                className={this.state.formmessage}
                 placeholder="message"
                 rows={10}
                 cols={30}
@@ -201,7 +240,7 @@ class boxDinaminco extends React.Component {
                     onChange={this.onInputChange}
                     pattern={texto}
                     list='opciones' placeholder='Escoge una Opcion...'
-                    className="message-input-ch"
+                    className={this.state.formmessage}
                     rows={10}
                     cols={30}
 
@@ -222,7 +261,7 @@ class boxDinaminco extends React.Component {
                     onChange={this.onInputChange}
                     //   pattern={`'${this.renderOpcionesDB3()}'`}
                     list='opciones' placeholder='Escoge una Opcion...'
-                    className="message-input-ch"
+                    className={this.state.formmessage}
                     rows={10}
                     cols={30}
 
@@ -241,7 +280,7 @@ class boxDinaminco extends React.Component {
                     value={this.props.valorInput === ' ' ? '' : this.props.term}
                     onChange={this.onInputChange}
                     list='opciones' placeholder='Escoge una Opcion...'
-                    className="message-input-ch"
+                    className={this.state.formmessage}
                     rows={10}
                     cols={30}
 
@@ -270,7 +309,7 @@ class boxDinaminco extends React.Component {
                     onChange={this.onInputChange}
                     pattern={texto}
                     list='opciones' placeholder='Escoge una Opcion...'
-                    className="message-input-ch"
+                    className={this.state.formmessage}
                     rows={10}
                     cols={30}
 
@@ -322,6 +361,15 @@ class boxDinaminco extends React.Component {
         }
     }
 
+    componentDidMount(){
+        
+        if (window.screen.width < 500) {
+
+            this.setState({formmessage: 'message-input-chX1'})
+           
+        }
+
+    }
 
     render() {
 
@@ -343,6 +391,7 @@ class boxDinaminco extends React.Component {
 const mapAppStateToProps = (state) => (
     {
         userId: state.auth.userId,
+        equipoConsulta: state.chatReducer.equipoConsulta,
         consultax: state.chatReducer.consultax,
         mensajeEnt: state.chatReducer.mensajeEnt,
         consultaPreguntaControl: state.chatReducer.consultaPreguntaControl,

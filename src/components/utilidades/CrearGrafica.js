@@ -69,7 +69,7 @@ class legenExample extends React.Component {
             }
         }
 
-        let style =  randonStyle();
+        let style = randonStyle();
 
         for (let dataset of data.datasets) {
 
@@ -83,6 +83,17 @@ class legenExample extends React.Component {
                 style = 1;
         }
 
+        let largo = 60;
+        let ancho = 100;
+        if (window.screen.width < 500) {
+
+            largo = 250;
+            ancho = 160;
+        }
+
+
+
+
 
         return (
             <Segment.Group>
@@ -91,7 +102,8 @@ class legenExample extends React.Component {
                     <React.Fragment>
                         <h3 className="center">{this.props.TituloGrafica}</h3>
                         <div >
-                            <Line className="ui form" data={data} options={options} />
+                            <Line className="ui form" data={data} width={ancho}
+                                height={largo} options={options} />
                         </div>
                     </React.Fragment>
 

@@ -1,38 +1,25 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
-import { Button, Popup, Grid, Input, Header, Modal, Image, Form, Progress, Segment } from 'semantic-ui-react';
-import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs } from '../modules/chatBot/actions';
-import unsplash from '../../apis/unsplash';
+import { Image, Progress, Segment } from 'semantic-ui-react';
+import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas } from '../modules/chatBot/actions';
 import Avatar from '../../apis/xpress';
-var fs = require('fs');
 
 
 
 class listPersonasEquipo extends React.Component {
     state = {
-        images: [], buscar: ['company', 'business', 'worker', 'formal',], ver: false, objetivoS: {}, detalleO: null, prioridadOk: true, guardar: false, cambio: 0, percent: 15, factor: 10, ntareas: 1,
-        consultaTareas: {}, titulo: null, selectedFile: null, loaded: 0,
-        listaPersonas: null, equipo: null, Cambio: true,
+        percent: 15,
+        consultaTareas: {}, titulo: null,
         avatares: null, colorSeleccion: {}, diateletrabajo: {},
 
-        prioridadx: [{ prio: 'inmediato', color: 'red' }, { prio: 'urgente', color: 'yellow' }, { prio: 'normal', color: 'olive' }]
     };
 
 
 
 
     //vairble x aumento n cantidad terminada n*x
-    //fotos de la tarjetas
-    onSearchSubmit = async () => {
-        const response = await unsplash.get('/search/photos', {
-            params: { query: this.state.buscar[this.props.prioridadObj], },
-
-        });
-
-        this.setState({ images: response.data.results })
-        // console.log(this.state.images);
-    }
+    //fotos d
 
 
     onSearchXpress = async () => {
@@ -43,51 +30,12 @@ class listPersonasEquipo extends React.Component {
             },
 
         });
-        console.log(response.data);
+   //     console.log(response.data);
         this.setState({ avatares: response.data.lowResGifs })
 
     }
     componentDidMount() {
-        this.onSearchSubmit();
         this.onSearchXpress();
-        // console.log(this.example2);
-
-        //busca el euipo en el espacio de trabajo
-        const starCountRef = firebase.database().ref().child(`Usuario-WS/${this.props.empresa}/${this.props.equipo}`);
-        starCountRef.on('value', (snapshot) => {
-
-            const equipo = snapshot.val();
-            this.setState({ equipo });
-
-            //carga todos los usuarios
-            const starCountRef2 = firebase.database().ref().child(`Usuario`);
-            starCountRef2.on('value', (snapshot2) => {
-                const consulta = snapshot2.val();
-                this.setState({ listaPersonas: consulta });
-            });
-
-            const fecha = new Date();
-            const cal = this.getWeekNumber(fecha);
-            let x = 0;
-            Object.keys(this.state.equipo).map((key, index) => {
-                const starCountRef2 = firebase.database().ref().child(`Usuario-DiaTeletrabajo/${key}/${fecha.getFullYear()}/${cal}`);
-                starCountRef2.on('value', (snapshot2) => {
-                    //dia = snapshot2.val().dia;
-
-                    if (snapshot2.val()) {
-                        var usuariodia = {};
-                        usuariodia[key] = { dia: snapshot2.val().dia, mes: snapshot2.val().mes };
-                        const objetos = { ...this.state.diateletrabajo, ...usuariodia }
-                        this.setState({ diateletrabajo: objetos })
-
-                    }
-
-
-                });
-            });
-
-        });
-
 
 
     }
@@ -125,8 +73,8 @@ class listPersonasEquipo extends React.Component {
         let classNames = null;
         let fechaM;
 
-        if (this.state.diateletrabajo && Object.keys(this.state.diateletrabajo).length > 0) {
-            const dias = this.state.diateletrabajo;
+        if (this.props.diateletrabajo && Object.keys(this.props.diateletrabajo).length > 0) {
+            const dias = this.props.diateletrabajo;
             Object.keys(dias).find(function (element) {
 
                 if (element === key) {
@@ -171,7 +119,7 @@ class listPersonasEquipo extends React.Component {
 
         if (this.state.avatares) {
 
-            console.log(this.state.avatares[x]);
+            //            console.log(this.state.avatares[x]);
             const direccion = this.state.avatares[x]
             return (
                 <Image circular src={direccion} />
@@ -180,28 +128,32 @@ class listPersonasEquipo extends React.Component {
 
     }
 
-    prueba(key) {
+    renderSel(key) {
         // valida si ya esta selecionado
         let seleccion = {};
         if (this.state.colorSeleccion.key) {
             const key2 = this.state.colorSeleccion.key;
             let sel = true;
-            if (key2 === key)
+            if (key2 === key) {
                 sel = false;
+                key = 0;
+            }
 
             seleccion = { key, sel }
+
         }
         else {
             seleccion = { key, sel: true };
         }
-        this.setState({ colorSeleccion: seleccion })
+        this.setState({ colorSeleccion: seleccion });
+        this.props.equipoConsultas({ ...this.props.equipoConsulta, sell: key });
 
     }
     //Cambia la seleccion de la persona
     renderIconoEquipo(key) {
 
         if (this.state.colorSeleccion.key) {
-           
+
             if (key === this.state.colorSeleccion.key && this.state.colorSeleccion.sel) {
                 return <i className={`large middle ${this.props.icono} aligned yellow2 icon`}  ></i>;
             }
@@ -212,10 +164,10 @@ class listPersonasEquipo extends React.Component {
     }
 
     renderConstruirObj = (props) => {
-        if (this.state.listaPersonas && this.state.equipo && this.state.diateletrabajo) {
+        if (this.props.listaPersonas && this.props.equipox && this.props.diateletrabajo) {
             //  console.log('Cambio');
-            const cconsulta = this.state.listaPersonas;
-            const opciones = Object.keys(this.state.equipo).map((key, index) => {
+            const cconsulta = this.props.listaPersonas;
+            const opciones = Object.keys(this.props.equipox).map((key, index) => {
                 if (Object.keys(cconsulta).find((key2, index) => key2 === key)) {
 
                     if (key === this.props.userId) {
@@ -226,7 +178,7 @@ class listPersonasEquipo extends React.Component {
                     const resultado = 100;
 
                     return (
-                        <div className="item " key={key} onClick={() => { this.prueba(key) }} >
+                        <div className="item " key={key} onClick={() => { this.renderSel(key) }} >
                             {this.renderIconoEquipo(key)}
 
                             <div className="content "   >
@@ -298,6 +250,8 @@ class listPersonasEquipo extends React.Component {
 
 const mapAppStateToProps = (state) => (
     {
+
+        equipoConsulta: state.chatReducer.equipoConsulta,
         numeroTareasTerminadas: state.chatReducer.numeroTareasTerminadas,
         popupDetalle: state.chatReducer.popupDetalle,
         listaObjetivo: state.chatReducer.listaObjetivo,
@@ -307,4 +261,4 @@ const mapAppStateToProps = (state) => (
     });
 
 
-export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs })(listPersonasEquipo);
+export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas })(listPersonasEquipo);

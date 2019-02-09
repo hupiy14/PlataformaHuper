@@ -76,25 +76,21 @@ const escribirUsuario = (userId) => {
     //escribir  108587547313274842109
     //console.log('envio');
     //remove()
-/*
 
-    var newPostKey2 = firebase.database().ref().child('Usuario-Formcion/111146914028418106947').push().key;
+
+    var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
     //var newPostKey2 = firebase.database().ref().child('Empresa-Equipo/114776566682864207914/-LWoWVihrbAnV5LqojH2').push().key;
 
-    firebase.database().ref(`Usuario-Formcion/108587547313274842109/-LWoWkammuKPwbbQaiZd`).set({
-      concepto: 'Metdologia del Timebloking',
-      detalle: 'La forma perfecta para centrarse en lo que se d...',
-      estado: 'activo',
-      fechaColocado: 'Sun Jan 27 2019 22:38:37 GMT+0100 (hora estándar de Europa central)',
-      link: 'keKFJUiEQwU',
-      
-    
-    
+    firebase.database().ref(`Preguntas-Chat/-LXt_TDJQilcvBxWh955/1`).set({
+        concepto: 'Que desesas hacer?',
+        //opciones: 'Usuario-WS',
+        opciones: 'Que esta haciendo mi huper,Crear un Objetivo,Dar un Feedback',
+        tipoPregunta: '3',
     });
 
 
 
-*/
+
 
     // opciones1: 'libre',
     // opciones2: '1 hora, 2 horas, 3 horas',    

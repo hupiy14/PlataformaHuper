@@ -1,61 +1,69 @@
 import {
-    SET_ACTIVE_CHAT,
-    START_CHAT,
-    END_CHAT,
-    SUBMIT_MESSAGE, 
-    UPDATE_FILTER,
-    SET_THEME,
-    CHAT_UBI,
-    COLOR_THEME,
-    IDCHAT,
-    CONSULTA_PREGUNTA,
-    NUMERO_PREGUNTA,
-    VALOR_INPUT,
-    MENSAJE_ENTRADA,
-    CONSULTA_PREG_CONTROL,
-    BORRAR_CHAT,
-    CONSULTA_DB,
-    TIPO_PREGUNTA,
-    LISTA_FORMACIONES,
-    LISTA_OBJETIVOS,
-    PRIORIDAD_OBJ,
-    POPUP_DETALLE,
-    NUMERO_TAREASTERMINADAS,
-    CONSULTA_MENSAJES,
-    CONSULTA_CANALES,
-   
-   
-    
+  SET_ACTIVE_CHAT,
+  START_CHAT,
+  END_CHAT,
+  SUBMIT_MESSAGE,
+  UPDATE_FILTER,
+  SET_THEME,
+  CHAT_UBI,
+  COLOR_THEME,
+  IDCHAT,
+  CONSULTA_PREGUNTA,
+  NUMERO_PREGUNTA,
+  VALOR_INPUT,
+  MENSAJE_ENTRADA,
+  CONSULTA_PREG_CONTROL,
+  BORRAR_CHAT,
+  CONSULTA_DB,
+  TIPO_PREGUNTA,
+  LISTA_FORMACIONES,
+  LISTA_OBJETIVOS,
+  PRIORIDAD_OBJ,
+  POPUP_DETALLE,
+  NUMERO_TAREASTERMINADAS,
+  CONSULTA_MENSAJES,
+  CONSULTA_CANALES,
+  EQUIPO_CONSULTA,
+
+
 } from './types';
+
+export const equipoConsultas = (equipoConsulta) => {
+
+  return {
+    type: EQUIPO_CONSULTA,
+    payload: equipoConsulta
+  };
+};
 
 export const consultaCanales = (consultaCanal) => {
 
   return {
-      type: CONSULTA_CANALES,
-      payload: consultaCanal
+    type: CONSULTA_CANALES,
+    payload: consultaCanal
   };
 };
 export const consultaMensajes = (consultaMensaje) => {
 
   return {
-      type: CONSULTA_MENSAJES,
-      payload: consultaMensaje
+    type: CONSULTA_MENSAJES,
+    payload: consultaMensaje
   };
 };
 
 export const consultaPreguntaControls = (consultaPreguntaControl) => {
 
   return {
-      type: CONSULTA_PREG_CONTROL,
-      payload: consultaPreguntaControl
+    type: CONSULTA_PREG_CONTROL,
+    payload: consultaPreguntaControl
   };
 };
 
 export const numeroTareasTs = (numeroTareasT) => {
 
   return {
-      type: NUMERO_TAREASTERMINADAS,
-      payload: numeroTareasT
+    type: NUMERO_TAREASTERMINADAS,
+    payload: numeroTareasT
   };
 };
 
@@ -63,36 +71,36 @@ export const numeroTareasTs = (numeroTareasT) => {
 export const popupDetalles = (popupDetalle) => {
 
   return {
-      type: POPUP_DETALLE,
-      payload: popupDetalle
+    type: POPUP_DETALLE,
+    payload: popupDetalle
   };
 };
 export const prioridadObjs = (prioridadObj) => {
 
   return {
-      type: PRIORIDAD_OBJ,
-      payload: prioridadObj
+    type: PRIORIDAD_OBJ,
+    payload: prioridadObj
   };
 };
 export const listaObjetivos = (listaObjetivo) => {
 
   return {
-      type: LISTA_OBJETIVOS,
-      payload: listaObjetivo
+    type: LISTA_OBJETIVOS,
+    payload: listaObjetivo
   };
 };
 export const listaFormaciones = (listaFormacion) => {
 
   return {
-      type: LISTA_FORMACIONES,
-      payload: listaFormacion
+    type: LISTA_FORMACIONES,
+    payload: listaFormacion
   };
 };
 export const tipoPreguntas = (tipoPreguntas) => {
 
   return {
-      type: TIPO_PREGUNTA,
-      payload: tipoPreguntas
+    type: TIPO_PREGUNTA,
+    payload: tipoPreguntas
   };
 };
 
@@ -100,110 +108,115 @@ export const tipoPreguntas = (tipoPreguntas) => {
 export const consultas = (consulta) => {
 
   return {
-      type: CONSULTA_DB,
-      payload: consulta
+    type: CONSULTA_DB,
+    payload: consulta
   };
 };
 
 export const borrarChats = (participants) => async dispatch => {
- 
+
   dispatch({
-  type: BORRAR_CHAT,
-  participants: participants});
+    type: BORRAR_CHAT,
+    participants: participants
+  });
 };
 
 export const consultaChats = (consultaPregunta) => {
 
   return {
-      type: CONSULTA_PREGUNTA,
-      payload: consultaPregunta
+    type: CONSULTA_PREGUNTA,
+    payload: consultaPregunta
   };
 };
 
 export const chatIdentifiador = (idChat) => {
 
   return {
-      type: IDCHAT,
-      payload: idChat
+    type: IDCHAT,
+    payload: idChat
   };
 };
 
 export const mensajeEntradas = (mensajeEntrada) => {
 
   return {
-      type: MENSAJE_ENTRADA,
-      payload: mensajeEntrada
+    type: MENSAJE_ENTRADA,
+    payload: mensajeEntrada
   };
 };
 
 export const valorInputs = (valorInput) => {
 
   return {
-      type: VALOR_INPUT,
-      payload: valorInput
+    type: VALOR_INPUT,
+    payload: valorInput
   };
 };
 export const numeroPreguntas = (numeroPregunta) => {
 
   return {
-      type: NUMERO_PREGUNTA,
-      payload: numeroPregunta
+    type: NUMERO_PREGUNTA,
+    payload: numeroPregunta
   };
 };
 
 
 export const setActiveChat = (contactID) => async dispatch => {
-  dispatch({ 
+  dispatch({
     type: SET_ACTIVE_CHAT,
-    participants: contactID} );
-  };
-  
-  export const submitMessage = (text, chatID, userID) => async dispatch => {
+    participants: contactID
+  });
+};
 
-    dispatch({ 
+export const submitMessage = (text, chatID, userID) => async dispatch => {
+
+  dispatch({
     type: SUBMIT_MESSAGE,
     text: text,
     chatID: chatID,
     userID: userID
-   });
-  };
-  
-  export const startChat = (participants, chatId) => async dispatch => {
-  //  const id = "Hup" + new Date().getTime();
-
-    dispatch({
-      type: START_CHAT,
-      participants: participants,
-      chatID: chatId
-    })
-  };
-  
-  export const endChat = (participants) => async dispatch => {
-   dispatch({
-    type: END_CHAT,
-    participants: participants});
-  };
-  
-  export const updateFilter = (filterString) => async dispatch => {
-    dispatch({ type: UPDATE_FILTER,
-    filterString: filterString });
-  };
-  
-  
-
-  export const setTheme = theme => async dispatch => {  
-    dispatch({ type: SET_THEME, theme });
-  
+  });
 };
 
-export const setUbicacion = ubicacion => async dispatch => { 
-  
+export const startChat = (participants, chatId) => async dispatch => {
+  //  const id = "Hup" + new Date().getTime();
+
+  dispatch({
+    type: START_CHAT,
+    participants: participants,
+    chatID: chatId
+  })
+};
+
+export const endChat = (participants) => async dispatch => {
+  dispatch({
+    type: END_CHAT,
+    participants: participants
+  });
+};
+
+export const updateFilter = (filterString) => async dispatch => {
+  dispatch({
+    type: UPDATE_FILTER,
+    filterString: filterString
+  });
+};
+
+
+
+export const setTheme = theme => async dispatch => {
+  dispatch({ type: SET_THEME, theme });
+
+};
+
+export const setUbicacion = ubicacion => async dispatch => {
+
   dispatch({ type: CHAT_UBI, payload: ubicacion });
 
 };
 
-export const setColorTheme = Color => async dispatch => { 
-  
+export const setColorTheme = Color => async dispatch => {
+
   dispatch({ type: COLOR_THEME, payload: Color });
 
 };

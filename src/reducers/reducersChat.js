@@ -54,11 +54,11 @@ export const user = (user = defaultUser, action) => {
         case BORRAR_CHAT:
         
             var aP = activeChat.participants;
-            console.log({aP});
+        //    console.log({aP});
             const valorBorrado = {chatID: "13",
             thread: [],
             participants: "6"};
-            console.log({valorBorrado});
+      //      console.log({valorBorrado});
             if (action.participants === aP) {
                 return Object.assign({}, user, {
                     activeChat: valorBorrado,

@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import {
   setActiveChat, submitMessage, numeroPreguntas, valorInputs, consultaPreguntaControls,
-  tipoPreguntas, mensajeEntradas, borrarChats, consultaChats
+  tipoPreguntas, mensajeEntradas, borrarChats, consultaChats, consultaCanales
 } from './actions';
 import BoxDianmico from './boxDinamico';
 import { IconGroup } from 'semantic-ui-react';
@@ -10,6 +10,10 @@ import firebase from 'firebase';
 
 import { Emoji } from 'emoji-mart';
 import randomColor from '../../../lib/randomColor'
+import { reduxReactFirebase } from 'react-redux-firebase';
+
+import moment from 'moment';
+
 
 
 const timeoutLength = 2500;
@@ -26,9 +30,18 @@ class Home extends React.Component {
     this.setState({
       client2: SlackOAuthClient.connect(
         // 'xoxp-482555533539-486285033681-535707706853-443780a32ce31f5f3c8b9b6684e2ad96'
-        'xoxb-482555533539-532878166725-SImPnsMh0QvM2osXpUnMy7Wa'
+
+        // 'xoxb-482555533539-532878166725-SImPnsMh0QvM2osXpUnMy7Wa'
+
+        'xoxb-482555533539-532878166725-FYre7QYksxMHhIRnQeWzSR1a'
       )
     });
+
+    const nameRef2 = firebase.database().ref().child(`Usuario-Slack/${this.props.userId}`)
+    nameRef2.on('value', (snapshot2) => {
+      this.props.consultaCanales(snapshot2.val());
+    });
+
 
   }
 
@@ -57,7 +70,7 @@ class Home extends React.Component {
       this.state.client2.postMessage(
         canal,
         {
-          text: this.props.valorInput ,
+          text: this.props.valorInput,
           attachments: [
             {
               text: this.props.nombreUser,
@@ -81,6 +94,61 @@ class Home extends React.Component {
     }
     this.props.valorInputs(' ');
   }
+
+
+  //Envio a slack el mensaje 
+  renderEnvioSlackGestor(chatTrazo, canalS) {
+    /// Envia el feedback directamente al canal del slack
+
+    let canal = canalS;
+
+    let mensaje = chatTrazo[2].text === 'Dar un Feedback' ? chatTrazo[4].text : chatTrazo[2].text; //this.props.valorInput
+    console.log(canal);
+    this.state.client2.postMessage(
+      canal,
+      {
+        text: this.props.nombreUser,
+        attachments: [
+          {
+            text: mensaje,
+            //   fallback: 'You are unable to choose a game',
+            callback_id: 'wopr_game',
+            color: '#ffB600',
+            attachment_type: 'default',
+            actions: [
+              {
+                name: 'game',
+                text: 'Feedback',
+                type: 'button',
+                value: 'chess',
+              }
+            ]
+          },
+        ]
+      }
+
+    );
+
+
+    //this.props.valorInputs(' ');
+  }
+
+
+
+  renderHistoricoHuper(usuario, conceptoT, Tipo) {
+
+    const fecha = new Date();
+
+    firebase.database().ref(`Usuario-Historico/${usuario}/${fecha.getFullYear()}/${fecha.getMonth()}/${fecha.getDate()}/${fecha.getTime()}`).set({
+      concepto: conceptoT,
+      tipo: Tipo
+
+    });
+
+
+  }
+
+
 
 
   /// Identificador de usuario y color 
@@ -117,19 +185,20 @@ class Home extends React.Component {
     let x = 0;
     let y = 0;
     const opciones = texto.split(':').map((consulta) => {
-      //  console.log(consulta);
       y++;
+      x++;
       if (consulta === ' ')
         return consulta;
-      x++;
 
       if (x === 1) {
         return consulta;
       }
-      else {
+      else if (texto.split(':').length > 2 && x > 1) {
         x = 0;
-        return (<Emoji key={y} emoji={{ id: consulta, skin: 3 }} size={16} />);
+        return (<Emoji key={y} emoji={{ id: consulta, skin: 3 }} size={19} />);
       }
+      else
+        return ':' + consulta;
     });
     return opciones;
   }
@@ -139,12 +208,14 @@ class Home extends React.Component {
 
   //Relaciona la carpeta con el objetivo
   RelacionarCarpetaObjetivo = (datos, idcarpeta) => {
+    console.log('debug');
     var updates = {};
     console.log(datos.datos);
     const dt = { ...datos.datos, carpeta: idcarpeta };
     console.log(dt);
     updates[datos.key] = dt;
     firebase.database().ref().update(updates);
+    console.log('debug2');
   }
 
   onSubmit = (activeChat, userID) => {
@@ -161,7 +232,10 @@ class Home extends React.Component {
     let vacio = ' ';
     // console.log(this.props.consultaPregunta[this.props.numeroPregunta]);
     if (this.props.consultaPregunta[this.props.numeroPregunta].tipoPregunta === '3') {
-      //    console.log(this.props.valorInput);
+      ///opciones de consulta 
+      /// observa la seleccion y cambia la consulta dependiendo la actividad... cualquier cambiar los condicionales 
+      console.log(this.props.valorInput);
+
       if (this.props.valorInput === 'Consultar') {
         this.props.tipoPreguntas('Consulta Detalle Tarea');
         const chatTrazo = this.props.user.userChats[0].thread
@@ -196,13 +270,60 @@ class Home extends React.Component {
         starCountRef.on('value', (snapshot) => {
           this.props.consultaChats(snapshot.val());
           consultaBD = snapshot.val();
+        });
 
+
+      }
+      else if (this.props.valorInput === 'Que esta haciendo mi huper') {
+
+        valorNPregunta = 0;
+        this.props.tipoPreguntas('Consultar Equipo Gestor');
+        vacio = ' ';
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_NqMTxrwo-Ap7UTR');
+        starCountRef.on('value', (snapshot) => {
+          this.props.consultaChats(snapshot.val());
+          consultaBD = snapshot.val();
+          const mensaje = consultaBD[1].concepto;
+          this.props.submitMessage(mensaje, activeChat.chatID, this.props.idChatUser);
         });
 
 
       }
 
+      else if (this.props.valorInput === 'Crear un Objetivo') {
+
+        valorNPregunta = 0;
+        this.props.tipoPreguntas('Crear Objetivo Gestor');
+        vacio = 'x';
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXtZVCN7-52d44THkXP');
+        starCountRef.on('value', (snapshot) => {
+          this.props.consultaChats(snapshot.val());
+          consultaBD = snapshot.val();
+
+          const mensaje = consultaBD[1].concepto;
+          this.props.submitMessage(mensaje, activeChat.chatID, this.props.idChatUser);
+        });
+
+      }
+
+      else if (this.props.valorInput === 'Dar un Feedback') {
+
+        valorNPregunta = 0;
+        this.props.tipoPreguntas('Crear Feedback Gestor');
+        vacio = 'x';
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_CrEJFXvUlEN_tp5');
+        starCountRef.on('value', (snapshot) => {
+          this.props.consultaChats(snapshot.val());
+          consultaBD = snapshot.val();
+
+          const mensaje = consultaBD[1].concepto;
+          this.props.submitMessage(mensaje, activeChat.chatID, this.props.idChatUser);
+        });
+
+      }
     }
+
+
 
     if (this.props.valorInput === 'Eliminar') {
 
@@ -226,32 +347,35 @@ class Home extends React.Component {
       });
       valorNPregunta = valorNPregunta + 1;
       firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${idObjetivo}/${idTarea}`).remove();
-
+      this.renderHistoricoHuper(this.props.userId, `Elimino Tarea : ${chatTrazo[2].text}`, 'trabajo');
     }
     else if (this.props.valorInput === 'Ninguna') {
       valorNPregunta = valorNPregunta + 1;
       this.props.consultaPreguntaControls(valorNPregunta + 1);
     }
 
+    ///valida para reescribir la pregunta.
     if (valorNPregunta < consultaBD.length - 1) {
 
       this.props.numeroPreguntas(valorNPregunta + 1);
-      console.log(valorNPregunta);
-      const mensaje = consultaBD[valorNPregunta + 1].concepto;
-      this.props.submitMessage(mensaje, activeChat.chatID, this.props.idChatUser);
+      const chatTrazo = this.props.user.userChats[0].thread;
+
+      if (chatTrazo[1].text !== consultaBD[valorNPregunta + 1].concepto) {
+        const mensaje = consultaBD[valorNPregunta + 1].concepto;
+        this.props.submitMessage(mensaje, activeChat.chatID, this.props.idChatUser);
+      }
       // console.log(valorNPregunta);
     }
     else {
 
       //   console.log(this.props.user.userChats[0]);
-      const chatTrazo = this.props.user.userChats[0].thread
+      const chatTrazo = this.props.user.userChats[0].thread;
       const tipPrgutna = this.props.tipoPregunta;
       //  const consultaInicial = this.props.consultaPregunta;
       const consultaObj = this.props.consultax;
       // Object.keys(chatTrazo).map(function (key, index) {
-
       //if (chatTrazo[key].from !== '6') {
-      console.log(tipPrgutna);
+      //  console.log(tipPrgutna);
       if (tipPrgutna === 'Diaria') {
 
         let postData;
@@ -277,9 +401,12 @@ class Home extends React.Component {
 
           ///Crea la carpeta en donde se subiran los archivos adjuntos al objetivo
           //Crear espacio de trabajo para el objetio
+          console.log(this.props.usuarioDetail.usuario.wsCompartida);
+          var folderId = this.props.usuarioDetail.usuario.wsCompartida;
           window.gapi.client.drive.files.create({
             name: chatTrazo[4].text,
-            mimeType: 'application/vnd.google-apps.folder'
+            mimeType: 'application/vnd.google-apps.folder',
+            parents: [folderId]
             //fields: 'id'
           }).then((response) => {
             //devuelve lo de la carpeta
@@ -317,6 +444,7 @@ class Home extends React.Component {
 
         });
 
+        this.renderHistoricoHuper(this.props.userId, `Creo Tarea : ${chatTrazo[2].text} `, 'trabajo');
         // console.log(chatTrazo[key].text);
       }
       else if (tipPrgutna === 'EditarTarea') {
@@ -352,6 +480,7 @@ class Home extends React.Component {
         var updates = {};
         updates[`Usuario-Tareas/${this.props.userId}/${idObjetivo}/${idTarea}`] = tarea;
         firebase.database().ref().update(updates);
+        this.renderHistoricoHuper(this.props.userId, `Edito Tarea : ${chatTrazo[2].text} `, 'trabajo');
 
       }
       else if (tipPrgutna === 'TIC Quincenal') {
@@ -366,6 +495,7 @@ class Home extends React.Component {
         const newPostKey2 = firebase.database().ref().child(`Usuario-TIC-EXP/${this.props.userId}`).push().key;
         updates[`Usuario-TIC-EXP/${this.props.userId}/${newPostKey2}`] = postData;
         firebase.database().ref().update(updates);
+        this.renderHistoricoHuper(this.props.userId, `Realizo TIC Quincenal`, 'trabajo');
       }
       else if (tipPrgutna === 'TIC Objetivos') {
 
@@ -395,6 +525,7 @@ class Home extends React.Component {
         updates[`Usuario-Objetivos/${this.props.userId}/${idObj}`] = objetivo;
         updates[`Usuario-TIC-OBJETIVOS/${this.props.userId}/${newPostKey2}`] = postData;
         firebase.database().ref().update(updates);
+        this.renderHistoricoHuper(this.props.userId, `Realizo TIC Objetivos : ${chatTrazo[2].text} `, 'trabajo');
       }
       else if (tipPrgutna === 'Retrospectiva') {
         const postData = {
@@ -410,6 +541,7 @@ class Home extends React.Component {
         const newPostKey2 = firebase.database().ref().child(`Usuario-Retrospective/${this.props.userId}`).push().key;
         updates[`Usuario-Retrospective/${this.props.userId}/${newPostKey2}`] = postData;
         firebase.database().ref().update(updates);
+        this.renderHistoricoHuper(this.props.userId, `Preguntas de la semana`, 'trabajo');
       }
 
       else if (tipPrgutna === 'Despedida' && this.props.valorInput === 'Eliminar Tareas') {
@@ -437,7 +569,7 @@ class Home extends React.Component {
           firebase.database().ref().update(updates);
         });
         console.log(cconsulta);
-
+        this.renderHistoricoHuper(this.props.userId, `Despedida del dia`, 'fin');
       }
       else if (tipPrgutna === 'Seguimiento') {
 
@@ -455,6 +587,7 @@ class Home extends React.Component {
               var updates = {};
               updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = tarea;
               firebase.database().ref().update(updates);
+              this.renderHistoricoHuper(this.props.userId, `Estas trabajando en ${chatTrazo[2].text}`, 'trabajo');
             }
             else if (ultimoValor === ccconsulta[key].concepto) {
               tarea = ccconsulta[key];
@@ -462,10 +595,175 @@ class Home extends React.Component {
               var updates = {};
               updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = tarea;
               firebase.database().ref().update(updates);
+              this.renderHistoricoHuper(this.props.userId, `Ha terminado : ${ultimoValor}`, 'trabajo');
             }
 
           });
         });
+
+      }
+
+      /////Preguntas Gestor ......
+      else if (tipPrgutna === 'Crear Objetivo Gestor') {
+
+
+        let x = 0;
+        const cconsulta = this.props.equipoConsulta;
+        let cconsulta2;
+        const usuario = this.props.valorInput;
+        let usuarioGT;
+        let keyUsuarioGT;
+        const opciones2 = Object.keys(cconsulta).map(function (key2, index) {
+          if (x === 0) {
+            x = x + 1;
+            const cconsulta2 = cconsulta[key2];
+            console.log(cconsulta2);
+            Object.keys(cconsulta2).map(function (key, index) {
+              if (usuario === cconsulta2[key].usuario) {
+                usuarioGT = cconsulta2[key];
+                keyUsuarioGT = key;
+              }
+
+            });
+          }
+        });
+
+
+        console.log(usuarioGT.wsCompartida);
+        var folderId = usuarioGT.wsCompartida;
+        window.gapi.client.drive.files.create({
+          name: chatTrazo[2].text,
+          mimeType: 'application/vnd.google-apps.folder',
+          parents: [folderId]
+          //fields: 'id'
+        }).then((response) => {
+          //devuelve lo de la carpeta
+          console.log("Response", response);
+          this.RelacionarCarpetaObjetivo(this.state.updates, response.result.id);
+
+        },
+          function (err) { console.error("Execute error", err); });
+        //   this.props.crearCarpetas(xx);
+        const newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${keyUsuarioGT}`).push().key;
+
+        const postData = {
+          numeroTareas: 0,
+          concepto: chatTrazo[2].text === 'Crear un Objetivo' ? chatTrazo[4].text : chatTrazo[2].text,
+          estado: 'activo',
+          carpeta: this.state.carpeta,
+          prioridad: 'urgente',
+        };
+
+        this.setState({ updates: { key: `Usuario-Objetivos/${keyUsuarioGT}/${newPostKey2}`, datos: postData } });
+
+        var updates = {};
+        updates[`Usuario-Objetivos/${keyUsuarioGT}/${newPostKey2}`] = postData;
+
+
+        firebase.database().ref().update(updates);
+
+
+      }
+
+      else if (tipPrgutna === 'Crear Feedback Gestor') {
+
+        const chatTrazo = this.props.user.userChats[0].thread;
+
+        let x = 0;
+        const cconsulta = this.props.equipoConsulta;
+        let cconsulta2;
+        const usuario = this.props.valorInput;
+        let usuarioGT;
+        let keyUsuarioGT;
+        const opciones2 = Object.keys(cconsulta).map(function (key2, index) {
+          if (x === 0) {
+            x = x + 1;
+            const cconsulta2 = cconsulta[key2];
+            console.log(cconsulta2);
+            const opciones = Object.keys(cconsulta2).map(function (key, index) {
+              if (usuario === cconsulta2[key].usuario) {
+                usuarioGT = cconsulta2[key];
+                keyUsuarioGT = key;
+              }
+
+            });
+          }
+        });
+
+       this.renderEnvioSlackGestor(chatTrazo, usuarioGT.canalSlack);
+
+
+      }
+
+
+
+      else if (tipPrgutna === 'Consultar Equipo Gestor') {
+
+        const chatTrazo = this.props.user.userChats[0].thread;
+        const activeChat = this.props.user.activeChat;
+        const userID = this.props.user.userID;
+        let x = 0;
+        const cconsulta = this.props.equipoConsulta;
+        let cconsulta2;
+        const usuario = this.props.valorInput;
+        let usuarioGT;
+        let keyUsuarioGT;
+        const opciones2 = Object.keys(cconsulta).map(function (key2, index) {
+          if (x === 0) {
+            x = x + 1;
+            const cconsulta2 = cconsulta[key2];
+            console.log(cconsulta2);
+            const opciones = Object.keys(cconsulta2).map(function (key, index) {
+              if (usuario === cconsulta2[key].usuario) {
+                usuarioGT = cconsulta2[key];
+                keyUsuarioGT = key;
+              }
+
+            });
+          }
+        });
+
+
+        const fecha = new Date();
+
+        const starCountRef = firebase.database().ref().child(`Usuario-Historico/${keyUsuarioGT}/${fecha.getFullYear()}/${fecha.getMonth()}/${fecha.getDate()}`);
+        starCountRef.on('value', (snapshot) => {
+          const historico = snapshot.val();
+
+          if (!historico)
+            return;
+          const nunerso = Object.keys(historico).length - 1;
+          const valore = Object.keys(historico).splice(nunerso);
+
+          Object.keys(historico).map((key, index) => {
+            if (valore[0] === key) {
+              let fechaActividad = moment('2000-01-01 00:00:00').add(moment.duration(parseInt(key))).format('HH-mm-ss');
+              const intro = ':thought_balloon: Su ultima actividad fue  ';
+              this.props.submitMessage(
+                intro,
+                activeChat.chatID,
+                userID
+              );
+              this.props.submitMessage(
+                historico[key].concepto,
+                activeChat.chatID,
+                userID
+              );
+
+              this.props.submitMessage(
+                fechaActividad = ':hourglass_flowing_sand: ' + fechaActividad + ':hourglass_flowing_sand:',
+                activeChat.chatID,
+                userID
+              );
+
+
+
+            }
+          });
+
+
+        });
+
 
       }
 
@@ -608,6 +906,7 @@ class Home extends React.Component {
 const mapHomeStateToProps = (state) => ({
 
   userId: state.auth.userId,
+  equipoConsulta: state.chatReducer.equipoConsulta,
   consultax: state.chatReducer.consultax,
   nombreUser: state.chatReducer.nombreUser,
   consultaCanal: state.chatReducer.consultaCanal,
@@ -618,9 +917,10 @@ const mapHomeStateToProps = (state) => ({
   consultaPregunta: state.chatReducer.consultaPregunta,
   idChatUser: state.chatReducer.idChatUser,
   numeroPregunta: state.chatReducer.numeroPregunta,
+  usuarioDetail: state.chatReducer.usuarioDetail,
   user: state.user,
 });
 export default connect(mapHomeStateToProps, {
-  submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas,
+  submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas, consultaCanales,
   consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats
 })(Home);

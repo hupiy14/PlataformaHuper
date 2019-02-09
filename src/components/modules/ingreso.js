@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import GoogleAuth from '../GoogleAuth';
-import image from '../../images/hupityNewlogo.png';
+import image from '../../images/logo.png';
 import { reactReduxFirebase } from 'react-redux-firebase';
 
 

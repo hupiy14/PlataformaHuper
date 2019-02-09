@@ -111,7 +111,7 @@ class CrearGraficaGestor extends React.Component{
 
             <CrearGrafica labelsX={labelsDias}
             label1={"Planificación de la semana"}
-            label2={"TIC"}
+            label2={"MIT"}
             label3={"Trabajo Realizado"}
             titleGrafica={"Trabajo (Tareas) vs Dias"}
             datos1={datosG1}
@@ -119,7 +119,7 @@ class CrearGraficaGestor extends React.Component{
             datos3={datosG111}
             numeroGrafica={'2'}
             maxLen={'150'}
-            TituloGrafica={"Avance Semanal"}
+            TituloGrafica={"Trabajo de la Semana"}
 
         />
         );

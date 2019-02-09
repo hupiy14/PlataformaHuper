@@ -21,6 +21,7 @@ import {
     USUARIO_DETAIL,
     CONSULTA_MENSAJES,
     CONSULTA_CANALES,
+    EQUIPO_CONSULTA,
 
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -48,6 +49,7 @@ const INITIAL_STATE = {
     usuarioDetail: null,
     consultaMensaje: null,
     consultaCanal: null,
+    equipoConsulta: null,
 
 };
 
@@ -100,6 +102,8 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, consultaMensaje: action.payload };
         case CONSULTA_CANALES:
             return { ...state, consultaCanal: action.payload };
+        case EQUIPO_CONSULTA:
+            return { ...state, equipoConsulta: action.payload };
         default:
             return state;
 

@@ -14,11 +14,14 @@ class Contacts extends React.Component {
     this.setState({
 
       client: SlackOAuthClient.connect(
-        'xoxp-482555533539-486285033681-535707706853-443780a32ce31f5f3c8b9b6684e2ad96'
+       // 'xoxp-482555533539-486285033681-535707706853-443780a32ce31f5f3c8b9b6684e2ad96'
+        'xoxp-482555533539-486285033681-542720051746-2838d41db84ac420a045ab30da38f0f8'
         //                'xoxb-482555533539-532878166725-SImPnsMh0QvM2osXpUnMy7Wa'
       )
     });
 
+
+    
     //consulta los canales confirugados alusuario
     const nameRef2 = firebase.database().ref().child(`Usuario-Slack/${this.props.userId}`)
     nameRef2.on('value', (snapshot2) => {
@@ -35,7 +38,7 @@ class Contacts extends React.Component {
 
     this.timeout = setTimeout(() => {
       this.renderActualizarCanales();
-      console.log(this.props.user);
+    //  console.log(this.props.user);
       //this.setState({ isOpen: false })
     }, timeoutLength)
   }
@@ -168,6 +171,7 @@ class Contacts extends React.Component {
       );
     }
 
+    
     return (
       <div className="contact-search-ch-wrapper-ch">
         <span className="search-icon-ch">

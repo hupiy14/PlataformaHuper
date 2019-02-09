@@ -14,12 +14,22 @@ class Hupps extends React.Component {
     handleClose = () => this.setState({ modalOpen: false })
 
     componentDidMount() {
-        this.onSearchSubmit()
+        this.onSearchSubmit('business')
+
+        console.log('Imagenes Hupps')
+        console.log(this.props.listaObjetivo);
+        if (this.props.equipoConsulta) {
+            console.log(this.props.equipoConsulta);
+            this.props.listaObjetivos({ tareas: this.props.listaObjetivo, objetivos: this.props.equipoConsulta });
+        }
+
     }
 
-    onSearchSubmit = async () => {
+    onSearchSubmit = async (buscar) => {
         const response = await unsplash.get('/search/photos', {
-            params: { query: 'business' },
+            params: { query: buscar, 
+                "total_photos": 20,
+            },
 
         });
         this.setState({ images: response.data.results })
@@ -34,47 +44,147 @@ class Hupps extends React.Component {
             </div>
         );
     }
-    renderGrafico2(the) {
-        if (the.state.images[0]) {
-            if (the.props.listaObjetivo && the.props.listaObjetivo.objetivos && the.props.listaObjetivo.tareas) {
-                const cconsulta = this.props.listaObjetivo.objetivos;
-                let x = 0;
-
-                const opciones = Object.keys(cconsulta).map(function (key2, index) {
-
-                    x = x + 1;
-                    let tareas = {};
-                    const tareaO = the.props.listaObjetivo.tareas;
-
-                    Object.keys(tareaO).map(function (key3, index) {
-                        if (key3 === key2)
-                            tareas = tareaO[key3];
-                    })
-
-                    return (
-                        <div className="column  " key={key2}>
-                            <CardFeedback image={the.state.images[x].urls.regular}
-                                title={cconsulta[key2].concepto}
-                                descripcion={cconsulta[key2].detalle}
-                                fechaFin={cconsulta[key2].dateFinalizado ? cconsulta[key2].dateFinalizado : ''}
-                                numeroTareas={cconsulta[key2].numeroTareas}
-                                prioridad={cconsulta[key2].prioridad}
-                                estadox={cconsulta[key2].estado}
-                                tareas={tareas}
-                                objetivoF={cconsulta[key2]}
-                                keyF={key2}
-                               
-
-                                numeroAdjuntos={cconsulta[key2].numeroAdjuntos ? cconsulta[key2].numeroAdjuntos : ''}
-                                numeroComentarios={cconsulta[key2].numeroComentarios ? cconsulta[key2].numeroComentarios : ''}
-                            />
-                        </div>
-
-                    );
 
 
+    construirTarjetaTT(the) {
+
+        const cconsulta = this.props.listaObjetivo.objetivos;
+        let x = 0;
+
+        const opciones = Object.keys(cconsulta).map(function (key2, index) {
+            let y = 0;
+            if (cconsulta[key2].estado === 'concluido') { return; }
+            x = x + 1;
+
+
+            let tareas = {};
+            const tareaO = the.props.listaObjetivo.tareas;
+
+            Object.keys(tareaO).map(function (key3, index) {
+                if (key3 === key2)
+                    tareas = tareaO[key3];
+            })
+
+            if (y > 8) {
+                y = 0;
+               // the.onSearchSubmit('company')
+            }
+            y++;
+            return (
+                <div className="column  " key={key2}>
+                    <CardFeedback image={the.state.images[y].urls.regular}
+                        title={cconsulta[key2].concepto}
+                        descripcion={cconsulta[key2].detalle}
+                        fechaFin={cconsulta[key2].dateFinalizado ? cconsulta[key2].dateFinalizado : ''}
+                        numeroTareas={cconsulta[key2].numeroTareas}
+                        prioridad={cconsulta[key2].prioridad}
+                        estadox={cconsulta[key2].estado}
+                        tareas={tareas}
+                        objetivoF={cconsulta[key2]}
+                        keyF={key2}
+
+
+                        numeroAdjuntos={cconsulta[key2].numeroAdjuntos ? cconsulta[key2].numeroAdjuntos : ''}
+                        numeroComentarios={cconsulta[key2].numeroComentarios ? cconsulta[key2].numeroComentarios : ''}
+                    />
+                </div>
+
+            );
+
+
+        })
+        return opciones;
+    }
+
+    construirTarjetaTG(the) {
+
+        const cconsulta = this.props.listaObjetivo.objetivos;
+        let x = 0;
+        let y = 0;
+        let listaPerObjetivos = {};
+        let usuario = null;
+        let usuarioGesto = null;
+        const opciones = Object.keys(cconsulta).map(function (key2, index) {
+
+
+            if (x === 0) {
+                x = x + 1;
+                listaPerObjetivos = cconsulta[key2];
+                return;
+            }
+
+            //         console.log(cconsulta[key2]);
+
+            if (cconsulta[key2].estado === 'concluido') { return; }
+
+            x = x + 1;
+            let tareas = {};
+            const tareaO = the.props.listaObjetivo.tareas;
+
+            Object.keys(tareaO).map(function (key3, index) {
+                const tareaOO = tareaO[key3];
+                Object.keys(tareaOO).map(function (key4, index) {
+
+                    if (key4 === key2) {
+                        tareas = tareaOO[key4];
+
+                        Object.keys(listaPerObjetivos).map(function (key5, index) {
+                            if (key5 === key3) {
+                                usuario = listaPerObjetivos[key5].usuario;
+                                usuarioGesto = key3;
+                            }
+                        });
+
+                    }
                 })
-                return opciones;
+            })
+
+            if (y > 8) {
+                y = 0;
+              //  the.onSearchSubmit('company')
+            }
+
+            y++;
+            return (
+                <div className="column  " key={key2}>
+                    <CardFeedback image={the.state.images[y].urls.regular}
+                        title={cconsulta[key2].concepto}
+                        descripcion={cconsulta[key2].detalle}
+                        fechaFin={cconsulta[key2].dateFinalizado ? cconsulta[key2].dateFinalizado : ''}
+                        numeroTareas={cconsulta[key2].numeroTareas}
+                        prioridad={cconsulta[key2].prioridad}
+                        estadox={cconsulta[key2].estado}
+                        tareas={tareas}
+                        objetivoF={cconsulta[key2]}
+                        keyF={key2}
+                        responsableX={usuario}
+                        usuarioGesto={usuarioGesto}
+
+                        numeroAdjuntos={cconsulta[key2].numeroAdjuntos ? cconsulta[key2].numeroAdjuntos : ''}
+                        numeroComentarios={cconsulta[key2].numeroComentarios ? cconsulta[key2].numeroComentarios : ''}
+                    />
+                </div>
+
+            );
+
+
+        })
+        return opciones;
+    }
+
+    renderGrafico2(the) {
+        console.log(the.state.images);
+        if (the.state.images[1]) {
+
+            if (the.props.listaObjetivo && the.props.listaObjetivo.objetivos && the.props.listaObjetivo.tareas) {
+
+                if (this.props.equipoConsulta) {
+                    return the.construirTarjetaTG(the);
+                }
+                else {
+                    return the.construirTarjetaTT(the);
+                }
+
             }
             else {
                 return (
@@ -82,8 +192,8 @@ class Hupps extends React.Component {
                         <div className="ui segment loaderOBJ3">
                             <div className="ui active inverted dimmer">
                                 <div className="ui text loader">
-                                <h4> No tienes ningun objetivo para ver</h4>
-                               
+                                    <h4> No tienes ningun objetivo para ver</h4>
+
                                 </div>
                             </div>
                             <p></p>
@@ -113,6 +223,7 @@ const mapAppStateToProps = (state) => (
 
         numeroTareasTerminadas: state.chatReducer.numeroTareasTerminadas,
         popupDetalle: state.chatReducer.popupDetalle,
+        equipoConsulta: state.chatReducer.equipoConsulta,
         listaObjetivo: state.chatReducer.listaObjetivo,
         prioridadObj: state.chatReducer.prioridadObj,
         userId: state.auth.userId,

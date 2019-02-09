@@ -14,7 +14,7 @@ class ListEjemplo extends React.Component {
     componentDidMount() {
         // console.log(this.example2);
         const starCountRef = firebase.database().ref().child(`Usuario-Formcion/${this.props.userId}`);
-        const consulta = starCountRef.on('value', (snapshot) => {
+        starCountRef.on('value', (snapshot) => {
             this.props.listaFormaciones(snapshot.val());
 
         });
@@ -55,6 +55,7 @@ class ListEjemplo extends React.Component {
 
                                             <div className="header">{cconsulta[key2].concepto}</div>
                                             <div className="description">{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
+                                            <Button className='alinVerFomacion' icon='eye' color='teal' />
                                             <Progress percent={50} color='yellow' attached='bottom' />
                                         </Segment >
                                     </div>
@@ -71,11 +72,11 @@ class ListEjemplo extends React.Component {
                             <Modal.Content scrolling>
                                 <div className="ui grid ">
                                     <div className="sixteen wide column Black videoFormacion ">
-                                   
-                                            <div className="ui embed ">
-                                                <iframe className="videoFormacion" title="video player" src={the.state.videoSrc} />
-                                            </div>
-                                     
+
+                                        <div className="ui embed ">
+                                            <iframe className="videoFormacion" title="video player" src={the.state.videoSrc} />
+                                        </div>
+
                                     </div>
                                     <div className="sixteen wide column  ">
                                         <div className="ui segment  videoFormacion2">

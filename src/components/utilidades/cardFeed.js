@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import '../styles/ingresoHupity.css';
 import { Button, Header, Icon, Modal, Input, Image, Card } from 'semantic-ui-react';
+import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas } from '../modules/chatBot/actions';
 import _ from 'lodash';
 import firebase from 'firebase';
 
@@ -20,7 +21,10 @@ class ListEjemplo extends React.Component {
 
 
     componentDidMount() {
-        this.setState({ valueR: this.props.objetivoF.resaltar });
+        if (this.props.objetivoF.resaltar)
+            this.setState({ valueR: this.props.objetivoF.resaltar });
+        else
+            this.setState({ valueR: false });
         // this.imageRef.current.addEventListener('load', this.setSpans);
     }
 
@@ -31,20 +35,33 @@ class ListEjemplo extends React.Component {
     handleOpen = () => this.setState({ modalOpen: true })
 
     handleClose(guardar, key) {
-        console.log(guardar);
-        console.log(key);
         if (!this.state)
             return;
         if (guardar && this.props) {
             let comentariosEnvio = {};
             const usuario = this.props.nombreUser;
-            const newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}/${key}/comentarios`).push().key;
+            const newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${key}/comentarios`).push().key;
 
-            comentariosEnvio = { usuario, tipo: 'responder', concepto: this.state.comentario }
-            let updates = {};
-            updates[`Usuario-Objetivos/${this.props.userId}/${key}/comentarios/${newPostKey2}`] = comentariosEnvio;
-            firebase.database().ref().update(updates);
+            const tipologia = this.props.responsableX ? 'feedback' : 'responder';
+
+            comentariosEnvio = { usuario, tipo: tipologia, concepto: this.state.comentario }
+            const usuarioD = this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId;
+
+            //  let updates = {};
+            //  updates[`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${key}/comentarios/${newPostKey2}`] = comentariosEnvio;
+            firebase.database().ref(`Usuario-Objetivos/${usuarioD}/${key}/comentarios/${newPostKey2}`).set({
+                usuario,
+                tipo: tipologia,
+                concepto: this.state.comentario
+            });
+            // console.log(updates);
+            //   firebase.database().ref().update(updates);
             this.setState({ guardar: false })
+            if (this.props.usuarioGesto) {
+                let variableF = {};
+                variableF[newPostKey2] = comentariosEnvio;
+                this.props.objetivoF.comentarios = { ...this.props.objetivoF.comentarios, ...variableF };
+            }
         }
         // = {...objetio.comentarios, {} :  }
 
@@ -93,23 +110,23 @@ class ListEjemplo extends React.Component {
 
 
     renderEliminarArchivo(idArchivo) {
-        console.log(idArchivo);
+        //   console.log(idArchivo);
 
         window.gapi.client.drive.files.delete({
             'fileId': idArchivo
             //  "supportsTeamDrives": false
         })
-            .then((response)=> {
+            .then((response) => {
                 // Handle the results here (response.result has the parsed body).
-                console.log("Response", response);
+                // console.log("Response", response);
                 this.setState({ modalOpen2: false });
             },
                 function (err) { console.error("Execute error", err); });
-        
+
 
         const objetivo = { ...this.props.objetivoF, numeroAdjuntos: this.props.objetivoF.numeroAdjuntos - 1 };
         let updates = {};
-        updates[`Usuario-Objetivos/${this.props.userId}/${this.props.keyF}`] = objetivo;
+        updates[`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${this.props.keyF}`] = objetivo;
         firebase.database().ref().update(updates);
 
     }
@@ -118,7 +135,6 @@ class ListEjemplo extends React.Component {
 
 
     renderAdjuntos() {
-        console.log('entro 22');
 
         const carpeta = this.props.objetivoF.carpeta;
         window.gapi.client.drive.files.list({
@@ -127,27 +143,27 @@ class ListEjemplo extends React.Component {
             'pageSize': 10,
             'fields': "nextPageToken, files(id, name, mimeType)"
         }).then((response) => {
-            console.log('Files:');
+
             var files = response.result.files;
             let imprimir = [];
             if (files && files.length > 0) {
                 for (var i = 0; i < files.length; i++) {
                     var file = files[i];
-                    console.log(file);
+                    //        console.log(file);
                     const filesID = file.id;
-                    imprimir.push(<div><p> <i className="share icon" /> "  {file.name} "  <a onClick={() => { this.renderEliminarArchivo(`${filesID}`) }} className="ui  tiny green tag label">Eliminar</a>  </p><br /></div>);
+                    imprimir.push(<div key={i} ><p> <i key={i} className="share icon" /> "  {file.name} "  <a onClick={() => { this.renderEliminarArchivo(`${filesID}`) }} className="ui  tiny green tag label">Eliminar</a>  </p><br /></div>);
                     //  console.log(imprimir);
                 }
 
             } else {
                 console.log('No files found.');
             }
-            console.log(imprimir);
+            //         console.log(imprimir);
             this.setState({ files: imprimir });
 
             const objetivo = { ...this.props.objetivoF, numeroAdjuntos: files.length };
             let updates = {};
-            updates[`Usuario-Objetivos/${this.props.userId}/${this.props.keyF}`] = objetivo;
+            updates[`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${this.props.keyF}`] = objetivo;
             firebase.database().ref().update(updates);
 
         });
@@ -155,10 +171,22 @@ class ListEjemplo extends React.Component {
 
 
     guardarResaltar(objetivox, user, key) {
-        console.log(this.state.valueR);
+        //     console.log(this.state.valueR);
         const objetivo = { ...objetivox, resaltar: this.state.valueR };
         let updates = {};
         updates[`Usuario-Objetivos/${user}/${key}`] = objetivo;
+        firebase.database().ref().update(updates);
+
+    }
+
+
+    ConcluirObjetivo(objetivox, user, key) {
+        //     console.log(this.state.valueR);
+        let objetivo = objetivox;
+        objetivo.estado = 'concluido';
+        let updates = {};
+        updates[`Usuario-Objetivos/${user}/${key}`] = objetivo;
+        console.log(updates);
         firebase.database().ref().update(updates);
 
     }
@@ -203,8 +231,10 @@ class ListEjemplo extends React.Component {
             });
             const objetivo = { ...this.props.objetivoF, numeroComentarios: numero };
             let updates = {};
-            updates[`Usuario-Objetivos/${this.props.userId}/${this.props.keyF}`] = objetivo;
+            updates[`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${this.props.keyF}`] = objetivo;
             firebase.database().ref().update(updates);
+
+
             return opciones;
         }
 
@@ -215,14 +245,14 @@ class ListEjemplo extends React.Component {
 
         if (this.props.objetivoF.resaltar) {
             //   this.setState({ valueR: this.props.objetivoF.resaltar });
-            return (<a class="ui yellow right ribbon label">Destacado</a>);
+            return (<a className="ui yellow right ribbon label">Destacado</a>);
         }
 
     }
 
 
     render() {
-console.log('cambiosss');
+
         return (
 
 
@@ -230,9 +260,6 @@ console.log('cambiosss');
                 <div className="image big tamaño-Imagen" >
                     <img ref={this.imageRef} src={this.props.image} />
                 </div>
-
-
-
 
                 <div className="content">
                     {this.renderResaltar()}
@@ -245,7 +272,7 @@ console.log('cambiosss');
                     <div className="description">
                         {this.props.descripcion}
                         <br />
-                        <h6>Responsable: {this.props.nombreUser}</h6>
+                        <h6>Responsable: {this.props.responsableX ? this.props.responsableX : this.props.nombreUser}</h6>
                     </div>
                 </div>
                 <div className="extra content ">
@@ -260,7 +287,7 @@ console.log('cambiosss');
                         basic
                         size='small'
                     >
-                        <Header icon='pencil alternate' content='Escribe el comentario al objetivo realiado:' />
+                        <Header icon='pencil alternate' content='Escribe el comentario al objetivo realizado:' />
                         <Modal.Content>
                             <h2>{this.props.title}</h2>
                             <br />
@@ -268,7 +295,7 @@ console.log('cambiosss');
                                 onChange={e => this.setState({ comentario: e.target.value })}>
                             </Input>
 
-                            <h4>Los hombres sabios hablan porque tienen algo que decir; los necios porque tienen que decir algo.</h4><h6>-Platón</h6>
+                            <h4>"Los hombres sabios hablan porque tienen algo que decir; los necios porque tienen que decir algo".</h4><h6>-Platón</h6>
                         </Modal.Content>
 
                         <Modal.Actions>
@@ -285,8 +312,10 @@ console.log('cambiosss');
 
                     <Modal trigger={
                         <button className="ui basic green button espaciobb" onClick={this.handleOpen2}>
-                            <i className="check circle icon"></i>
-                            Detalle</button>
+                            <i className={this.props.usuarioGesto ? "check circle icon" : 'paperclip icon'} ></i>
+                            {this.props.usuarioGesto ? 'Validar' : 'Detalle'}</button>
+
+
 
                     }
                         open={this.state.modalOpen2}
@@ -306,13 +335,13 @@ console.log('cambiosss');
                                         <Modal.Description >
                                             <Header>{this.props.title}</Header>
                                             <h2>{this.props.title}</h2>
-                                            <p>  <i className="share icon" />Detalle del objetivo: <div class="ui grey horizontal label">  "  {this.props.descripcion} "</div></p>
-                                            <p> <i className="share icon" />Prioridad: <div class="ui grey horizontal label">  "  {this.props.prioridad} "</div></p>
-                                            <p> <i className="share icon" />Estado :  <div class="ui grey horizontal label">  "  {this.props.estadox} "</div></p>
-                                            <p> <i className="share icon" />Fecha de finalizado el objetivo: <div class="ui grey horizontal label">  "  {this.props.fechaFin} "</div></p>
-                                            <p> <i className="share icon" />Numero de conmentarios : <div class="ui grey horizontal label">  "  {this.props.numeroComentarios} "</div></p>
-                                            <p> <i className="share icon" />Numero de tareas hechas: <div class="ui grey horizontal label">  "  {this.props.numeroTareas} "</div></p>
-                                            <p> <i className="share icon" />Numero de archivos adjuntos: <div class="ui grey horizontal label">  "  {this.props.numeroAdjuntos} "</div></p>
+                                            <p>  <i className="share icon" />Detalle del objetivo:  "  {this.props.descripcion} "</p>
+                                            <p> <i className="share icon" />Prioridad:  "  {this.props.prioridad} "</p>
+                                            <p> <i className="share icon" />Estado :  "  {this.props.estadox} "</p>
+                                            <p> <i className="share icon" />Fecha de finalizado el objetivo:  "  {this.props.fechaFin} "</p>
+                                            <p> <i className="share icon" />Numero de conmentarios :   "  {this.props.numeroComentarios} "</p>
+                                            <p> <i className="share icon" />Numero de tareas hechas:  "  {this.props.numeroTareas} "</p>
+                                            <p> <i className="share icon" />Numero de archivos adjuntos: "  {this.props.numeroAdjuntos} "</p>
                                             <br />
                                             <h3>Comentarios:</h3>
                                             {this.renderComentarios(this.props.objetivoF)}
@@ -333,15 +362,25 @@ console.log('cambiosss');
                         </Modal.Content>
 
                         <Modal.Actions>
-                            <div class="ui toggle checkbox ubicarCh">
+                            <div className="ui toggle checkbox ubicarCh">
                                 <input type="checkbox"
                                     checked={this.state.valueR}
                                     onChange={this.onChange}
+                                    disabled={this.props.usuarioGesto ? true : false}
                                     name="public" />
                                 <label></label>
                             </div><h5>Resaltar</h5>
-                            <Button color='green' onClick={() => { this.guardarResaltar(this.props.objetivoF, this.props.userId, this.props.keyF); this.handleClose2(); }}>
-                                Guardar <Icon name='chevron right' />
+                            <Button color='green' onClick={() => {
+
+                                if (this.props.usuarioGesto) { this.ConcluirObjetivo(this.props.objetivoF, this.props.usuarioGesto, this.props.keyF); }
+
+
+                                else { this.guardarResaltar(this.props.objetivoF, this.props.userId, this.props.keyF); } this.handleClose2();
+                            }
+                            }>
+
+
+                                {this.props.usuarioGesto ? 'Validar' : 'Guardar'} <Icon name={this.props.usuarioGesto ? 'clipboard outline' : 'chevron right'} />
                             </Button>
                         </Modal.Actions>
                     </Modal>
@@ -354,20 +393,24 @@ console.log('cambiosss');
 
 
 
-            </div>
+            </div >
 
 
         )
     };
+
+
+
 };
 
 
 const mapAppStateToProps = (state) => (
     {
+        equipoConsulta: state.chatReducer.equipoConsulta,
         listaFormacion: state.chatReducer.listaFormacion,
         userId: state.auth.userId,
         nombreUser: state.chatReducer.nombreUser,
 
     });
 
-export default connect(mapAppStateToProps)(ListEjemplo);
+export default connect(mapAppStateToProps, { equipoConsultas })(ListEjemplo);

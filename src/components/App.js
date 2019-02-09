@@ -13,9 +13,9 @@ import hupityIngreso from './ingresoApp';
 import ingreso from './modules/ingreso';
 import dashboard from './DashBoard';
 import Hupps from './modules/Hupps';
-
+import { connect } from 'react-redux';
 import './modules/chatBot/chatHupApp.css';
-
+import Feedback from '../components/feedbackHupity';
 
 
 //PruebaG
@@ -28,7 +28,15 @@ import './modules/chatBot/chatHupApp.css';
 class App extends React.Component {
 
 
+
+
     render() {
+
+
+
+
+
+
         return (
 
 
@@ -67,7 +75,7 @@ class App extends React.Component {
                 </div>
                 <div className="pie-Pagina">
 
-                    
+                    <Feedback />
                     <MenuChat />
 
                 </div>
@@ -75,15 +83,8 @@ class App extends React.Component {
             </div >
 
 
-
-
-
-
-
-
-
         );
     }
 };
 
-export default App; 
+export default connect(null)(App); 

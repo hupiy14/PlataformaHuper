@@ -27,6 +27,7 @@
     "react-files": "^2.4.8",
     "react-float-button": "^0.1.2",
     "react-google-picker": "^0.1.0",
+    "react-moment": "^0.8.4",
     "react-native": "^0.58.1",
     "react-native-file-transfer": "0.0.3",
     "react-native-fs": "^2.13.3",

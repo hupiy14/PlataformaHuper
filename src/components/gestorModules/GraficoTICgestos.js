@@ -105,13 +105,13 @@ const datosG333 = [
 
 
 
-class CrearGraficaHistorico extends React.Component{
+class CrearGraficaGestor extends React.Component{
     render(){
         return(
 
             <CrearGrafica labelsX={labelsDias}
-            label1={"Historico de trabajo"}
-            label2={"MIT"}
+            label1={"MIT del equipo"}
+            label2={"MIT Personal"}
             label3={"Trabajo Realizado"}
             titleGrafica={"Trabajo (Tareas) vs Dias"}
             datos1={datosG1}
@@ -119,14 +119,14 @@ class CrearGraficaHistorico extends React.Component{
             datos3={datosG111}
             numeroGrafica={'2'}
             maxLen={'150'}
-            TituloGrafica={"Historico"}
+            TituloGrafica={"MIT del equipo"}
 
         />
         );
     }
 }
 
-export default CrearGraficaHistorico;
+export default CrearGraficaGestor;
 
 
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import GoogleAuth from './GoogleAuth';
-import image from '../images/hupityNewlogo.png';
+import image from '../images/logo.png';
 import '../components/styles/ingresoHupity.css';
 
 class Header extends React.Component {

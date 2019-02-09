@@ -15,11 +15,29 @@ import _ from 'lodash';
 
 
 
-
+import { Image, } from 'semantic-ui-react';
+import Avatar from '../../../apis/xpress';
 
 class App extends React.Component {
 
+    state = { avatares: null }
+    onSearchXpress = async () => {
+        const response = await Avatar.get('/xpresso/v1/search', {
+            params: {
+                apiKey: '6hSjEEYWVHTmSUUwvwjJzTpX8_zq8noEYq2-_r5ABnkq98vSw1jvHFKncRlYUA-C',
+                query: "user"
+            },
+
+        });
+        //     console.log(response.data);
+        this.setState({ avatares: response.data.lowResGifs })
+
+    }
+
+
+
     componentDidMount() {
+        this.onSearchXpress();
         this.props.consultaPreguntaControls(1);
         this.props.borrarChats(this.props.user.activeChat.participants);
         //this.props.endChat('6');
@@ -27,14 +45,16 @@ class App extends React.Component {
         this.props.chatIdentifiador('6');
         if (this.props.mensajeEnt) {
             const chatID = '13';
-            this.props.tipoPreguntas('Diaria');
-            
+
+
             const nameRef2 = firebase.database().ref().child('Mensaje-ChatBot').child('Saludo').child('1');
             nameRef2.on('value', (snapshot2) => {
 
 
                 const mensaje = snapshot2.val().concepto;
                 const result = _.replace(mensaje, /@nombre/g, this.props.nombreUser);
+
+                //    const imf = <Image src='https://xpresso2.mobigraph.co/xpresso/v2/media/1bfaLcimzkhPQ2w9jwolG3qxXUqmdjw-1/7d140000.gif' size='small' />;
                 this.props.submitMessage(result, chatID, '6');
 
 
@@ -120,16 +140,69 @@ class App extends React.Component {
                       
             */
             //Pregunta Diaria (Listo)
-            
-             const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWGFo3s87SjzppL7hoF');
-             starCountRef.on('value', (snapshot) => {
-                 this.props.consultaChats(snapshot.val());
-             
-                 this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-             });
-             
+            if (this.props.userRol === '3') {
+                this.props.tipoPreguntas('Diaria');
+                const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWGFo3s87SjzppL7hoF');
+                starCountRef.on('value', (snapshot) => {
+                    this.props.consultaChats(snapshot.val());
+
+                    this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                    // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                });
+            }
             // this.props.mensajeEntradas(false);
+
+
+            ///Crear objetivo Gestor 
+            /*
+                        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXtZVCN7-52d44THkXP');
+                        starCountRef.on('value', (snapshot) => {
+                            this.props.consultaChats(snapshot.val());
+            
+                            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                        });
+            
+            */
+
+
+            ///Crear Feedback Exporadico Gestor
+            /*
+                        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_CrEJFXvUlEN_tp5');
+                        starCountRef.on('value', (snapshot) => {
+                            this.props.consultaChats(snapshot.val());
+            
+                            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                        });
+            
+            
+            */
+
+            ///Consultar trabajo del huper
+            /*
+                        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_NqMTxrwo-Ap7UTR');
+                        starCountRef.on('value', (snapshot) => {
+                            this.props.consultaChats(snapshot.val());
+            
+                            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                        });
+            
+            
+            */
+
+            //Consulta opciones fase 1 Gestor
+            else if (this.props.userRol === '2') {
+                this.props.tipoPreguntas('Consulta Gestor');
+                const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_TDJQilcvBxWh955');
+                starCountRef.on('value', (snapshot) => {
+                    this.props.consultaChats(snapshot.val());
+
+                    this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                    // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                });
+            }
         }
     }
 
@@ -169,16 +242,25 @@ class App extends React.Component {
 
 
     render() {
+        //  if (this.state.avatares)
+        //    console.log(this.state.avatares[1]);
 
         const content = this.props.children
             ? this.props.children
             : <Home user={this.props.user} />
 
+        ///configuracion responsive
+        let tamañoForm = `app-wrapper ${this.props.theme} right floated five wide column`;
+        if (window.screen.width < 500) {
+
+            tamañoForm = `app-wrapperX1 ${this.props.theme} right floated five wide column`;
+        }
+
 
         return (
             <div className="ui grid">
 
-                <div className={"app-wrapper " + this.props.theme + " right floated five wide column"}>
+                <div className={tamañoForm}>
                     {this.renderChatButton()}
                     <Menu />
                 </div>
@@ -199,6 +281,7 @@ const mapAppStateToProps = (state) => (
         nombreUser: state.chatReducer.nombreUser,
         user: state.user,
         theme: state.settings.theme,
+        userRol: state.chatReducer.userRol,
         isChatUbi: state.chatReducer.isChatUbi
     });
 

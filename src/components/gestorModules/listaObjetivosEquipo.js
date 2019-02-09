@@ -2,19 +2,42 @@ import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
 import { Button, Popup, Grid, Input, Header, Modal, Image, Form, Progress, Segment } from 'semantic-ui-react';
-import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs } from '../modules/chatBot/actions';
+import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
 
-var fs = require('fs');
 
 
 
-class listImportante extends React.Component {
+class ListaObjetivosEquipo extends React.Component {
+
     state = {
         images: [], buscar: ['company', 'business', 'worker', 'formal',], ver: false, objetivoS: {}, detalleO: null, prioridadOk: true, guardar: false, cambio: 0, percent: 15, factor: 10, ntareas: 1,
-        consultaTareas: {}, titulo: null, selectedFile: null, loaded: 0,
+        consultaTareas: {}, titulo: null, selectedFile: null, loaded: 0, iconoG: 'assistive listening systems icon', colorIconnoG: 'teal', usuarioG: 0,
         prioridadx: [{ prio: 'inmediato', color: 'red' }, { prio: 'urgente', color: 'yellow' }, { prio: 'normal', color: 'olive' }]
     };
+
+
+    renderObtenerInformacionEquipo() {
+        let variable = [];
+        Object.keys(this.props.equipox).map((key, index) => {
+            const us = key;
+            const starCountRef2 = firebase.database().ref().child(`Usuario-Tareas/${key}`);
+            starCountRef2.on('value', (snapshot) => {
+                const valor = snapshot.val();
+                if (!valor)
+                    return
+                variable[us] = valor
+                this.props.listaObjetivos({ ...this.props.listaObjetivo, ...variable });
+            });
+        });
+    }
+
+
+    componentDidMount() {
+        this.onSearchSubmit();
+        // console.log(this.example2);
+        this.renderObtenerInformacionEquipo();
+    }
 
 
     //vairble x aumento n cantidad terminada n*x
@@ -28,31 +51,17 @@ class listImportante extends React.Component {
         this.setState({ images: response.data.results })
         // console.log(this.state.images);
     }
-    componentDidMount() {
-        this.onSearchSubmit()
-        // console.log(this.example2);
-        let variable = {};
-        const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`);
-        starCountRef.on('value', (snapshot) => {
-            variable = { ...variable, objetivos: snapshot.val() }
-            this.props.listaObjetivos(variable);
 
-        });
 
-        const starCountRef2 = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
-        starCountRef2.on('value', (snapshot) => {
-            variable = { ...variable, tareas: snapshot.val() }
-            this.props.listaObjetivos(variable);
-        });
 
-    }
+    guardarDetalle(the, key, estado) {
 
-    guardarDetalle(the) {
+        if (key === 0) return;
         var updates = {};
         let idObjetivo;
 
 
-        const cconsulta = this.props.listaObjetivo.objetivos;
+        const cconsulta = this.props.equipoConsulta;
         Object.keys(cconsulta).map(function (key2, index) {
             if (cconsulta[key2].estado === 'activo' || cconsulta[key2].estado === 'validar')
                 if (cconsulta[key2].concepto === the.state.objetivoS.concepto) {
@@ -65,8 +74,22 @@ class listImportante extends React.Component {
         const tarea = { ...this.state.objetivoS, detalle: this.state.detalleO !== '' && this.state.detalleO !== null ? this.state.detalleO : this.state.objetivoS.detalle ? this.state.objetivoS.detalle : '' };
         //  console.log(tarea);
 
-        tarea.prioridad = the.state.prioridadOk ? tarea.prioridad : tarea.prioridad === the.state.prioridadx[the.props.prioridadObj].prio ? tarea.prioridad : the.state.prioridadx[the.props.prioridadObj].prio;
-        updates[`Usuario-Objetivos/${this.props.userId}/${idObjetivo}`] = tarea;
+
+
+        const x = the.props.prioridadObj + 1 > 2 ? 0 : the.props.prioridadObj + 1;
+
+        tarea.prioridad = the.state.prioridadx[x].prio;
+
+        console.log(estado);
+        if (estado)
+            tarea.estado = 'activo';
+
+
+
+        //   tarea.prioridad = the.state.prioridadOk ? tarea.prioridad : tarea.prioridad === the.state.prioridadx[the.props.prioridadObj].prio ? tarea.prioridad : the.state.prioridadx[the.props.prioridadObj].prio;
+        // console.log(tarea.prioridad);
+        updates[`Usuario-Objetivos/${key}/${idObjetivo}`] = tarea;
+        //console.log(updates);
         firebase.database().ref().update(updates);
         this.setState({ detalleO: '' });  // this.setState({ prioridadO: true });
     }
@@ -79,6 +102,8 @@ class listImportante extends React.Component {
 
 
     }
+
+
 
 
     handleUpload = () => {
@@ -99,54 +124,121 @@ class listImportante extends React.Component {
     }
 
 
-    componentDidUpdate() {
-        if (this.state.guardar) {
-            this.setState({ guardar: false });
-            this.guardarDetalle(this);
-        }
 
-    }
 
-     //Consultar espacio de trabajo
-     renderConsultarEW() {
+    //Consultar espacio de trabajo
+    renderConsultarEW() {
         if (this.state.objetivoS.carpeta)
             window.open(`https://drive.google.com/drive/folders/${this.state.objetivoS.carpeta}`);
     }
 
-    renderConstruirObj(images, the) {
-        if (the.props.listaObjetivo && the.props.listaObjetivo.objetivos && the.props.listaObjetivo.tareas) {
 
-            const cconsulta = the.props.listaObjetivo.objetivos;
+    eliminarObjetivo(the, key) {
+        var updates = {};
+        let idObjetivo;
+
+
+        const cconsulta = this.props.equipoConsulta;
+        Object.keys(cconsulta).map(function (key2, index) {
+            if (cconsulta[key2].estado === 'activo' || cconsulta[key2].estado === 'validar')
+                if (cconsulta[key2].concepto === the.state.objetivoS.concepto) {
+                    idObjetivo = key2;
+                    //  console.log(key2);
+                }
+        });
+
+
+        const obj = the.props.equipoConsulta;
+        Object.keys(obj).map(function (key2, index) {
+
+            if (key2 === idObjetivo) {
+                obj[key2] = undefined;
+                return;
+            }
+
+
+        });
+
+        the.props.equipoConsultas(the.props.equipoConsulta);
+        this.renderObtenerInformacionEquipo();
+
+        firebase.database().ref(`Usuario-Objetivos/${key}/${idObjetivo}`).remove()
+        firebase.database().ref(`Usuario-Tareas/${key}/${idObjetivo}`).remove()
+    }
+
+
+
+    renderConstruirObj(images, the) {
+        //  console.log(the.props.equipoConsulta);
+        //    console.log(the.props.listaObjetivo);
+        if (the.props.listaObjetivo && the.props.equipoConsulta) {
+
+            const cconsulta = the.props.equipoConsulta;
 
             const opciones = Object.keys(cconsulta).map(function (key2, index) {
+
+                if (!cconsulta[key2])
+                    return;
 
                 const objetivo = cconsulta[key2];
                 const factorObjetivo = cconsulta[key2].numeroTareas;
                 let factor = {};
-                //  const detalleOO =  cconsulta[key2].estado ? cconsulta[key2].estado : '';
                 let tareasCompleta = 0;
                 let resultado = 0;
+                let usuarioIF = 0;
+                let iconGetor = 'assistive listening systems';
+                let boolGestor = false;
 
-                //the.setState( { listAll : this.state.listAll + 1 });
+
                 if (cconsulta[key2].estado === 'activo' || cconsulta[key2].estado === 'validar') {
-                    Object.keys(the.props.listaObjetivo.tareas).map(function (key3, index) {
 
-                        const consultaTareaTT = the.props.listaObjetivo.tareas[key3];
-                        Object.keys(consultaTareaTT).map(function (key33, index) {
-                            if (key3 === key2) {
-                                if (consultaTareaTT[key33].estado === 'finalizado') {
-                                    tareasCompleta = tareasCompleta + 1;
 
+
+
+                    const listaEOB = the.props.listaObjetivo;
+                    Object.keys(listaEOB).map(function (key4, index) {
+                        const listaEOBT = listaEOB[key4];
+                        if (!listaEOBT) return;
+                        Object.keys(listaEOBT).map(function (key3, index) {
+                            const consultaTareaTT = listaEOBT[key3];
+                            Object.keys(consultaTareaTT).map(function (key33, index) {
+                                if (key3 === key2) {
+
+                                    usuarioIF = key4;
+                                    if (consultaTareaTT[key33].estado === 'finalizado') {
+                                        tareasCompleta = tareasCompleta + 1;
+
+                                    }
                                 }
-                            }
+
+                            });
+                            // the.increment(factorObjetivo, numeroTareasTs);
+                            factor = { factor: (100 / factorObjetivo), numero: tareasCompleta };
+                            resultado = factor.factor * tareasCompleta;
+                            // console.log(resultado);
 
                         });
-                        // the.increment(factorObjetivo, numeroTareasTs);
-                        factor = { factor: (100 / factorObjetivo), numero: tareasCompleta };
-                        resultado = factor.factor * tareasCompleta;
-                        // console.log(resultado);
 
                     });
+
+                    if (cconsulta[key2].estado === 'activo') {
+                        iconGetor = 'user times';
+                        boolGestor = true;
+                    }
+
+                    if (the.props.equipoConsulta.sell && the.props.equipoConsulta.sell !== 0 && the.props.equipoConsulta.sell !== usuarioIF)
+                        return;
+
+                        ///configuracion responsive
+                    let cssBotonesEdicion = `right aling-Derecha`;
+                    if (window.screen.width < 500) {
+
+                        cssBotonesEdicion = `right aling-DerechaX2`;
+                    }
+
+
+
+
                     return (
                         <div className="item" key={key2}>
                             <i className={`large middle ${the.props.icono} aligned icon`}  ></i>
@@ -160,11 +252,11 @@ class listImportante extends React.Component {
 
 
                                     <br />
-                                    <div className="right aling-Derecha">
+                                    <div className={cssBotonesEdicion}>
 
                                         <Popup wide trigger={<Button icon='id badge' color='yellow' onClick={() => {
                                             the.onVideoSelect(objetivo);
-                                            //  the.props.prioridadObjs(0); 
+                                            //  the.props.prioridadObjs(0);
                                             the.setState({ prioridadOk: true });
                                         }}
 
@@ -181,7 +273,7 @@ class listImportante extends React.Component {
                                                         onClick={() => {
                                                             the.setState({ prioridadOk: false });
                                                             the.props.prioridadObjs(the.props.prioridadObj + 1 > 2 ? 0 : the.props.prioridadObj + 1);
-                                                            the.setState({ guardar: true });
+                                                            the.guardarDetalle(the, usuarioIF);
 
 
                                                         }}
@@ -204,7 +296,7 @@ class listImportante extends React.Component {
                                         >
 
                                             <Modal.Header>Detalle de objetivo: " {the.state.titulo} "</Modal.Header>
-                                            <Modal.Content image>
+                                            <Modal.Content image >
                                                 <Image wrapped size='medium' src={images[1] ? images[the.state.cambio].urls.regular : ''} />
                                                 <Modal.Description>
                                                     <Header>Instrucciones</Header>
@@ -219,16 +311,22 @@ class listImportante extends React.Component {
 
                                                         <Header as='h5'>Tu espacio de trabajo en el objetivo:</Header>
 
-                                                        <button className="ui button green google drive icon  fluid" onClick={() => { the.renderConsultarEW(cconsulta[key2].carpeta) }}>Consultar espacio de trabajo
-                                                        <i className="google drive icon prueba-xx"> </i>
-                                                        </button>
-
-
-
                                                     </Form>
                                                     <br />
 
                                                     <div className="ui form">
+                                                        <div className="row">
+                                                            <button className='ui button green fluid'
+                                                                onClick={() => {
+
+                                                                    the.renderConsultarEW();
+
+                                                                }} > Consultar espacio de trabajo
+                                                                   <i className="google drive icon prueba-xx"> </i>
+                                                            </button>
+
+                                                        </div>
+                                                        <br></br>
                                                         <div className="two column stackable ui grid">
                                                             <div className="column">
                                                                 <button className='ui button grey fluid'
@@ -244,7 +342,7 @@ class listImportante extends React.Component {
                                                                     onClick={() => {
 
                                                                         the.setState({ ver: !the.state.ver });
-                                                                        the.guardarDetalle(the);
+                                                                        the.guardarDetalle(the, usuarioIF);
                                                                     }} >
                                                                     Guardar
                                                             <i className='large middle  save aligned icon aling-Derecha2 '>
@@ -258,6 +356,51 @@ class listImportante extends React.Component {
                                                 </Modal.Description>
                                             </Modal.Content>
                                         </Modal>
+                                        <Popup wide trigger={<Button icon={iconGetor} color='teal'
+                                            onClick={() => {
+
+                                                the.onVideoSelect(objetivo);
+
+
+
+                                            }}
+
+
+                                        />} on='click'>
+                                            <Grid divided columns='equal'>
+                                                <Grid.Column>
+                                                    <Popup
+                                                        trigger={<Button color='teal' disabled={boolGestor} content='De acuerdo' fluid
+                                                            onClick={() => {
+                                                                the.guardarDetalle(the, usuarioIF, true);
+                                                            }}
+
+                                                        />}
+                                                        content='Estas de acuerdo con el objetivo planteado por tu colaborador'
+                                                        position='top center'
+                                                        size='tiny'
+
+                                                        inverted
+                                                    />
+                                                </Grid.Column>
+                                                <Grid.Column>
+                                                    <Popup
+                                                        /// x icon
+                                                        trigger={<Button color='red' content='Eliminar' fluid
+                                                            onClick={() => {
+                                                                the.eliminarObjetivo(the, usuarioIF);
+                                                            }}
+
+
+                                                        />}
+                                                        content='Quieres eliminar el objetivo acordado, recuerda se perdera todo.'
+                                                        position='top center'
+                                                        size='tiny'
+                                                        inverted
+                                                    />
+                                                </Grid.Column>
+                                            </Grid>
+                                        </Popup>
 
                                     </div>
                                     <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} indicating size='small' attached='top' attached='bottom' />
@@ -272,8 +415,8 @@ class listImportante extends React.Component {
 
         }
         return (
-            <div className="ui segment loaderOBJ">
-                <div className="ui active dimmer loaderOBJ">
+            <div className="ui segment loaderOBJG">
+                <div className="ui active dimmer loaderOBJG">
 
                     <div className="ui text loader">A la espera de tus Objetivos</div>
                 </div>
@@ -292,7 +435,7 @@ class listImportante extends React.Component {
         return (
             <div>
                 <h3>{titulo}</h3>
-                <div className=" maximo-list">
+                <div className="maximo-listEObj">
 
                     <div className="ui relaxed divided animated list ">
 
@@ -309,7 +452,7 @@ class listImportante extends React.Component {
 
 const mapAppStateToProps = (state) => (
     {
-
+        equipoConsulta: state.chatReducer.equipoConsulta,
         numeroTareasTerminadas: state.chatReducer.numeroTareasTerminadas,
         popupDetalle: state.chatReducer.popupDetalle,
         listaObjetivo: state.chatReducer.listaObjetivo,
@@ -319,4 +462,7 @@ const mapAppStateToProps = (state) => (
     });
 
 
-export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs })(listImportante);
+export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas })(ListaObjetivosEquipo);
+
+
+
