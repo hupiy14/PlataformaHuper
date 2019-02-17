@@ -24,9 +24,18 @@ import {
   CONSULTA_MENSAJES,
   CONSULTA_CANALES,
   EQUIPO_CONSULTA,
+  NUEVO_USUARIO,
 
 
 } from './types';
+
+export const nuevoUsuarios = (nuevoUsuario) => {
+
+  return {
+    type: NUEVO_USUARIO,
+    payload: nuevoUsuario
+  };
+};
 
 export const equipoConsultas = (equipoConsulta) => {
 

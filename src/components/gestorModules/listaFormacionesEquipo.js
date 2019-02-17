@@ -5,7 +5,7 @@ import { listaFormaciones } from '../modules/chatBot/actions';
 import { Progress, Segment, Modal, Header, Button, Image, Popup, Grid, List } from 'semantic-ui-react';
 
 class ListaFormacionEquipo extends React.Component {
-    state = { modalOpen: false, videoSrc0: 'r9SI6-yKCpA', videoSrc: '', listaFormacionesEquipo: {}, listaFormaciones: {}, seleccion: null, formacion: null }
+    state = { modalOpen: false, videoSrc0: 'r9SI6-yKCpA', videoSrc: '', listaFormacionesEquipo: {}, listaFormaciones: {}, seleccion: null, formacion: null, typeform: null }
 
     handleOpen = () => this.setState({ modalOpen: true })
 
@@ -15,7 +15,7 @@ class ListaFormacionEquipo extends React.Component {
     cargarInicio() {
         let variable = [];
         Object.keys(this.props.equipox).map((key, index) => {
-             const us = key;
+            const us = key;
             const starCountRef = firebase.database().ref().child(`Usuario-Formcion/${key}`);
             starCountRef.on('value', (snapshot) => {
 
@@ -33,6 +33,7 @@ class ListaFormacionEquipo extends React.Component {
         starCountRef2.on('value', (snapshot) => {
 
             const valor = snapshot.val();
+
             this.setState({ listaFormaciones: valor });
 
         });
@@ -43,16 +44,37 @@ class ListaFormacionEquipo extends React.Component {
     }
 
 
-    renderbuttton(videoSrc) {
+    renderbuttton(formacion) {
 
+        let typeformOb = null;
         let src = `https://www.youtube.com/embed/${this.state.videoSrc0}`;
-        if (videoSrc)
-            src = `https://www.youtube.com/embed/${videoSrc}`;
-        this.setState({ videoSrc: src });
+        if (formacion.link)
+            src = `https://www.youtube.com/embed/${formacion.link}`;
+        if (formacion.typeform)
+            typeformOb = formacion.typeform;
+
+
+        this.setState({ videoSrc: src, typeform: typeformOb });
+
 
     }
 
+
+    renderFormularioType(the) {
+        if (the.state.typeform)
+            return (
+                <div className="sixteen wide column  ">
+                    <div className="ui segment  videoFormacion2">
+                        <div className="ui embed ">
+                            <iframe className="videoFormacion" title="video player" src={the.state.typeform} />
+                        </div>
+                    </div>
+                </div>
+            );
+    }
+
     renderFormacionesEquipoUsuario(the, iconos, cconsulta) {
+        if (!cconsulta) return;
         const opciones = Object.keys(cconsulta).map(function (key2, index) {
             if (cconsulta[key2].estado === 'activo')
                 return (
@@ -61,7 +83,7 @@ class ListaFormacionEquipo extends React.Component {
                         trigger={
                             <div className="item" key={key2} onClick={() => {
                                 the.handleOpen()
-                                the.renderbuttton(cconsulta[key2].link);
+                                the.renderbuttton(cconsulta[key2]);
 
                             }} >
                                 <br className="tiny"></br>
@@ -102,13 +124,8 @@ class ListaFormacionEquipo extends React.Component {
                                     </div>
 
                                 </div>
-                                <div className="sixteen wide column  ">
-                                    <div className="ui segment  videoFormacion2">
-                                        <div className="ui embed ">
-                                            <iframe className="videoFormacion" title="video player" src={'https://lucho20.typeform.com/to/fmPU2P'} />
-                                        </div>
-                                    </div>
-                                </div>
+                                {the.renderFormularioType(the)}
+
 
                             </div>
                         </Modal.Content>
@@ -117,11 +134,13 @@ class ListaFormacionEquipo extends React.Component {
                 );
         });
 
+
         return opciones;
     }
 
     renderFormacionesCompletas(the, iconos) {
         const cconsulta = the.state.listaFormaciones;
+        console.log(cconsulta);
         const opciones = Object.keys(cconsulta).map(function (key2, index) {
             if (cconsulta[key2].estado === 'activo')
                 return (
@@ -130,7 +149,7 @@ class ListaFormacionEquipo extends React.Component {
                         trigger={
                             <div className="item" key={key2} onClick={() => {
                                 the.handleOpen()
-                                the.renderbuttton(cconsulta[key2].link);
+                                the.renderbuttton(cconsulta[key2]);
 
                             }} >
 
@@ -165,13 +184,7 @@ class ListaFormacionEquipo extends React.Component {
                                     </div>
 
                                 </div>
-                                <div className="sixteen wide column  ">
-                                    <div className="ui segment  videoFormacion2">
-                                        <div className="ui embed ">
-                                            <iframe className="videoFormacion" title="video player" src={'https://lucho20.typeform.com/to/fmPU2P'} />
-                                        </div>
-                                    </div>
-                                </div>
+                                {the.renderFormularioType(the)}
 
                             </div>
                         </Modal.Content>
@@ -185,6 +198,9 @@ class ListaFormacionEquipo extends React.Component {
 
 
     AgregarFormacionHuper() {
+        console.log(this.state.seleccion);
+        console.log(this.props.equipoConsulta.sell);
+        console.log(this.state.formacion);
         if (this.state.seleccion) {
             let updates = {};
             updates[`Usuario-Formcion/${this.props.equipoConsulta.sell}/${this.state.seleccion}`] = this.state.formacion;
@@ -196,6 +212,7 @@ class ListaFormacionEquipo extends React.Component {
     }
 
     ListaOpcionesFormacionA(the, iconos, cconsulta2) {
+        console.log('opcioens');
         const cconsulta = the.state.listaFormaciones;
         let x = 0;
         let agregar = true;
@@ -203,14 +220,16 @@ class ListaFormacionEquipo extends React.Component {
             if (cconsulta[key2].estado === 'activo') {
                 let encontro = false;
 
-                Object.keys(cconsulta2).find(function (element) {
+                if (cconsulta2) {
+                    Object.keys(cconsulta2).find(function (element) {
 
-                    if (element === key2) {
-                        encontro = true;
-                        return;
-                    }
+                        if (element === key2) {
+                            encontro = true;
+                            return;
+                        }
 
-                });
+                    });
+                }
 
                 if (encontro) return;
 
@@ -295,16 +314,18 @@ class ListaFormacionEquipo extends React.Component {
 
     renderConstruirObj(iconos, the) {
 
-      //  console.log(the.state.listaFormacionesEquipo);
-        if (the.state.listaFormacionesEquipo && the.state.listaFormaciones) {
-        
+        //  console.log(the.state.listaFormacionesEquipo);
+
+        if (the.state.listaFormaciones) {
+
             const equipoConssulta = the.state.listaFormacionesEquipo
             let pasoVacio = false;
-           let especial = true;
-            const opciones = Object.keys(equipoConssulta).map(function (key3, index) {
+            let especial = true;
+
+            let opciones = Object.keys(equipoConssulta).map(function (key3, index) {
                 const cconsulta = equipoConssulta[key3]
 
-                
+
 
                 Object.keys(equipoConssulta).find(function (element) {
                     if (element === the.props.equipoConsulta.sell) {
@@ -321,15 +342,14 @@ class ListaFormacionEquipo extends React.Component {
 
                 }
                 else if (the.props.equipoConsulta.sell === key3) {
-                 
+
                     return (<div key={key3}>
                         {the.renderFormacionesEquipoUsuario(the, iconos, cconsulta)}
                         {the.renderAgregarFormacion(the, iconos, cconsulta)}
                     </div>
                     );
                 }
-                if(especial)
-                {
+                if (especial) {
                     return (<div key={key3}>
                         {the.renderFormacionesEquipoUsuario(the, iconos, {})}
                         {the.renderAgregarFormacion(the, iconos, {})}
@@ -340,6 +360,21 @@ class ListaFormacionEquipo extends React.Component {
 
 
             });
+            //  console.log(the.props.equipoConsulta);
+
+            if (Object.keys(the.state.listaFormacionesEquipo).length === 0 && the.props.equipoConsulta && !the.props.equipoConsulta.sell) {
+                console.log('entro');
+                opciones = the.renderFormacionesCompletas(the, iconos);
+
+            }
+            else if (Object.keys(the.state.listaFormacionesEquipo).length === 0 && the.props.equipoConsulta && the.props.equipoConsulta.sell) {
+
+                opciones = (<div key={1254}>
+                    {the.renderFormacionesEquipoUsuario(the, iconos, null)}
+                    {the.renderAgregarFormacion(the, iconos, null)}
+                </div>
+                );
+            }
             return opciones;
         }
         else {

@@ -1,149 +1,110 @@
-
 import React from 'react';
-import { Line } from 'react-chartjs-2';
-import { connect } from 'react-redux';
-import ReactDOM from 'react-dom';
+import { Field, reduxForm } from 'redux-form';
+import { Button, Form, Icon, Modal, Segment, Dimmer, Loader } from 'semantic-ui-react';
+import history from '../history';
 
-import randomColor from '../lib/randomColor';
-import randomScalingFactor from '../lib/randomScalingFactor';
-import { Responsive, Segment } from 'semantic-ui-react';
-const randonStyle = require('../lib/randonStyle')
-/*
-const data = {
-  labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-  datasets: [
-    {
-      label: 'My First dataset',
-      fill: false,
-      lineTension: 0.1,
-      backgroundColor: 'rgba(75,192,192,0.4)',
-      borderColor: 'rgba(75,192,192,1)',
-      borderCapStyle: 'butt',
-      borderDash: [],
-      borderDashOffset: 0.0,
-      borderJoinStyle: 'miter',
-      pointBorderColor: 'rgba(75,192,192,1)',
-      pointBackgroundColor: '#fff',
-      pointBorderWidth: 1,
-      pointHoverRadius: 5,
-      pointHoverBackgroundColor: 'rgba(75,192,192,1)',
-      pointHoverBorderColor: 'rgba(220,220,220,1)',
-      pointHoverBorderWidth: 2,
-      pointRadius: 1,
-      pointHitRadius: 10,
-      data: [65, 59, 80, 81, 56, 55, 40]
+class pruebaP extends React.Component {
+
+
+    show = dimmer => () => this.setState({ dimmer, open: true })
+    close = () => this.setState({ open: false })
+    cancelar = () => {
+        this.close();
+        this.props.signOut();
+        this.props.nuevoUsuarios(false);
+        history.push('/login');
     }
-  ]
-};
-*/
 
 
-class LineDemo extends React.Component {
-
-    render() {
-
-        const data = {
-            labels: this.props.labelsX,
-            lineTension: 0.1,
-            backgroundColor: 'rgba(75,192,192,0.4)',
-            borderColor: 'rgba(75,192,192,1)',
-            borderCapStyle: 'butt',
-            borderDash: [],
-            borderDashOffset: 0.0,
-            borderJoinStyle: 'miter',
-            pointBorderColor: 'rgba(75,192,192,1)',
-            pointBackgroundColor: '#fff',
-            pointBorderWidth: 1,
-            pointHoverRadius: 5,
-            pointHoverBackgroundColor: 'rgba(75,192,192,1)',
-            pointHoverBorderColor: 'rgba(220,220,220,1)',
-            pointHoverBorderWidth: 2,
-            pointRadius: 1,
-            pointHitRadius: 10,
-            datasets: [
-                {
-                    //   label: this.props.label1,
-                    data: this.props.datos1,
-                    //  fill: false,
-                    // borderDash: [5, 5]
-                }, {
-                    hidden: true,
-                    //label: this.props.label2,
-                    data: this.props.datos2
-                }, {
-                    // label: this.props.label3,
-                    data: this.props.datos3
-                }
-            ]
+    renderError({ error, touched }) {
+        if (touched && error) {
+            return (
+                <div className="ui error message">
+                    <div className="header">
+                        {error}
+                    </div>
+                </div>
+            );
         }
-
-        const options = {
-            responsive: true,
-            title: {
-                display: true,
-                text: this.props.titleGrafica
-            },
-            tooltips: {
-                mode: 'label'
-            },
-            hover: {
-                mode: 'dataset'
-            },
-            scales: {
-                xAxes: [
-                    {
-                        display: true,
-                        scaleLabel: {
-                            show: true,
-                            labelString: 'Month'
-                        }
-                    }
-                ],
-                yAxes: [
-                    {
-                        display: true,
-                        scaleLabel: {
-                            show: true,
-                            labelString: 'Value'
-                        },
-                        ticks: {
-                            suggestedMin: -10,
-                            suggestedMax: this.props.maxLen
-                        }
-                    }
-                ]
-            }
-        }
-
-        let style = randonStyle();
-
-        for (let dataset of data.datasets) {
-
-            dataset.borderColor = randomColor(0.4, style)
-            dataset.backgroundColor = randomColor(0.5, style)
-            dataset.pointBorderColor = randomColor(0.7, style)
-            dataset.pointBackgroundColor = randomColor(0.5, style)
-            dataset.pointBorderWidth = 1
-            style = style + 1;
-            if (style === 4)
-                style = 1;
-        }
+    }
 
 
+    renderInput = ({ input, label, meta }) => {
+        const className = `field ${meta.error && meta.touched ? 'error' : ''}`;
 
+        // console.log(input);
         return (
-            <div>
-                <h2>Line Example</h2>
-                <Line ref="chart" data={data}    width={100}
-                    height={120} />
+            <div className={className}>
+                <label>{label}</label>
+                <input
+                    {...input}
+                    autoComplete="off" />
+                {this.renderError(meta)}
             </div>
-        );
-    }
 
-    componentDidMount() {
-        const { datasets } = this.refs.chart.chartInstance.data
-        console.log(datasets[0].data);
+        );
+    };
+    onSubmit = (formValues) => {
+        this.props.onSubmit(formValues);
+    }
+    render() {
+        return (
+
+
+            <div>
+
+                <Modal size='tiny' open='true' onClose={this.close}>
+                    <Modal.Header>Bienvenido a hupity</Modal.Header>
+                    <Modal.Content image>
+                        <Modal.Description>
+                            <form onSubmit={this.props.handleSubmit(this.onSubmit)} className="ui form error" >
+                                <Field name="title" component={this.renderInput} label="Enter Title" />
+                                <Field name="description" component={this.renderInput} label="Enter Description" />
+                                <button className="ui button primary">Submit</button>
+                            </form>
+
+                        </Modal.Description>
+                    </Modal.Content>
+                    <Modal.Actions>
+                        <Button color='black' onClick={this.cancelar}>
+                            Cancelar
+</Button>
+
+
+                    </Modal.Actions>
+                </Modal>
+            </div>
+
+
+        );
+
     }
 }
 
-export default LineDemo;
+const validate = (formValues) => {
+    const errors = {};
+    if (!formValues.title) {
+        errors.title = 'You must enter a title';
+    }
+    if (!formValues.description) {
+        errors.description = 'You must enter a description';
+    }
+    return errors;
+};
+
+const mapStateToProps = (state) => {
+    return {
+        //   usuarioDetail: state.chatReducer.usuarioDetail,
+        usuarioDetail: state.chatReducer.usuarioDetail,
+        isSignedIn: state.auth.isSignedIn,
+        nuevoUsuario: state.chatReducer.nuevoUsuario,
+    };
+};
+
+export default reduxForm({mapStateToProps,
+    form: 'streamForm',
+    validate
+})(pruebaP);
+
+
+

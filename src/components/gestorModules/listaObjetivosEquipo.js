@@ -168,6 +168,7 @@ class ListaObjetivosEquipo extends React.Component {
 
 
 
+
     renderConstruirObj(images, the) {
         //  console.log(the.props.equipoConsulta);
         //    console.log(the.props.listaObjetivo);
@@ -229,7 +230,7 @@ class ListaObjetivosEquipo extends React.Component {
                     if (the.props.equipoConsulta.sell && the.props.equipoConsulta.sell !== 0 && the.props.equipoConsulta.sell !== usuarioIF)
                         return;
 
-                        ///configuracion responsive
+                    ///configuracion responsive
                     let cssBotonesEdicion = `right aling-Derecha`;
                     if (window.screen.width < 500) {
 
@@ -237,7 +238,36 @@ class ListaObjetivosEquipo extends React.Component {
                     }
 
 
+                    let style = {
+                        borderRadius: 0.5,
+                    };
+                    if (objetivo.fechafin) {
+                        console.log(objetivo.fechafin);
+                        const fec = new Date(objetivo.fechafin);
 
+                        if (fec < new Date()) {
+
+                            style = {
+                                borderRadius: 0.5,
+                                background: '#f9333340',
+
+                            };
+                        }
+                    }
+
+                    let style2 = {
+                        borderRadius: 0.2,
+                    };
+
+
+                    if (window.screen.width < 500) {
+
+                        style2 = {
+                            overflow: 'auto',
+                            height: '360px',
+                        };
+
+                    }
 
                     return (
                         <div className="item" key={key2}>
@@ -245,7 +275,7 @@ class ListaObjetivosEquipo extends React.Component {
                             <div className="content"   >
 
 
-                                <Segment>
+                                <Segment style={style}>
                                     <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} indicating size='medium' attached='top' />
                                     <div className="header"  >{cconsulta[key2].concepto}</div>
                                     <div className="description"  >{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
@@ -254,7 +284,7 @@ class ListaObjetivosEquipo extends React.Component {
                                     <br />
                                     <div className={cssBotonesEdicion}>
 
-                                        <Popup wide trigger={<Button icon='id badge' color='yellow' onClick={() => {
+                                        <Popup trigger={<Button icon='id badge' color='yellow' onClick={() => {
                                             the.onVideoSelect(objetivo);
                                             //  the.props.prioridadObjs(0);
                                             the.setState({ prioridadOk: true });
@@ -283,78 +313,84 @@ class ListaObjetivosEquipo extends React.Component {
 
                                             </Grid>
                                         </Popup>
-                                        <Modal wide trigger={<Button color='purple' icon='edit outline'
-                                            onClick={() => {
-                                                the.setState({ cambio: Math.round(Math.random() * 6) });
-                                                the.onVideoSelect(objetivo);
-                                                the.setState({ ver: !the.state.ver });
-                                                the.setState({ titulo: cconsulta[key2].concepto });
-                                                the.setState({ detalleO: cconsulta[key2].detalle });
-                                            }}
-                                        />}
+                                        <Modal
+
+                                            trigger={<Button color='purple' icon='edit outline'
+                                                onClick={() => {
+                                                    the.setState({ cambio: Math.round(Math.random() * 6) });
+                                                    the.onVideoSelect(objetivo);
+                                                    the.setState({ ver: !the.state.ver });
+                                                    the.setState({ titulo: cconsulta[key2].concepto });
+                                                    the.setState({ detalleO: cconsulta[key2].detalle });
+                                                }}
+                                            />}
                                             open={the.state.ver}
                                         >
 
                                             <Modal.Header>Detalle de objetivo: " {the.state.titulo} "</Modal.Header>
-                                            <Modal.Content image >
-                                                <Image wrapped size='medium' src={images[1] ? images[the.state.cambio].urls.regular : ''} />
-                                                <Modal.Description>
-                                                    <Header>Instrucciones</Header>
-                                                    <p>Podrás cambiar fácilmente el detalle o adjuntar archivo al objetivo.</p>
-
-                                                    <Form>
-                                                        <Header as='h5'>Describe el detalle :</Header>
-                                                        <Input fluid value={the.state.detalleO}
-                                                            placeholder='Describe el objetivo a realizar...'
-                                                            onChange={e => the.setState({ detalleO: e.target.value })}>
-                                                        </Input>
-
-                                                        <Header as='h5'>Tu espacio de trabajo en el objetivo:</Header>
-
-                                                    </Form>
-                                                    <br />
-
-                                                    <div className="ui form">
-                                                        <div className="row">
-                                                            <button className='ui button green fluid'
-                                                                onClick={() => {
-
-                                                                    the.renderConsultarEW();
-
-                                                                }} > Consultar espacio de trabajo
-                                                                   <i className="google drive icon prueba-xx"> </i>
-                                                            </button>
-
+                                            <Modal.Content image scrolling >
+                                                <div className="ui form">
+                                                    <div className="ui grid">
+                                                        <div className="eight wide column">
+                                                            <Image wrapped size='medium' src={images[1] ? images[the.state.cambio].urls.regular : ''} />
                                                         </div>
-                                                        <br></br>
-                                                        <div className="two column stackable ui grid">
-                                                            <div className="column">
-                                                                <button className='ui button grey fluid'
-                                                                    onClick={() => {
+                                                        <div className="eight wide column">
+                                                            <Modal.Description>
+                                                                <Header>Instrucciones</Header>
+                                                                <p>Podrás cambiar fácilmente el detalle o adjuntar archivo al objetivo.</p>
 
-                                                                        the.setState({ ver: !the.state.ver });
 
-                                                                    }} > Cancelar</button>
+                                                                <Header as='h5'>Describe el detalle :</Header>
+                                                                <Input fluid value={the.state.detalleO}
+                                                                    placeholder='Detalla el objetivo a realizar...'
+                                                                    onChange={e => the.setState({ detalleO: e.target.value })}>
+                                                                </Input>
 
-                                                            </div>
-                                                            <div className="column">
-                                                                <button className='ui button purple fluid save icon'
-                                                                    onClick={() => {
-
-                                                                        the.setState({ ver: !the.state.ver });
-                                                                        the.guardarDetalle(the, usuarioIF);
-                                                                    }} >
-                                                                    Guardar
-                                                            <i className='large middle  save aligned icon aling-Derecha2 '>
-                                                                    </i>
+                                                                <br></br>
+                                                                <button className="ui button green google drive icon  fluid" onClick={() => { the.renderConsultarEW(); }}>Consultar espacio de trabajo
+                                                        <i className="google drive icon prueba-xx"> </i>
                                                                 </button>
-
-                                                            </div>
+                                                            </Modal.Description>
                                                         </div>
                                                     </div>
-
-                                                </Modal.Description>
+                                                </div>
                                             </Modal.Content>
+
+
+
+
+                                            <Modal.Actions>
+
+                                                <div className="two column stackable ui grid">
+                                                    <div className="column">
+                                                        <button className='ui button grey fluid'
+                                                            key={key2}
+                                                            onClick={() => {
+
+                                                                the.setState({ ver: !the.state.ver });
+
+                                                            }} > Cancelar</button>
+
+                                                    </div>
+                                                    <div className="column">
+                                                        <button className='ui button purple fluid save icon'
+                                                            key={key2}
+                                                            onClick={() => {
+                                                                the.setState({ ver: !the.state.ver });
+                                                                the.guardarDetalle(the, usuarioIF);
+                                                            }} >
+                                                            Guardar
+                                                            <i className='large middle  save aligned icon aling-Derecha2 '>
+                                                            </i>
+                                                        </button>
+
+                                                    </div>
+                                                </div>
+
+
+                                            </Modal.Actions>
+
+
                                         </Modal>
                                         <Popup wide trigger={<Button icon={iconGetor} color='teal'
                                             onClick={() => {
@@ -407,7 +443,7 @@ class ListaObjetivosEquipo extends React.Component {
                                 </Segment>
 
                             </div>
-                        </div>
+                        </div >
                     );
                 }
             });

@@ -30,13 +30,12 @@ class listPersonasEquipo extends React.Component {
             },
 
         });
-   //     console.log(response.data);
+        //     console.log(response.data);
         this.setState({ avatares: response.data.lowResGifs })
 
     }
     componentDidMount() {
         this.onSearchXpress();
-
 
     }
 
@@ -167,14 +166,16 @@ class listPersonasEquipo extends React.Component {
         if (this.props.listaPersonas && this.props.equipox && this.props.diateletrabajo) {
             //  console.log('Cambio');
             const cconsulta = this.props.listaPersonas;
-            const opciones = Object.keys(this.props.equipox).map((key, index) => {
+            const consultaEq = this.props.equipox;
+            const opciones = Object.keys(consultaEq).map((key, index) => {
                 if (Object.keys(cconsulta).find((key2, index) => key2 === key)) {
 
                     if (key === this.props.userId) {
                         return;
                     }
-
-
+                    console.log(consultaEq[key].Rol);
+                    if (consultaEq[key].Rol === '2')
+                        return;
                     const resultado = 100;
 
                     return (
@@ -217,13 +218,7 @@ class listPersonasEquipo extends React.Component {
 
     }
 
-    componentDidUpdate() {
-        /*  if (this.state.Cambio) {
-              console.log('editar');
-              //     this.setState({ Cambio: false });
-             // console.log(this.state.diateletrabajo);
-          }*/
-    }
+
 
     render() {
         //  console.log(this.props.popupDetalle);

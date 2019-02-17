@@ -16,7 +16,7 @@ import Hupps from './modules/Hupps';
 import { connect } from 'react-redux';
 import './modules/chatBot/chatHupApp.css';
 import Feedback from '../components/feedbackHupity';
-
+import  IngresosHuper from './ingresarUsuarioNuevo';
 
 //PruebaG
 
@@ -60,8 +60,7 @@ class App extends React.Component {
                                             <Route path="/login" exact component={ingreso} />
                                             <Route path="/dashboard" component={dashboard} />
                                             <Route path="/hupps" exact component={Hupps} />
-
-
+                                            <Route path="/newuser" exact component={IngresosHuper} />
                                         </Switch>
 
 

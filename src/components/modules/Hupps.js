@@ -16,10 +16,10 @@ class Hupps extends React.Component {
     componentDidMount() {
         this.onSearchSubmit('business')
 
-        console.log('Imagenes Hupps')
-        console.log(this.props.listaObjetivo);
+      //  console.log('Imagenes Hupps')
+      //  console.log(this.props.listaObjetivo);
         if (this.props.equipoConsulta) {
-            console.log(this.props.equipoConsulta);
+        //    console.log(this.props.equipoConsulta);
             this.props.listaObjetivos({ tareas: this.props.listaObjetivo, objetivos: this.props.equipoConsulta });
         }
 
@@ -50,9 +50,9 @@ class Hupps extends React.Component {
 
         const cconsulta = this.props.listaObjetivo.objetivos;
         let x = 0;
-
+        let y = 0;
         const opciones = Object.keys(cconsulta).map(function (key2, index) {
-            let y = 0;
+          
             if (cconsulta[key2].estado === 'concluido') { return; }
             x = x + 1;
 
@@ -69,7 +69,7 @@ class Hupps extends React.Component {
                 y = 0;
                // the.onSearchSubmit('company')
             }
-            y++;
+            y= y + 1;
             return (
                 <div className="column  " key={key2}>
                     <CardFeedback image={the.state.images[y].urls.regular}
@@ -144,7 +144,7 @@ class Hupps extends React.Component {
               //  the.onSearchSubmit('company')
             }
 
-            y++;
+            y= y + 1;
             return (
                 <div className="column  " key={key2}>
                     <CardFeedback image={the.state.images[y].urls.regular}
@@ -173,7 +173,7 @@ class Hupps extends React.Component {
     }
 
     renderGrafico2(the) {
-        console.log(the.state.images);
+       // console.log(the.state.images);
         if (the.state.images[1]) {
 
             if (the.props.listaObjetivo && the.props.listaObjetivo.objetivos && the.props.listaObjetivo.tareas) {

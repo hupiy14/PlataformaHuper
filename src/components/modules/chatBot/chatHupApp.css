@@ -59,7 +59,7 @@
 
 .loaderOBJG{
   display: flex;
-  height: 26em;
+  height: 30em;
 }
 
 
@@ -70,7 +70,7 @@
 
 .loaderOBJ2{
   display: flex;
-  height: 4.5em;
+  height: 7em;
 }
 
 .loaderOBJ3{
@@ -92,11 +92,15 @@
 .foot-chatHX1{
   position: fixed;
   margin: 0.5em;
-  bottom: 12%; 
+  bottom: 15%; 
   right: 1%;
   width: 82em;
   z-index: 6;
   animation: back-to-docs 1.5s ease-in-out 0s infinite normal none running;
+}
+
+.ppCambioColor{
+  background: #32fc04;
 }
 
 .Cambioo2{
@@ -292,6 +296,7 @@ textarea {
   height: 44em;
   position: relative;
   overflow: hidden;
+  z-index: 4000;
   border-radius: 30px;
   box-shadow: 10px 10px 10px -8px rgba(0, 0, 0, 0.35);
   margin-top: 3%;
@@ -303,6 +308,7 @@ textarea {
 .app-wrapperX1 {
   width: 100%;
   height: 34em;
+  z-index: 4000;
   position: relative;
   overflow: hidden;
   border-radius: 30px;
@@ -623,6 +629,21 @@ textarea {
   position: absolute;
   z-index: 4000;
   top: 25.5em;
+  left: 15em;
+  font-size: 20px;
+  text-align: center;
+  border-radius: 50%;
+  border: 0 none;
+  color: rgba(0, 0, 0, 0.4);
+  background: 0 none;
+  cursor: pointer;
+}
+.send-button-chX1 {
+  height: 30px;
+  width: 30px;
+  position: absolute;
+  z-index: 4000;
+  top: 18.5em;
   left: 15em;
   font-size: 20px;
   text-align: center;

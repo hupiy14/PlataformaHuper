@@ -84,7 +84,7 @@ class App extends React.Component {
             */
 
             //Mensaje de Salida
-            /*    
+            /* 
                 const starCountRef3 = firebase.database().ref().child('Mensaje-ChatBot/Despedida Huper/1');
                 starCountRef3.on('value', (snapshot) => {
                     const result = _.replace(snapshot.val().concepto, /@nombre/g, this.props.nombreUser);
@@ -98,7 +98,9 @@ class App extends React.Component {
                   
                     this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
                     // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                });*/
+                });
+*/
+
             //Seguimiento
             /*
             const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWk8_7EYCjLe-twidsN');
@@ -141,6 +143,26 @@ class App extends React.Component {
             */
             //Pregunta Diaria (Listo)
             if (this.props.userRol === '3') {
+
+                /*
+                                  //Mensaje de Salida
+                                  this.props.tipoPreguntas('Despedida');
+                                  const starCountRef3 = firebase.database().ref().child('Mensaje-ChatBot/Despedida Huper/1');
+                                  starCountRef3.on('value', (snapshot) => {
+                                      const result = _.replace(snapshot.val().concepto, /@nombre/g, this.props.nombreUser);
+                                      this.props.submitMessage(result, chatID, this.props.idChatUser);
+                                      //this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                                  });
+                      
+                                  const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWl1r4nhd8kxizVeVWv');
+                                  starCountRef.on('value', (snapshot) => {
+                                      this.props.consultaChats(snapshot.val());
+                                    
+                                      this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                                      // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                                  });
+                                  */
+
                 this.props.tipoPreguntas('Diaria');
                 const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWGFo3s87SjzppL7hoF');
                 starCountRef.on('value', (snapshot) => {

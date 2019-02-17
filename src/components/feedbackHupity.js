@@ -10,7 +10,7 @@ class Feed extends React.Component {
         let ancho = '28em';
         let largo = '45em';
         let ubicacion = `feedbackBT`;
-        let salida = 'right bottom';
+        let salida = 'bottom right';
         
         if (window.screen.width < 500) {
 

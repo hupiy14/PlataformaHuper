@@ -378,6 +378,14 @@ class Home extends React.Component {
       //  console.log(tipPrgutna);
       if (tipPrgutna === 'Diaria') {
 
+
+        //registro de horas Entrada
+        const hoy = new Date();
+        firebase.database().ref(`Usuario-Registro/${this.props.userId}/${hoy.getFullYear()}/${hoy.getMonth()}/${hoy.getDate()}`).set({
+          horaInicio: hoy.getTime(),
+        });
+
+
         let postData;
         let newPostKey2;
         // let numeroTareaObj = 0;
@@ -424,6 +432,7 @@ class Home extends React.Component {
             estado: 'validar',
             carpeta: this.state.carpeta,
             prioridad: 'normal',
+            fechafin: this.validarFechaSemanaMax()
           };
         }
 
@@ -544,33 +553,57 @@ class Home extends React.Component {
         this.renderHistoricoHuper(this.props.userId, `Preguntas de la semana`, 'trabajo');
       }
 
-      else if (tipPrgutna === 'Despedida' && this.props.valorInput === 'Eliminar Tareas') {
-        let cconsulta;
-        var updates = {};
-        let tarea = {};
-        const usuario = this.props.userId;
-        const starCountRef = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
-        starCountRef.on('value', (snapshot) => {
-          cconsulta = snapshot.val();
-          Object.keys(cconsulta).map(function (key2, index) {
-            const ccconsulta = cconsulta[key2];
-            Object.keys(ccconsulta).map(function (key, index) {
-              if (ccconsulta[key].estado === 'activo') {
+      else if (tipPrgutna === 'Despedida') {
 
-                tarea = ccconsulta[key];
-                tarea.estado = 'desechadas';
-                updates[`Usuario-Tareas/${usuario}/${key2}/${key}`] = tarea;
-              }
+
+        //registro de hora de salida
+        const hoy = new Date();
+        let registro;
+        const starCountRef5 = firebase.database().ref().child(`Usuario-Registro/${this.props.userId}/${hoy.getFullYear()}/${hoy.getMonth()}/${hoy.getDate()}`);
+        starCountRef5.on('value', (snapshot) => {
+          registro = snapshot.val();
+          if (registro) {
+            firebase.database().ref(`Usuario-Registro/${this.props.userId}/${hoy.getFullYear()}/${hoy.getMonth()}/${hoy.getDate()}`).set({
+              ...registro,
+              horaFin: hoy.getTime(),
+              tiempoTrabajo: hoy.getTime() - registro.horaInicio,
+            });
+          }
+        });
+        //eliminar tareas
+        if (this.props.valorInput === 'Eliminar Tareas') {
+
+          ///eliminar tareas 
+          let cconsulta;
+          var updates = {};
+          let tarea = {};
+          const usuario = this.props.userId;
+          const starCountRef = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
+          starCountRef.on('value', (snapshot) => {
+            cconsulta = snapshot.val();
+            Object.keys(cconsulta).map(function (key2, index) {
+              const ccconsulta = cconsulta[key2];
+              Object.keys(ccconsulta).map(function (key, index) {
+                if (ccconsulta[key].estado === 'activo') {
+
+                  tarea = ccconsulta[key];
+                  tarea.estado = 'desechadas';
+                  updates[`Usuario-Tareas/${usuario}/${key2}/${key}`] = tarea;
+                }
+
+              });
 
             });
 
+            firebase.database().ref().update(updates);
           });
-
-          firebase.database().ref().update(updates);
-        });
-        console.log(cconsulta);
+        }
+        //console.log(cconsulta);
         this.renderHistoricoHuper(this.props.userId, `Despedida del dia`, 'fin');
+
       }
+
+
       else if (tipPrgutna === 'Seguimiento') {
 
         const cconsulta = this.props.consultax;
@@ -652,6 +685,7 @@ class Home extends React.Component {
           estado: 'activo',
           carpeta: this.state.carpeta,
           prioridad: 'urgente',
+          fechafin: this.validarFechaSemanaMax()
         };
 
         this.setState({ updates: { key: `Usuario-Objetivos/${keyUsuarioGT}/${newPostKey2}`, datos: postData } });
@@ -690,8 +724,7 @@ class Home extends React.Component {
           }
         });
 
-       this.renderEnvioSlackGestor(chatTrazo, usuarioGT.canalSlack);
-
+        this.renderEnvioSlackGestor(chatTrazo, usuarioGT.canalSlack);
 
       }
 
@@ -778,6 +811,15 @@ class Home extends React.Component {
     this.props.valorInputs(vacio);
     // inputX.value = '';
   }
+
+  validarFechaSemanaMax() {
+    var fecahMinima = new Date();
+    const diferencia = fecahMinima.getDay() - 1;
+    fecahMinima.setDate(fecahMinima.getDate() + (-(diferencia)));
+    fecahMinima.setDate(fecahMinima.getDate() + 5);
+    return new Date(fecahMinima)
+  }
+
   render() {
     const {
       activeChat,
@@ -816,7 +858,11 @@ class Home extends React.Component {
       return prev;
     }, []);
 
+    let ubicacionBt = "send-button-ch";
+    if (window.screen.width < 500) {
 
+      ubicacionBt = "send-button-chX1";
+    }
 
     return (
       <div>
@@ -891,7 +937,7 @@ class Home extends React.Component {
 
           <BoxDianmico />
           <button
-            className="send-button-ch"
+            className={ubicacionBt}
             type="submit"
           >
             <i className="chevron right icon"

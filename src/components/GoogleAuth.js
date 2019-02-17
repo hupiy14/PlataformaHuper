@@ -1,16 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails, chatOn, chatOff  } from '../actions';
+import { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails, chatOn, chatOff } from '../actions';
 import history from '../history';
+import { nuevoUsuarios } from '../components/modules/chatBot/actions';
 import '../components/styles/ingresoHupity.css';
 import firebase from 'firebase';
 const timeoutLength = 5000;
 
-
+const timeoutLength2 = 600000;
 
 
 class GoogleAuth extends React.Component {
-    state = { selectedFile: null, loaded: 0 }
+    state = { selectedFile: null, loaded: 0, codigo: null, usuario: null }
     componentDidMount() {
 
         //Conectar a google  con el drive,
@@ -39,50 +40,105 @@ class GoogleAuth extends React.Component {
         }, timeoutLength)
     }
 
-   
+
+    handleOpen2 = () => {
+        this.timeout = setTimeout(() => {
+            const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${this.state.codigo}`);
+            starCountRef.on('value', (snapshot) => {
+                const cod = snapshot.val();
+                if (cod) {
+                    if (cod.estado !== 'activo' && cod.estado !== 'anulado' && cod.estado !== 'usado') {
+                        cod.estado = 'usado';
+                        const us = this.state.usuario;
+                        us.estado = 'inactivo';
+
+                        firebase.database().ref(`Codigo-Acceso/${this.state.codigo}`).set({
+                            ...cod,
+                            fechaTer: new Date().toString(),
+
+                        })
+
+                        firebase.database().ref(`Usuario/${this.auth.currentUser.get().getId()}`).set({
+                            ...us,
+                        })
+                        this.auth.signOut();
+                    }
+                }
+            })
+
+        }, timeoutLength2)
+    }
+
+
 
 
     onAuthChange = isSignedIn => {
+        console.log(this.auth.currentUser.get());
         if (this.auth.currentUser.get().w3)
             this.props.nombreUsuario(this.auth.currentUser.get().w3.ofa);
         //console.log(this.auth.currentUser.get().w3.ig);
 
-        let x;
+        //let x;
 
         if (isSignedIn) {
-
+            this.props.nuevoUsuarios(true);
             //Encuentra el Rol,
             const nameRef = firebase.database().ref().child('Usuario').child(this.auth.currentUser.get().getId());
             nameRef.on('value', (snapshot) => {
 
-                // console.log(snapshot.val());
-                if (snapshot.val()) {
-                    const Usuario = snapshot.val();
 
-                  //  console.log(Usuario.empresa);
-                   // console.log(Usuario.equipo);
+                // console.log(snapshot.val());
+
+                if (snapshot.val()) {
+
+                    //invalida codifo de acceso
+                    const Usuario = snapshot.val();
+                    if (Usuario.codigo) {
+
+                        if (Usuario.estado === 'activo') {
+                            console.log(Usuario.codigo);
+                            this.setState({ codigo: Usuario.codigo })
+                            this.setState({ usuario: Usuario })
+                            this.handleOpen2();
+                        }
+                        else ///puedo hacer la reactivacion dependiendo. ****************Importante
+                            this.auth.signOut();
+                    }
+                    //  console.log(Usuario.empresa);
+                    // console.log(Usuario.equipo);
                     console.log(this.auth.currentUser.get().getId());
                     const nameRef3 = firebase.database().ref().child(`Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${this.auth.currentUser.get().getId()}`)
                     nameRef3.on('value', (snapshot3) => {
                         //        console.log(snapshot3.val());
-                        this.props.usuarioDetails({ usuario: Usuario, idUsuario: this.auth.currentUser.get().getId(), linkws: snapshot3.val().linkWs });
+                        if (snapshot3.val())
+                            this.props.usuarioDetails({ usuario: Usuario, idUsuario: this.auth.currentUser.get().getId(), linkws: snapshot3.val().linkWs });
                     });
 
 
                     const nameRef2 = firebase.database().ref().child('Usuario-Rol').child(this.auth.currentUser.get().getId());
                     nameRef2.on('value', (snapshot2) => {
                         //      console.log(snapshot2.val());
-                       
-                        this.props.userRolIn(snapshot2.val().Rol);         
-                        if(snapshot2.val().Rol === '3'){
+
+                        this.props.userRolIn(snapshot2.val().Rol);
+                        if (snapshot2.val().Rol === '3') {
                             this.handleOpen();
                         }
 
 
                     });
+
                 }
                 else {
-                    this.auth.signOut();
+
+                    //  if (this.props.nuevoUsuario !== true) {
+                    //  this.auth.signOut();
+                    const usuarioNuevo = { nombre: this.auth.currentUser.get().w3.ig, correo: this.auth.currentUser.get().w3.U3, id: this.auth.currentUser.get().w3.Eea };
+                    this.props.usuarioDetails({ usuarioNuevo });
+                    //   if(this.props.isSignedIn === false)
+                    history.push('/newuser');
+                    //   this.props.signOut();
+
+
                 }
 
             })
@@ -90,18 +146,25 @@ class GoogleAuth extends React.Component {
 
             this.props.signIn(this.auth.currentUser.get().getId());
         } else {
+
+
             this.props.signOut();
         }
 
 
-        if (x)
-            this.props.signOut();
+        //  if (x)
+        //    this.props.signOut();
 
     };
 
 
 
+    componentDidUpdate() {
 
+        if (this.props.nuevoUsuario === false)
+            this.auth.signOut();
+
+    }
 
 
 
@@ -117,11 +180,13 @@ class GoogleAuth extends React.Component {
         if (this.props.isSignedIn === null) {
             return null;
         } else if (this.props.isSignedIn) {
+
+
             history.push('/dashboard');
             return (
                 <button onClick={this.onSignOutClick} className="ui red google button bar-top">
                     <i className="google icon" />
-                    Sing Out
+                    Sign Out
             </button>
             );
         } else {
@@ -129,7 +194,7 @@ class GoogleAuth extends React.Component {
             return (
                 <button onClick={this.onSignInClick} className="ui red google button">
                     <i className="google icon" />
-                    Sing In with Google
+                    Sign In with Google
           </button>
 
             );
@@ -148,8 +213,10 @@ class GoogleAuth extends React.Component {
 const mapStateToProps = (state) => {
     return {
         //   usuarioDetail: state.chatReducer.usuarioDetail,
-        isSignedIn: state.auth.isSignedIn
+
+        isSignedIn: state.auth.isSignedIn,
+        nuevoUsuario: state.chatReducer.nuevoUsuario,
     };
 };
 
-export default connect(mapStateToProps, { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails, chatOn, chatOff })(GoogleAuth);
+export default connect(mapStateToProps, { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails, chatOn, chatOff, nuevoUsuarios })(GoogleAuth);

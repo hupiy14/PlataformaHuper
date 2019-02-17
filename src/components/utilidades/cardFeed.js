@@ -370,6 +370,9 @@ class ListEjemplo extends React.Component {
                                     name="public" />
                                 <label></label>
                             </div><h5>Resaltar</h5>
+                            <Button color='red' onClick={() => { this.handleClose2() }} inverted>
+                                <Icon name='close' /> Cancelar
+                          </Button>
                             <Button color='green' onClick={() => {
 
                                 if (this.props.usuarioGesto) { this.ConcluirObjetivo(this.props.objetivoF, this.props.usuarioGesto, this.props.keyF); }

@@ -18,6 +18,7 @@ class ingresoPlataforma extends React.Component{
                     <br></br>
                     <Link to="/login" className="ui big button">Ingresar</Link>
                 </div>
+               
             </div>
 
 

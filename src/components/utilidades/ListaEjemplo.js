@@ -5,7 +5,7 @@ import { listaFormaciones } from '../modules/chatBot/actions';
 import { Progress, Segment, Modal, Header, Button, Icon } from 'semantic-ui-react';
 
 class ListEjemplo extends React.Component {
-    state = { modalOpen: false, videoSrc0: 'r9SI6-yKCpA', videoSrc: '' }
+    state = { modalOpen: false, videoSrc0: 'r9SI6-yKCpA', videoSrc: '', typeform: null }
 
     handleOpen = () => this.setState({ modalOpen: true })
 
@@ -21,13 +21,33 @@ class ListEjemplo extends React.Component {
 
     }
 
-    renderbuttton(videoSrc) {
+    renderbuttton(formacion) {
 
+        let typeformOb;
         let src = `https://www.youtube.com/embed/${this.state.videoSrc0}`;
-        if (videoSrc)
-            src = `https://www.youtube.com/embed/${videoSrc}`;
-        this.setState({ videoSrc: src });
+        if (formacion.link)
+            src = `https://www.youtube.com/embed/${formacion.link}`;
+        if (formacion.typeform)
+            typeformOb = formacion.typeform;
 
+
+        this.setState({ videoSrc: src, typeform: typeformOb });
+
+
+    }
+
+
+    renderFormularioType(the) {
+        if (the.state.typeform)
+            return (
+                <div className="sixteen wide column  ">
+                    <div className="ui segment  videoFormacion2">
+                        <div className="ui embed ">
+                            <iframe className="videoFormacion" title="video player" src={the.state.typeform} />
+                        </div>
+                    </div>
+                </div>
+            );
     }
 
     renderConstruirObj(iconos, the) {
@@ -44,7 +64,7 @@ class ListEjemplo extends React.Component {
                             trigger={
                                 <div className="item" key={key2} onClick={() => {
                                     the.handleOpen()
-                                    the.renderbuttton(cconsulta[key2].link);
+                                    the.renderbuttton(cconsulta[key2]);
 
                                 }} >
                                     <i className={`large middle ${iconos} aligned icon`}></i>
@@ -78,13 +98,7 @@ class ListEjemplo extends React.Component {
                                         </div>
 
                                     </div>
-                                    <div className="sixteen wide column  ">
-                                        <div className="ui segment  videoFormacion2">
-                                            <div className="ui embed ">
-                                                <iframe className="videoFormacion" title="video player" src={'https://lucho20.typeform.com/to/fmPU2P'} />
-                                            </div>
-                                        </div>
-                                    </div>
+                                    {the.renderFormularioType(the)}
 
                                 </div>
                             </Modal.Content>

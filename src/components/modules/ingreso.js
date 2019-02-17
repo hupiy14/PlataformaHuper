@@ -2,10 +2,18 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import GoogleAuth from '../GoogleAuth';
 import image from '../../images/logo.png';
-import { reactReduxFirebase } from 'react-redux-firebase';
+import { connect } from 'react-redux';
+import { nuevoUsuarios } from '../modules/chatBot/actions';
+import { Link } from 'react-router-dom';
 
 
 class ingreso extends React.Component {
+    componentDidMount() {
+        //  if(this.props.nuevoUsuario !== true)
+        // this.props.nuevoUsuarios(null);
+    }
+
+   
     render() {
         return ReactDOM.createPortal(
             <div onClick={this.props.onDismiss} className="ui dimmer modals visible active">
@@ -24,6 +32,9 @@ class ingreso extends React.Component {
                     <div className="ui secondary pointing menu">
                         <div className="item"></div>
                         <div className="right menu"> <GoogleAuth /> </div>
+                   
+
+
 
                     </div>
 
@@ -35,4 +46,13 @@ class ingreso extends React.Component {
     }
 };
 
-export default ingreso;
+const mapStateToProps = (state) => {
+    return {
+        //   usuarioDetail: state.chatReducer.usuarioDetail,
+
+        isSignedIn: state.auth.isSignedIn,
+        nuevoUsuario: state.chatReducer.nuevoUsuario,
+    };
+};
+
+export default connect(mapStateToProps, { nuevoUsuarios })(ingreso);

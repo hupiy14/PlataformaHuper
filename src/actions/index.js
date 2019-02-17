@@ -51,7 +51,7 @@ export const userRolIn = (userRol) => {
 };
 
 export const signOut = () => {
-    console.log('Salio');
+    //console.log('Salio');
     return {
         type: SIGN_OUT
     };
@@ -76,19 +76,23 @@ const escribirUsuario = (userId) => {
     //escribir  108587547313274842109
     //console.log('envio');
     //remove()
+/*
 
+   // var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
+    var newPostKey2 = firebase.database().ref().child('Codigo-Acceso').push().key;
 
-    var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
-    //var newPostKey2 = firebase.database().ref().child('Empresa-Equipo/114776566682864207914/-LWoWVihrbAnV5LqojH2').push().key;
+    firebase.database().ref(`Codigo-Acceso/${newPostKey2}`).set({
+        estado: 'activo',
+        fecha: new Date().toString(),
+     
+        //typeForm: '',
 
-    firebase.database().ref(`Preguntas-Chat/-LXt_TDJQilcvBxWh955/1`).set({
-        concepto: 'Que desesas hacer?',
         //opciones: 'Usuario-WS',
-        opciones: 'Que esta haciendo mi huper,Crear un Objetivo,Dar un Feedback',
-        tipoPregunta: '3',
+       // opciones: 'Que esta haciendo mi huper,Crear un Objetivo,Dar un Feedback',
+       // tipoPregunta: '3',
     });
 
-
+*/
 
 
 

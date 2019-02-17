@@ -1,38 +1,16 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { createStream } from '../actions';
-//import history from '../history';
-//import Modal from './Modal';
-//import { Link } from 'react-router-dom';
-//import BarExample from './graficosChart/barExample';
-//import LineExample from './graficosChart/lineExample';
-import AreaExample from './graficosChart/legenOptionsExample';
 import ListImportan from './utilidades/listaImportante';
 import ListEjemplo from './utilidades/ListaEjemplo';
-import ListAdjuntos from './utilidades/listAdjuntos';
-
-
 import Calendario2 from './utilidades/calendar2';
-
-
 import CrearGrafica from './utilidades/CrearGrafica';
 import './styles/ingresoHupity.css'
-
-
 import randomScalingFactor from '../lib/randomScalingFactor'
 import { Line } from 'react-chartjs-2';
-
-import ListaObjetivosE from '../components/gestorModules/listaObjetivosEquipo';
-
-import ListaPersonasEquipo from './utilidades/listaPersonasEquipo';
-
-
-
 import { Menu, Segment } from 'semantic-ui-react';
-
-
 import DashGestor from './gestorModules/dashGestor';
-import Grafica from './PruebaP';
+
 
 
 const labelsDias = [
@@ -290,7 +268,7 @@ class DashBoard extends React.Component {
                                 <div className="ui embed " >
 
 
-                                    <iframe className="yellow4" title="Ultimos archivos subidos" src={`https://drive.google.com/embeddedfolderview?id=${this.props.usuarioDetail.linkws}#grid`}
+                                    <iframe className="yellow4" title="Ultimos archivos subidos" src={this.props.usuarioDetail? `https://drive.google.com/embeddedfolderview?id=${this.props.usuarioDetail.linkws}#grid`: null}
 
                                     />
 

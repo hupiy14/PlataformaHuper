@@ -2,7 +2,7 @@
 
 
 ///firebase testing
-
+/*
 export const config = {
     apiKey: 'AIzaSyDKEIQRnNYczx3IZgiLwIucSBCBLg1t0Wg',
     authDomain: 'upity-9b190.firebaseapp.com',
@@ -10,10 +10,10 @@ export const config = {
     projectId: 'hupity-9b190',
     storageBucket: 'hupity-9b190.appspot.com',
     messagingSenderId: '874067485777'
-}
+}*/
 
 ///firebase desarrollo
-/*
+
 export const config = {
     apiKey: "AIzaSyAKC1R5XUU8UhfQB8bJB0xc1IPgf2nwFS8",
     authDomain: "pruebahuper.firebaseapp.com",
@@ -23,7 +23,7 @@ export const config = {
     messagingSenderId: "328282757234"
   };
 
-  */
+  
 
 //firebase.initializeApp(config);
 //firebase.firestore().settings({ timestampsInSnapshots: true });

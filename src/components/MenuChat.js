@@ -36,15 +36,21 @@ class MenuChat extends React.Component {
 
             ///configuracion responsive
             let ubicacionChat = "foot-chat";
+            let className="massive ui yellow large circular comment alternate outline icon button";
+            let className2="comment alternate outline large icon";
             if (window.screen.width < 500) {
 
                 ubicacionChat = "foot-chatX1";
+                className2="comment alternate outline small icon";
+                className="massive ui yellow tiny circular comment alternate outline icon button";
             }
+
+
 
             return (<div>
                 <div className={ubicacionChat} >
-                    <button onClick={this.onChat} className="massive ui yellow large circular comment alternate outline icon button">
-                        <i className="comment alternate outline large icon"></i>
+                    <button onClick={this.onChat} className={className}>
+                        <i className={className2}></i>
                     </button>
 
                 </div>
