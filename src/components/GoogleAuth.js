@@ -5,7 +5,7 @@ import history from '../history';
 import { nuevoUsuarios } from '../components/modules/chatBot/actions';
 import '../components/styles/ingresoHupity.css';
 import firebase from 'firebase';
-const timeoutLength = 5000;
+const timeoutLength = 3000;
 
 const timeoutLength2 = 600000;
 
@@ -121,11 +121,22 @@ class GoogleAuth extends React.Component {
 
                         this.props.userRolIn(snapshot2.val().Rol);
                         if (snapshot2.val().Rol === '3') {
+                           
                             this.handleOpen();
                         }
 
 
                     });
+
+                    /// onboarding de la plataforma
+                    if(!Usuario.onboarding)
+                    {/*
+                        firebase.database().ref(`Usuario/${this.auth.currentUser.get().getId()}`).set({
+                            ...Usuario,
+                            onboarding: true,
+                        })*/
+                       // history.push('/onboarding');
+                    }
 
                 }
                 else {

@@ -1,15 +1,31 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { createStream } from '../actions';
+import { createStream, chatOff, chatOn } from '../actions';
 import ListImportan from './utilidades/listaImportante';
 import ListEjemplo from './utilidades/ListaEjemplo';
 import Calendario2 from './utilidades/calendar2';
 import CrearGrafica from './utilidades/CrearGrafica';
-import './styles/ingresoHupity.css'
-import randomScalingFactor from '../lib/randomScalingFactor'
+import './styles/ingresoHupity.css';
+import randomScalingFactor from '../lib/randomScalingFactor';
 import { Line } from 'react-chartjs-2';
 import { Menu, Segment } from 'semantic-ui-react';
 import DashGestor from './gestorModules/dashGestor';
+import Hupps from './modules/Hupps';
+import firebase from 'firebase';
+
+import Avatar from '../apis/xpress';
+import { Button, Dimmer, Header, Icon, Image, Popup, Step, Label } from 'semantic-ui-react';
+import MenuChat from './MenuChat';
+import { pasoOnboardings } from './modules/chatBot/actions';
+const timeoutLength = 1800;
+const timeoutLength2 = 2000;
+const timeoutLength3 = 100000;
+const timeoutLength4 = 500;
+const timeoutLength5 = 5000;
+
+
+
+
 
 
 
@@ -117,6 +133,13 @@ class DashBoard extends React.Component {
 
     state = {
         activeItem: 'semana',
+        avatares: null,
+        activo: null,
+        activo2: true,
+        pasoActivo: null,
+        pasoActivof: 1,
+        comenzo: false,
+        estadoCel: false,
         grafica: <CrearGrafica labelsX={labelsDias}
             label1={"Planeación de trabajo"}
             label2={"Correccón de trabajo"}
@@ -131,19 +154,43 @@ class DashBoard extends React.Component {
 
         />
     }
+
+
+
+    onSearchXpress = async (buscar) => {
+        const response = await Avatar.get('/xpresso/v1/search', {
+            params: {
+                apiKey: '6hSjEEYWVHTmSUUwvwjJzTpX8_zq8noEYq2-_r5ABnkq98vSw1jvHFKncRlYUA-C',
+                query: buscar
+            },
+
+        });
+        //     console.log(response.data);
+        this.setState({ avatares: response.data.lowResGifs })
+
+    }
+
+    // habilita el tercer paso
+    handlePaso = () => {
+        this.timeout = setTimeout(() => {
+            this.props.pasoOnboardings(3);
+        }, timeoutLength3)
+    }
+
+
+    componentDidMount() {
+        this.onSearchXpress("hi");
+    }
     renderGestor() {
-
-
-        // console.log(this.props.usuarioDetail);
-        return (
-            <DashGestor />
-
-        );
+        return (<DashGestor />);
     }
 
     handleItemClick = (e, { name }) => {
         this.setState({ activeItem: name })
         if (name === 'historico') {
+
+            if (!this.props.usuarioDetail.usuario.onboarding)
+                this.handlePaso();
 
             const graficaG =
                 <CrearGrafica labelsX={labelsMonths}
@@ -180,8 +227,63 @@ class DashBoard extends React.Component {
 
     }
 
-   
 
+    renderProgresoTrabajo() {
+        return (<div>
+            <Menu pointing secondary>
+                <Menu.Item name='semana' active={this.state.activeItem === 'semana'} onClick={this.handleItemClick} />
+                <Menu.Item
+                    name='historico'
+                    active={this.state.activeItem === 'historico'}
+                    onClick={this.handleItemClick}
+                />
+
+
+            </Menu>
+
+            <Segment attached='bottom'>
+                {this.state.grafica}
+            </Segment>
+        </div>);
+    }
+
+    renderListaObjetivos(aling) {
+
+        return (
+            <ListImportan
+                titulo={'Listado de objetivos'}
+                icono={'copy outline'}
+                alingD={aling}
+            />
+        );
+    }
+
+    renderGraficaTIC() {
+        return (
+            <CrearGrafica labelsX={labelsMonths}
+                label1={"Motivacion"}
+                label2={"Impacto"}
+                label3={"Talento"}
+                titleGrafica={"MIT vs Progreso"}
+                datos1={datosG3}
+                datos2={datosG33}
+                datos3={datosG333}
+                maxLen={'160'}
+                TituloGrafica={"Motivacion, Impacto, Talento (MIT)"}
+
+            />
+        );
+    }
+
+    renderformaciones() {
+        return (
+            <ListEjemplo
+                titulo={'Listado de formaciones'}
+                icono={'leanpub'}
+
+            />
+        );
+    }
     renderTeletrabajador() {
 
         return (
@@ -191,70 +293,20 @@ class DashBoard extends React.Component {
                     <div className="two column stackable ui grid">
                         <div className="column eleven wide">
                             <div className="ui segment ">
-
-
-                                <Menu pointing secondary>
-                                    <Menu.Item name='semana' active={this.state.activeItem === 'semana'} onClick={this.handleItemClick} />
-                                    <Menu.Item
-                                        name='historico'
-                                        active={this.state.activeItem === 'historico'}
-                                        onClick={this.handleItemClick}
-                                    />
-
-
-                                </Menu>
-
-                                <Segment attached='bottom'>
-                                    {this.state.grafica}
-                                </Segment>
-
-
-
-
+                                {this.renderProgresoTrabajo()}
                                 <br />
                                 <div className="ui divider"></div>
-
-
-                                <CrearGrafica labelsX={labelsMonths}
-                                    label1={"Motivacion"}
-                                    label2={"Impacto"}
-                                    label3={"Talento"}
-                                    titleGrafica={"MIT vs Progreso"}
-                                    datos1={datosG3}
-                                    datos2={datosG33}
-                                    datos3={datosG333}
-                                    maxLen={'110'}
-                                    TituloGrafica={"Motivacion, Impacto, Talento (MIT)"}
-
-                                />
-
+                                {this.renderGraficaTIC()}
                             </div>
                         </div>
                         <div className="column five wide">
                             <div className="ui segment">
-                                <ListImportan
-                                    titulo={'Listado de objetivos'}
-                                    title={'Obejtivo de la Semana 1'}
-                                    title2={'Obejtivo de la Semana 2'}
-                                    title3={'Obejtivo de la Semana 3'}
-                                    description={'Diseño de la plataforma'}
-                                    description2={'Diseño de la plataforma 2'}
-                                    description3={'Diseño de la plataforma 3'}
-                                    icono={'copy outline'}
-                                />
+                                {this.renderListaObjetivos()}
                                 <br />
                                 <div className="ui divider"></div>
-                                <ListEjemplo
-                                    titulo={'Listado de formaciones'}
-                                    title={'Formacion de Timebloking'}
-                                    title2={'Formacion de Importante-Urgente'}
-                                    description={'Mide cada actividad en un espacio dado'}
-                                    description2={'No todas las actividades son ahora'}
-                                    icono={'leanpub'}
-
-                                />
+                                {this.renderformaciones()}
                                 <br />
-                                <div className="ui divider"></div>
+                                <div className="ui divider" ></div>
                                 <Calendario2 className="tamaño-Calendario" />
 
 
@@ -264,11 +316,11 @@ class DashBoard extends React.Component {
                         <div className="column sixteen wide">
                             <div className="ui segment Cambioo">
                                 <h3>Espacio de trabajo</h3>
-                               
+
                                 <div className="ui embed " >
 
 
-                                    <iframe className="yellow4" title="Ultimos archivos subidos" src={this.props.usuarioDetail? `https://drive.google.com/embeddedfolderview?id=${this.props.usuarioDetail.linkws}#grid`: null}
+                                    <iframe className="yellow4" title="Ultimos archivos subidos" src={this.props.usuarioDetail ? `https://drive.google.com/embeddedfolderview?id=${this.props.usuarioDetail.linkws}#grid` : null}
 
                                     />
 
@@ -280,31 +332,564 @@ class DashBoard extends React.Component {
                             </div>
                         </div>
 
-
-
-
-
                     </div>
-
-
                 </div >
             </div >
 
         );
     }
+
+
+    handleClose = () => {
+        this.timeout = setTimeout(() => {
+            this.props.chatOff();
+        }, timeoutLength)
+    }
+
+    handlePaso2 = () => {
+        this.timeout = setTimeout(() => {
+            this.setState({ activo: true });
+        }, timeoutLength2)
+    }
+
+    handlePaso3 = () => {
+        this.timeout = setTimeout(() => {
+            this.props.chatOn();
+            this.setState({ activo: null });
+        }, timeoutLength2)
+    }
+
+    handlePaso5 = () => {
+        this.timeout = setTimeout(() => {
+            this.setState({ comenzo: false });
+            this.setState({ activo: true });
+        }, timeoutLength4)
+    }
+
+    handleFinal = () => {
+        this.timeout = setTimeout(() => {
+            this.props.pasoOnboardings(null);
+
+            var updates = {};
+            const postData = {
+                ...this.props.usuarioDetail.usuario,
+                onboarding: true,
+            };
+            updates[`Usuario/${this.props.usuarioDetail.idUsuario}`] = postData;
+            firebase.database().ref().update(updates);
+
+        }, timeoutLength5)
+    }
+    renderPasosCEL(style, paso) {
+
+        return (<Step.Group vertical style={style} >
+            <Step active={true} style={paso.style}    >
+
+                <Step.Content >
+                    <Step.Title>{paso.title}</Step.Title>
+                    <Step.Description>{paso.active}</Step.Description>
+                    <Label color='purple' horizontal>
+                        Empezar
+                   </Label>
+                </Step.Content>
+            </Step>
+
+
+        </Step.Group>);
+    }
+
+
+    renderPasos(style, paso1, paso2, paso3, paso4, paso5) {
+
+        return (<Step.Group vertical style={style} >
+            <Step completed={paso1.completed} active={paso1.active} style={paso1.style} className={paso1.class}  >
+                <Icon name='pencil alternate' />
+                <Step.Content >
+                    <Step.Title>Crea tu Actividad</Step.Title>
+                    <Step.Description>Crea tu actividad y describe lo que debes hacer el día de hoy. ¡Tu asistente de ayudara!.</Step.Description>
+                </Step.Content>
+            </Step>
+
+            <Step completed={paso2.completed} active={paso2.active} style={paso2.style} className={paso2.class} >
+                <Icon name='chart line' />
+                <Step.Content>
+                    <Step.Title>Tu rendimiento</Step.Title>
+                    <Step.Description>Tus objetivos y su prioridad para realizar en la semana, junto al seguimiento de tu trabajo comparado con el planificado</Step.Description>
+                </Step.Content>
+            </Step>
+
+            <Step completed={paso3.completed} active={paso3.active} style={paso3.style} className={paso3.class} >
+                <Icon name='chart pie' />
+                <Step.Content>
+                    <Step.Title>Se consciente de ti</Step.Title>
+                    <Step.Description>Observa el progreso y comportamiento que haz tenido, mide tu MIT con el Huper y valora tus habilidades</Step.Description>
+                </Step.Content>
+            </Step>
+
+            <Step completed={paso4.completed} active={paso4.active} style={paso4.style} className={paso4.class} >
+                <Icon name='paper plane outline' />
+                <Step.Content>
+                    <Step.Title>Formate</Step.Title>
+                    <Step.Description>Mira los nuevos contenidos diseñados para ti, dale clic en la formación y prepárate para crear nuevos hábitos</Step.Description>
+                </Step.Content>
+            </Step>
+
+
+            <Step completed={paso5.completed} active={paso5.active} style={paso5.style} className={paso5.class} >
+                <Icon name='desktop' size='tiny' />
+                <Step.Content>
+                    <Step.Title>Tus trabajos</Step.Title>
+                    <Step.Description>Centralizamos el detalle de cada objetivo y sus adjuntos en cada tarjeta, mira las opciones</Step.Description>
+                </Step.Content>
+            </Step>
+
+        </Step.Group>);
+    }
+
+
+    renderOnboardingCEL() {
+
+        let style = {
+            width: '100%',
+        }
+        let stylePadre = {
+            position: 'fixed',
+            top: '-8.5em',
+            'border-radius': '1.5em',
+            'z-index': '100000',
+            // height: '20.5em',
+            overflow: 'auto',
+            width: '90%',
+            left: '5%',
+        }
+
+        let styleP = {
+            position: 'relative',
+            bottom: '-20%',
+            height: '25em',
+            width: '24em',
+            overflow: 'scroll',
+     
+
+        }
+
+        const styleAnt = { background: ' rgba(237, 237, 34, 0.24)' };
+        const styleUso = { background: ' #fbbd08' };
+        const styleDep = { background: ' rgba(255, 245, 192, 0.99)' };
+
+        let paso = { title: null, active: null, icono: null, style: styleAnt };
+
+
+        switch (this.props.pasoOnboarding) {
+            case 0:
+                if (this.state.avatares) {
+
+                    return (
+                        <div>
+                            <Image src={this.state.avatares[1]} size="medium"></Image>
+                            <Header as='h2' icon inverted>
+                                Bienvenido a Hupity!
+                        <Header.Subheader>Vamos a comenzar</Header.Subheader>
+                            </Header>
+
+
+                        </div>
+                    );
+                }
+                break;
+            case 1:
+
+                if (this.state.comenzo === false)
+                    this.setState({ comenzo: true });
+
+                if (this.state.pasoActivof === 1) {
+                    this.setState({ pasoActivof: this.state.pasoActivof + 1 });
+                    this.setState({ pasoActivo: 'onboardingApp' });
+                    this.setState({estadoCel: true});
+
+                }
+
+                paso = { title: 'Crea tu Actividad', active: 'Crea tu actividad y describe lo que debes hacer el día de hoy. ¡Tu asistente de ayudara!.', icono: 'pencil alternate', style: styleAnt };
+
+                return (
+                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({estadoCel: false}); this.setState({ pasoActivo: 'onboardingApp2' }); }} >
+                        {this.renderPasosCEL(style, paso)}
+
+                    </div>
+                );
+            case 2:
+
+                this.handleClose();
+                paso = { title: 'Tu rendimiento', active: 'Tus objetivos y su prioridad para realizar en la semana, junto al seguimiento de tu trabajo comparado con el planificado', icono: 'chart pie', style: styleAnt };
+                this.handlePaso2();
+
+                let modulo = null;
+                if (this.state.activo) {
+                  
+                    modulo =
+                        <div style={styleP}>
+                            <div className="ui segment " >
+                                {this.renderProgresoTrabajo()}
+                            </div>
+                            <div>
+                                {this.renderListaObjetivos(true)}
+                            </div>
+                        </div>
+
+                   
+                    if (this.state.pasoActivof === 2) {
+                        this.setState({ pasoActivof: this.state.pasoActivof + 1 });
+                        this.setState({ pasoActivo: 'onboardingApp' });
+                        this.setState({estadoCel: true});
+                    }
+                }
+
+
+                return (<div>
+                    <div style={stylePadre} className={this.state.activo ? this.state.pasoActivo : null} onClick={() => {  this.setState({estadoCel: false}); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
+                        {this.renderPasosCEL(style, paso)}
+                    </div>
+                    {modulo}
+
+                </div>
+
+                );
+                return;
+
+            case 3:
+                if (this.state.pasoActivof === 3) {
+                    this.setState({ pasoActivof: this.state.pasoActivof + 1 });
+                    this.setState({ pasoActivo: 'onboardingApp' });
+                    this.setState({estadoCel: true});
+                }
+
+               
+                if (this.state.activo2 === true) {
+                    this.handlePaso3();
+                    this.setState({ activo2: false });
+                }
+                paso = { title: 'Se consciente de ti', active: 'Observa el progreso y comportamiento que haz tenido, mide tu MIT con el Huper y valora tus habilidades', icono: 'chart line', style: styleAnt };
+              
+                return (<div>
+                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => {  this.setState({estadoCel: false}); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
+                        {this.renderPasosCEL(style, paso)}
+                    </div>
+                    <div style={styleP}>
+                        {this.renderGraficaTIC()}
+                    </div>
+                </div>);
+
+            case 4:
+
+
+                if (this.state.pasoActivof === 4) {
+                    this.setState({ pasoActivof: this.state.pasoActivof + 1 });
+                    this.setState({ pasoActivo: 'onboardingApp' });
+                    this.setState({estadoCel: true});
+                }
+          
+                if (this.state.activo2 === true) {
+                    this.props.chatOff();
+                    this.setState({ activo2: false });
+                    this.handlePaso5();
+                }
+                if (this.state.pasoActivof === 4) {
+                    this.setState({ pasoActivof: this.state.pasoActivof + 1 });
+                    this.setState({ pasoActivo: 'onboardingApp' });
+                }
+                paso = { title: 'Formate', active: 'Mira los nuevos contenidos diseñados para ti, dale clic en la formación y prepárate para crear nuevos hábitos', icono: 'paper plane outline', style: styleAnt };
+                styleP.width = "100%";
+                styleP.left = "0";
+               // styleP.bottom = '-7em';
+
+                return (<div>
+                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => {  this.setState({estadoCel: false}); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
+                        {this.renderPasosCEL(style, paso)}
+                    </div>
+                    <div style={styleP}>
+                        {this.renderformaciones()}
+                    </div>
+                </div>
+                );
+
+            case 5:
+                if (this.state.pasoActivof === 5) {
+                    this.setState({ pasoActivof: this.state.pasoActivof + 1 });
+                    this.setState({ pasoActivo: 'onboardingApp' });
+                    this.setState({estadoCel: true});
+                }
+                stylePadre.top = '0em';
+                paso = { title: 'Tus trabajos', active: 'Centralizamos el detalle de cada objetivo y sus adjuntos en cada tarjeta, mira las opciones', icono: 'desktop', style: styleAnt };
+                this.onSearchXpress("go");
+                return (<div>
+                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({estadoCel: false}); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
+                        {this.renderPasosCEL(style, paso)}
+                    </div>
+                    <div style={styleP}>
+                        <Hupps />
+                    </div>
+
+                </div>
+                );
+            case 6:
+                this.handleFinal();
+                return (<div>
+                    <Image src={this.state.avatares[1]} size="medium"></Image>
+                    <Header as='h2' icon inverted>
+                        ¡Comencemos...!
+                        <Header.Subheader>El gestor agile de productividad personal</Header.Subheader>
+                    </Header>
+                </div>
+                );
+            default:
+                return;
+
+        }
+
+    }
+
+
+    renderOnboarding() {
+
+        let style = {
+            position: 'relative',
+            bottom: '0em',
+            left: '-75%',
+            width: '40%',
+
+        }
+
+        let styleP = {
+            position: 'fixed',
+            left: '35%',
+            width: '40%',
+            height: '60%',
+            top: '10%',
+            overflow: 'auto',
+
+        }
+
+        const styleAnt = { background: ' rgba(237, 237, 34, 0.24)' };
+        const styleUso = { background: ' #fbbd08' };
+        const styleDep = { background: ' rgba(255, 245, 192, 0.99)' };
+
+        let paso1 = { completed: false, active: false, style: styleAnt, class: '' };
+        let paso2 = { completed: false, active: false, style: styleAnt, class: '' };
+        let paso3 = { completed: false, active: false, style: styleAnt, class: '' };
+        let paso4 = { completed: false, active: false, style: styleAnt, class: '' };
+        let paso5 = { completed: false, active: false, style: styleAnt, class: '' };
+
+        switch (this.props.pasoOnboarding) {
+            case 0:
+                if (this.state.avatares) {
+
+                    return (
+                        <div>
+                            <Image src={this.state.avatares[1]} size="medium"></Image>
+                            <Header as='h2' icon inverted>
+                                Bienvenido a Hupity!
+                        <Header.Subheader>Vamos a comenzar</Header.Subheader>
+                            </Header>
+
+
+                        </div>
+                    );
+                }
+                break;
+            case 1:
+                if (this.state.comenzo === false)
+                    this.setState({ comenzo: true });
+                paso1 = { completed: false, active: true, style: styleAnt, class: 'onboardingAppG1' };
+                paso2 = { completed: false, active: false, style: styleAnt, class: '' };
+                paso3 = { completed: false, active: false, style: styleAnt, class: '' };
+                paso4 = { completed: false, active: false, style: styleAnt, class: '' };
+                paso5 = { completed: false, active: false, style: styleAnt, class: '' };
+                return (
+                    <div>
+                        {this.renderPasos(style, paso1, paso2, paso3, paso4, paso5)}
+
+                    </div>
+                );
+            case 2:
+
+                this.handleClose();
+                paso1 = { completed: true, active: false, style: styleDep, class: '' };
+                paso2 = { completed: false, active: true, style: styleAnt, class: 'onboardingAppG2' };
+                paso3 = { completed: false, active: false, style: styleAnt, class: '' };
+                paso4 = { completed: false, active: false, style: styleAnt, class: '' };
+                paso5 = { completed: false, active: false, style: styleAnt, class: '' };
+                this.handlePaso2();
+
+                let modulo = null;
+                if (this.state.activo) {
+
+                    styleP.height = "52";
+                    const styleO = {
+                        position: 'fixed',
+                        left: '78%',
+                        width: '15%',
+                    }
+                    modulo = <div>
+                        <div className="ui segment " style={styleP}>
+                            {this.renderProgresoTrabajo()}
+                        </div>
+                        <div style={styleO}>
+                            {this.renderListaObjetivos(true)}
+                        </div>
+
+                    </div>
+                }
+                return (<div>
+                    {modulo}
+                    {this.renderPasos(style, paso1, paso2, paso3, paso4, paso5)}
+                </div>
+
+                );
+                return;
+
+            case 3:
+                if (this.state.activo2 === true) {
+                    this.handlePaso3();
+                    this.setState({ activo2: false });
+                }
+                paso1 = { completed: true, active: false, style: styleDep, class: '' };
+                paso2 = { completed: true, active: false, style: styleDep, class: '' };
+                paso3 = { completed: false, active: true, style: styleAnt, class: 'onboardingAppG3' };
+                paso4 = { completed: false, active: false, style: styleAnt, class: '' };
+                paso5 = { completed: false, active: false, style: styleAnt, class: '' };
+
+                //    styleP.width = '50%';
+                return (<div>
+                    <div style={styleP}>
+                        {this.renderGraficaTIC()}
+                    </div>
+                    {this.renderPasos(style, paso1, paso2, paso3, paso4, paso5)}
+                </div>);
+
+            case 4:
+                if (this.state.activo2 === true) {
+                    this.props.chatOff();
+                    this.setState({ activo2: false });
+                    this.handlePaso5();
+
+                }
+                paso1 = { completed: true, active: false, style: styleDep, class: '' };
+                paso2 = { completed: true, active: false, style: styleDep, class: '' };
+                paso3 = { completed: true, active: false, style: styleDep, class: '' };
+                paso4 = { completed: false, active: true, style: styleAnt, class: 'onboardingAppG4' };
+                paso5 = { completed: false, active: false, style: styleAnt, class: '' };
+                styleP.width = "19%";
+                styleP.left = "45%";
+
+                return (<div>
+                    <div style={styleP}>
+                        {this.renderformaciones()}
+                    </div>
+                    {this.renderPasos(style, paso1, paso2, paso3, paso4, paso5)}
+                </div>
+                );
+
+            case 5:
+                paso1 = { completed: true, active: false, style: styleDep, class: '' };
+                paso2 = { completed: true, active: false, style: styleDep, class: '' };
+                paso3 = { completed: true, active: false, style: styleDep, class: '' };
+                paso4 = { completed: true, active: false, style: styleDep, class: '' };
+                paso5 = { completed: false, active: true, style: styleAnt, class: 'onboardingAppG5' };
+                styleP.width = "50%";
+                this.onSearchXpress("go");
+                return (<div>
+                    <div style={styleP}>
+                        <Hupps />
+                    </div>
+                    {this.renderPasos(style, paso1, paso2, paso3, paso4, paso5)}
+                </div>
+                );
+            case 6:
+                this.handleFinal();
+                return (<div>
+                    <Image src={this.state.avatares[1]} size="medium"></Image>
+                    <Header as='h2' icon inverted>
+                        ¡Comencemos...!
+                        <Header.Subheader>El gestor agile de productividad personal</Header.Subheader>
+
+                    </Header>
+                </div>
+                );
+            default:
+                return;
+
+        }
+
+
+
+    }
+
+
     render() {
         let varriable
+        let onboarding = null;
+        let styleS = {
+            position: 'fixed',
+            margin: '0.5em',
+            bottom: '10%',
+            right: '40%',
+            'z-index': '6',
+        }
+
+        let bt;
+        if (window.screen.width < 450) {
+            styleS.right = '35%';
+            styleS.bottom = '2.5%';
+        }
+
+        if (this.state.comenzo)
+            bt = <button className="ui button purple huge" style={styleS} onClick={() => {
+                if (this.props.pasoOnboarding === 5) this.setState({ comenzo: false });
+               if(!this.state.estadoCel)
+                this.props.pasoOnboardings(this.props.pasoOnboarding + 1);
+            }} >Continuar</button>;
+
+
         if (this.props.userRol === '3') {
             varriable = this.renderTeletrabajador();
-            //    console.log('Teletrabajador');
+
+
+            if (!this.props.usuarioDetail || (this.props.usuarioDetail && this.props.usuarioDetail.usuario && !this.props.usuarioDetail.usuario.onboarding)) {
+                if (window.screen.width < 450) {
+                    onboarding = <Dimmer active={true} page>
+                        {this.renderOnboardingCEL()}
+                        <MenuChat />
+                        {bt}
+                    </Dimmer>
+
+                }
+                else {
+
+                    onboarding = <Dimmer active={true} page>
+                        {this.renderOnboarding()}
+                        <MenuChat />
+                        {bt}
+                    </Dimmer>
+                }
+            }
+
+
+
         }
         else if (this.props.userRol === '2') {
             varriable = this.renderGestor();
             //    console.log('Teletrabajador');
         }
 
+
+
+
+
+
         return (
-            <div>   {varriable}</div>
+            <div> {varriable}
+                {onboarding}
+            </div >
 
         );
 
@@ -314,9 +899,10 @@ class DashBoard extends React.Component {
 const mapStateToProps = (state) => {
     return {
         usuarioDetail: state.chatReducer.usuarioDetail,
-        userRol: state.chatReducer.userRol
+        userRol: state.chatReducer.userRol,
+        pasoOnboarding: state.chatReducer.pasoOnboarding
     };
 };
-export default connect(mapStateToProps, { createStream })(DashBoard);
+export default connect(mapStateToProps, { createStream, pasoOnboardings, chatOff, chatOn })(DashBoard);
 
 ///<ListAdjuntos />

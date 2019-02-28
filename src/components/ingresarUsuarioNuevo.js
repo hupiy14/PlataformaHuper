@@ -292,6 +292,15 @@ class FormIngresoHuper extends React.Component {
 
         });
 
+        // gener  la primera formacion 
+        firebase.database().ref(`Usuario-Formcion/${this.props.usuarioDetail.usuarioNuevo.id}/-LYWrWd_8M174-vlIkwv`).set({
+            fecha: new Date().toString(),
+            concepto: "El método de la Caja de Eisenhower para impulsar tu productividad",
+            detalle: "Aprende a diferencias tus actividades urgentes de las importantes",
+            estado: 'activo',
+            link: "mfN_JVLHlbQ",
+        });
+
         cod.estado = 'En Uso';
 
         firebase.database().ref(`Codigo-Acceso/${this.state.codigo}`).set({
@@ -398,7 +407,7 @@ class FormIngresoHuper extends React.Component {
                     error={this.state.errorCargo}
                 />
 
-                <Form.Input label='Area' placeholder='Que area tienes?'
+                <Form.Input label='Area' placeholder='¿En qué departamento de la empresa laboras? '
                     value={this.state.area}
                     onChange={e => this.setState({ area: e.target.value })}
                     error={this.state.errorArea}
@@ -448,7 +457,7 @@ class FormIngresoHuper extends React.Component {
             activado = true;
         }
 
-        const equipo = <Form.Select label='Equipo de Trabajo' options={this.renderOpcionesEmpresaEquipo()} placeholder='Cual es tu equipo de trabajo selecciona o crea'
+        const equipo = <Form.Select label='Equipo de Trabajo' options={this.renderOpcionesEmpresaEquipo()} placeholder='Cual es tu equipo de trabajo en la empresa selecciona'
             search
             allowAdditions={activado}
             onAddItem={propiedad}
@@ -462,7 +471,7 @@ class FormIngresoHuper extends React.Component {
                 {equipo}
 
 
-                <Form.Input label='Codigo de acceso' fluid placeholder='Cual es tu Codigo de acceso?' error={this.state.errorCodigo}
+                <Form.Input label='Codigo de acceso' fluid placeholder='Escribe el codigo de acceso dado por Hupity' error={this.state.errorCodigo}
                     value={this.state.codigo}
                     onChange={e => this.setState({ codigo: e.target.value })}
                 />
@@ -529,7 +538,7 @@ class FormIngresoHuper extends React.Component {
                 <Modal.Content>
                     <Form >
 
-                        <Form.Input label='Codigo de tu espacio de trabajo' placeholder='1J45vud1Mkb6mxfWYrVjHki_AO21...'
+                        <Form.Input label='Codigo de tu espacio de trabajo (carpeta)' placeholder='1J45vud1Mkb6mxfWYrVjHki_AO21...'
                             value={this.state.codigoWSdrive}
                             onChange={e => this.setState({ codigoWSdrive: e.target.value })}
                         />

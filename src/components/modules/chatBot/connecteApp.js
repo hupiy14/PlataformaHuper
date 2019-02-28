@@ -8,7 +8,7 @@ import Profile from './profilePage';
 import { settings as Senttings } from './settingsPage';
 import {
     submitMessage, consultaChats, chatIdentifiador, numeroPreguntas, mensajeEntradas, consultaPreguntaControls,
-    tipoPreguntas, endChat, startChat, borrarChats
+    tipoPreguntas, endChat, startChat, borrarChats, pasoOnboardings
 } from './actions';
 import firebase from 'firebase';
 import _ from 'lodash';
@@ -18,9 +18,11 @@ import _ from 'lodash';
 import { Image, } from 'semantic-ui-react';
 import Avatar from '../../../apis/xpress';
 
+const timeoutLength = 500;
+
 class App extends React.Component {
 
-    state = { avatares: null }
+    state = { avatares: null, }
     onSearchXpress = async () => {
         const response = await Avatar.get('/xpresso/v1/search', {
             params: {
@@ -34,9 +36,19 @@ class App extends React.Component {
 
     }
 
+    // habilita el primer paso
+    handlePaso = () => {
+        this.timeout = setTimeout(() => {
+            this.props.pasoOnboardings(1);
+        }, timeoutLength)
+    }
 
 
     componentDidMount() {
+        //primer paso del onboarding de la herramienta
+        if (!this.props.usuarioDetail.usuario.onboarding && this.props.pasoOnboarding === 0)
+            this.handlePaso();
+
         this.onSearchXpress();
         this.props.consultaPreguntaControls(1);
         this.props.borrarChats(this.props.user.activeChat.participants);
@@ -163,14 +175,15 @@ class App extends React.Component {
                                   });
                                   */
 
-                this.props.tipoPreguntas('Diaria');
-                const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWGFo3s87SjzppL7hoF');
-                starCountRef.on('value', (snapshot) => {
-                    this.props.consultaChats(snapshot.val());
 
-                    this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                    // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                });
+                if (this.props.pasoOnboarding === 0 || this.props.usuarioDetail.usuario.onboarding)
+                    this.renderTareaDiaria(chatID);
+                else if (this.props.isChat === false || this.props.pasoOnboarding === 1)
+                    this.renderTareaDiaria(chatID);
+                else if (this.props.pasoOnboarding === 3)
+                    this.renderRealizarTIC_EXP(chatID);
+
+
             }
             // this.props.mensajeEntradas(false);
 
@@ -229,6 +242,27 @@ class App extends React.Component {
     }
 
 
+    renderTareaDiaria(chatID) {
+        this.props.tipoPreguntas('Diaria');
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWGFo3s87SjzppL7hoF');
+        starCountRef.on('value', (snapshot) => {
+            this.props.consultaChats(snapshot.val());
+
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+        });
+    }
+
+    renderRealizarTIC_EXP(chatID) {
+        this.props.tipoPreguntas('TIC Quincenal');
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWhSUV5slo2cbIxl5go');
+        starCountRef.on('value', (snapshot) => {
+            this.props.consultaChats(snapshot.val());
+
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+        });
+    }
 
 
 
@@ -271,18 +305,52 @@ class App extends React.Component {
             ? this.props.children
             : <Home user={this.props.user} />
 
-        ///configuracion responsive
-        let tamañoForm = `app-wrapper ${this.props.theme} right floated five wide column`;
-        if (window.screen.width < 500) {
 
-            tamañoForm = `app-wrapperX1 ${this.props.theme} right floated five wide column`;
+
+
+
+
+        const y = window.screen.height * 0.48;
+
+        const wrapper = {
+            width: '17.5%',
+            height: '55%',
+            position: 'fixed',
+            overflow: 'hidden',
+            bottom: '8%',
+            right: '3%',
+            'z-index': '4000',
+            'border-radius': '30px',
+            'box-shadow': '10px 10px 10px -8px rgba(0, 0, 0, 0.35)',
+            'margin-top:': '3%',
+            'margin-left': '5%',
+            '-webkit-transform': 'scale(0.9)',
+            'transform': 'scale(0.9)',
+        }
+
+
+        ///configuracion responsive
+        let tamañoForm = `${this.props.theme} right floated `;
+
+        if (window.screen.width > 500 && window.screen.height < 800) {
+            const y = window.screen.height * 0.63;
+            wrapper.bottom = '12%';
+            wrapper.width = '22%';
+            wrapper.height = y;
+        }
+        if (window.screen.width < 500) {
+          //  const y = window.screen.height * 0.72;
+            wrapper.width = '80%';
+            wrapper.bottom = '12%';
+            wrapper.height = '90%';
+            tamañoForm = ` ${this.props.theme} right floated`;
         }
 
 
         return (
-            <div className="ui grid">
+            <div className="ui grid" >
 
-                <div className={tamañoForm}>
+                <div className={tamañoForm} style={wrapper} >
                     {this.renderChatButton()}
                     <Menu />
                 </div>
@@ -304,13 +372,16 @@ const mapAppStateToProps = (state) => (
         user: state.user,
         theme: state.settings.theme,
         userRol: state.chatReducer.userRol,
-        isChatUbi: state.chatReducer.isChatUbi
+        isChatUbi: state.chatReducer.isChatUbi,
+        usuarioDetail: state.chatReducer.usuarioDetail,
+        pasoOnboarding: state.chatReducer.pasoOnboarding,
+        isChat: state.chatReducer.isChat,
     });
 
 
 
 export default connect(mapAppStateToProps, {
-    submitMessage, consultaChats, tipoPreguntas, mensajeEntradas, borrarChats,
+    submitMessage, consultaChats, tipoPreguntas, mensajeEntradas, borrarChats, pasoOnboardings,
     chatIdentifiador, numeroPreguntas, consultaPreguntaControls, endChat, startChat
 })(App);
 

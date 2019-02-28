@@ -1,8 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
-import { listaFormaciones } from '../modules/chatBot/actions';
+import { listaFormaciones, pasoOnboardings } from '../modules/chatBot/actions';
 import { Progress, Segment, Modal, Header, Button, Icon } from 'semantic-ui-react';
+const timeoutLength = 100000;
 
 class ListEjemplo extends React.Component {
     state = { modalOpen: false, videoSrc0: 'r9SI6-yKCpA', videoSrc: '', typeform: null }
@@ -19,6 +20,12 @@ class ListEjemplo extends React.Component {
 
         });
 
+    }
+
+    handlePaso6 = () => {
+        this.timeout = setTimeout(() => {
+            this.props.pasoOnboardings(5);
+        }, timeoutLength)
     }
 
     renderbuttton(formacion) {
@@ -57,7 +64,13 @@ class ListEjemplo extends React.Component {
 
             const cconsulta = the.props.listaFormacion
             const opciones = Object.keys(cconsulta).map(function (key2, index) {
-                if (cconsulta[key2].estado === 'activo')
+                if (cconsulta[key2].estado === 'activo') {
+                    const styleBt = {
+                        position: 'relative',
+                        left: '80%',
+                    }
+                    if (!the.props.usuarioDetail.usuario.onboarding)
+                        styleBt.left = '40%'
                     return (
 
                         <Modal key={key2}
@@ -65,6 +78,7 @@ class ListEjemplo extends React.Component {
                                 <div className="item" key={key2} onClick={() => {
                                     the.handleOpen()
                                     the.renderbuttton(cconsulta[key2]);
+                                    the.handlePaso6()
 
                                 }} >
                                     <i className={`large middle ${iconos} aligned icon`}></i>
@@ -75,7 +89,7 @@ class ListEjemplo extends React.Component {
 
                                             <div className="header">{cconsulta[key2].concepto}</div>
                                             <div className="description">{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
-                                            <Button className='alinVerFomacion' icon='eye' color='teal' />
+                                            <Button style={styleBt} icon='eye' color='teal' />
                                             <Progress percent={50} color='yellow' attached='bottom' />
                                         </Segment >
                                     </div>
@@ -105,6 +119,7 @@ class ListEjemplo extends React.Component {
                         </Modal >
 
                     );
+                }
             });
             return opciones;
         }
@@ -153,11 +168,12 @@ const mapAppStateToProps = (state) => (
     {
         listaFormacion: state.chatReducer.listaFormacion,
         userId: state.auth.userId,
+        usuarioDetail: state.chatReducer.usuarioDetail,
 
     });
 
 
-export default connect(mapAppStateToProps, { listaFormaciones })(ListEjemplo);
+export default connect(mapAppStateToProps, { listaFormaciones, pasoOnboardings })(ListEjemplo);
 
 
 

@@ -10,6 +10,8 @@ const randonStyle = require('../../lib/randonStyle')
 
 class legenExample extends React.Component {
 
+   
+
     render() {
 
         const data = {

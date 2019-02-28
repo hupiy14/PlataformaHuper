@@ -173,9 +173,7 @@ class listPersonasEquipo extends React.Component {
                     if (key === this.props.userId) {
                         return;
                     }
-                    console.log(consultaEq[key].Rol);
-                    if (consultaEq[key].Rol === '2')
-                        return;
+                   
                     const resultado = 100;
 
                     return (

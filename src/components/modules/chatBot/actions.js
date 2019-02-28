@@ -25,10 +25,18 @@ import {
   CONSULTA_CANALES,
   EQUIPO_CONSULTA,
   NUEVO_USUARIO,
+  PASO_ONBOARDING,
 
 
 } from './types';
 
+export const pasoOnboardings = (pasoOnboarding) => {
+
+  return {
+    type: PASO_ONBOARDING,
+    payload: pasoOnboarding
+  };
+};
 export const nuevoUsuarios = (nuevoUsuario) => {
 
   return {

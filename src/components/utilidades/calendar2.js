@@ -74,7 +74,7 @@ class CalendarApp extends React.Component {
 
         return (
             <div className="ui column">
-                <h3>Seleccciona tu dia de Teletrabajo</h3>
+                <h3>Seleccciona tu dia Importante</h3>
                 <Calendar
                     minDate={this.validarFechaSemana()}
                     maxDate={this.validarFechaSemanaMax()}

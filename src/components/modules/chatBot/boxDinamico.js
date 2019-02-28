@@ -18,7 +18,7 @@ import firebase from 'firebase';
 
 class boxDinaminco extends React.Component {
 
-    state = { term: '', flag: false, consultaY: true, formmessage: 'message-input-ch' };
+    state = { term: '', flag: false, consultaY: true, formmessage: 'message-input-ch', style: {} };
 
     renderConstruir() {
         let x = 0;
@@ -98,14 +98,14 @@ class boxDinaminco extends React.Component {
             let x = 0;
 
             const cconsulta = this.props.equipoConsulta;
-            let cconsulta2 ;
+            let cconsulta2;
             const usuario = this.props.userId;
 
             const opciones2 = Object.keys(cconsulta).map(function (key2, index) {
                 if (x === 0) {
                     x = x + 1;
                     const cconsulta2 = cconsulta[key2];
-              //      console.log(cconsulta2);
+                    //      console.log(cconsulta2);
                     const opciones = Object.keys(cconsulta2).map(function (key, index) {
                         if (usuario === key)
                             return;
@@ -195,17 +195,18 @@ class boxDinaminco extends React.Component {
 
         // console.log(this.props.consultaPregunta);
         if (!this.props.consultaPregunta) {
-            //    console.log('1');
 
-            return (<input
-                value={this.props.valorInput === ' ' ? '' : this.props.term}
-                onChange={this.onInputChange}
-                className={this.state.formmessage}
-                placeholder="message"
-                rows={10}
-                cols={30}
+            return (
+                <input
+                    value={this.props.valorInput === ' ' ? '' : this.props.term}
+                    onChange={this.onInputChange}
+                    className={this.state.formmessage}
+                    style={this.state.style}
+                    placeholder="message"
+                //   rows={10}
+                //  cols={30}
 
-            />);
+                />);
         }
 
         else if (this.props.consultaPregunta.length - 1 < this.props.consultaPreguntaControl && this.props.valorInput === ' ') {
@@ -225,9 +226,10 @@ class boxDinaminco extends React.Component {
                 value={this.props.valorInput === ' ' ? '' : this.props.term}
                 onChange={this.onInputChange}
                 className={this.state.formmessage}
+                style={this.state.style}
                 placeholder="message"
-                rows={10}
-                cols={30}
+            //  rows={10}
+            //   cols={30}
 
             />);
         }
@@ -241,8 +243,9 @@ class boxDinaminco extends React.Component {
                     pattern={texto}
                     list='opciones' placeholder='Escoge una Opcion...'
                     className={this.state.formmessage}
-                    rows={10}
-                    cols={30}
+                    style={this.state.style}
+                //   rows={10}
+                //   cols={30}
 
                 />
                 <datalist id='opciones'>
@@ -262,8 +265,9 @@ class boxDinaminco extends React.Component {
                     //   pattern={`'${this.renderOpcionesDB3()}'`}
                     list='opciones' placeholder='Escoge una Opcion...'
                     className={this.state.formmessage}
-                    rows={10}
-                    cols={30}
+                    style={this.state.style}
+                //   rows={10}
+                //    cols={30}
 
                 />
 
@@ -281,8 +285,9 @@ class boxDinaminco extends React.Component {
                     onChange={this.onInputChange}
                     list='opciones' placeholder='Escoge una Opcion...'
                     className={this.state.formmessage}
-                    rows={10}
-                    cols={30}
+                    style={this.state.style}
+                //  rows={10}
+                //  cols={30}
 
                 />
                 <datalist id='opciones'>
@@ -310,8 +315,9 @@ class boxDinaminco extends React.Component {
                     pattern={texto}
                     list='opciones' placeholder='Escoge una Opcion...'
                     className={this.state.formmessage}
-                    rows={10}
-                    cols={30}
+                    style={this.state.style}
+                //   rows={10}
+                //   cols={30}
 
                 />
                 <datalist id='opciones'>
@@ -361,14 +367,23 @@ class boxDinaminco extends React.Component {
         }
     }
 
-    componentDidMount(){
-        
-        if (window.screen.width < 500) {
-
-            this.setState({formmessage: 'message-input-chX1'})
-           
+    componentDidMount() {
+        const y = window.screen.height * 0.39;
+        let mensajeY = {
+            position: 'fixed',
+            top: '82%',
         }
 
+        if (window.screen.width > 500 && window.screen.height < 800) {
+            mensajeY.top = '80%';
+        }
+
+
+        if (window.screen.width < 500) {
+            mensajeY.top = '78%';
+            this.setState({ formmessage: 'message-input-chX1' })
+        }
+        this.setState({ style: mensajeY })
     }
 
     render() {
@@ -376,7 +391,7 @@ class boxDinaminco extends React.Component {
         return (
             <div>
 
-                <div className="field" >
+                <div className="field"  >
                     {this.renderControl()}
                     {this.renderMensajeSalida()}
                 </div>

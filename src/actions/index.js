@@ -76,8 +76,8 @@ const escribirUsuario = (userId) => {
     //escribir  108587547313274842109
     //console.log('envio');
     //remove()
-/*
 
+/*
    // var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
     var newPostKey2 = firebase.database().ref().child('Codigo-Acceso').push().key;
 
@@ -92,8 +92,8 @@ const escribirUsuario = (userId) => {
        // tipoPregunta: '3',
     });
 
-*/
 
+*/
 
 
     // opciones1: 'libre',

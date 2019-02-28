@@ -2,8 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import {
   setActiveChat, submitMessage, numeroPreguntas, valorInputs, consultaPreguntaControls,
-  tipoPreguntas, mensajeEntradas, borrarChats, consultaChats, consultaCanales
+  tipoPreguntas, mensajeEntradas, borrarChats, consultaChats, consultaCanales, pasoOnboardings
 } from './actions';
+import { chatOff, chatOn } from '../../../actions';
 import BoxDianmico from './boxDinamico';
 import { IconGroup } from 'semantic-ui-react';
 import firebase from 'firebase';
@@ -12,7 +13,12 @@ import { Emoji } from 'emoji-mart';
 import randomColor from '../../../lib/randomColor'
 import { reduxReactFirebase } from 'react-redux-firebase';
 
+import { Image, } from 'semantic-ui-react';
+
 import moment from 'moment';
+import randon from '../../../lib/randonImage';
+import Avatar from '../../../apis/xpress';
+import { object } from 'prop-types';
 
 
 
@@ -21,11 +27,29 @@ const timeoutLength = 2500;
 
 class Home extends React.Component {
 
-  state = { carpeta: null, updates: null, color: [], client2: null }
+  state = { carpeta: null, updates: null, color: [], client2: null, avatares: null, avatarX: 0, avatarY: 0 }
+
+
+
+  onSearchXpress = async (text) => {
+    if (this.state.avatarX === this.state.avatarY) return;
+    this.setState({ avatarY: this.state.avatarY + 1 });
+    const response = await Avatar.get('/xpresso/v1/search', {
+      params: {
+        apiKey: '6hSjEEYWVHTmSUUwvwjJzTpX8_zq8noEYq2-_r5ABnkq98vSw1jvHFKncRlYUA-C',
+        query: text
+      },
+
+    });
+    //     console.log(response.data);
+    this.setState({ avatares: response.data.lowResGifs })
+  }
 
 
 
   componentDidMount() {
+    // this.onSearchXpress('user');
+    this.setState({ avatarX: 1 });
     const { SlackOAuthClient } = require('messaging-api-slack')
     this.setState({
       client2: SlackOAuthClient.connect(
@@ -44,8 +68,13 @@ class Home extends React.Component {
 
 
   }
-
-
+  ///paso numero 4 del onboarding
+  handlePaso4 = () => {
+    this.timeout = setTimeout(() => {
+      this.props.chatOff();
+      this.props.pasoOnboardings(4);
+    }, timeoutLength)
+  }
 
   //Envio a slack el mensaje 
   renderEnvioSlack(activeChat, userID) {
@@ -181,17 +210,37 @@ class Home extends React.Component {
 
 
   ///Decodificar mensaje y poner los emojis
+
+
   renderTextoEmoji(texto) {
+
     let x = 0;
     let y = 0;
-    const opciones = texto.split(':').map((consulta) => {
+    let opciones = texto.split(':').map((consulta) => {
       y++;
       x++;
+      console.log(consulta);
       if (consulta === ' ')
         return consulta;
+      if (consulta === '@')
+        return;
 
       if (x === 1) {
-        return consulta;
+        let x2 = 0;
+        let y2 = 0;
+        let opciones3 = consulta.split('@<').map((consulta2) => {
+          y2++;
+          x2++;
+          if (x2 === 1) {
+            x2++;
+            return consulta2;
+          }
+
+          else
+            return;
+        });
+
+        return opciones3;
       }
       else if (texto.split(':').length > 2 && x > 1) {
         x = 0;
@@ -200,7 +249,42 @@ class Home extends React.Component {
       else
         return ':' + consulta;
     });
-    return opciones;
+
+    x = 0;
+    y = 0;
+    let opciones2 = texto.split('@<').map((consulta) => {
+      y++;
+      x++;
+
+      if (x === 1) {
+        x++;
+        return;
+      }
+      else {
+        x = 0;
+
+        this.onSearchXpress(consulta);
+        const indice = randon();
+        if (this.state.avatares && this.state.avatares[1]) {
+
+          return (<React.Fragment>
+            <Image src={this.state.avatares[indice]} key={y} size="medium"></Image>
+          </React.Fragment>);
+        }
+        else
+          return;
+      }
+
+    });
+
+
+
+
+    return (<React.Fragment>
+      {opciones}
+      {opciones2}
+    </React.Fragment>);
+
   }
 
 
@@ -452,6 +536,9 @@ class Home extends React.Component {
           tiempoEstimado: this.props.valorInput
 
         });
+        //aumenta el paso del onboarding al completar la primera actividad
+        if (!this.props.usuarioDetail.usuario.onboarding)
+          this.props.pasoOnboardings(2);
 
         this.renderHistoricoHuper(this.props.userId, `Creo Tarea : ${chatTrazo[2].text} `, 'trabajo');
         // console.log(chatTrazo[key].text);
@@ -505,6 +592,9 @@ class Home extends React.Component {
         updates[`Usuario-TIC-EXP/${this.props.userId}/${newPostKey2}`] = postData;
         firebase.database().ref().update(updates);
         this.renderHistoricoHuper(this.props.userId, `Realizo TIC Quincenal`, 'trabajo');
+
+        if (!this.props.usuarioDetail.usuario.onboarding)
+          this.handlePaso4();
       }
       else if (tipPrgutna === 'TIC Objetivos') {
 
@@ -820,6 +910,7 @@ class Home extends React.Component {
     return new Date(fecahMinima)
   }
 
+
   render() {
     const {
       activeChat,
@@ -858,11 +949,34 @@ class Home extends React.Component {
       return prev;
     }, []);
 
-    let ubicacionBt = "send-button-ch";
-    if (window.screen.width < 500) {
+    let y = window.screen.height * 0.395;
+    let ubicacionBt = {
+      height: '30px',
+      width: '30px',
+      position: 'fixed',
+      'z-index': '4000',
+      top: '83%',
+      left: '90%',
+      'font-size': '20px',
+      'text-align': 'center',
+      'border-radius': '50%',
+      border: '0 none',
+      color: 'rgba(0, 0, 0, 0.4)',
+      background: '0 none',
+      cursor: 'pointer',
+    };
 
-      ubicacionBt = "send-button-chX1";
+    if (window.screen.width > 500 && window.screen.height < 800) {
+      y = window.screen.height * 0.51;
+      ubicacionBt.top = y;
     }
+
+    if (window.screen.width < 500) {
+      ubicacionBt.top = '79%';
+      ubicacionBt.left = '85%';
+      ubicacionBt.position = 'fixed';
+    }
+
 
     return (
       <div>
@@ -927,7 +1041,7 @@ class Home extends React.Component {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-
+            this.setState({ avatarY: 0 });
             if (activeChat.chatID === '13')//solo para el bot o interno
               this.onSubmit(activeChat, userID);
             else this.renderEnvioSlack(activeChat, userID);
@@ -937,7 +1051,7 @@ class Home extends React.Component {
 
           <BoxDianmico />
           <button
-            className={ubicacionBt}
+            style={ubicacionBt}
             type="submit"
           >
             <i className="chevron right icon"
@@ -967,6 +1081,6 @@ const mapHomeStateToProps = (state) => ({
   user: state.user,
 });
 export default connect(mapHomeStateToProps, {
-  submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas, consultaCanales,
-  consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats
+  submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas, consultaCanales, chatOff,
+  consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats, pasoOnboardings
 })(Home);

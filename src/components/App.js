@@ -16,7 +16,8 @@ import Hupps from './modules/Hupps';
 import { connect } from 'react-redux';
 import './modules/chatBot/chatHupApp.css';
 import Feedback from '../components/feedbackHupity';
-import  IngresosHuper from './ingresarUsuarioNuevo';
+import IngresosHuper from './ingresarUsuarioNuevo';
+import Onboard from './PruebaP';
 
 //PruebaG
 
@@ -28,12 +29,14 @@ import  IngresosHuper from './ingresarUsuarioNuevo';
 class App extends React.Component {
 
 
-
+    renderMenuChat() {
+        if (this.props.userRol=== '2' ||(this.props.usuarioDetail && this.props.usuarioDetail.usuario && this.props.usuarioDetail.usuario.onboarding)) {
+            return <MenuChat />;
+        }
+        return;
+    }
 
     render() {
-
-
-
 
 
 
@@ -61,6 +64,7 @@ class App extends React.Component {
                                             <Route path="/dashboard" component={dashboard} />
                                             <Route path="/hupps" exact component={Hupps} />
                                             <Route path="/newuser" exact component={IngresosHuper} />
+                                            <Route path="/onboarding" exact component={Onboard} />
                                         </Switch>
 
 
@@ -75,8 +79,7 @@ class App extends React.Component {
                 <div className="pie-Pagina">
 
                     <Feedback />
-                    <MenuChat />
-
+                    {this.renderMenuChat()}
                 </div>
 
             </div >
@@ -86,4 +89,12 @@ class App extends React.Component {
     }
 };
 
-export default connect(null)(App); 
+const mapStateToProps = (state) => {
+    return {
+        usuarioDetail: state.chatReducer.usuarioDetail,
+        userRol: state.chatReducer.userRol,
+        pasoOnboarding: state.chatReducer.pasoOnboarding
+    };
+};
+
+export default connect(mapStateToProps)(App); 

@@ -2,9 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import '../styles/ingresoHupity.css';
 import { Button, Header, Icon, Modal, Input, Image, Card } from 'semantic-ui-react';
-import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas } from '../modules/chatBot/actions';
+import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, pasoOnboardings } from '../modules/chatBot/actions';
 import _ from 'lodash';
 import firebase from 'firebase';
+const timeoutLength = 150000;
 
 
 class ListEjemplo extends React.Component {
@@ -32,7 +33,8 @@ class ListEjemplo extends React.Component {
 
 
 
-    handleOpen = () => this.setState({ modalOpen: true })
+    handleOpen = () => {this.handlePaso7();
+        this.setState({ modalOpen: true });}
 
     handleClose(guardar, key) {
         if (!this.state)
@@ -68,7 +70,8 @@ class ListEjemplo extends React.Component {
         this.setState({ comentario: '' })
         this.setState({ modalOpen: false });
     }
-    handleOpen2 = () => this.setState({ modalOpen2: true })
+    handleOpen2 = () => {this.handlePaso7();
+        this.setState({ modalOpen2: true });}
 
     handleClose2 = () => this.setState({ modalOpen2: false })
 
@@ -250,6 +253,12 @@ class ListEjemplo extends React.Component {
 
     }
 
+    //paso final del onboarding
+    handlePaso7 = () => {
+        this.timeout = setTimeout(() => {
+            this.props.pasoOnboardings(6);
+        }, timeoutLength)
+    }
 
     render() {
 
@@ -416,4 +425,4 @@ const mapAppStateToProps = (state) => (
 
     });
 
-export default connect(mapAppStateToProps, { equipoConsultas })(ListEjemplo);
+export default connect(mapAppStateToProps, { equipoConsultas, pasoOnboardings })(ListEjemplo);

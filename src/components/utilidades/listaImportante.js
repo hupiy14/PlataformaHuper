@@ -2,12 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
 import { Button, Popup, Grid, Input, Header, Modal, Image, Form, Progress, Segment } from 'semantic-ui-react';
-import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs } from '../modules/chatBot/actions';
+import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
 
 var fs = require('fs');
 
-
+const timeoutLength = 150000;
 
 class listImportante extends React.Component {
     state = {
@@ -99,6 +99,13 @@ class listImportante extends React.Component {
     }
 
 
+    // habilita el tercer paso
+    handlePaso = () => {
+        this.timeout = setTimeout(() => {
+            this.props.pasoOnboardings(3);
+        }, timeoutLength)
+    }
+
     componentDidUpdate() {
         if (this.state.guardar) {
             this.setState({ guardar: false });
@@ -181,6 +188,12 @@ class listImportante extends React.Component {
 
                     }
 
+                    let styleD = {
+                        position: 'relative',
+                        left: '62%',
+                    };
+
+                    if (the.props.alingD) { styleD.left = '25%'; }
 
                     return (
                         <div className="item" key={key2}>
@@ -195,9 +208,12 @@ class listImportante extends React.Component {
 
 
                                     <br />
-                                    <div className="right aling-Derecha">
+                                    <div style={styleD}>
 
                                         <Popup trigger={<Button icon='id badge' color='yellow' onClick={() => {
+                                            if (!the.props.usuarioDetail.usuario.onboarding)
+                                                the.handlePaso();
+
                                             the.onVideoSelect(objetivo);
                                             //  the.props.prioridadObjs(0); 
                                             the.setState({ prioridadOk: true });
@@ -229,6 +245,10 @@ class listImportante extends React.Component {
                                         <Modal
                                             trigger={<Button color='purple' icon='edit outline'
                                                 onClick={() => {
+
+                                                    if (!the.props.usuarioDetail.usuario.onboarding)
+                                                        the.handlePaso();
+
                                                     the.setState({ cambio: Math.round(Math.random() * 6) });
                                                     the.onVideoSelect(objetivo);
                                                     the.setState({ ver: !the.state.ver });
@@ -237,7 +257,7 @@ class listImportante extends React.Component {
                                                 }}
                                             />}
                                             open={the.state.ver}
-                                          
+
                                         >
 
                                             <Modal.Header>Detalle de objetivo: " {the.state.titulo} "</Modal.Header>
@@ -307,31 +327,6 @@ class listImportante extends React.Component {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                                     </div>
                                     <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} indicating size='small' attached='top' attached='bottom' />
                                 </Segment>
@@ -387,9 +382,10 @@ const mapAppStateToProps = (state) => (
         popupDetalle: state.chatReducer.popupDetalle,
         listaObjetivo: state.chatReducer.listaObjetivo,
         prioridadObj: state.chatReducer.prioridadObj,
+        usuarioDetail: state.chatReducer.usuarioDetail,
         userId: state.auth.userId,
 
     });
 
 
-export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs })(listImportante);
+export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings })(listImportante);
