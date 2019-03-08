@@ -12,11 +12,9 @@ import {
 } from './actions';
 import firebase from 'firebase';
 import _ from 'lodash';
-
-
-
-import { Image, } from 'semantic-ui-react';
 import Avatar from '../../../apis/xpress';
+
+
 
 const timeoutLength = 500;
 
@@ -49,206 +47,205 @@ class App extends React.Component {
         if (!this.props.usuarioDetail.usuario.onboarding && this.props.pasoOnboarding === 0)
             this.handlePaso();
 
-        this.onSearchXpress();
+        // this.onSearchXpress();
         this.props.consultaPreguntaControls(1);
         this.props.borrarChats(this.props.user.activeChat.participants);
         //this.props.endChat('6');
         //this.props.startChat('6');
         this.props.chatIdentifiador('6');
+        const chatID = '13';
         if (this.props.mensajeEnt) {
-            const chatID = '13';
-
 
             const nameRef2 = firebase.database().ref().child('Mensaje-ChatBot').child('Saludo').child('1');
             nameRef2.on('value', (snapshot2) => {
-
-
                 const mensaje = snapshot2.val().concepto;
                 const result = _.replace(mensaje, /@nombre/g, this.props.nombreUser);
-
                 //    const imf = <Image src='https://xpresso2.mobigraph.co/xpresso/v2/media/1bfaLcimzkhPQ2w9jwolG3qxXUqmdjw-1/7d140000.gif' size='small' />;
                 this.props.submitMessage(result, chatID, '6');
-
+                this.props.mensajeEntradas(false);
 
             });
-
-            //Notificaciones
-            /*
-            const nameRef2 = firebase.database().ref().child('Notificaciones/108587547313274842109/-LWlp6LbqCPoZ9XBipaG')
-            nameRef2.on('value', (snapshot2) => {
-                // console.log(snapshot2.val());
-                let mensaje = snapshot2.val().concepto;
-                if (snapshot2.val().estado === 'activo') {
-                    if (snapshot2.val().notificaciones === 'Feedback') {
-                        mensaje = `${mensaje} , Atte: ${snapshot2.val().persona}`;
-                    }
-                    else if (snapshot2.val().notificaciones === 'Documento') {
-                        mensaje = `${mensaje} , Atte: ${snapshot2.val().persona}`;
-                    }
-                    else if (snapshot2.val().notificaciones === 'Motivacion Huper') {
-                        mensaje = `${mensaje}  ${snapshot2.val().link}`;
-                    }
-                    this.props.submitMessage(mensaje, chatID, '6');
-
+        }
+        else {
+            this.props.submitMessage('@<Hola Huper@<', chatID, '6');
+        }
+        //Notificaciones
+        /*
+        const nameRef2 = firebase.database().ref().child('Notificaciones/108587547313274842109/-LWlp6LbqCPoZ9XBipaG')
+        nameRef2.on('value', (snapshot2) => {
+            // console.log(snapshot2.val());
+            let mensaje = snapshot2.val().concepto;
+            if (snapshot2.val().estado === 'activo') {
+                if (snapshot2.val().notificaciones === 'Feedback') {
+                    mensaje = `${mensaje} , Atte: ${snapshot2.val().persona}`;
                 }
+                else if (snapshot2.val().notificaciones === 'Documento') {
+                    mensaje = `${mensaje} , Atte: ${snapshot2.val().persona}`;
+                }
+                else if (snapshot2.val().notificaciones === 'Motivacion Huper') {
+                    mensaje = `${mensaje}  ${snapshot2.val().link}`;
+                }
+                this.props.submitMessage(mensaje, chatID, '6');
 
+            }
+
+        });
+        */
+
+        //Mensaje de Salida
+        /* 
+            const starCountRef3 = firebase.database().ref().child('Mensaje-ChatBot/Despedida Huper/1');
+            starCountRef3.on('value', (snapshot) => {
+                const result = _.replace(snapshot.val().concepto, /@nombre/g, this.props.nombreUser);
+                this.props.submitMessage(result, chatID, this.props.idChatUser);
+                //this.props.numeroPreguntas(this.props.numeroPregunta + 1);
             });
-            */
-
-            //Mensaje de Salida
-            /* 
-                const starCountRef3 = firebase.database().ref().child('Mensaje-ChatBot/Despedida Huper/1');
-                starCountRef3.on('value', (snapshot) => {
-                    const result = _.replace(snapshot.val().concepto, /@nombre/g, this.props.nombreUser);
-                    this.props.submitMessage(result, chatID, this.props.idChatUser);
-                    //this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                });
-    
-                const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWl1r4nhd8kxizVeVWv');
-                starCountRef.on('value', (snapshot) => {
-                    this.props.consultaChats(snapshot.val());
-                  
-                    this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                    // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                });
+ 
+            const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWl1r4nhd8kxizVeVWv');
+            starCountRef.on('value', (snapshot) => {
+                this.props.consultaChats(snapshot.val());
+              
+                this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+            });
 */
 
-            //Seguimiento
+        //Seguimiento
+        /*
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWk8_7EYCjLe-twidsN');
+        starCountRef.on('value', (snapshot) => {
+            this.props.consultaChats(snapshot.val());
+
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+        });*/
+        //TIC OBJETIVO
+
+        /*      const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWjnHE5W8YLaEYaDWGd');
+              starCountRef.on('value', (snapshot) => {
+                  this.props.consultaChats(snapshot.val());
+  
+                  this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                  // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+              });
+  */
+        //TIC
+        /*
+                    const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWhSUV5slo2cbIxl5go');
+                    starCountRef.on('value', (snapshot) => {
+                        this.props.consultaChats(snapshot.val());
+                    
+                        this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                       // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                    });
+                    */
+        /*
+                    //consultar y editar tarea
+                    const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWekXxzIhU5ezBWot-t');
+                    starCountRef.on('value', (snapshot) => {
+                        this.props.consultaChats(snapshot.val());
+                    
+                        this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                       // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                    });
+                  
+        */
+        //Pregunta Diaria (Listo)
+        if (this.props.userRol === '3') {
+
             /*
-            const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWk8_7EYCjLe-twidsN');
+                              //Mensaje de Salida
+                              this.props.tipoPreguntas('Despedida');
+                              const starCountRef3 = firebase.database().ref().child('Mensaje-ChatBot/Despedida Huper/1');
+                              starCountRef3.on('value', (snapshot) => {
+                                  const result = _.replace(snapshot.val().concepto, /@nombre/g, this.props.nombreUser);
+                                  this.props.submitMessage(result, chatID, this.props.idChatUser);
+                                  //this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                              });
+                  
+                              const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWl1r4nhd8kxizVeVWv');
+                              starCountRef.on('value', (snapshot) => {
+                                  this.props.consultaChats(snapshot.val());
+                                
+                                  this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                                  // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                              });
+   
+                              */           
+
+            if (this.props.pasoOnboarding === 0 || this.props.usuarioDetail.usuario.onboarding)
+                this.renderTareaDiaria(chatID);
+            else if (this.props.isChat === false || this.props.pasoOnboarding === 1)
+                this.renderTareaDiaria(chatID);
+            else if (this.props.pasoOnboarding === 3)
+                this.renderRealizarTIC_EXP(chatID);
+
+
+        }
+        // this.props.mensajeEntradas(false);
+
+
+        ///Crear objetivo Gestor 
+        /*
+                    const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXtZVCN7-52d44THkXP');
+                    starCountRef.on('value', (snapshot) => {
+                        this.props.consultaChats(snapshot.val());
+        
+                        this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                        // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                    });
+        
+        */
+
+
+        ///Crear Feedback Exporadico Gestor
+        /*
+                    const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_CrEJFXvUlEN_tp5');
+                    starCountRef.on('value', (snapshot) => {
+                        this.props.consultaChats(snapshot.val());
+        
+                        this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                        // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                    });
+        
+        
+        */
+
+        ///Consultar trabajo del huper
+        /*
+                    const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_NqMTxrwo-Ap7UTR');
+                    starCountRef.on('value', (snapshot) => {
+                        this.props.consultaChats(snapshot.val());
+        
+                        this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                        // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                    });
+        
+        
+        */
+
+        //Consulta opciones fase 1 Gestor
+        else if (this.props.userRol === '2') {
+            this.props.tipoPreguntas('Consulta Gestor');
+            const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_TDJQilcvBxWh955');
             starCountRef.on('value', (snapshot) => {
                 this.props.consultaChats(snapshot.val());
 
                 this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
                 // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-            });*/
-            //TIC OBJETIVO
-
-            /*      const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWjnHE5W8YLaEYaDWGd');
-                  starCountRef.on('value', (snapshot) => {
-                      this.props.consultaChats(snapshot.val());
-      
-                      this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                      // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                  });
-      */
-            //TIC
-            /*
-                        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWhSUV5slo2cbIxl5go');
-                        starCountRef.on('value', (snapshot) => {
-                            this.props.consultaChats(snapshot.val());
-                        
-                            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                           // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                        });
-                        */
-            /*
-                        //consultar y editar tarea
-                        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWekXxzIhU5ezBWot-t');
-                        starCountRef.on('value', (snapshot) => {
-                            this.props.consultaChats(snapshot.val());
-                        
-                            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                           // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                        });
-                      
-            */
-            //Pregunta Diaria (Listo)
-            if (this.props.userRol === '3') {
-
-                /*
-                                  //Mensaje de Salida
-                                  this.props.tipoPreguntas('Despedida');
-                                  const starCountRef3 = firebase.database().ref().child('Mensaje-ChatBot/Despedida Huper/1');
-                                  starCountRef3.on('value', (snapshot) => {
-                                      const result = _.replace(snapshot.val().concepto, /@nombre/g, this.props.nombreUser);
-                                      this.props.submitMessage(result, chatID, this.props.idChatUser);
-                                      //this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                                  });
-                      
-                                  const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWl1r4nhd8kxizVeVWv');
-                                  starCountRef.on('value', (snapshot) => {
-                                      this.props.consultaChats(snapshot.val());
-                                    
-                                      this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                                      // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                                  });
-                                  */
-
-
-                if (this.props.pasoOnboarding === 0 || this.props.usuarioDetail.usuario.onboarding)
-                    this.renderTareaDiaria(chatID);
-                else if (this.props.isChat === false || this.props.pasoOnboarding === 1)
-                    this.renderTareaDiaria(chatID);
-                else if (this.props.pasoOnboarding === 3)
-                    this.renderRealizarTIC_EXP(chatID);
-
-
-            }
-            // this.props.mensajeEntradas(false);
-
-
-            ///Crear objetivo Gestor 
-            /*
-                        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXtZVCN7-52d44THkXP');
-                        starCountRef.on('value', (snapshot) => {
-                            this.props.consultaChats(snapshot.val());
-            
-                            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                        });
-            
-            */
-
-
-            ///Crear Feedback Exporadico Gestor
-            /*
-                        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_CrEJFXvUlEN_tp5');
-                        starCountRef.on('value', (snapshot) => {
-                            this.props.consultaChats(snapshot.val());
-            
-                            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                        });
-            
-            
-            */
-
-            ///Consultar trabajo del huper
-            /*
-                        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_NqMTxrwo-Ap7UTR');
-                        starCountRef.on('value', (snapshot) => {
-                            this.props.consultaChats(snapshot.val());
-            
-                            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                        });
-            
-            
-            */
-
-            //Consulta opciones fase 1 Gestor
-            else if (this.props.userRol === '2') {
-                this.props.tipoPreguntas('Consulta Gestor');
-                const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_TDJQilcvBxWh955');
-                starCountRef.on('value', (snapshot) => {
-                    this.props.consultaChats(snapshot.val());
-
-                    this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                    // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                });
-            }
+            });
         }
+
     }
 
 
-    renderTareaDiaria(chatID) {
+    renderTareaDiaria(chatID, trabajo) {
         this.props.tipoPreguntas('Diaria');
         const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWGFo3s87SjzppL7hoF');
         starCountRef.on('value', (snapshot) => {
             this.props.consultaChats(snapshot.val());
-
-            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+            console.log(trabajo);
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto + trabajo, chatID, this.props.idChatUser);
             // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
         });
     }
@@ -311,15 +308,18 @@ class App extends React.Component {
 
 
         const y = window.screen.height * 0.48;
+        const x2 = 1700 / window.screen.width;
+        const x = window.screen.width * 0.17 * x2;
+
 
         const wrapper = {
-            width: '17.5%',
+            width: x,
             height: '55%',
             position: 'fixed',
             overflow: 'hidden',
             bottom: '8%',
             right: '3%',
-            'z-index': '4000',
+            'z-index': '8000',
             'border-radius': '30px',
             'box-shadow': '10px 10px 10px -8px rgba(0, 0, 0, 0.35)',
             'margin-top:': '3%',
@@ -335,11 +335,11 @@ class App extends React.Component {
         if (window.screen.width > 500 && window.screen.height < 800) {
             const y = window.screen.height * 0.63;
             wrapper.bottom = '12%';
-            wrapper.width = '22%';
+            //   wrapper.width = '22%';
             wrapper.height = y;
         }
         if (window.screen.width < 500) {
-          //  const y = window.screen.height * 0.72;
+            //  const y = window.screen.height * 0.72;
             wrapper.width = '80%';
             wrapper.bottom = '12%';
             wrapper.height = '90%';

@@ -4,14 +4,6 @@ import randomScalingFactor from '../../lib/randomScalingFactor';
 
 
 
-const labelsDias = [
-    "Lunes",
-    "Martes",
-    "Miercoles",
-    "Jueves",
-    "Viernes",
-    "Sabado"
-];
 
 const labelsMonths = [
     "January",
@@ -25,20 +17,22 @@ const labelsMonths = [
 
 
 const datosG1 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
+    100,
+    80,
+    70,
+    75,
+    60,
+    40,
+    35,
 ];
 const datosG11 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
+    100,
+    83,
+    65,
+    80,
+    60,
+    47,
+    38,
 ];
 const datosG111 = [
     randomScalingFactor(),
@@ -46,82 +40,31 @@ const datosG111 = [
     randomScalingFactor(),
     randomScalingFactor(),
     randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG2 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG22 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG222 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG3 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG33 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG333 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
     randomScalingFactor(),
     randomScalingFactor()
 ];
 
 
 
-class CrearGraficaHistorico extends React.Component{
-    render(){
-        return(
+class CrearGraficaHistorico extends React.Component {
+    render() {
 
-            <CrearGrafica labelsX={labelsDias}
-            label1={"Historico de trabajo"}
-            label2={"MIT"}
-            label3={"Trabajo Realizado"}
-            titleGrafica={"Trabajo (Tareas) vs Dias"}
-            datos1={datosG1}
-            datos2={datosG11}
-            datos3={datosG111}
-            numeroGrafica={'2'}
-            maxLen={'150'}
-            TituloGrafica={"Historico"}
+        let datos = [];
+        datos.push({ label: "MIT equipo", data: datosG111,  hidden: true, });
+        datos.push({ label: "Trabajo realizado", data: datosG11 });
+        datos.push({ label: "Trabajo planificado", data: datosG1 });
+   
+      
+        return (
 
-        />
+            <CrearGrafica labelsX={labelsMonths}
+                datos={datos}
+                titleGrafica={"Trabajo vs Meses"}
+                numeroGrafica={'2'}
+                maxLen={'140'}
+                TituloGrafica={"Historico"}
+
+            />
         );
     }
 }
@@ -135,4 +78,3 @@ export default CrearGraficaHistorico;
 
 
 
-                              

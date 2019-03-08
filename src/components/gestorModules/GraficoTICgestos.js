@@ -48,77 +48,25 @@ const datosG111 = [
     randomScalingFactor(),
     randomScalingFactor()
 ];
-const datosG2 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG22 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG222 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG3 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG33 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG333 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
 
 
 
 class CrearGraficaGestor extends React.Component{
     render(){
+
+        let datos= [];
+        datos.push({label:"MIT del equipo", data:datosG1,});
+        datos.push({label:"MIT Personal", data:datosG11,});
+        datos.push({label:"Trabajo Realizado", data:datosG111,});
+
         return(
 
             <CrearGrafica labelsX={labelsDias}
-            label1={"MIT del equipo"}
-            label2={"MIT Personal"}
-            label3={"Trabajo Realizado"}
+            datos={datos}
+            fuerza={0.25}
             titleGrafica={"Trabajo (Tareas) vs Dias"}
-            datos1={datosG1}
-            datos2={datosG11}
-            datos3={datosG111}
             numeroGrafica={'2'}
-            maxLen={'150'}
+            maxLen={'140'}
             TituloGrafica={"MIT del equipo"}
 
         />

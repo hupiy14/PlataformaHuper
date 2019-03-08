@@ -13,45 +13,44 @@ const labelsDias = [
     "Sabado"
 ];
 
-const labelsMonths = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July"
-];
+//productividad sera el resultado de las entregas de cada objetivo sumado la dificultad
+//calidad medida subjetiva del jefe
 
 
 const datosG1 = [
-    100,
-    80,
-    60,
-    40,
     20,
-    0
+    45,
+    80,
+    35,
+    70,
+    15,
 ];
 const datosG11 = [
-    100,
-    88,
-    64,
     40,
-    25,
-    0
+    55,
+    60,
+    45,
+    50,
+    5,
+];
+const datosG111 = [
+    80, 80, 60, 80, 60, 80
 ];
 
 
 
 
-class CrearGraficaGestor extends React.Component {
+
+class CrearGraficaProd extends React.Component {
 
     render() {
 
         let datos = [];
-        datos.push({ label: "Trabajo Realizado", data: datosG11 });
-        datos.push({ label: "Planificación de la semana", data: datosG1 });
+        datos.push({ label: "Calidad Actual", data: datosG111, hidden: true, });
+        datos.push({ label: "Semana Actual", data: datosG11, hidden: true, });
+        datos.push({ label: "Semana Anterior", data: datosG1 });
       
+    
         return (
 
             <CrearGrafica labelsX={labelsDias}
@@ -59,19 +58,11 @@ class CrearGraficaGestor extends React.Component {
                 titleGrafica={"Trabajo (Actividades) vs Dias"}
                 numeroGrafica={'2'}
                 maxLen={'140'}
-                TituloGrafica={"Trabajo de la Semana"}
+                TituloGrafica={"Productividad vs Calidad"}
 
             />
         );
     }
 }
 
-export default CrearGraficaGestor;
-
-
-
-
-
-
-
-
+export default CrearGraficaProd;

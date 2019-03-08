@@ -6,121 +6,72 @@ import '../styles/ingresoHupity.css';
 import randomScalingFactor from '../../lib/randomScalingFactor'
 import ListaObjetivosE from '../../components/gestorModules/listaObjetivosEquipo';
 import ListaPersonasEquipo from '../utilidades/listaPersonasEquipo';
-import { Menu, Segment } from 'semantic-ui-react';
+import {
+    Button,
+    Checkbox,
+    Grid,
+    Header,
+    Icon,
+    Image,
+    Label,
+    Menu,
+    Segment,
+    Sidebar,
+    Radio,
+}
+    from 'semantic-ui-react';
+import PropTypes from 'prop-types'
+
 import GraficaG1 from '../gestorModules/CrearGraficaGestor';
 import GraficaG2 from '../gestorModules/CreargraficaHistorico';
 import GraficaG3 from '../gestorModules/GraficoTICgestos';
+import GraficaG4 from '../gestorModules/CrearGraficaProductividad';
 import firebase from 'firebase';
-import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas } from '../modules/chatBot/actions';
+import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, verEquipos } from '../modules/chatBot/actions';
+const timeoutLength = 3000;
+const timeoutLength2 = 5000;
 
-const labelsDias = [
-    "Lunes",
-    "Martes",
-    "Miercoles",
-    "Jueves",
-    "Viernes",
-    "Sabado"
-];
+const HorizontalSidebar = ({ animation, direction, visible, equipo }) => (
+    <Sidebar as={Segment} animation={animation} direction={direction} visible={visible}>
+        <Grid textAlign='center'>
+            <Grid.Row columns={1}>
+                <Grid.Column>
+                    {equipo}
 
-const labelsMonths = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July"
-];
+                </Grid.Column>
+            </Grid.Row>
 
+        </Grid>
+    </Sidebar>
+)
 
-const datosG1 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG11 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG111 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG2 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG22 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG222 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG3 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG33 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG333 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
 
 
 class DashBoard extends React.Component {
     state = {
-        percent: 15, activeItem: 'semana', grafica: <GraficaG1 />,
+        percent: 15, activeItem: 'semana',
+
         consultaTareas: {}, titulo: null,
         listaPersonas: null, equipo: null,
         avatares: null, colorSeleccion: {}, diateletrabajo: {},
+        valueH: false, slide: null, seleccion: null,
+        grafica: null, numeroO: 0,
 
     };
+
+
+    handleOpen = () => {
+        this.timeout = setTimeout(() => {
+
+            if (this.state.numeroO === 10)
+                this.setState({ numeroO: 0 });
+            else
+                this.setState({ numeroO: this.state.numeroO + 1 });
+          //  this.handleOpen2();
+        }, timeoutLength)
+    }
+
+   
 
     actualizarequipoConsulta() {
 
@@ -141,7 +92,6 @@ class DashBoard extends React.Component {
             const fecha = new Date();
             const cal = this.getWeekNumber(fecha);
 
-
             if (!equipo)
                 return;
             Object.keys(equipo).map((key, index) => {
@@ -154,9 +104,7 @@ class DashBoard extends React.Component {
                         usuariodia[key] = { dia: snapshot2.val().dia, mes: snapshot2.val().mes };
                         const objetos = { ...this.state.diateletrabajo, ...usuariodia }
                         this.setState({ diateletrabajo: objetos })
-
                     }
-
 
                 });
 
@@ -182,8 +130,17 @@ class DashBoard extends React.Component {
     componentDidMount() {
 
         this.actualizarequipoConsulta();
-
-
+        this.handleOpen();
+        this.setState({
+            grafica: <div>
+                <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
+                <GraficaG1 />
+            </div>
+        })
+        
+        window.gapi.client.load("https://www.googleapis.com/discovery/v1/apis/drive/v3/rest")
+        .then(function () { console.log("GAPI client loaded for API"); },
+            function (err) { console.error("Error loading GAPI client for API", err); });
     }
 
     getWeekNumber(date) {
@@ -194,15 +151,39 @@ class DashBoard extends React.Component {
         return Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
     };
 
+    handleDimmedChange = (e, { checked }) => {
+        console.log(checked);
+        this.setState({ valueH: checked });
+
+        if (checked) {
+            this.setState({
+                grafica: <div>
+                    <Checkbox checked={checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
+                    <GraficaG2 />
+                </div>
+            })
+        }
+        else {
+            this.setState({
+                grafica: <div>
+                    <Checkbox checked={checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
+                    <GraficaG1 />
+                </div>
+            })
+        }
+    }
+
+
+
     handleItemClick = (e, { name }) => {
         this.setState({ activeItem: name })
-        if (name === 'historico') {
 
-            const graficaG = <GraficaG2 />;
-            this.setState({ grafica: graficaG })
-        }
-        else if (name === 'semana') {
-            const graficaG = <GraficaG1 />;
+        if (name === 'semana') {
+            const graficaG =
+                <div>
+                    <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
+                    <GraficaG1 />
+                </div>
             this.setState({ grafica: graficaG })
 
         }
@@ -211,20 +192,46 @@ class DashBoard extends React.Component {
             this.setState({ grafica: graficaG })
 
         }
+        else if (name === 'Productividad vs Calidad') {
+            const graficaG = <GraficaG4 />;
+            this.setState({ grafica: graficaG })
+
+        }
+
     }
 
     renderTituloObjetivo() {
-        if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0)
-            return 'Lista de Objetivos Huper';
-        else
+        if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0) {
+            let titulo;
+            Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
+                if (key === this.props.equipoConsulta.sell)
+                    titulo = this.props.equipoConsulta.listaPersonas[key].usuario;
+            });
+            this.setState({ seleccion: titulo });
+            return 'Lista de Objetivos ' + titulo;
+
+        }
+        else {
+            this.setState({ seleccion: null });
             return 'Lista de Objetivos';
+        }
     }
 
     renderTituloFormacion() {
-        if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0)
-            return 'Lista Formacion Huper';
-        else
+        if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0) {
+            let titulo;
+            Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
+                if (key === this.props.equipoConsulta.sell)
+                    titulo = this.props.equipoConsulta.listaPersonas[key].usuario;
+            });
+            this.setState({ seleccion: titulo });
+            return 'Lista de Formaciones ' + titulo;
+
+        }
+        else {
+            this.setState({ seleccion: null });
             return 'Lista Formaciones';
+        }
     }
 
     renderAcrhivosSubidos() {
@@ -241,110 +248,126 @@ class DashBoard extends React.Component {
         return carpeta;
     }
 
+    renderListadoEquipo() {
 
+        //envia la seleccion realizada
+        let sel = null;
+        if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0) {
+            let titulo;
+            sel = this.props.equipoConsulta.sell;
+            Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
+                if (key === this.props.equipoConsulta.sell)
+                    titulo = this.props.equipoConsulta.listaPersonas[key].usuario;
+
+
+            });
+            this.setState({ seleccion: titulo });
+        }
+        else {
+            this.setState({ seleccion: null });
+        }
+
+        return (
+            <ListaPersonasEquipo
+                titulo={'Tu equipo'}
+                diateletrabajo={this.state.diateletrabajo}
+                equipox={this.state.equipo}
+                listaPersonas={this.state.listaPersonas}
+                empresa={this.props.usuarioDetail.usuario.empresa}
+                equipo={this.props.usuarioDetail.usuario.equipo}
+                seleccionUsuario={sel}
+                icono={'user outline'} />
+
+        );
+    }
+
+    renderListaObjetivo() {
+        return (<ListaObjetivosE
+            titulo={this.renderTituloObjetivo()}
+            icono={'copy outline'}
+            equipox={this.state.equipo}
+
+        />);
+
+    }
+    renderListaFormaciones() {
+        return (
+            <ListFormacion
+                equipox={this.state.equipo}
+                titulo={this.renderTituloFormacion()}
+                iconos={'leanpub'} />
+        );
+    }
 
 
     renderGestor() {
 
+        let porcentajeTexto = 0;
+        let verUsuario = 'none';
+
+        if (this.state.seleccion) {
+            console.log(this.state.seleccion.length);
+            porcentajeTexto = this.state.seleccion.length * 8.5;
+            verUsuario = 'block';
+        }
+
         if (this.state.listaPersonas && this.state.equipo && this.state.diateletrabajo) {
 
-            const { activeItem } = this.state
             // console.log(this.props.usuarioDetail);
             return (
 
                 <div>
                     <div className="ui form">
                         <div className="two column stackable ui grid">
-                            <div className="column eleven wide">
+                            <div className="column fifteen wide">
                                 <div className="ui segment ">
+                                    <Sidebar.Pushable as={Segment}>
+                                        {
+                                            <HorizontalSidebar animation="scale down" direction="right" visible={this.props.verEquipo} equipo={this.state.slide} />
+                                        }
+                                        <Sidebar.Pusher dimmed={this.props.verEquipo}>
+                                            <Segment basic>
+                                                <Menu pointing secondary>
+                                                    <Menu.Item name='semana' active={this.state.activeItem === 'semana'} onClick={this.handleItemClick} />
+                                                    <Menu.Item
+                                                        name='MIT'
+                                                        active={this.state.activeItem === 'MIT'}
+                                                        onClick={this.handleItemClick}
+                                                    />
+                                                    <Menu.Item
+                                                        name='Productividad vs Calidad'
+                                                        active={this.state.activeItem === 'Productividad vs Calidad'}
+                                                        onClick={this.handleItemClick}
+                                                    />
+                                                </Menu>
 
+                                                <Segment attached='bottom'>
+                                                    {this.state.grafica}
+                                                </Segment>
 
-                                    <Menu pointing secondary>
-                                        <Menu.Item name='semana' active={activeItem === 'home'} onClick={this.handleItemClick} />
-                                        <Menu.Item
-                                            name='historico'
-                                            active={this.state.activeItem === 'historico'}
-                                            onClick={this.handleItemClick}
-                                        />
-                                        <Menu.Item
-                                            name='MIT'
-                                            active={this.state.activeItem === 'MIT'}
-                                            onClick={this.handleItemClick}
-                                        />
-
-                                    </Menu>
-
-                                    <Segment attached='bottom'>
-                                        {this.state.grafica}
-                                    </Segment>
-
+                                            </Segment>
+                                        </Sidebar.Pusher>
+                                    </Sidebar.Pushable>
                                 </div>
                             </div>
 
-                            <div className="column five wide loaderTEAM">
-                                <div className="ui segment loaderTEAM">
+                            <div className="column one wide loaderTEAM">
+                                <div className="ui segment ">
+                                    <Button icon="users" className="opcionesGestor"  label="Equipo" color="yellow" onClick={() => { this.props.verEquipos(!this.props.verEquipo); this.setState({ slide: this.renderListadoEquipo() }); }} >
 
-
-
-                                    <ListaPersonasEquipo
-                                        titulo={'Tu equipo'}
-                                        diateletrabajo={this.state.diateletrabajo}
-                                        equipox={this.state.equipo}
-                                        listaPersonas={this.state.listaPersonas}
-                                        empresa={this.props.usuarioDetail.usuario.empresa}
-                                        equipo={this.props.usuarioDetail.usuario.equipo}
-                                        icono={'user outline'}
-
-                                    />
-
+                                    </Button>
+                                    <Label color='teal' floating style={{ width: `${porcentajeTexto}px`, left: '40px', display: `${verUsuario}`, 'z-index': '1' }}>
+                                        {this.state.seleccion}
+                                    </Label>
                                 </div>
-                            </div>
-
-
-
-
-                            <div className="column six wide">
-                                <div className="ui segment">
-
-                                    <ListaObjetivosE
-                                        titulo={this.renderTituloObjetivo()}
-                                        icono={'copy outline'}
-                                        equipox={this.state.equipo}
-
-                                    />
-
+                                <div className="ui segment ">
+                                    <Button icon="tasks" className="opcionesGestor" label="Objetivos" color="yellow" onClick={() => { this.props.verEquipos(!this.props.verEquipo); this.setState({ slide: this.renderListaObjetivo() }); }} ></Button>
                                 </div>
-                            </div>
-
-                            <div className="column five wide ">
-                                <div className="ui segment Cambioo2">
-
-                                    <h3>Tu espacio de trabajo</h3>
-                                    <div className="ui embed " >
-
-                                        <iframe className="yellow4" src={`https://drive.google.com/embeddedfolderview?id=${this.renderAcrhivosSubidos()}`} />
-
-                                    </div>
-
-
+                                <div className="ui segment ">
+                                    <Button icon="book" className= "opcionesGestor"  label="Formación" color="yellow" onClick={() => { this.props.verEquipos(!this.props.verEquipo); this.setState({ slide: this.renderListaFormaciones() }); }} ></Button>
                                 </div>
+
                             </div>
-
-                            <div className="column five wide">
-                                <div className="ui segment">
-
-                                    <ListFormacion
-                                        equipox={this.state.equipo}
-                                        titulo={this.renderTituloFormacion()}
-                                        iconos={'leanpub'}
-
-                                    />
-
-                                </div>
-                            </div>
-
-
-
 
                         </div>
                     </div >
@@ -366,9 +389,10 @@ const mapStateToProps = (state) => {
         equipoConsulta: state.chatReducer.equipoConsulta,
         usuarioDetail: state.chatReducer.usuarioDetail,
         listaObjetivo: state.chatReducer.listaObjetivo,
+        verEquipo: state.chatReducer.verEquipo,
         userRol: state.chatReducer.userRol
     };
 };
-export default connect(mapStateToProps, { createStream, equipoConsultas, listaObjetivos })(DashBoard);
+export default connect(mapStateToProps, { createStream, equipoConsultas, listaObjetivos, verEquipos })(DashBoard);
 
 ///<ListAdjuntos />

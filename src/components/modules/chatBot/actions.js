@@ -26,10 +26,32 @@ import {
   EQUIPO_CONSULTA,
   NUEVO_USUARIO,
   PASO_ONBOARDING,
+  VER_EQUIPO,
+  SELEC_OBJETIVO,
+  AVATARES,
 
 
 } from './types';
 
+export const verEquipos = (verEquipo) => {
+  return {
+    type:  VER_EQUIPO,
+    payload: verEquipo
+  };
+};
+export const avatares = (avatar) => {
+  return {
+    type:  AVATARES,
+    payload: avatar
+  };
+};
+
+export const selObjetivos = (selObjetivo) => {
+  return {
+    type:  SELEC_OBJETIVO,
+    payload: selObjetivo
+  };
+};
 export const pasoOnboardings = (pasoOnboarding) => {
 
   return {

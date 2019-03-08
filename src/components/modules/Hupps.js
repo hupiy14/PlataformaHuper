@@ -23,6 +23,11 @@ class Hupps extends React.Component {
             this.props.listaObjetivos({ tareas: this.props.listaObjetivo, objetivos: this.props.equipoConsulta });
         }
 
+        if(window.gapi.client)
+        window.gapi.client.load("https://www.googleapis.com/discovery/v1/apis/drive/v3/rest")
+        .then(function () { console.log("GAPI client loaded for API"); },
+            function (err) { console.error("Error loading GAPI client for API", err); });
+
     }
 
     onSearchSubmit = async (buscar) => {

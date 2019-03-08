@@ -276,7 +276,7 @@ class ListaObjetivosEquipo extends React.Component {
 
 
                                 <Segment style={style}>
-                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} indicating size='medium' attached='top' />
+                                   
                                     <div className="header"  >{cconsulta[key2].concepto}</div>
                                     <div className="description"  >{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
 
@@ -394,11 +394,7 @@ class ListaObjetivosEquipo extends React.Component {
                                         </Modal>
                                         <Popup wide trigger={<Button icon={iconGetor} color='teal'
                                             onClick={() => {
-
                                                 the.onVideoSelect(objetivo);
-
-
-
                                             }}
 
 
@@ -439,7 +435,8 @@ class ListaObjetivosEquipo extends React.Component {
                                         </Popup>
 
                                     </div>
-                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} indicating size='small' attached='top' attached='bottom' />
+                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ top: '5px' }} />
+                                 
                                 </Segment>
 
                             </div>

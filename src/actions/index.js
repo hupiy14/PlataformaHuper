@@ -76,14 +76,14 @@ const escribirUsuario = (userId) => {
     //escribir  108587547313274842109
     //console.log('envio');
     //remove()
-
 /*
-   // var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
-    var newPostKey2 = firebase.database().ref().child('Codigo-Acceso').push().key;
 
-    firebase.database().ref(`Codigo-Acceso/${newPostKey2}`).set({
-        estado: 'activo',
-        fecha: new Date().toString(),
+   // var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
+    var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta').push().key;
+
+    firebase.database().ref(`Preguntas-Chat/-L_CdgL9booyLYiJ31Kx/1`).set({
+        concepto: "Rol: trabajador /Crear Tarea",
+     //   fecha: new Date().toString(),
      
         //typeForm: '',
 
@@ -91,9 +91,9 @@ const escribirUsuario = (userId) => {
        // opciones: 'Que esta haciendo mi huper,Crear un Objetivo,Dar un Feedback',
        // tipoPregunta: '3',
     });
-
-
 */
+
+
 
 
     // opciones1: 'libre',

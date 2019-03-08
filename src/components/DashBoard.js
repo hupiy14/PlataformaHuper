@@ -8,15 +8,20 @@ import CrearGrafica from './utilidades/CrearGrafica';
 import './styles/ingresoHupity.css';
 import randomScalingFactor from '../lib/randomScalingFactor';
 import { Line } from 'react-chartjs-2';
-import { Menu, Segment } from 'semantic-ui-react';
+import ListaActividades from './HuperModules/actividadesHuper';
 import DashGestor from './gestorModules/dashGestor';
 import Hupps from './modules/Hupps';
 import firebase from 'firebase';
 
 import Avatar from '../apis/xpress';
-import { Button, Dimmer, Header, Icon, Image, Popup, Step, Label } from 'semantic-ui-react';
+
+
+
+
+import { Grid, Modal, Menu, Segment, Button, Dimmer, Header, Icon, Image, Portal, Step, Label, Checkbox } from 'semantic-ui-react';
 import MenuChat from './MenuChat';
-import { pasoOnboardings } from './modules/chatBot/actions';
+import { pasoOnboardings, listaFormaciones } from './modules/chatBot/actions';
+import { object } from 'prop-types';
 const timeoutLength = 1800;
 const timeoutLength2 = 2000;
 const timeoutLength3 = 100000;
@@ -140,20 +145,35 @@ class DashBoard extends React.Component {
         pasoActivof: 1,
         comenzo: false,
         estadoCel: false,
-        grafica: <CrearGrafica labelsX={labelsDias}
-            label1={"Planeación de trabajo"}
-            label2={"Correccón de trabajo"}
-            label3={"Trabajo Realizado"}
-            titleGrafica={"Trabajo (Tareas) vs Dias"}
-            datos1={datosG1}
-            datos2={datosG11}
-            datos3={datosG111}
-            numeroGrafica={'2'}
-            maxLen={'150'}
-            TituloGrafica={"Avance Semanal"}
+        grafica: null,
+        checked: false,
+        open: false,
+        open2: false,
+        open3: false,
 
-        />
     }
+
+
+
+    handleOpenMenu = () => {
+        this.setState({ open: true })
+    }
+
+    handleOpenMenu2 = () => {
+        this.setState({ open2: true })
+    }
+
+    handleOpenMenu3 = () => {
+        this.setState({ open3: true })
+    }
+    handleCloseMenu = () => {
+        this.setState({ open: false })
+        this.setState({ open2: false })
+        this.setState({ open3: false })
+    }
+
+
+
 
 
 
@@ -180,45 +200,108 @@ class DashBoard extends React.Component {
 
     componentDidMount() {
         this.onSearchXpress("hi");
+        let datos = [];
+        datos.push({ label: "Planificación de trabajo", data: datosG1, hidden: true, });
+        datos.push({ label: "Correccón de trabajo", data: datosG11 });
+
+        this.setState({
+
+            grafica: <div>
+                <Checkbox checked={this.state.checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
+                <CrearGrafica labelsX={labelsDias}
+                    datos={datos}
+                    titleGrafica={"Trabajo (Tareas) vs Dias"}
+                    numeroGrafica={'2'}
+                    maxLen={'140'}
+                    TituloGrafica={"Avance Semanal"}
+                />
+            </div>
+
+        });
+
+
+      
+
     }
     renderGestor() {
         return (<DashGestor />);
     }
 
+    handleDimmedChange = (e, { checked }) => {
+        console.log(checked);
+        this.setState({ valueH: checked });
+
+
+        if (checked) {
+            let datos = [];
+            datos.push({ label: "Planificación de trabajo", data: datosG2, hidden: true, });
+            datos.push({ label: "Correccón de trabajo", data: datosG22 });
+
+            this.setState({
+                grafica: <div>
+                    <Checkbox checked={checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
+                    <CrearGrafica labelsX={labelsMonths}
+                        datos={datos}
+                        titleGrafica={"Objetivo vs Meses"}
+                        maxLen={'140'}
+                        TituloGrafica={"Avance de tu trabajo"}
+                    />
+                </div>
+            })
+        }
+        else {
+            let datos = [];
+            datos.push({ label: "Planificación de trabajo", data: datosG1, hidden: true, });
+            datos.push({ label: "Correccón de trabajo", data: datosG11 });
+            this.setState({
+                grafica: <div>
+                    <Checkbox checked={checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
+                    <CrearGrafica labelsX={labelsDias}
+                        datos={datos}
+                        titleGrafica={"Trabajo (Actividades) vs Dias"}
+                        numeroGrafica={'2'}
+                        maxLen={'140'}
+                        TituloGrafica={"Avance Semanal"}
+                    />
+                </div>
+            })
+        }
+    }
+
     handleItemClick = (e, { name }) => {
         this.setState({ activeItem: name })
-        if (name === 'historico') {
 
-            if (!this.props.usuarioDetail.usuario.onboarding)
-                this.handlePaso();
+        if (name === 'semana') {
 
-            const graficaG =
-                <CrearGrafica labelsX={labelsMonths}
-                    label1={"Planeación de trabajo"}
-                    label2={"Correccón de trabajo"}
-                    label3={"Trabajo Realizado"}
-                    titleGrafica={"Objetivo vs Meses"}
-                    datos1={datosG2}
-                    datos2={datosG22}
-                    datos3={datosG222}
-                    maxLen={'150'}
-                    TituloGrafica={"Avance de tu trabajo"}
+            let datos = [];
+            datos.push({ label: "Planificación de trabajo", data: datosG1, hidden: true, });
+            datos.push({ label: "Correccón de trabajo", data: datosG11 });
 
-                />;
+            const graficaG = <div>
+                <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
+                <CrearGrafica labelsX={labelsDias}
+                    datos={datos}
+                    titleGrafica={"Trabajo (Actividades) vs Dias"}
+                    numeroGrafica={'2'}
+                    maxLen={'140'}
+                    TituloGrafica={"Avance Semanal"}
+
+                />
+            </div>
             this.setState({ grafica: graficaG })
         }
-        else if (name === 'semana') {
-            const graficaG = <CrearGrafica labelsX={labelsDias}
-                label1={"Planeación de trabajo"}
-                label2={"Correccón de trabajo"}
-                label3={"Trabajo Realizado"}
-                titleGrafica={"Trabajo (Tareas) vs Dias"}
-                datos1={datosG1}
-                datos2={datosG11}
-                datos3={datosG111}
-                numeroGrafica={'2'}
-                maxLen={'150'}
-                TituloGrafica={"Avance Semanal"}
+
+        else if (name === 'MIT') {
+
+            let datos = [];
+            datos.push({ label: "Motivacion", data: datosG3, hidden: true, });
+            datos.push({ label: "Impacto", data: datosG33 });
+            datos.push({ label: "Talento", data: datosG333 });
+            const graficaG = <CrearGrafica labelsX={labelsMonths}
+                datos={datos}
+                titleGrafica={"MIT vs Progreso"}
+                maxLen={'140'}
+                TituloGrafica={"Motivacion, Impacto, Talento (MIT)"}
 
             />;
             this.setState({ grafica: graficaG })
@@ -229,22 +312,21 @@ class DashBoard extends React.Component {
 
 
     renderProgresoTrabajo() {
-        return (<div>
+        return (<div style={{ width: '100%' }}>
             <Menu pointing secondary>
                 <Menu.Item name='semana' active={this.state.activeItem === 'semana'} onClick={this.handleItemClick} />
                 <Menu.Item
-                    name='historico'
-                    active={this.state.activeItem === 'historico'}
+                    name='MIT'
+                    active={this.state.activeItem === 'MIT'}
                     onClick={this.handleItemClick}
                 />
-
 
             </Menu>
 
             <Segment attached='bottom'>
                 {this.state.grafica}
             </Segment>
-        </div>);
+        </div>)
     }
 
     renderListaObjetivos(aling) {
@@ -258,19 +340,30 @@ class DashBoard extends React.Component {
         );
     }
 
+    renderListaActividades(aling) {
+
+        return (
+            <ListaActividades
+                titulo={'Listado de Actividades'}
+                icono={'copy outline'}
+                alingD={aling}
+            />
+        );
+    }
+
     renderGraficaTIC() {
+        let datos = [];
+        datos.push({ label: "Motivacion", data: datosG3, hidden: true, });
+        datos.push({ label: "Impacto", data: datosG33 });
+        datos.push({ label: "Talento", data: datosG333 });
+
         return (
             <CrearGrafica labelsX={labelsMonths}
-                label1={"Motivacion"}
-                label2={"Impacto"}
-                label3={"Talento"}
+                datos={datos}
+                fuerza={0.25}
                 titleGrafica={"MIT vs Progreso"}
-                datos1={datosG3}
-                datos2={datosG33}
-                datos3={datosG333}
-                maxLen={'160'}
+                maxLen={'140'}
                 TituloGrafica={"Motivacion, Impacto, Talento (MIT)"}
-
             />
         );
     }
@@ -285,52 +378,102 @@ class DashBoard extends React.Component {
         );
     }
     renderTeletrabajador() {
+        //   <iframe className="yellow4" title="Ultimos archivos subidos" src={this.props.usuarioDetail ? `https://drive.google.com/embeddedfolderview?id=${this.props.usuarioDetail.linkws}#grid` : null}
 
         return (
 
             <div>
+
                 <div className="ui form">
                     <div className="two column stackable ui grid">
-                        <div className="column eleven wide">
-                            <div className="ui segment ">
-                                {this.renderProgresoTrabajo()}
-                                <br />
-                                <div className="ui divider"></div>
-                                {this.renderGraficaTIC()}
-                            </div>
-                        </div>
-                        <div className="column five wide">
+                        <div className="column three wide">
                             <div className="ui segment">
-                                {this.renderListaObjetivos()}
-                                <br />
-                                <div className="ui divider"></div>
-                                {this.renderformaciones()}
-                                <br />
-                                <div className="ui divider" ></div>
-                                <Calendario2 className="tamaño-Calendario" />
-
-
-                            </div>
-                        </div>
-
-                        <div className="column sixteen wide">
-                            <div className="ui segment Cambioo">
-                                <h3>Espacio de trabajo</h3>
-
-                                <div className="ui embed " >
-
-
-                                    <iframe className="yellow4" title="Ultimos archivos subidos" src={this.props.usuarioDetail ? `https://drive.google.com/embeddedfolderview?id=${this.props.usuarioDetail.linkws}#grid` : null}
-
-                                    />
-
-
+                                <Modal trigger={<div>
+                                    <Button icon="chart line" className="opcionesGestor" color={this.state.open ? "teal" : "yellow"}
+                                        label={this.state.open ? 'MIT' : 'Progreso'} onClick={() => { this.setState({ open: true }) }}
+                                    ></Button>
 
                                 </div>
 
+                                }
+                                    open={this.state.open}
+                                >
+                                    <Modal.Content image style={{ height: '740px' }}>
+                                        {this.renderProgresoTrabajo()}
+                                    </Modal.Content>
+                                    <Modal.Actions>
+                                        <Button onClick={() => { this.setState({ open: false }) }} negative>
+                                            Salir
+                                         </Button>
+                                    </Modal.Actions>
+                                </Modal>
 
                             </div>
+                            <div className="ui segment ">
+
+                                <Modal trigger={<div>
+                                    <Button icon="chart line" className="opcionesGestor" color={this.state.open2 ? "teal" : "yellow"}
+                                        label={this.state.open2 ? 'Formate' : 'Formación'} onClick={() => { this.setState({ open2: true }) }}
+                                    ></Button>
+                                    <Label color='teal' floating>
+                                        {this.props.listaFormacion? Object.keys(this.props.listaFormacion).length: 0}
+                                    </Label>
+                                </div>
+                                }
+                                    open={this.state.open2}
+                                    style={{ width: '350px' }}
+                                >
+                                    <Modal.Content image style={{ height: '510px' }}>
+                                        {this.renderformaciones()}
+                                    </Modal.Content>
+                                    <Modal.Actions>
+                                        <Button onClick={() => { this.setState({ open2: false }) }} negative>
+                                            Salir
+                                         </Button>
+                                    </Modal.Actions>
+                                </Modal>
+
+                            </div>
+                            <div className="ui segment ">
+                                <Modal trigger={<div>
+                                    <Button icon="chart line" className="opcionesGestor" color={this.state.open3 ? "teal" : "yellow"}
+                                        label={this.state.open3 ? 'Selecciona' : 'Día Teletrabajo'} onClick={() => { this.setState({ open3: true }) }}
+                                    ></Button>
+                                    <Label color='teal' floating>
+                                        09/03
+                                     </Label>
+                                </div>
+                                }
+                                    open={this.state.open3}
+                                    style={{ width: '390px' }}
+                                >
+                                    <Modal.Content image style={{ height: '400px' }}>
+                                        <Calendario2 className="tamaño-Calendario" />
+                                    </Modal.Content>
+                                    <Modal.Actions>
+                                        <Button onClick={() => { this.setState({ open3: false }) }} negative>
+                                            Salir
+                                         </Button>
+                                    </Modal.Actions>
+                                </Modal>
+
+                            </div>
+
+
+
+
                         </div>
+                        <div className="column eight wide" style={{ left: '20px'}} >
+                            <div className="ui segment">
+                                {this.renderListaObjetivos()}
+                            </div>
+                        </div>
+                        <div className="column five wide">
+                            <div className="ui segment" style={{ position: 'relative', height: '55em' }} >
+                                {this.renderListaActividades()}
+                            </div>
+                        </div>
+
 
                     </div>
                 </div >
@@ -469,7 +612,7 @@ class DashBoard extends React.Component {
             height: '25em',
             width: '24em',
             overflow: 'scroll',
-     
+
 
         }
 
@@ -505,14 +648,14 @@ class DashBoard extends React.Component {
                 if (this.state.pasoActivof === 1) {
                     this.setState({ pasoActivof: this.state.pasoActivof + 1 });
                     this.setState({ pasoActivo: 'onboardingApp' });
-                    this.setState({estadoCel: true});
+                    this.setState({ estadoCel: true });
 
                 }
 
                 paso = { title: 'Crea tu Actividad', active: 'Crea tu actividad y describe lo que debes hacer el día de hoy. ¡Tu asistente de ayudara!.', icono: 'pencil alternate', style: styleAnt };
 
                 return (
-                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({estadoCel: false}); this.setState({ pasoActivo: 'onboardingApp2' }); }} >
+                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({ estadoCel: false }); this.setState({ pasoActivo: 'onboardingApp2' }); }} >
                         {this.renderPasosCEL(style, paso)}
 
                     </div>
@@ -525,7 +668,7 @@ class DashBoard extends React.Component {
 
                 let modulo = null;
                 if (this.state.activo) {
-                  
+
                     modulo =
                         <div style={styleP}>
                             <div className="ui segment " >
@@ -536,17 +679,17 @@ class DashBoard extends React.Component {
                             </div>
                         </div>
 
-                   
+
                     if (this.state.pasoActivof === 2) {
                         this.setState({ pasoActivof: this.state.pasoActivof + 1 });
                         this.setState({ pasoActivo: 'onboardingApp' });
-                        this.setState({estadoCel: true});
+                        this.setState({ estadoCel: true });
                     }
                 }
 
 
                 return (<div>
-                    <div style={stylePadre} className={this.state.activo ? this.state.pasoActivo : null} onClick={() => {  this.setState({estadoCel: false}); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
+                    <div style={stylePadre} className={this.state.activo ? this.state.pasoActivo : null} onClick={() => { this.setState({ estadoCel: false }); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
                         {this.renderPasosCEL(style, paso)}
                     </div>
                     {modulo}
@@ -560,18 +703,18 @@ class DashBoard extends React.Component {
                 if (this.state.pasoActivof === 3) {
                     this.setState({ pasoActivof: this.state.pasoActivof + 1 });
                     this.setState({ pasoActivo: 'onboardingApp' });
-                    this.setState({estadoCel: true});
+                    this.setState({ estadoCel: true });
                 }
 
-               
+
                 if (this.state.activo2 === true) {
                     this.handlePaso3();
                     this.setState({ activo2: false });
                 }
                 paso = { title: 'Se consciente de ti', active: 'Observa el progreso y comportamiento que haz tenido, mide tu MIT con el Huper y valora tus habilidades', icono: 'chart line', style: styleAnt };
-              
+
                 return (<div>
-                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => {  this.setState({estadoCel: false}); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
+                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({ estadoCel: false }); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
                         {this.renderPasosCEL(style, paso)}
                     </div>
                     <div style={styleP}>
@@ -585,9 +728,9 @@ class DashBoard extends React.Component {
                 if (this.state.pasoActivof === 4) {
                     this.setState({ pasoActivof: this.state.pasoActivof + 1 });
                     this.setState({ pasoActivo: 'onboardingApp' });
-                    this.setState({estadoCel: true});
+                    this.setState({ estadoCel: true });
                 }
-          
+
                 if (this.state.activo2 === true) {
                     this.props.chatOff();
                     this.setState({ activo2: false });
@@ -600,10 +743,10 @@ class DashBoard extends React.Component {
                 paso = { title: 'Formate', active: 'Mira los nuevos contenidos diseñados para ti, dale clic en la formación y prepárate para crear nuevos hábitos', icono: 'paper plane outline', style: styleAnt };
                 styleP.width = "100%";
                 styleP.left = "0";
-               // styleP.bottom = '-7em';
+                // styleP.bottom = '-7em';
 
                 return (<div>
-                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => {  this.setState({estadoCel: false}); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
+                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({ estadoCel: false }); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
                         {this.renderPasosCEL(style, paso)}
                     </div>
                     <div style={styleP}>
@@ -616,13 +759,13 @@ class DashBoard extends React.Component {
                 if (this.state.pasoActivof === 5) {
                     this.setState({ pasoActivof: this.state.pasoActivof + 1 });
                     this.setState({ pasoActivo: 'onboardingApp' });
-                    this.setState({estadoCel: true});
+                    this.setState({ estadoCel: true });
                 }
                 stylePadre.top = '0em';
                 paso = { title: 'Tus trabajos', active: 'Centralizamos el detalle de cada objetivo y sus adjuntos en cada tarjeta, mira las opciones', icono: 'desktop', style: styleAnt };
                 this.onSearchXpress("go");
                 return (<div>
-                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({estadoCel: false}); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
+                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({ estadoCel: false }); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
                         {this.renderPasosCEL(style, paso)}
                     </div>
                     <div style={styleP}>
@@ -845,8 +988,8 @@ class DashBoard extends React.Component {
         if (this.state.comenzo)
             bt = <button className="ui button purple huge" style={styleS} onClick={() => {
                 if (this.props.pasoOnboarding === 5) this.setState({ comenzo: false });
-               if(!this.state.estadoCel)
-                this.props.pasoOnboardings(this.props.pasoOnboarding + 1);
+                if (!this.state.estadoCel)
+                    this.props.pasoOnboardings(this.props.pasoOnboarding + 1);
             }} >Continuar</button>;
 
 
@@ -900,9 +1043,10 @@ const mapStateToProps = (state) => {
     return {
         usuarioDetail: state.chatReducer.usuarioDetail,
         userRol: state.chatReducer.userRol,
-        pasoOnboarding: state.chatReducer.pasoOnboarding
+        pasoOnboarding: state.chatReducer.pasoOnboarding,
+        listaFormacion: state.chatReducer.listaFormacion,
     };
 };
-export default connect(mapStateToProps, { createStream, pasoOnboardings, chatOff, chatOn })(DashBoard);
+export default connect(mapStateToProps, { createStream, pasoOnboardings, chatOff, chatOn, listaFormaciones })(DashBoard);
 
 ///<ListAdjuntos />

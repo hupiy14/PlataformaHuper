@@ -17,7 +17,6 @@ class ListEjemplo extends React.Component {
         const starCountRef = firebase.database().ref().child(`Usuario-Formcion/${this.props.userId}`);
         starCountRef.on('value', (snapshot) => {
             this.props.listaFormaciones(snapshot.val());
-
         });
 
     }
@@ -59,7 +58,6 @@ class ListEjemplo extends React.Component {
 
     renderConstruirObj(iconos, the) {
 
-        console.log(the.props.listaFormacion);
         if (the.props.listaFormacion) {
 
             const cconsulta = the.props.listaFormacion

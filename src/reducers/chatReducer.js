@@ -24,6 +24,9 @@ import {
     EQUIPO_CONSULTA,
     NUEVO_USUARIO,
     PASO_ONBOARDING,
+    VER_EQUIPO,
+    SELEC_OBJETIVO,
+    AVATARES,
 
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -54,6 +57,9 @@ const INITIAL_STATE = {
     equipoConsulta: null,
     nuevoUsuario: null,
     pasoOnboarding: 0,
+    verEquipo: false,
+    selObjetivo: null,
+    avatar: null,
 
 };
 
@@ -112,6 +118,12 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, nuevoUsuario: action.payload };
         case PASO_ONBOARDING:
             return { ...state, pasoOnboarding: action.payload };
+        case VER_EQUIPO:
+            return { ...state, verEquipo: action.payload };
+        case SELEC_OBJETIVO:
+            return { ...state, selObjetivo: action.payload };
+        case AVATARES:
+            return { ...state, avatar: action.payload };
         default:
             return state;
 

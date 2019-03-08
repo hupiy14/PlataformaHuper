@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
-import { Button, Popup, Grid, Input, Header, Modal, Image, Form, Progress, Segment } from 'semantic-ui-react';
-import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings } from '../modules/chatBot/actions';
+import { Button, Popup, Grid, Input, Header, Modal, Image, Form, Progress, Segment, Label, Divider, Icon } from 'semantic-ui-react';
+import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
 
 var fs = require('fs');
@@ -85,13 +85,10 @@ class listImportante extends React.Component {
         //data
         const data = new FormData()
         data.append('file', this.state.selectedFile, this.state.selectedFile.name)
-        //  console.log(this.state.selectedFile);
-
     }
 
     handleselectedFile = event => {
         /// carga el objeto
-        //  console.log(event.target.files[0]);
         this.setState({
             selectedFile: event.target.files[0],
             loaded: 0,
@@ -143,32 +140,33 @@ class listImportante extends React.Component {
                             if (key3 === key2) {
                                 if (consultaTareaTT[key33].estado === 'finalizado') {
                                     tareasCompleta = tareasCompleta + 1;
-
                                 }
                             }
-
                         });
                         // the.increment(factorObjetivo, numeroTareasTs);
                         factor = { factor: (100 / factorObjetivo), numero: tareasCompleta };
                         resultado = factor.factor * tareasCompleta;
                         // console.log(resultado);
 
+
                     });
 
+                    //color de la seleccion      
                     let style = {
                         borderRadius: 0.5,
+                        height: '100px',
+                        background: the.props.selObjetivo === key2?'#fbe4ff': null,
                     };
 
                     if (objetivo.fechafin) {
-                        console.log(objetivo.fechafin);
+                      
                         const fec = new Date(objetivo.fechafin);
 
                         if (fec < new Date()) {
-
                             style = {
                                 borderRadius: 0.5,
                                 background: '#f9333340',
-
+                                height: '100px',
                             };
                         }
                     }
@@ -177,20 +175,17 @@ class listImportante extends React.Component {
                     let style2 = {
                         borderRadius: 0.2,
                     };
-
-
                     if (window.screen.width < 500) {
-
                         style2 = {
                             overflow: 'auto',
                             height: '360px',
                         };
-
                     }
 
                     let styleD = {
                         position: 'relative',
-                        left: '62%',
+                        left: '58%',
+                        top: cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50?'-80px':'-60px':'-50px',
                     };
 
                     if (the.props.alingD) { styleD.left = '25%'; }
@@ -200,62 +195,66 @@ class listImportante extends React.Component {
                             <i className={`large middle ${the.props.icono} aligned icon`}  ></i>
                             <div className="content"   >
 
-
-                                <Segment style={style} >
-                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} indicating size='medium' attached='top' />
+                                <Segment style={style} onClick={() => { the.props.selObjetivo === key2? the.props.selObjetivos(null): the.props.selObjetivos(key2);}} >
                                     <div className="header"  >{cconsulta[key2].concepto}</div>
-                                    <div className="description"  >{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
+                                    <div className="description" style={{width: '60%'}}  >{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
+                                    <Label as='a' color={cconsulta[key2].prioridad === 'normal' ? 'teal' : cconsulta[key2].prioridad === 'inmediato' ? 'purple' : 'yellow'} basic style={{ left: '84%', position: 'relative', top:  cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50?'-52px':'-28px': '-22px' }}>
+                                        {cconsulta[key2].prioridad}
+                                    </Label>
+
+                                    <Label as='a' color='green' basic style={{ left: '63%', position: 'relative', top:  cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50? '-17px':'5px':'12px' }} >
+                                        Negocío
+                                        <Icon name='money bill alternate' style={{ left: '10px', position: 'relative' }} />
+                                    </Label>
+                                    <Divider vertical style={{ left: '75%' }}>:</Divider>
 
 
                                     <br />
                                     <div style={styleD}>
 
-                                        <Popup trigger={<Button icon='id badge' color='yellow' onClick={() => {
-                                            if (!the.props.usuarioDetail.usuario.onboarding)
-                                                the.handlePaso();
 
-                                            the.onVideoSelect(objetivo);
-                                            //  the.props.prioridadObjs(0); 
-                                            the.setState({ prioridadOk: true });
-                                        }}
-
-                                        />} on='click' flowing hoverable>
-                                            <Grid centered divided columns={1}>
-                                                <Grid.Column textAlign='center'>
-                                                    <Header as='h4'>Prioridad:</Header>
-                                                    <p>
-                                                        <div className={`ui green horizontal label`}>
-                                                            {the.state.prioridadOk ? cconsulta[key2].prioridad : cconsulta[key2].prioridad === the.state.prioridadx[the.props.prioridadObj].prio ? cconsulta[key2].prioridad : the.state.prioridadx[the.props.prioridadObj].prio}</div>
-
-                                                    </p>
-                                                    <Button color='purple' key={key2} fluid
-                                                        onClick={() => {
-                                                            the.setState({ prioridadOk: false });
-                                                            the.props.prioridadObjs(the.props.prioridadObj + 1 > 2 ? 0 : the.props.prioridadObj + 1);
-                                                            the.setState({ guardar: true });
-
-
-                                                        }}
-                                                    >Cambiar</Button>
-
-                                                </Grid.Column>
-
-                                            </Grid>
-                                        </Popup>
-                                        <Modal
-                                            trigger={<Button color='purple' icon='edit outline'
+                                        <Popup
+                                            trigger={<Button icon='id badge' color='yellow'
                                                 onClick={() => {
-
+                                                   
                                                     if (!the.props.usuarioDetail.usuario.onboarding)
                                                         the.handlePaso();
 
-                                                    the.setState({ cambio: Math.round(Math.random() * 6) });
                                                     the.onVideoSelect(objetivo);
-                                                    the.setState({ ver: !the.state.ver });
-                                                    the.setState({ titulo: cconsulta[key2].concepto });
-                                                    the.setState({ detalleO: cconsulta[key2].detalle });
+                                                    //  the.props.prioridadObjs(0); 
+                                                    the.setState({ prioridadOk: true });
+                                                    the.setState({ prioridadOk: false });
+                                                    the.props.prioridadObjs(the.props.prioridadObj + 1 > 2 ? 0 : the.props.prioridadObj + 1);
+                                                    the.setState({ guardar: true });
                                                 }}
-                                            />}
+                                            ></Button>}
+                                            content='Cambiar Prioridad'
+                                            on='hover'
+                                        />
+
+
+                                        <Modal
+                                            trigger={
+
+                                                <Popup
+                                                    trigger={<Button color='purple' icon='edit outline'
+                                                        onClick={() => {
+                                                           
+                                                            if (!the.props.usuarioDetail.usuario.onboarding)
+                                                                the.handlePaso();
+
+                                                            the.setState({ cambio: Math.round(Math.random() * 6) });
+                                                            the.onVideoSelect(objetivo);
+                                                            the.setState({ ver: !the.state.ver });
+                                                            the.setState({ titulo: cconsulta[key2].concepto });
+                                                            the.setState({ detalleO: cconsulta[key2].detalle });
+                                                        }}
+                                                    />}
+                                                    content='Detalle del Objetivo'
+                                                    on='hover'
+                                                />
+
+                                            }
                                             open={the.state.ver}
 
                                         >
@@ -281,7 +280,7 @@ class listImportante extends React.Component {
                                                                 </Input>
                                                                 <br></br>
                                                                 <button className="ui button green google drive icon  fluid" onClick={() => { the.renderConsultarEW(cconsulta[key2].carpeta) }}>Consultar espacio de trabajo
-                                                        <i className="google drive icon prueba-xx"> </i>
+                                                                <i className="google drive icon prueba-xx"> </i>
                                                                 </button>
                                                             </Modal.Description>
                                                         </div>
@@ -306,7 +305,6 @@ class listImportante extends React.Component {
                                                         <button className='ui button purple fluid save icon'
                                                             key={key2}
                                                             onClick={() => {
-
                                                                 the.setState({ ver: !the.state.ver });
                                                                 the.guardarDetalle(the);
                                                             }} >
@@ -324,11 +322,8 @@ class listImportante extends React.Component {
 
                                         </Modal>
 
-
-
-
                                     </div>
-                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} indicating size='small' attached='top' attached='bottom' />
+                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ top:cconsulta[key2].detalle ?  cconsulta[key2].detalle.length > 50? '-40px' :'-23px':'-10px' }} />
                                 </Segment>
 
                             </div>
@@ -383,9 +378,10 @@ const mapAppStateToProps = (state) => (
         listaObjetivo: state.chatReducer.listaObjetivo,
         prioridadObj: state.chatReducer.prioridadObj,
         usuarioDetail: state.chatReducer.usuarioDetail,
+        selObjetivo: state.chatReducer.selObjetivo,
         userId: state.auth.userId,
 
     });
 
 
-export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings })(listImportante);
+export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos })(listImportante);

@@ -5,7 +5,7 @@ import history from '../history';
 import { nuevoUsuarios } from '../components/modules/chatBot/actions';
 import '../components/styles/ingresoHupity.css';
 import firebase from 'firebase';
-const timeoutLength = 3000;
+const timeoutLength = 9000;
 
 const timeoutLength2 = 600000;
 
@@ -21,7 +21,10 @@ class GoogleAuth extends React.Component {
                 //scope: 'email'
                 apiKey: 'AIzaSyBc8xwjAd9W_52aa26QpuztTx3BXjHFKsM',
                 discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-                scope: 'https://www.googleapis.com/auth/drive'
+                //discoveryDocs: ["https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
+
+                // scope: 'https://www.googleapis.com/auth/drive',
+                scope: "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/drive"
             }).then(() => {
                 this.auth = window.gapi.auth2.getAuthInstance();
 
@@ -87,7 +90,7 @@ class GoogleAuth extends React.Component {
             nameRef.on('value', (snapshot) => {
 
 
-                // console.log(snapshot.val());
+
 
                 if (snapshot.val()) {
 
@@ -109,7 +112,7 @@ class GoogleAuth extends React.Component {
                     console.log(this.auth.currentUser.get().getId());
                     const nameRef3 = firebase.database().ref().child(`Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${this.auth.currentUser.get().getId()}`)
                     nameRef3.on('value', (snapshot3) => {
-                        //        console.log(snapshot3.val());
+                        console.log(snapshot3.val());
                         if (snapshot3.val())
                             this.props.usuarioDetails({ usuario: Usuario, idUsuario: this.auth.currentUser.get().getId(), linkws: snapshot3.val().linkWs });
                     });
@@ -121,7 +124,7 @@ class GoogleAuth extends React.Component {
 
                         this.props.userRolIn(snapshot2.val().Rol);
                         if (snapshot2.val().Rol === '3') {
-                           
+
                             this.handleOpen();
                         }
 
@@ -129,13 +132,12 @@ class GoogleAuth extends React.Component {
                     });
 
                     /// onboarding de la plataforma
-                    if(!Usuario.onboarding)
-                    {/*
+                    if (!Usuario.onboarding) {/*
                         firebase.database().ref(`Usuario/${this.auth.currentUser.get().getId()}`).set({
                             ...Usuario,
                             onboarding: true,
                         })*/
-                       // history.push('/onboarding');
+                        // history.push('/onboarding');
                     }
 
                 }

@@ -9,11 +9,14 @@ class Header extends React.Component {
         return (
             <div className="ui secondary pointing menu">
                 <Link to="/dashboard" className="item">
-                    <img className="ui tiny rounded image" src={image} id='1' />
+                    <img className="ui tiny rounded image"  src={image} id='1' />
                 </Link>
                 <div className="right menu">
                     <Link to="/hupps" className="item">
                        <h3>Hupps</h3> 
+                </Link>
+                <Link to="/profile" className="item">
+                       <h3>Perfil</h3> 
                 </Link>
                     <GoogleAuth />
                 </div>

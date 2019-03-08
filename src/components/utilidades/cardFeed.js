@@ -267,7 +267,7 @@ class ListEjemplo extends React.Component {
 
             <div className="ui card ">
                 <div className="image big tamaño-Imagen" >
-                    <img ref={this.imageRef} src={this.props.image} />
+                    <img ref={this.imageRef} style={{height: '200px'}} src={this.props.image} />
                 </div>
 
                 <div className="content">
@@ -337,7 +337,7 @@ class ListEjemplo extends React.Component {
                             <div className="ui form">
                                 <div className="ui grid">
                                     <div className="five wide column">
-                                        <Image size='medium' src={this.props.image} wrapped />
+                                        <Image size='medium'  src={this.props.image} wrapped />
 
                                     </div>
                                     <div className="eleven wide column">

@@ -4,9 +4,8 @@ import { connect } from 'react-redux';
 import { nuevoUsuarios } from '../components/modules/chatBot/actions';
 import { signOut, usuarioDetails } from '../actions';
 import history from '../history';
-import ingreso from './modules/ingreso';
 import firebase from 'firebase';
-import { Field, reduxForm } from 'redux-form';
+
 
 //ingresa el usuario nuevo 
 class FormIngresoHuper extends React.Component {
@@ -17,7 +16,7 @@ class FormIngresoHuper extends React.Component {
         tipo: null, empresa: null, nombreUsuario: null, cargo: null, listaEquipos: {}, area: null, equipo: null, codigo: null, acepto: null,
         errorTipo: null, errorNombreUsuario: null, errorCargo: null, errorArea: null, errorEmpresa: null, errorEquipo: null, errorCodigo: null, errorAcepto: null,
         codigoUsSlack: null, tokenUsSlack: null, tokenBotUsSlack: null, canalGestorSlack: null, canalEquipoSlack: null, canalReportesSlack: null, canalNotifiacionesSlack: null,
-        codigoWSdrive: null,
+        codigoWSdrive: null, calendar: null,
     }
 
 
@@ -269,6 +268,13 @@ class FormIngresoHuper extends React.Component {
             });
         }
 
+        //calendario google
+        if (this.state.calendar)
+            firebase.database().ref(`Usuarios-CalendarGoogle/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+                idCalendar: this.state.calendar,
+                estado: 'activo',
+            });
+
         //crear empresa- usuario
 
         firebase.database().ref(`empresa-Usuario/${keyEquipo}/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
@@ -516,11 +522,10 @@ class FormIngresoHuper extends React.Component {
                 <Modal.Content>
                     <Form >
 
-                        <Segment>
-                            <Dimmer active inverted>
-                                <Loader size='medium'> Lo estamos construyendo para ti</Loader>
-                            </Dimmer>
-                        </Segment>
+                        <Form.Input label='Id de tu calendario de Google' placeholder='...@group.calendar.google.com'
+                            value={this.state.calendar}
+                            onChange={e => this.setState({ calendar: e.target.value })}
+                        />
 
                     </Form>
                 </Modal.Content>

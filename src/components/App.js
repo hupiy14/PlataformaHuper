@@ -18,6 +18,7 @@ import './modules/chatBot/chatHupApp.css';
 import Feedback from '../components/feedbackHupity';
 import IngresosHuper from './ingresarUsuarioNuevo';
 import Onboard from './PruebaP';
+import Profile from './profileHuper';
 
 //PruebaG
 
@@ -65,6 +66,8 @@ class App extends React.Component {
                                             <Route path="/hupps" exact component={Hupps} />
                                             <Route path="/newuser" exact component={IngresosHuper} />
                                             <Route path="/onboarding" exact component={Onboard} />
+                                            <Route path="/profile" exact component={Profile} />
+                                            
                                         </Switch>
 
 

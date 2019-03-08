@@ -36,7 +36,8 @@ class listPersonasEquipo extends React.Component {
     }
     componentDidMount() {
         this.onSearchXpress();
-
+        if (this.props.seleccionUsuario)
+            this.renderSel(this.props.seleccionUsuario)
     }
 
 
@@ -173,7 +174,7 @@ class listPersonasEquipo extends React.Component {
                     if (key === this.props.userId) {
                         return;
                     }
-                   
+
                     const resultado = 100;
 
                     return (

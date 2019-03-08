@@ -2,23 +2,18 @@ import React from 'react';
 import { connect } from 'react-redux';
 import {
   setActiveChat, submitMessage, numeroPreguntas, valorInputs, consultaPreguntaControls,
-  tipoPreguntas, mensajeEntradas, borrarChats, consultaChats, consultaCanales, pasoOnboardings
+  tipoPreguntas, mensajeEntradas, borrarChats, consultaChats, consultaCanales, pasoOnboardings, avatares,
 } from './actions';
 import { chatOff, chatOn } from '../../../actions';
 import BoxDianmico from './boxDinamico';
-import { IconGroup } from 'semantic-ui-react';
 import firebase from 'firebase';
-
 import { Emoji } from 'emoji-mart';
 import randomColor from '../../../lib/randomColor'
-import { reduxReactFirebase } from 'react-redux-firebase';
-
 import { Image, } from 'semantic-ui-react';
-
 import moment from 'moment';
 import randon from '../../../lib/randonImage';
 import Avatar from '../../../apis/xpress';
-import { object } from 'prop-types';
+
 
 
 
@@ -27,28 +22,30 @@ const timeoutLength = 2500;
 
 class Home extends React.Component {
 
-  state = { carpeta: null, updates: null, color: [], client2: null, avatares: null, avatarX: 0, avatarY: 0 }
+  state = { carpeta: null, updates: null, color: [], client2: null, avataresN: null, avatarX: 0, avatarY: 0, ultimaTarea: null }
 
 
 
   onSearchXpress = async (text) => {
     if (this.state.avatarX === this.state.avatarY) return;
     this.setState({ avatarY: this.state.avatarY + 1 });
+
     const response = await Avatar.get('/xpresso/v1/search', {
       params: {
         apiKey: '6hSjEEYWVHTmSUUwvwjJzTpX8_zq8noEYq2-_r5ABnkq98vSw1jvHFKncRlYUA-C',
         query: text
       },
-
     });
     //     console.log(response.data);
-    this.setState({ avatares: response.data.lowResGifs })
+    this.props.avatares(response.data.lowResGifs);
+
   }
 
 
 
   componentDidMount() {
     // this.onSearchXpress('user');
+    this.renderConsultarUltimaTarea();      
     this.setState({ avatarX: 1 });
     const { SlackOAuthClient } = require('messaging-api-slack')
     this.setState({
@@ -65,9 +62,25 @@ class Home extends React.Component {
     nameRef2.on('value', (snapshot2) => {
       this.props.consultaCanales(snapshot2.val());
     });
-
-
   }
+
+  getWeekNumber(date) {
+    var d = new Date(date);  //Creamos un nuevo Date con la fecha de "this".
+    d.setHours(0, 0, 0, 0);   //Nos aseguramos de limpiar la hora.
+    d.setDate(d.getDate() + 4 - (d.getDay() || 7)); // Recorremos los días para asegurarnos de estar "dentro de la semana"
+    //Finalmente, calculamos redondeando y ajustando por la naturaleza de los números en JS:
+    return Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
+  };
+
+  renderConsultarUltimaTarea() {
+    const diat = new Date();
+    const nameRef2 = firebase.database().ref().child(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`)
+    nameRef2.on('value', (snapshot2) => {
+      this.setState({ ultimaTarea: snapshot2.val() });
+    });
+  }
+
+
   ///paso numero 4 del onboarding
   handlePaso4 = () => {
     this.timeout = setTimeout(() => {
@@ -208,18 +221,14 @@ class Home extends React.Component {
       return contacts.filter((c) => (c.userID === message.from)).map(c => c.userName.slice(0, 1));
   }
 
-
   ///Decodificar mensaje y poner los emojis
 
-
   renderTextoEmoji(texto) {
-
     let x = 0;
     let y = 0;
     let opciones = texto.split(':').map((consulta) => {
       y++;
       x++;
-      console.log(consulta);
       if (consulta === ' ')
         return consulta;
       if (consulta === '@')
@@ -235,7 +244,6 @@ class Home extends React.Component {
             x2++;
             return consulta2;
           }
-
           else
             return;
         });
@@ -255,20 +263,18 @@ class Home extends React.Component {
     let opciones2 = texto.split('@<').map((consulta) => {
       y++;
       x++;
-
       if (x === 1) {
         x++;
         return;
       }
       else {
         x = 0;
-
         this.onSearchXpress(consulta);
-        const indice = randon();
-        if (this.state.avatares && this.state.avatares[1]) {
-
-          return (<React.Fragment>
-            <Image src={this.state.avatares[indice]} key={y} size="medium"></Image>
+        if (!this.state.avataresN)
+          this.setState({ avataresN: randon() });
+        if (this.props.avatar && this.props.avatar[1]) {
+          return (<React.Fragment key={y}>
+            <Image src={this.props.avatar[this.state.avataresN]} key={y} size="medium"></Image>
           </React.Fragment>);
         }
         else
@@ -501,10 +507,7 @@ class Home extends React.Component {
             parents: [folderId]
             //fields: 'id'
           }).then((response) => {
-            //devuelve lo de la carpeta
-            console.log("Response", response);
             this.RelacionarCarpetaObjetivo(this.state.updates, response.result.id);
-
           },
             function (err) { console.error("Execute error", err); });
           //   this.props.crearCarpetas(xx);
@@ -528,14 +531,46 @@ class Home extends React.Component {
         firebase.database().ref().update(updates);
 
         var newPostKey3 = firebase.database().ref().child('Usuario-Tareas').push().key;
-        firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${newPostKey2}/${newPostKey3}`).set({
 
+        ///distincion de horas
+        let hora;
+        if (this.props.valorInput.trim() === '1 hora')
+          hora = 1;
+        else if (this.props.valorInput.trim() === '2 horas')
+          hora = 2;
+        else
+          hora = 3;
+        //Restar fechas
+        // moment.duration(lunch - breakfast).humanize()
+        //recupera la ultima tarea
+      
+       
+        const diat =  new Date();
+        if (!this.state.ultimaTarea) {   
+          firebase.database().ref(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`).set({
+            tarea: newPostKey3,
+            horaPlanificada: moment().format('HH:mm'),
+            horaEstimada: moment().add('hours', hora).format('HH:mm'),
+          });
+        }
+      
+        firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${newPostKey2}/${newPostKey3}`).set({
           concepto: chatTrazo[2].text,
           estado: 'activo',
           prioridad: postData.prioridad,
-          tiempoEstimado: this.props.valorInput
-
+          tiempoEstimado: this.props.valorInput,
+          horaPlanificada: this.state.ultimaTarea ? this.state.ultimaTarea.horaEstimada : moment().format('HH:mm'),
+          horaEstimada: this.state.ultimaTarea ? moment(this.state.ultimaTarea.horaEstimada, 'HH:mm' ).add('hours', hora).format('HH:mm'): moment().add('hours', hora).format('HH:mm'),
         });
+
+        firebase.database().ref(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`).set({
+          tarea: newPostKey3,
+          horaPlanificada: this.state.ultimaTarea ? this.state.ultimaTarea.horaEstimada : moment().format('HH:mm'),
+          horaEstimada: this.state.ultimaTarea ? moment(this.state.ultimaTarea.horaEstimada, 'HH:mm' ).add('hours', hora).format('HH:mm'): moment().add('hours', hora).format('HH:mm'), 
+        });
+
+
+
         //aumenta el paso del onboarding al completar la primera actividad
         if (!this.props.usuarioDetail.usuario.onboarding)
           this.props.pasoOnboardings(2);
@@ -1078,9 +1113,10 @@ const mapHomeStateToProps = (state) => ({
   idChatUser: state.chatReducer.idChatUser,
   numeroPregunta: state.chatReducer.numeroPregunta,
   usuarioDetail: state.chatReducer.usuarioDetail,
+  avatar: state.chatReducer.avatar,
   user: state.user,
 });
 export default connect(mapHomeStateToProps, {
-  submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas, consultaCanales, chatOff,
+  submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas, consultaCanales, chatOff, avatares,
   consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats, pasoOnboardings
 })(Home);

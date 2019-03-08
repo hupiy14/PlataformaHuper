@@ -13,8 +13,8 @@ export const config = {
 }
 
 ///firebase desarrollo
-
 */
+
 export const config = {
     apiKey: "AIzaSyAKC1R5XUU8UhfQB8bJB0xc1IPgf2nwFS8",
     authDomain: "pruebahuper.firebaseapp.com",
