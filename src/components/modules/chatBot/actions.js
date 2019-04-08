@@ -29,10 +29,20 @@ import {
   VER_EQUIPO,
   SELEC_OBJETIVO,
   AVATARES,
+  PREGUNTA_FANTASMA,
+  DETAIL_US_NEW,
+  
 
 
 } from './types';
 
+
+export const detailUsNews = (detailUsNew) => {
+  return {
+    type:  DETAIL_US_NEW,
+    payload: detailUsNew
+  };
+};
 export const verEquipos = (verEquipo) => {
   return {
     type:  VER_EQUIPO,
@@ -46,6 +56,12 @@ export const avatares = (avatar) => {
   };
 };
 
+export const pregFantasmas = (pregFantasma) => {
+  return {
+    type:  PREGUNTA_FANTASMA,
+    payload: pregFantasma
+  };
+};
 export const selObjetivos = (selObjetivo) => {
   return {
     type:  SELEC_OBJETIVO,

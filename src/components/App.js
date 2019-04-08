@@ -7,7 +7,11 @@ import history from '../history';
 import MenuChat from './MenuChat';
 import Header from './Header';
 
-
+import FomularioGlobal from './FormularioIngreso/formularioGlobal';
+import FomularioTipo from './FormularioIngreso/formularioTipo';
+import FomularioEmp from './FormularioIngreso/formularioEmp';
+import FormularioEquipo from './FormularioIngreso/formularioEquipo';
+import FormularioCodigo from './FormularioIngreso/formularioCodigo';
 
 import hupityIngreso from './ingresoApp';
 import ingreso from './modules/ingreso';
@@ -19,6 +23,8 @@ import Feedback from '../components/feedbackHupity';
 import IngresosHuper from './ingresarUsuarioNuevo';
 import Onboard from './PruebaP';
 import Profile from './profileHuper';
+
+
 
 //PruebaG
 
@@ -67,6 +73,13 @@ class App extends React.Component {
                                             <Route path="/newuser" exact component={IngresosHuper} />
                                             <Route path="/onboarding" exact component={Onboard} />
                                             <Route path="/profile" exact component={Profile} />
+
+                                            <Route path="/formulario" exact component={FomularioGlobal} />
+                                            <Route path="/formulario/tipo" exact component={FomularioTipo} />
+                                            <Route path="/formulario/empresa" exact component={FomularioEmp} />
+                                            <Route path="/formulario/equipo" exact component={FormularioEquipo} />
+                                            <Route path="/formulario/codigo" exact component={FormularioCodigo} />
+                                            
                                             
                                         </Switch>
 

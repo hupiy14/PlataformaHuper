@@ -2,18 +2,23 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails, chatOn, chatOff } from '../actions';
 import history from '../history';
-import { nuevoUsuarios } from '../components/modules/chatBot/actions';
+import { nuevoUsuarios, detailUsNews } from '../components/modules/chatBot/actions';
 import '../components/styles/ingresoHupity.css';
 import firebase from 'firebase';
+import SlackA from '../apis/slackApi';
+
 const timeoutLength = 9000;
 
 const timeoutLength2 = 600000;
 
 
 class GoogleAuth extends React.Component {
-    state = { selectedFile: null, loaded: 0, codigo: null, usuario: null }
-    componentDidMount() {
+    state = { selectedFile: null, loaded: 0, codigo: null, usuario: null, direccion: null }
 
+
+    //onSearchXpress2 = async () => {
+ 
+    componentDidMount() {
         //Conectar a google  con el drive,
         window.gapi.load('client:auth2', () => {
             window.gapi.client.init({
@@ -34,6 +39,7 @@ class GoogleAuth extends React.Component {
                 //   console.log(this.auth.currentUser.get().getId());
             });
         });
+
     }
 
 
@@ -58,7 +64,6 @@ class GoogleAuth extends React.Component {
                         firebase.database().ref(`Codigo-Acceso/${this.state.codigo}`).set({
                             ...cod,
                             fechaTer: new Date().toString(),
-
                         })
 
                         firebase.database().ref(`Usuario/${this.auth.currentUser.get().getId()}`).set({
@@ -84,6 +89,13 @@ class GoogleAuth extends React.Component {
         //let x;
 
         if (isSignedIn) {
+
+
+            //recupera codigo de acceso de slack
+            const dir = window.location.search;
+            this.recuperarDatos(dir);
+
+
             this.props.nuevoUsuarios(true);
             //Encuentra el Rol,
             const nameRef = firebase.database().ref().child('Usuario').child(this.auth.currentUser.get().getId());
@@ -124,7 +136,6 @@ class GoogleAuth extends React.Component {
 
                         this.props.userRolIn(snapshot2.val().Rol);
                         if (snapshot2.val().Rol === '3') {
-
                             this.handleOpen();
                         }
 
@@ -132,24 +143,47 @@ class GoogleAuth extends React.Component {
                     });
 
                     /// onboarding de la plataforma
-                    if (!Usuario.onboarding) {/*
+                    if (!Usuario.onboarding) {
                         firebase.database().ref(`Usuario/${this.auth.currentUser.get().getId()}`).set({
                             ...Usuario,
                             onboarding: true,
-                        })*/
-                        // history.push('/onboarding');
+                        })
+                        history.push('/onboarding');
                     }
 
                 }
                 else {
-
                     //  if (this.props.nuevoUsuario !== true) {
                     //  this.auth.signOut();
+                    let direccion = '/formulario';
                     const usuarioNuevo = { nombre: this.auth.currentUser.get().w3.ig, correo: this.auth.currentUser.get().w3.U3, id: this.auth.currentUser.get().w3.Eea };
                     this.props.usuarioDetails({ usuarioNuevo });
-                    //   if(this.props.isSignedIn === false)
-                    history.push('/newuser');
-                    //   this.props.signOut();
+
+                    let code = null;
+
+                    if (this.props.detailUsNew && this.props.detailUsNew.slackCode) {
+                        code = this.props.detailUsNew.slackCode;
+                        console.log(this.props.detailUsNew.slackCode);
+                    }
+
+
+                    const starCountRef = firebase.database().ref().child(`Usuario-Temporal/${this.auth.currentUser.get().w3.Eea}`);
+                    starCountRef.on('value', (snapshot) => {
+                        if (snapshot.val()) {
+
+                            const starCountRef2 = firebase.database().ref().child(`Usuario-CodeTemporal/${this.auth.currentUser.get().w3.Eea}`);
+                            starCountRef2.on('value', (snapshot2) => {
+                                if (snapshot2.val()) {
+                                    this.props.detailUsNews({ ...snapshot.val(), recupero: true, codeSlack: snapshot2.val().code });
+                                    direccion = '/formulario/equipo';
+                                    history.push(direccion);
+                                }
+                            });
+                        }
+                        history.push(direccion);
+                    });
+
+
 
 
                 }
@@ -168,7 +202,34 @@ class GoogleAuth extends React.Component {
         //  if (x)
         //    this.props.signOut();
 
+
+
+
+
+
     };
+
+
+    recuperarDatos(direccion) {
+        if (!direccion.includes('code'))
+            return null;
+        const vars = direccion.split("?")[1].split("&");
+        let code = null;
+      //  alert(vars);
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split("=");
+
+            if (pair[0] === 'code') {
+                code = pair[1];
+           
+                firebase.database().ref(`Usuario-CodeTemporal/${this.auth.currentUser.get().getId()}`).set({
+                    code
+                });
+
+            }
+        }
+        return code;
+    }
 
 
 
@@ -229,7 +290,8 @@ const mapStateToProps = (state) => {
 
         isSignedIn: state.auth.isSignedIn,
         nuevoUsuario: state.chatReducer.nuevoUsuario,
+
     };
 };
 
-export default connect(mapStateToProps, { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails, chatOn, chatOff, nuevoUsuarios })(GoogleAuth);
+export default connect(mapStateToProps, { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails, chatOn, chatOff, nuevoUsuarios, detailUsNews })(GoogleAuth);

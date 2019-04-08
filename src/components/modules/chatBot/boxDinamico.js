@@ -5,11 +5,16 @@ import {
     submitMessage,
     mensajeEntradas,
     numeroPreguntas,
-    consultas
+    consultas,
+    pregFantasmas,
 } from './actions';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import firebase from 'firebase';
+import randon from '../../../lib/randonImage';
+import { Emoji } from 'emoji-mart';
+import { Image, } from 'semantic-ui-react';
+
 
 
 
@@ -78,11 +83,7 @@ class boxDinaminco extends React.Component {
 
             const starCountRef = firebase.database().ref().child(`${this.props.consultaPregunta[this.props.consultaPreguntaControl].opciones}/${this.props.userId}`);
             starCountRef.on('value', (snapshot) => {
-
-
                 this.props.consultas(snapshot.val());
-
-
             });
 
         }
@@ -90,7 +91,133 @@ class boxDinaminco extends React.Component {
 
     }
 
+    renderTextoEmoji(texto) {
+        let x = 0;
+        let y = 0;
+        let opciones = texto.split(':').map((consulta) => {
+            y++;
+            x++;
+            if (consulta === ' ')
+                return consulta;
+            if (consulta === '@')
+                return;
 
+            if (x === 1) {
+                let x2 = 0;
+                let y2 = 0;
+                let opciones3 = consulta.split('@<').map((consulta2) => {
+                    y2++;
+                    x2++;
+                    if (x2 === 1) {
+                        x2++;
+                        return consulta2;
+                    }
+                    else
+                        return;
+                });
+
+                return opciones3;
+            }
+            else if (texto.split(':').length > 2 && x > 1) {
+                x = 0;
+                return (<Emoji key={y} emoji={{ id: consulta, skin: 3 }} size={19} />);
+            }
+            else
+                return ':' + consulta;
+        });
+
+        x = 0;
+        y = 0;
+        let opciones2 = texto.split('@<').map((consulta) => {
+            y++;
+            x++;
+            if (x === 1) {
+                x++;
+                return;
+            }
+            else {
+                x = 0;
+                this.onSearchXpress(consulta);
+                if (!this.state.avataresN)
+                    this.setState({ avataresN: randon() });
+                if (this.props.avatar && this.props.avatar[1]) {
+                    return (<React.Fragment key={y}>
+                        <Image src={this.props.avatar[this.state.avataresN]} key={y} size="medium"></Image>
+                    </React.Fragment>);
+                }
+                else
+                    return;
+            }
+
+        });
+
+
+
+
+        return (<React.Fragment>
+            {opciones}
+            {opciones2}
+        </React.Fragment>);
+
+    }
+
+    renderOpcionesDB4() {
+        if (this.props.consultax && this.state.consultaY) {
+            //  console.log(this.props.consultax);
+            const cconsulta = this.props.consultax;
+            let consultaOp = [];
+
+            const input = this.props.user.userChats[0].thread[2] ? this.props.user.userChats[0].thread[2].text : '';
+
+            const opciones = Object.keys(cconsulta).map(function (key, index) {
+                //   console.log(cconsulta[key]);
+                if (!cconsulta[key].estado) {
+
+                    const opcion = cconsulta[key].concepto;
+                    consultaOp = [...consultaOp, opcion];
+
+
+                    const ccconsulta = cconsulta[key];
+                    const opciones2 = Object.keys(ccconsulta).map(function (key, index) {
+                        //            console.log(ccconsulta[key]);
+                        if (ccconsulta[key].concepto !== input && (ccconsulta[key].estado === 'activo' || ccconsulta[key].estado === 'trabajando')) {
+
+                            return (
+                                <option value={ccconsulta[key].concepto} key={key} />
+                            );
+                        }
+
+                    });
+                    return opciones2;
+                }
+                else if (cconsulta[key].estado === 'activo') {
+
+                    const opcion = cconsulta[key].concepto;
+                    consultaOp = [...consultaOp, opcion];
+
+
+                    return (
+                        <option value={cconsulta[key].concepto} key={key} />
+                    );
+                }
+
+            });
+
+           if (!this.props.pregFantasma || (this.props.pregFantasma && this.props.pregFantasma.consultaOp === "Nada"))
+                this.props.pregFantasmas({ key: 1, consultaOp });
+            return (
+                <datalist id='opciones'>
+                    {opciones}
+                </datalist>
+            );
+        }
+        else {
+            if (!this.props.pregFantasma)
+                this.props.pregFantasmas({ key: 1, consultaOp: 'Nada' });
+
+        }
+
+    }
     renderOpcionesDB2() {
 
 
@@ -325,6 +452,28 @@ class boxDinaminco extends React.Component {
                 </datalist>
             </React.Fragment>);
         }
+        else if (this.props.consultaPregunta[this.props.consultaPreguntaControl].tipoPregunta === '7') {
+            //   console.log('5');
+            /// const texto = this.props.consultaPregunta[this.props.consultaPreguntaControl].opciones.replace(/,/g, '|');
+
+            this.renderOpcionesDB()
+            return (<React.Fragment>
+                <input
+                    value={this.props.valorInput === ' ' ? '' : this.props.term}
+                    onChange={this.onInputChange}
+                    //   pattern={`'${this.renderOpcionesDB3()}'`}
+                    list='opciones' placeholder='Escoge una Opcion...'
+                    className={this.state.formmessage}
+                    style={this.state.style}
+                //   rows={10}
+                //    cols={30}
+
+                />
+
+                {this.renderOpcionesDB4()}
+
+            </React.Fragment >);
+        }
 
     }
 
@@ -332,8 +481,7 @@ class boxDinaminco extends React.Component {
 
     onInputChange = event => {
 
-
-        if (!event) { this.setState({ term: '' }); }
+         if (!event) { this.setState({ term: '' }); }
         else {
 
             this.props.valorInputs(event.target.value);
@@ -368,6 +516,7 @@ class boxDinaminco extends React.Component {
     }
 
     componentDidMount() {
+        this.props.pregFantasmas(null);
         const y = window.screen.height * 0.39;
         let mensajeY = {
             position: 'fixed',
@@ -408,6 +557,7 @@ const mapAppStateToProps = (state) => (
         userId: state.auth.userId,
         equipoConsulta: state.chatReducer.equipoConsulta,
         consultax: state.chatReducer.consultax,
+        pregFantasma: state.chatReducer.pregFantasma,
         mensajeEnt: state.chatReducer.mensajeEnt,
         consultaPreguntaControl: state.chatReducer.consultaPreguntaControl,
         valorInput: state.chatReducer.valorInput,
@@ -420,4 +570,4 @@ const mapAppStateToProps = (state) => (
     });
 
 
-export default connect(mapAppStateToProps, { valorInputs, consultaPreguntaControls, submitMessage, mensajeEntradas, numeroPreguntas, consultas })(boxDinaminco);
+export default connect(mapAppStateToProps, { valorInputs, consultaPreguntaControls, pregFantasmas, submitMessage, mensajeEntradas, numeroPreguntas, consultas })(boxDinaminco);

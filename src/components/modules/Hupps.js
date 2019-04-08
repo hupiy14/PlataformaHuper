@@ -128,6 +128,7 @@ class Hupps extends React.Component {
 
             Object.keys(tareaO).map(function (key3, index) {
                 const tareaOO = tareaO[key3];
+                if(!tareaOO) return;
                 Object.keys(tareaOO).map(function (key4, index) {
 
                     if (key4 === key2) {

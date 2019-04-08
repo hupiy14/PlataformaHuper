@@ -58,8 +58,6 @@ class Feed extends React.Component {
                             <iframe className={className3} title="Ultimos archivos subidos" src={`https://lucho20.typeform.com/to/B9l6q6`} />
 
                         </div>
-
-
                     </div>
 
 

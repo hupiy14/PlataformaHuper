@@ -2,10 +2,18 @@ import React from 'react';
 import { Button, Form, Icon, Modal, Segment, Dimmer, Loader, Message } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { nuevoUsuarios } from '../components/modules/chatBot/actions';
+import { slackApis } from '../actions/index';
 import { signOut, usuarioDetails } from '../actions';
 import history from '../history';
 import firebase from 'firebase';
+const AreasT = [
+    { key: 1, text: 'Tecnología', value: 'Tecnología' },
+    { key: 2, text: 'Ventas', value: 'Ventas' },
+    { key: 3, text: 'Staff', value: 'Staff' },
+    { key: 4, text: 'Comercial', value: 'Comercial' },
+    { key: 5, text: 'RRHH', value: 'RRHH' },
 
+]
 
 //ingresa el usuario nuevo 
 class FormIngresoHuper extends React.Component {
@@ -60,7 +68,10 @@ class FormIngresoHuper extends React.Component {
         else {
             this.setState({ errorCodigo: false });
         }
-
+        if (!this.state.codigoWSdrive || this.state.codigoWSdrive.trim() === '') {
+            this.setState({ errorDrive: true });
+            error = true;
+        }
         if (this.state.acepto === false) {
             this.setState({ errorAcepto: true });
             error = true;
@@ -192,8 +203,15 @@ class FormIngresoHuper extends React.Component {
     renderCrearUsuario(cod) {
 
         let keyEquipo;
+        this.renderDriveCarpeta();
+        window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
+            .then(() => {
+                console.log("GAPI client loaded for API");
+            },
+                function (err) { console.error("Error loading GAPI client for API", err); });
         const Empresas = this.state.listaEmpresas;
         const sel = this.state.empresa;
+
         Object.keys(Empresas).map(function (key, index) {
             if (Empresas[key].industria === sel)
                 keyEquipo = key;
@@ -268,12 +286,21 @@ class FormIngresoHuper extends React.Component {
             });
         }
 
-        //calendario google
-        if (this.state.calendar)
-            firebase.database().ref(`Usuarios-CalendarGoogle/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
-                idCalendar: this.state.calendar,
-                estado: 'activo',
-            });
+        //Carga la otra configurcion de gmail
+        if (window.gapi.client.calendar) {
+            window.gapi.client.calendar.calendars.insert({
+                "resource": {
+                    "summary": "hupity"
+                }
+            })
+                .then((response) => {
+                    // Handle the results here (response.result has the parsed body).
+                    this.setState({ calendar: response.result.id })
+                },
+                    function (err) { console.error("Execute error", err); });
+        }
+
+
 
         //crear empresa- usuario
 
@@ -314,6 +341,17 @@ class FormIngresoHuper extends React.Component {
             fechaUso: new Date().toString(),
 
         })
+
+
+
+
+
+        //calendario google
+        if (this.state.calendar)
+            firebase.database().ref(`Usuarios-CalendarGoogle/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+                idCalendar: this.state.calendar,
+                estado: 'activo',
+            });
 
     }
 
@@ -413,9 +451,9 @@ class FormIngresoHuper extends React.Component {
                     error={this.state.errorCargo}
                 />
 
-                <Form.Input label='Area' placeholder='¿En qué departamento de la empresa laboras? '
+                <Form.Select label='Area' options={AreasT} placeholder='¿En qué departamento de la empresa laboras?'
                     value={this.state.area}
-                    onChange={e => this.setState({ area: e.target.value })}
+                    onChange={(e, { value }) => this.setState({ area: value })}
                     error={this.state.errorArea}
                 />
 
@@ -454,8 +492,12 @@ class FormIngresoHuper extends React.Component {
     close4 = () => this.setState({ open4: false })
 
     renderFormularioPersona2() {
+        window.open(`https://slack.com/oauth/authorize?scope=identity.basic&client_id=482555533539.532672221010`);
+  
+       
         const { open2, open3, open4 } = this.state
-
+        if (this.props.slackApi)
+            console.log(this.props.slackApi);
         let propiedad;
         let activado = false;
         if (this.state.tipo === 'Gestor') {
@@ -473,7 +515,7 @@ class FormIngresoHuper extends React.Component {
 
         />
         return (
-            <Form error={this.state.formError}>
+             <Form error={this.state.formError}>
                 {equipo}
 
 
@@ -486,14 +528,8 @@ class FormIngresoHuper extends React.Component {
                 <h3>Para termiar sincroniza tus herramientas</h3>
                 <Form.Group widths={3}>
 
-                    <button className="ui button teal" onClick={this.show3('mini')} >Drive
-                      <i className="google drive icon prueba-xx"> </i>
-                    </button>
-                    <button className="ui button purple " onClick={this.show2('mini')}>Slack
+                    <button className="ui button purple " onClick={() => { this.props.slackApis(); }}>Slack
                       <i className="slack icon prueba-xx "> </i>
-                    </button>
-                    <button className="ui button yellow " onClick={this.show4('mini')} >Goolge Calendar
-                      <i className="calendar alternate outline icon prueba-xx "> </i>
                     </button>
 
                 </Form.Group>
@@ -502,10 +538,9 @@ class FormIngresoHuper extends React.Component {
                     value={this.state.acepto}
                     onChange={(e, { checked }) => this.setState({ acepto: checked })}
                 />
-
+                <a href="https://slack.com/oauth/authorize?scope=identity.basic&client_id=482555533539.532672221010"><img src="https://api.slack.com/img/sign_in_with_slack.png" /></a>
                 {this.renderModalSlack(open2)}
-                {this.renderModalDrive(open3)}
-                {this.renderModalCalendar(open4)}
+
                 <Message
                     error
                     header={this.state.mensajeCodigo ? this.state.mensajeCodigo.titulo : 'Falta campos por llenar'}
@@ -515,47 +550,24 @@ class FormIngresoHuper extends React.Component {
         );
     }
 
-    renderModalCalendar(open4) {
-        return (
-            <Modal size='mini' open={open4} onClose={this.close}>
-                <Modal.Header>Sincroniza tu calendario</Modal.Header>
-                <Modal.Content>
-                    <Form >
 
-                        <Form.Input label='Id de tu calendario de Google' placeholder='...@group.calendar.google.com'
-                            value={this.state.calendar}
-                            onChange={e => this.setState({ calendar: e.target.value })}
-                        />
 
-                    </Form>
-                </Modal.Content>
-                <Modal.Actions>
-                    <Button color="yellow" icon='calendar alternate outline' labelPosition='right' content='Listo' onClick={() => { this.close4() }} />
-                </Modal.Actions>
-            </Modal>
-        );
+    renderDriveCarpeta() {
+        window.gapi.client.drive.files.create({
+            name: "Hupity",
+            mimeType: 'application/vnd.google-apps.folder',
+            //fields: 'id'
+        }).then((response) => {
+            //devuelve lo de la carpeta
+            //console.log("Response", response);
+            this.setState({ codigoWSdrive: response.result.id })
+
+            // this.RelacionarCarpetaObjetivo(this.state.updates, response.result.id);
+        },
+            function (err) { console.error("Execute error", err); });
     }
 
-    renderModalDrive(open3) {
-        return (
-            <Modal size='mini' open={open3} onClose={this.close}>
-                <Modal.Header>Sincroniza tu carpeta de el Drive</Modal.Header>
-                <Modal.Content>
-                    <Form >
 
-                        <Form.Input label='Codigo de tu espacio de trabajo (carpeta)' placeholder='1J45vud1Mkb6mxfWYrVjHki_AO21...'
-                            value={this.state.codigoWSdrive}
-                            onChange={e => this.setState({ codigoWSdrive: e.target.value })}
-                        />
-
-                    </Form>
-                </Modal.Content>
-                <Modal.Actions>
-                    <Button color="yellow" icon='google drive' labelPosition='right' content='Listo' onClick={() => { this.close3() }} />
-                </Modal.Actions>
-            </Modal>
-        );
-    }
 
     renderModalSlack(open2) {
         let visible = false;
@@ -686,9 +698,10 @@ const mapStateToProps = (state) => {
         usuarioDetail: state.chatReducer.usuarioDetail,
         isSignedIn: state.auth.isSignedIn,
         nuevoUsuario: state.chatReducer.nuevoUsuario,
+        slackApi: state.auth.slackApi,
     };
 };
 export default
-    connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails })
+    connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis })
 
         (FormIngresoHuper);

@@ -7,6 +7,10 @@ import history from '../history';
 import firebase from 'firebase';
 import zonaEspana from '../components/utilidades/zonaEspana';
 
+import drive from '../images/drive.png';
+import calendar from '../images/calendar.png';
+import slack from '../images/slack.png';
+
 var Trello = require("trello");
 var trello = new Trello("bb3cab1a303c7bf996d56bb46db2a46f", "136434ae14c54519e4af94ed7f48ec43d710e777bb1bbe0b06cdda6368f1d44e");
 
@@ -526,9 +530,9 @@ class Profile extends React.Component {
                                     <span className='date'>Joined in 2015</span>
                                 </Card.Meta>
                                 <Card.Description style={{ top: '-65px', position: 'relative', 'padding-left': '5%' }}>Matthew is a musician living in Nashville.</Card.Description>
-                                <Image src='https://cdn.icon-icons.com/icons2/923/PNG/512/slack_alt_icon-icons.com_72013.png' onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.renderCargar('slack'); }} circular size="mini" style={{ background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '5%', position: 'relative', top: '-50px' }} />
-                                <Image src='https://cdn.icon-icons.com/icons2/1011/PNG/512/Google_Drive_icon-icons.com_75713.png' onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '15%', position: 'relative', top: '-50px' }} />
-                                <Image src='https://cdn.icon-icons.com/icons2/220/PNG/512/google_calendar_25497.png' onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '25%', position: 'relative', top: '-50px' }} />
+                                <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.renderCargar('slack'); }} circular size="mini" style={{ background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '5%', position: 'relative', top: '-50px' }} />
+                                <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '15%', position: 'relative', top: '-50px' }} />
+                                <Image src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '25%', position: 'relative', top: '-50px' }} />
                                 <Image src='https://cdn.icon-icons.com/icons2/836/PNG/512/Trello_icon-icons.com_66775.png' onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '35%', position: 'relative', top: '-50px' }} />
 
 

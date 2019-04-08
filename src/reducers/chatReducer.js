@@ -27,6 +27,8 @@ import {
     VER_EQUIPO,
     SELEC_OBJETIVO,
     AVATARES,
+    DETAIL_US_NEW,
+    PREGUNTA_FANTASMA,
 
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -60,6 +62,9 @@ const INITIAL_STATE = {
     verEquipo: false,
     selObjetivo: null,
     avatar: null,
+    pregFantasma: null,
+    detailUsNew: null,
+
 
 };
 
@@ -124,6 +129,10 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, selObjetivo: action.payload };
         case AVATARES:
             return { ...state, avatar: action.payload };
+        case PREGUNTA_FANTASMA:
+            return { ...state, pregFantasma: action.payload };
+        case DETAIL_US_NEW:
+            return { ...state, detailUsNew: action.payload };
         default:
             return state;
 

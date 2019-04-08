@@ -1,8 +1,9 @@
-//import huper from '../apis/huperDB';
+import SlackApiss from '../apis/slackApi';
 //import history from '../history';
 import {
     SIGN_IN,
-    SIGN_OUT
+    SIGN_OUT,
+    SLACKAPI,
     //   CREATE_STREAM
 } from './types';
 
@@ -24,6 +25,18 @@ export const signIn = (userId) => {
         type: SIGN_IN,
         payload: userId
     };
+};
+
+export const slackApis = () => async dispatch => {
+
+
+
+ 
+    const response = await SlackApiss.get().then((response) => {  console.log(response);});
+  
+    // const response = await SlackApis.get();
+    // console.log(response);
+    // dispatch({ type: SLACKAPI, payload: response.data });
 };
 
 
@@ -76,22 +89,28 @@ const escribirUsuario = (userId) => {
     //escribir  108587547313274842109
     //console.log('envio');
     //remove()
-/*
 
-   // var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
+
+    // var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
     var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta').push().key;
 
-    firebase.database().ref(`Preguntas-Chat/-L_CdgL9booyLYiJ31Kx/1`).set({
-        concepto: "Rol: trabajador /Crear Tarea",
-     //   fecha: new Date().toString(),
-     
-        //typeForm: '',
+    // firebase.database().ref(`Tipologia-Pregunta/17`).set({
+    // concepto: "Objetivo Nuevo Criterios",
+    // concepto: "Obetivo Creado Nuevo",
+    //opciones: "Usuario-Objetivos",
+    //  tipoPregunta: '1',
+    //  camino: '1'
+    //   fecha: new Date().toString(),
 
-        //opciones: 'Usuario-WS',
-       // opciones: 'Que esta haciendo mi huper,Crear un Objetivo,Dar un Feedback',
-       // tipoPregunta: '3',
-    });
-*/
+    //typeForm: '',
+
+    //  opciones: '1,2,3,4,5',
+    // opciones: 'Que esta haciendo mi huper,Crear un Objetivo,Dar un Feedback',
+    //  tipoPregunta: '1',
+    // });
+
+
+
 
 
 

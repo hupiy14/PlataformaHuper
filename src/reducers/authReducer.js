@@ -1,12 +1,14 @@
 import {
     SIGN_IN,
-    SIGN_OUT
+    SIGN_OUT,
+    SLACKAPI,
 
 } from '../actions/types';
 
 const INITIAL_STATE = {
     isSignedIn: null,
-    userId: null
+    userId: null,
+    slackApi: null,
 };
 
 export default (state = INITIAL_STATE, action) => {
@@ -15,6 +17,8 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, isSignedIn: true, userId: action.payload };
         case SIGN_OUT:
             return { ...state, isSignedIn: false, userId: null };
+        case SLACKAPI:
+            return { ...state, slackApi: action.payload };
         default:
             return state;
 

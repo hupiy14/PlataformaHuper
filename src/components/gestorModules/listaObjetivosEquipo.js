@@ -197,11 +197,16 @@ class ListaObjetivosEquipo extends React.Component {
 
 
                     const listaEOB = the.props.listaObjetivo;
+                    console.log(listaEOB)
                     Object.keys(listaEOB).map(function (key4, index) {
                         const listaEOBT = listaEOB[key4];
                         if (!listaEOBT) return;
+                        console.log(listaEOBT)
                         Object.keys(listaEOBT).map(function (key3, index) {
+                            
                             const consultaTareaTT = listaEOBT[key3];
+                            console.log(consultaTareaTT)
+                            if (!consultaTareaTT) return;
                             Object.keys(consultaTareaTT).map(function (key33, index) {
                                 if (key3 === key2) {
 

@@ -155,11 +155,11 @@ class listImportante extends React.Component {
                     let style = {
                         borderRadius: 0.5,
                         height: '100px',
-                        background: the.props.selObjetivo === key2?'#fbe4ff': null,
+                        background: the.props.selObjetivo === key2 ? '#fbe4ff' : null,
                     };
 
                     if (objetivo.fechafin) {
-                      
+
                         const fec = new Date(objetivo.fechafin);
 
                         if (fec < new Date()) {
@@ -185,26 +185,33 @@ class listImportante extends React.Component {
                     let styleD = {
                         position: 'relative',
                         left: '58%',
-                        top: cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50?'-80px':'-60px':'-50px',
+                        top: cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50 ? '-80px' : '-60px' : '-50px',
                     };
 
                     if (the.props.alingD) { styleD.left = '25%'; }
+
+                    let iconoImpacto;
+                    let colorImpacto;
+                    if(cconsulta[key2].impacto === "Negocío"){iconoImpacto="money bill alternate"; colorImpacto="green";}
+                    else if(cconsulta[key2].impacto === "Proceso"){ iconoImpacto="cogs"; colorImpacto="blue";}
+                    else if(cconsulta[key2].impacto === "Organización"){ iconoImpacto="boxes"; colorImpacto="purple";}
+                    else if(cconsulta[key2].impacto === "Ventas"){iconoImpacto="hospital outline"; colorImpacto="yellow";}
 
                     return (
                         <div className="item" key={key2}>
                             <i className={`large middle ${the.props.icono} aligned icon`}  ></i>
                             <div className="content"   >
 
-                                <Segment style={style} onClick={() => { the.props.selObjetivo === key2? the.props.selObjetivos(null): the.props.selObjetivos(key2);}} >
+                                <Segment style={style} onClick={() => { the.props.selObjetivo === key2 ? the.props.selObjetivos(null) : the.props.selObjetivos(key2); }} >
                                     <div className="header"  >{cconsulta[key2].concepto}</div>
-                                    <div className="description" style={{width: '60%'}}  >{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
-                                    <Label as='a' color={cconsulta[key2].prioridad === 'normal' ? 'teal' : cconsulta[key2].prioridad === 'inmediato' ? 'purple' : 'yellow'} basic style={{ left: '84%', position: 'relative', top:  cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50?'-52px':'-28px': '-22px' }}>
+                                    <div className="description" style={{ width: '60%' }}  >{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
+                                    <Label as='a' color={cconsulta[key2].prioridad === 'normal' ? 'teal' : cconsulta[key2].prioridad === 'inmediato' ? 'purple' : 'yellow'} basic style={{ left: '84%', position: 'relative', top: cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50 ? '-52px' : '-28px' : '-22px' }}>
                                         {cconsulta[key2].prioridad}
                                     </Label>
 
-                                    <Label as='a' color='green' basic style={{ left: '63%', position: 'relative', top:  cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50? '-17px':'5px':'12px' }} >
-                                        Negocío
-                                        <Icon name='money bill alternate' style={{ left: '10px', position: 'relative' }} />
+                                    <Label as='a' color={colorImpacto} basic style={{ left: '63%', position: 'relative', top: cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50 ? '-17px' : '5px' : '12px' }} >
+                                        {cconsulta[key2].impacto}
+                                        <Icon name={iconoImpacto} style={{ left: '10px', position: 'relative' }} />
                                     </Label>
                                     <Divider vertical style={{ left: '75%' }}>:</Divider>
 
@@ -216,7 +223,7 @@ class listImportante extends React.Component {
                                         <Popup
                                             trigger={<Button icon='id badge' color='yellow'
                                                 onClick={() => {
-                                                   
+
                                                     if (!the.props.usuarioDetail.usuario.onboarding)
                                                         the.handlePaso();
 
@@ -239,7 +246,7 @@ class listImportante extends React.Component {
                                                 <Popup
                                                     trigger={<Button color='purple' icon='edit outline'
                                                         onClick={() => {
-                                                           
+
                                                             if (!the.props.usuarioDetail.usuario.onboarding)
                                                                 the.handlePaso();
 
@@ -295,9 +302,7 @@ class listImportante extends React.Component {
                                                         <button className='ui button grey fluid'
                                                             key={key2}
                                                             onClick={() => {
-
                                                                 the.setState({ ver: !the.state.ver });
-
                                                             }} > Cancelar</button>
 
                                                     </div>
@@ -323,7 +328,7 @@ class listImportante extends React.Component {
                                         </Modal>
 
                                     </div>
-                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ top:cconsulta[key2].detalle ?  cconsulta[key2].detalle.length > 50? '-40px' :'-23px':'-10px' }} />
+                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ top: cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50 ? '-40px' : '-23px' : '-10px' }} />
                                 </Segment>
 
                             </div>
@@ -356,11 +361,8 @@ class listImportante extends React.Component {
             <div>
                 <h3>{titulo}</h3>
                 <div className=" maximo-list">
-
                     <div className="ui relaxed divided animated list ">
-
                         {this.renderConstruirObj(this.state.images, this)}
-
                     </div>
                 </div>
             </div>

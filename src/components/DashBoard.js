@@ -199,6 +199,7 @@ class DashBoard extends React.Component {
 
 
     componentDidMount() {
+       
         this.onSearchXpress("hi");
         let datos = [];
         datos.push({ label: "Planificación de trabajo", data: datosG1, hidden: true, });
