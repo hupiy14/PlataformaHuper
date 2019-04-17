@@ -66,7 +66,7 @@ class MenuChat extends React.Component {
 
 
             ///configuracion responsive
-            console.log(this.state.inicio);
+         //   console.log(this.state.inicio);
             let ubicacionChat = "foot-chat";
             let className = "massive ui yellow large circular lightbulb outline icon icon button " + this.state.inicio;
             let className2 = "lightbulb outline icon large icon";

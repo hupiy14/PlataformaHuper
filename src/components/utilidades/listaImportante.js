@@ -5,6 +5,9 @@ import { Button, Popup, Grid, Input, Header, Modal, Image, Form, Progress, Segme
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
 
+
+
+
 var fs = require('fs');
 
 const timeoutLength = 150000;
@@ -12,7 +15,7 @@ const timeoutLength = 150000;
 class listImportante extends React.Component {
     state = {
         images: [], buscar: ['company', 'business', 'worker', 'formal',], ver: false, objetivoS: {}, detalleO: null, prioridadOk: true, guardar: false, cambio: 0, percent: 15, factor: 10, ntareas: 1,
-        consultaTareas: {}, titulo: null, selectedFile: null, loaded: 0,
+        consultaTareas: {}, titulo: null, selectedFile: null, loaded: 0, WorkFlow: null,
         prioridadx: [{ prio: 'inmediato', color: 'red' }, { prio: 'urgente', color: 'yellow' }, { prio: 'normal', color: 'olive' }]
     };
 
@@ -43,6 +46,11 @@ class listImportante extends React.Component {
         starCountRef2.on('value', (snapshot) => {
             variable = { ...variable, tareas: snapshot.val() }
             this.props.listaObjetivos(variable);
+        });
+
+        const starCountRef3 = firebase.database().ref().child(`Usuario-Flujo-Trabajo/${this.props.userId}`);
+        starCountRef3.on('value', (snapshot) => {
+            this.setState({ WorkFlow: snapshot.val() });
         });
 
     }
@@ -158,6 +166,8 @@ class listImportante extends React.Component {
                         background: the.props.selObjetivo === key2 ? '#fbe4ff' : null,
                     };
 
+
+                    //objetivo pasado
                     if (objetivo.fechafin) {
 
                         const fec = new Date(objetivo.fechafin);
@@ -165,16 +175,18 @@ class listImportante extends React.Component {
                         if (fec < new Date()) {
                             style = {
                                 borderRadius: 0.5,
-                                background: '#f9333340',
+                                background: the.props.selObjetivo === key2 ? '#fbe4ff' : '#f9333340',
                                 height: '100px',
                             };
                         }
                     }
 
 
+                    //responsive
                     let style2 = {
                         borderRadius: 0.2,
                     };
+
                     if (window.screen.width < 500) {
                         style2 = {
                             overflow: 'auto',
@@ -184,27 +196,66 @@ class listImportante extends React.Component {
 
                     let styleD = {
                         position: 'relative',
-                        left: '58%',
+                        left: '56%',
                         top: cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50 ? '-80px' : '-60px' : '-50px',
                     };
 
                     if (the.props.alingD) { styleD.left = '25%'; }
 
+
+                    //Impacto de las activiadades
                     let iconoImpacto;
                     let colorImpacto;
-                    if(cconsulta[key2].impacto === "Negocío"){iconoImpacto="money bill alternate"; colorImpacto="green";}
-                    else if(cconsulta[key2].impacto === "Proceso"){ iconoImpacto="cogs"; colorImpacto="blue";}
-                    else if(cconsulta[key2].impacto === "Organización"){ iconoImpacto="boxes"; colorImpacto="purple";}
-                    else if(cconsulta[key2].impacto === "Ventas"){iconoImpacto="hospital outline"; colorImpacto="yellow";}
+                    if (cconsulta[key2].impacto === "Negocío") { iconoImpacto = "money bill alternate"; colorImpacto = "green"; }
+                    else if (cconsulta[key2].impacto === "Proceso") { iconoImpacto = "cogs"; colorImpacto = "blue"; }
+                    else if (cconsulta[key2].impacto === "Organización") { iconoImpacto = "boxes"; colorImpacto = "purple"; }
+                    else if (cconsulta[key2].impacto === "Ventas") { iconoImpacto = "hospital outline"; colorImpacto = "yellow"; }
 
+                    //Flujo de trabajo
+                    let listaX = the.state.WorkFlow;
+                    let colorFase = null;
+                    let labelFase = null;
+                    let numFase = null;
+                    let flujoActivo = null;
+                    let iconoObjetivo = the.props.icono;
+
+                    if (cconsulta[key2].tipo === "Empieza en tu flujo de trabajo") {
+                        iconoObjetivo = "th";
+                        numFase = cconsulta[key2].fase ;
+                        colorFase = "rgba(212, 179, 20, 0.42)";
+                        style = { ...style, height: '140px' };
+                        if (listaX) {
+                            listaX = listaX.fases;
+                            Object.keys(listaX).map(function (key3, index) {
+                                if (!cconsulta[key2].fase && !labelFase) {
+                                    colorFase = listaX[key3].color;
+                                    labelFase = listaX[key3].label;
+                                }
+                                else {
+                                    if (cconsulta[key2].fase && cconsulta[key2].fase.toString() === key3) {
+                                        colorFase = listaX[key3].color;
+                                        labelFase = listaX[key3].label;
+                                    }
+                                }
+
+                            });
+                            flujoActivo = <Label as='a' style={{ background: colorFase }} image>
+                                <Icon name="tasks" size="large" ></Icon>
+                                <h5 color="white" style={{ top: '-20px', position: 'relative' }} >Fase {numFase}:</h5>
+                                <Label.Detail style={{ top: '-27px', left: '-5px', position: 'relative' }}>{labelFase?labelFase: '<"Por definir">'}</Label.Detail>
+                            </Label>
+                        }
+
+                        //if(cconsulta[key2].tipo === "Empieza en tu flujo de trabajo") {}
+                    }
                     return (
-                        <div className="item" key={key2}>
-                            <i className={`large middle ${the.props.icono} aligned icon`}  ></i>
-                            <div className="content"   >
+                        <div className="item segment" key={key2} >
+                            <i className={`large ${iconoObjetivo} aligned icon`} style={{ color: '#fbbd087d' }} ></i>
+                            <div className=" content"   >
 
                                 <Segment style={style} onClick={() => { the.props.selObjetivo === key2 ? the.props.selObjetivos(null) : the.props.selObjetivos(key2); }} >
                                     <div className="header"  >{cconsulta[key2].concepto}</div>
-                                    <div className="description" style={{ width: '60%' }}  >{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
+                                    <div className="description" style={{ width: '55%' }}  >{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
                                     <Label as='a' color={cconsulta[key2].prioridad === 'normal' ? 'teal' : cconsulta[key2].prioridad === 'inmediato' ? 'purple' : 'yellow'} basic style={{ left: '84%', position: 'relative', top: cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50 ? '-52px' : '-28px' : '-22px' }}>
                                         {cconsulta[key2].prioridad}
                                     </Label>
@@ -328,10 +379,12 @@ class listImportante extends React.Component {
                                         </Modal>
 
                                     </div>
+
                                     <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ top: cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50 ? '-40px' : '-23px' : '-10px' }} />
                                 </Segment>
 
                             </div>
+                            {flujoActivo}
                         </div>
                     );
                 }

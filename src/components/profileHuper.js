@@ -6,13 +6,15 @@ import { Card, Icon, Image, Button, Form, Message, Segment, Dimmer, Loader, Moda
 import history from '../history';
 import firebase from 'firebase';
 import zonaEspana from '../components/utilidades/zonaEspana';
-
+import axios from 'axios';
 import drive from '../images/drive.png';
 import calendar from '../images/calendar.png';
 import slack from '../images/slack.png';
+import trelloImg from '../images/trello.png';
+
 
 var Trello = require("trello");
-var trello = new Trello("bb3cab1a303c7bf996d56bb46db2a46f", "136434ae14c54519e4af94ed7f48ec43d710e777bb1bbe0b06cdda6368f1d44e");
+var trello = null;// new Trello("bb3cab1a303c7bf996d56bb46db2a46f", "136434ae14c54519e4af94ed7f48ec43d710e777bb1bbe0b06cdda6368f1d44e");
 
 
 
@@ -26,7 +28,7 @@ class Profile extends React.Component {
         tipo: null, empresa: null, nombreUsuario: null, cargo: null, listaEquipos: {}, area: null, lugar: null, telefono: null, equipo: null, codigo: null, acepto: null,
         errorTipo: null, errorNombreUsuario: null, errorCargo: null, errorArea: null, errorTelefono: null, errorLugar: null, errorEmpresa: null, errorEquipo: null, errorCodigo: null, errorAcepto: null, calendar: null,
         codigoUsSlack: null, tokenUsSlack: null, tokenBotUsSlack: null, canalGestorSlack: null, canalEquipoSlack: null, canalReportesSlack: null, canalNotifiacionesSlack: null,
-        codigoWSdrive: null, activo: false,
+        codigoWSdrive: null, activo: false, listaCanales_Slack: null, usuarioTrello: null, trelloListaDashBoard: null, trelloLista: null, trelloDashboard: null, errorDashboard: null,
 
 
         trelloApi: null, tokenTrello: null, listaObjetivostoDO: null, listaOBjetivosDone: null, listaObjetivosTheEnd: null, imagenMostrar: null, imagenFondo: null, imagenPerfil: null,
@@ -39,7 +41,6 @@ class Profile extends React.Component {
         starCountRef.on('value', (snapshot) => {
             this.setState({ listaEmpresas: snapshot.val() })
         });
-
 
     }
 
@@ -59,6 +60,17 @@ class Profile extends React.Component {
 
 
         const listaX = zonaEspana();
+
+        let entro = null;
+        Object.keys(listaX).map(function (key, index) {
+            if (listaX[key].name === ' ')
+                entro = true;
+        });
+
+        if (!entro) {
+            listaX.unshift(' ');
+        }
+
         let lista = {};
         const opciones = Object.keys(listaX).map(function (key, index) {
             lista = { ...lista, key: key, text: listaX[key], value: listaX[key] };
@@ -69,44 +81,80 @@ class Profile extends React.Component {
 
     }
 
+
+    renderCanaleSlack() {
+        const listaX = this.state.listaCanales_Slack;
+        let lista = {};
+        if (listaX) {
+            const opciones = Object.keys(listaX).map(function (key, index) {
+                lista = { ...lista, key: key, text: listaX[key].name, value: listaX[key].id };
+                return lista;
+            });
+
+
+            return opciones;
+        }
+        return;
+    }
+
+
+
     renderUsuarioSlack() {
+
+        ///valores que por seguridad no se muestran 
+        /*
+        <Form.Input label='Codigo de Usuario Slack' placeholder='UEA8D0S...'
+        value={this.state.codigoUsSlack}
+        onChange={e => this.setState({ codigoUsSlack: e.target.value })}
+        />
+        
+        
+        <Form.Input label='Token Usuario Slack'  placeholder='xoxp-482555533539-486285033681...'
+        value={this.state.tokenUsSlack}
+        onChange={e => this.setState({ tokenUsSlack: e.target.value })}
+        
+        />
+        
+        
+        <Form.Input label='Token bot Usuario Slack' placeholder='xoxb-482555533539-532878166725...'
+        value={this.state.tokenBotUsSlack}
+        onChange={e => this.setState({ tokenBotUsSlack: e.target.value })}
+        />
+        
+
+        /// Este canal se debera crear interno a la hora en que se registre el gestor
+           <Form.Input label='Canal del Gestor' placeholder='CE61KKZ...'
+                        value={this.state.canalGestorSlack}
+                        onChange={e => this.setState({ canalGestorSlack: e.target.value })}
+                        disabled={visible}
+                    />
+                 
+        */
+
+
+
+
         let visible = false;
         if (this.props.userRol === '3')
             visible = true;
         return (
             <div>
                 <Form >
-                    <Form.Input label='Codigo de Usuario Slack' placeholder='UEA8D0S...'
-                        value={this.state.codigoUsSlack}
-                        onChange={e => this.setState({ codigoUsSlack: e.target.value })}
-                    />
-                    <Form.Input label='Token Usuario Slack' placeholder='xoxp-482555533539-486285033681...'
-                        value={this.state.tokenUsSlack}
-                        onChange={e => this.setState({ tokenUsSlack: e.target.value })}
-                    />
-                    <Form.Input label='Token bot Usuario Slack' placeholder='xoxb-482555533539-532878166725...'
-                        value={this.state.tokenBotUsSlack}
-                        onChange={e => this.setState({ tokenBotUsSlack: e.target.value })}
-                    />
-                    <Form.Input label='Canal del Gestor' placeholder='CE61KKZ...'
-                        value={this.state.canalGestorSlack}
-                        onChange={e => this.setState({ canalGestorSlack: e.target.value })}
-                        disabled={visible}
-                    />
-                    <h3>Añade otros canales que uses </h3>
-                    <Form.Input label='Canal del Equipo' placeholder='CE61KKZ...'
+                    <Form.Select label='Canal del Equipo' options={this.renderCanaleSlack()} placeholder='Selecciona el canal'
+                        search
+                        onChange={(e, { value }) => { this.setState({ canalEquipoSlack: value }) }}
                         value={this.state.canalEquipoSlack}
-                        onChange={e => this.setState({ canalEquipoSlack: e.target.value })}
                     />
-                    <Form.Input label='Canal del Reportes' placeholder='CE61KKZ...'
+                    <Form.Select label='Canal del Reportes' options={this.renderCanaleSlack()} placeholder='Selecciona el canal'
+                        search
+                        onChange={(e, { value }) => { this.setState({ canalReportesSlack: value }) }}
                         value={this.state.canalReportesSlack}
-                        onChange={e => this.setState({ canalReportesSlack: e.target.value })}
                     />
-                    <Form.Input label='Canal del Notificaciones' placeholder='CE61KKZ...'
+                    <Form.Select label='Canal del Notificaciones' options={this.renderCanaleSlack()} placeholder='Selecciona el canal'
+                        search
+                        onChange={(e, { value }) => { this.setState({ canalNotifiacionesSlack: value }) }}
                         value={this.state.canalNotifiacionesSlack}
-                        onChange={e => this.setState({ canalNotifiacionesSlack: e.target.value })}
                     />
-
                 </Form>
                 <br />
                 <Button color="yellow" icon='save' disabled={this.state.activo} style={{ left: '45%' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
@@ -222,48 +270,156 @@ class Profile extends React.Component {
                     />
                 </Form >
                 <br />
-                <Button color="yellow" icon='save' disabled={this.state.activo} style={{ left: '45%' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+                <Button color="yellow" icon='save' disabled={this.state.activo} style={{ left: '45%' }} labelPosition='right' content='Guardar'
+
+                    onClick={() => { this.renderGuardar() }}
+                />
             </div>
 
         );
     }
 
+
+
+
+
+    renderOpcionesTrello(listaOpciones) {
+
+        let listaX = listaOpciones;
+        let entro = null;
+        //console.log(listaX);
+        let lista = {};
+        if (!listaX)
+            return;
+
+        Object.keys(listaX).map(function (key, index) {
+            if (listaX[key].name === 'Ninguno')
+                entro = true;
+        });
+
+        if (!entro) {
+            listaX.unshift({ name: 'Ninguno', id: '' });
+        }
+
+        //  console.log(listaX);
+        const opciones = Object.keys(listaX).map(function (key, index) {
+            //  console.log(listaX[key]);
+            lista = { ...lista, key: key, text: listaX[key].name, value: listaX[key].id };
+            return lista;
+            //return cconsulta[key].concepto;
+        });
+        //  console.log(opciones);
+        return opciones;
+
+    }
+
+    componentDidUpdate() {
+        if (this.state.trelloApi && !this.state.tokenTrello) {
+            const starCountRef2 = firebase.database().ref().child(`Usuario-TokenTrelloTemp/${this.props.usuarioDetail.idUsuario}`);
+            starCountRef2.on('value', (snapshot2) => {
+
+                if (snapshot2.val()) {
+                    this.setState({ tokenTrello: snapshot2.val().token });
+                    trello = new Trello(this.state.trelloApi, snapshot2.val().token);
+                    trello.makeRequest('get', '/1/members/me/tokens', { webhooks: true }).then((res) => {
+                        //    console.log(res[0].idMember)
+                        this.setState({ usuarioTrello: res[0].idMember });
+                        trello.getBoards(res[0].idMember).then((Response) => { this.setState({ trelloListaDashBoard: Response }) })
+                    });
+                }
+
+
+            });
+        }
+    }
+    renderConsultaApiKeyTrello(valor) {
+        window.open(`https://trello.com/1/authorize?expiration=never&scope=read,write,account&response_type=token&name=Server%20Token&key=${valor}&return_url=http://${window.location.host}`);
+    }
+
+    renderFiltroTrello(valor) {
+        if (valor !== '') {
+            trello.getListsOnBoard(valor).then((Response) => { this.setState({ trelloLista: Response }); });
+        }
+
+    }
+
     renderTrello() {
         //https://www.npmjs.com/package/trello
+
+
+        /// el token  lo debo recuperar axios
+        /*<Form.Input label='Token Trello' placeholder='136434ae14c54519e4af94ed...'
+        value={this.state.tokenTrello}
+        onChange={e => this.setState({ tokenTrello: e.target.value })}
+    />*/
         let visible = true;
         if (this.props.userRol === '3')
             visible = false;
 
-        console.log(trello.getCardsOnList('5c7cd5acc6508624e93549d6'));
+
+
+        let contruir = <Form >
+            <Form.Input label='Trello Api Key' placeholder='bb3cab1a303c7bf996d5...'
+                value={this.state.trelloApi}
+                onChange={e => { this.setState({ trelloApi: e.target.value }); this.renderConsultaApiKeyTrello(e.target.value); }}
+            />
+            <div className="inline right">
+                <Button color="blue" icon='trello' labelPosition='right' content='Generar' onClick={() => { window.open('https://trello.com/app-key/'); }} />
+            </div>
+        </Form>
+
+        if (this.state.trelloApi && this.state.tokenTrello) {
+            contruir =
+                <div>
+                    <Form >
+
+                        <Form.Select label='Selecciona Dashboard' options={this.renderOpcionesTrello(this.state.trelloListaDashBoard)} placeholder='Escogé un tablero'
+                            search
+                            value={this.state.trelloDashboard}
+                            onChange={(e, { value }) => {
+                                this.setState({ trelloDashboard: value });
+                                this.renderFiltroTrello(value);
+                            }
+                            }
+                            error={this.state.errorDashboard}
+                        />
+
+                        <Form.Select label='Lista Objetivos por trabajar' options={this.renderOpcionesTrello(this.state.trelloLista)} placeholder='Escogé una lista'
+                            search
+                            value={this.state.listaObjetivostoDO}
+                            onChange={(e, { value }) => this.setState({ listaObjetivostoDO: value })}
+                        />
+                        <Form.Select label='Lista objetivos terminados' options={this.renderOpcionesTrello(this.state.trelloLista)} placeholder='Escogé una lista'
+                            search
+                            value={this.state.listaOBjetivosDone}
+                            onChange={(e, { value }) => this.setState({ listaOBjetivosDone: value })}
+                        />
+
+                        <h3>Si eres gestor agrega lo siguiente: </h3>
+                        <Form.Select label='Lista Objetivos validados' options={this.renderOpcionesTrello(this.state.trelloLista)} placeholder='Escogé una lista'
+                            search
+                            value={this.state.listaObjetivosTheEnd}
+
+                            onChange={(e, { value }) => this.setState({ listaObjetivosTheEnd: value })}
+                            visible
+                        />
+                    </Form>
+                    <br />
+                    <Button color="yellow" icon='save' disabled={this.state.activo} style={{ left: '45%' }} labelPosition='right' content='Guardar'
+                        disabled={this.state.trelloDashboard && (this.state.listaObjetivostoDO && this.state.listaObjetivostoDO !== '' ||
+                            this.state.listaOBjetivosDone && this.state.listaOBjetivosDone !== '' ||
+                            this.state.listaObjetivosTheEnd && this.state.listaObjetivosTheEnd !== '') ? false : true}
+                        onClick={() => { firebase.database().ref().child(`Usuario-TokenTrelloTemp/${this.props.usuarioDetail.idUsuario}`).remove(); this.renderGuardar() }} />
+
+                </div>
+        }
+
+
+
+        // 
         return (
             <div>
-                <Form >
-                    <Form.Input label='Trello Api Key' placeholder='bb3cab1a303c7bf996d5...'
-                        value={this.state.trelloApi}
-                        onChange={e => this.setState({ trelloApi: e.target.value })}
-                    />
-                    <Form.Input label='Token Trello' placeholder='136434ae14c54519e4af94ed...'
-                        value={this.state.tokenTrello}
-                        onChange={e => this.setState({ tokenTrello: e.target.value })}
-                    />
-                    <Form.Input label='Lista Objetivos por trabajar' placeholder='136434ae14c54519e4af94ed...'
-                        value={this.state.listaObjetivostoDO}
-                        onChange={e => this.setState({ listaObjetivostoDO: e.target.value })}
-                    />
-                    <Form.Input label='Lista objetivos terminados' placeholder='136434ae14c54519e4af94ed...'
-                        value={this.state.listaOBjetivosDone}
-                        onChange={e => this.setState({ listaOBjetivosDone: e.target.value })}
-                    />
-                    <h3>Si eres gestor agrega lo siguiente: </h3>
-                    <Form.Input label='Lista Objetivos validados' placeholder='136434ae14c54519e4af94ed...'
-                        value={this.state.listaObjetivosTheEnd}
-                        onChange={e => this.setState({ listaObjetivosTheEnd: e.target.value })}
-                        disabled={visible}
-                    />
-
-                </Form>
-                <br />
-                <Button color="yellow" icon='save' disabled={this.state.activo} style={{ left: '45%' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+                {contruir}
             </div>
 
         );
@@ -351,7 +507,7 @@ class Profile extends React.Component {
         if (this.state.open === 'slack') {
             firebase.database().ref(`Usuario-Slack/${this.props.usuarioDetail.idUsuario}`).set({
                 usuarioSlack: this.state.codigoUsSlack,
-                token: this.state.tokenUsSlack,
+                tokenP: this.state.tokenUsSlack,
                 tokenB: this.state.tokenBotUsSlack,
                 gestor: this.state.canalGestorSlack,
                 notifiacaiones: this.state.canalNotifiacionesSlack,
@@ -375,12 +531,13 @@ class Profile extends React.Component {
         }
         else if (this.state.open === 'trello') {
             firebase.database().ref(`Usuario-Trello/${this.props.usuarioDetail.idUsuario}`).set({
-
+                usuarioTrello: this.state.usuarioTrello,
                 trelloApi: this.state.trelloApi,
                 tokenTrello: this.state.tokenTrello,
-                listaObjetivostoDO: this.state.listaObjetivostoDO,
-                listaOBjetivosDone: this.statlistaOBjetivosDone,
-                listaObjetivosTheEnd: this.state.listaObjetivosTheEnd,
+                trelloDashboard: this.state.trelloDashboard,
+                listaObjetivostoDO: this.state.listaObjetivostoDO ? this.state.listaObjetivostoDO : null,
+                listaOBjetivosDone: this.state.listaOBjetivosDone ? this.state.listaOBjetivosDone : null,
+                listaObjetivosTheEnd: this.state.listaObjetivosTheEnd ? this.state.listaObjetivosTheEnd : null,
 
             });
         }
@@ -405,19 +562,29 @@ class Profile extends React.Component {
         this.setState({ activo: true });
     }
 
+
+
     renderCargar(pantalla) {
         this.setState({ activo: false });
         if (pantalla === 'slack') {
             const starCountRef = firebase.database().ref().child(`Usuario-Slack/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
-                    this.setState({ codigoUsSlack: snapshot.val().usuarioSlack ? snapshot.val().usuarioSlack : '' });
-                    this.setState({ tokenUsSlack: snapshot.val().token ? snapshot.val().token : '' });
+                    this.setState({ codigoUsSlack: snapshot.val().usuario ? snapshot.val().usuario : '' });
+                    this.setState({ tokenUsSlack: snapshot.val().tokenP ? snapshot.val().tokenP : '' });
                     this.setState({ tokenBotUsSlack: snapshot.val().tokenB ? snapshot.val().tokenB : '' });
                     this.setState({ canalGestorSlack: snapshot.val().gestor ? snapshot.val().gestor : null });
                     this.setState({ canalNotifiacionesSlack: snapshot.val().notifiacaiones ? snapshot.val().notifiacaiones : '' });
                     this.setState({ canalReportesSlack: snapshot.val().reporting ? snapshot.val().reporting : '' });
                     this.setState({ canalEquipoSlack: snapshot.val().equipo ? snapshot.val().equipo : '' });
+
+
+                    axios.get(` https://slack.com/api/channels.list?token=${snapshot.val().tokenB}&pretty=1`)
+                        .then((res, tres) => {
+                            // console.log(res.data);
+                            this.setState({ listaCanales_Slack: res.data.channels });
+                        });
+
                 }
                 else {
                     this.setState({ codigoUsSlack: '' });
@@ -428,6 +595,9 @@ class Profile extends React.Component {
                     this.setState({ canalReportesSlack: '' });
                     this.setState({ canalEquipoSlack: '' });
                 }
+
+
+
 
             });
         }
@@ -448,7 +618,7 @@ class Profile extends React.Component {
             const starCountRef = firebase.database().ref().child(`Usuario-CalendarGoogle/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
-                    this.setState({ calendar: snapshot.val().calendar ? snapshot.val().calendar : '' });
+                    this.setState({ calendar: snapshot.val().idCalendar ? snapshot.val().idCalendar : '' });
                 }
                 else {
                     this.setState({ calendar: '' });
@@ -463,9 +633,16 @@ class Profile extends React.Component {
                 if (snapshot.val()) {
                     this.setState({ trelloApi: snapshot.val().trelloApi ? snapshot.val().trelloApi : '' });
                     this.setState({ tokenTrello: snapshot.val().tokenTrello ? snapshot.val().tokenTrello : '' });
+                    this.setState({ usuarioTrello: snapshot.val().usuarioTrello ? snapshot.val().usuarioTrello : '' });
+                    this.setState({ trelloDashboard: snapshot.val().trelloDashboard ? snapshot.val().trelloDashboard : '' });
                     this.setState({ listaObjetivostoDO: snapshot.val().listaObjetivostoDO ? snapshot.val().listaObjetivostoDO : '' });
                     this.setState({ listaOBjetivosDone: snapshot.val().listaOBjetivosDone ? snapshot.val().listaOBjetivosDone : '' });
                     this.setState({ listaObjetivosTheEnd: snapshot.val().listaObjetivosTheEnd ? snapshot.val().listaObjetivosTheEnd : '' });
+                    if (snapshot.val().trelloApi && snapshot.val().tokenTrello) {
+                        trello = new Trello(snapshot.val().trelloApi, snapshot.val().tokenTrello);
+                        trello.getBoards(snapshot.val().usuarioTrello).then((Response) => { this.setState({ trelloListaDashBoard: Response }) })
+                        trello.getListsOnBoard(snapshot.val().trelloDashboard).then((Response) => { this.setState({ trelloLista: Response }); });
+                    }
                 }
                 else {
                     this.setState({ trelloApi: '' });
@@ -506,14 +683,17 @@ class Profile extends React.Component {
 
         let tamano = '37em';
         if (this.state.open === 'slack') {
-            tamano = '47em';
+            tamano = '22em';
         }
         else if (this.state.open === 'drive')
             tamano = '10em';
         else if (this.state.open === 'calendar')
             tamano = '10em';
-        else if (this.state.open === 'trello')
-            tamano = '35em';
+        else if (this.state.open === 'trello') {
+            tamano = '10em';
+            if (this.state.trelloApi && this.state.tokenTrello)
+                tamano = '30em';
+        }
 
 
 
@@ -525,20 +705,23 @@ class Profile extends React.Component {
                             <Image src={this.state.imagenFondo ? this.state.imagenFondo : 'https://cdn.pixabay.com/photo/2016/08/09/21/54/yellowstone-national-park-1581879_960_720.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} />
                             <Card.Content style={{ height: '250px' }}>
                                 <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '21%', position: 'relative', top: '-80px' }} />
-                                <Card.Header style={{ top: '-65px', position: 'relative', 'padding-left': '35%' }}>Matthew</Card.Header>
+                                <Card.Header style={{ top: '-65px', position: 'relative', 'padding-left': '35%' }}>{this.state.nombreUsuario}</Card.Header>
                                 <Card.Meta style={{ top: '-65px', position: 'relative', 'padding-left': '30%' }}>
-                                    <span className='date'>Joined in 2015</span>
+                                    <span className='date'>{this.state.cargo}</span>
                                 </Card.Meta>
-                                <Card.Description style={{ top: '-65px', position: 'relative', 'padding-left': '5%' }}>Matthew is a musician living in Nashville.</Card.Description>
+                                <Card.Description style={{ top: '-65px', position: 'relative', 'padding-left': '5%' }}>{this.state.area}.</Card.Description>
                                 <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.renderCargar('slack'); }} circular size="mini" style={{ background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '5%', position: 'relative', top: '-50px' }} />
                                 <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '15%', position: 'relative', top: '-50px' }} />
                                 <Image src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '25%', position: 'relative', top: '-50px' }} />
-                                <Image src='https://cdn.icon-icons.com/icons2/836/PNG/512/Trello_icon-icons.com_66775.png' onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '35%', position: 'relative', top: '-50px' }} />
+                                <Image src={trelloImg} onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '35%', position: 'relative', top: '-50px' }} />
 
+                                <Button circular color="grey" style={{ position: 'relative', top: '-13em', left: '10%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
+                                <Button circular color="grey" style={{ position: 'relative', top: '-19.2em', left: '20%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
 
                             </Card.Content>
 
                         </Card>
+                        <Button content="Crea tu propio flujo de trabajo" onClick={() => { history.push('/newworkflow'); }} color="purple" icon="object group outline"></Button>
 
                     </div>
                     <div className="column eleven wide">

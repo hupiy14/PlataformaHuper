@@ -4,21 +4,25 @@ import { Link } from 'react-router-dom';
 
 
 
-class ingresoPlataforma extends React.Component {
-  
+class ContinuarProceso extends React.Component {
+
     render() {
         return (
 
             <div className="ui placeholder segment icon-right">
-                <br></br>
+
                 <br></br>
                 <div className="inline center">
                     <img className="ui medium rounded image" src={image} />
 
                 </div>
+
                 <div className="inline center">
                     <br></br>
-                    <Link to="/login" className="ui big button">Ingresar</Link>
+                    <h3>Proceso realizado con exito</h3>
+                    <br></br>
+                    <div className="ui big button" onClick={()=>{window.close();}}>Continuar</div>
+                 
                 </div>
 
             </div>
@@ -28,4 +32,4 @@ class ingresoPlataforma extends React.Component {
     }
 };
 
-export default ingresoPlataforma; 
+export default ContinuarProceso; 

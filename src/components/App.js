@@ -6,9 +6,8 @@ import history from '../history';
 
 import MenuChat from './MenuChat';
 import Header from './Header';
-
+//formulario de ingreso
 import FomularioGlobal from './FormularioIngreso/formularioGlobal';
-import FomularioTipo from './FormularioIngreso/formularioTipo';
 import FomularioEmp from './FormularioIngreso/formularioEmp';
 import FormularioEquipo from './FormularioIngreso/formularioEquipo';
 import FormularioCodigo from './FormularioIngreso/formularioCodigo';
@@ -20,9 +19,14 @@ import Hupps from './modules/Hupps';
 import { connect } from 'react-redux';
 import './modules/chatBot/chatHupApp.css';
 import Feedback from '../components/feedbackHupity';
-import IngresosHuper from './ingresarUsuarioNuevo';
 import Onboard from './PruebaP';
 import Profile from './profileHuper';
+import Exito from './continuarProceso';
+import ContinuarProceso from './continuarProceso';
+
+//configuracion de flujo
+
+import  FLujoCreate from './modules/newFlowWork';
 
 
 
@@ -37,7 +41,7 @@ class App extends React.Component {
 
 
     renderMenuChat() {
-        if (this.props.userRol=== '2' ||(this.props.usuarioDetail && this.props.usuarioDetail.usuario && this.props.usuarioDetail.usuario.onboarding)) {
+        if (this.props.userRol === '2' || (this.props.usuarioDetail && this.props.usuarioDetail.usuario && this.props.usuarioDetail.usuario.onboarding)) {
             return <MenuChat />;
         }
         return;
@@ -70,17 +74,19 @@ class App extends React.Component {
                                             <Route path="/login" exact component={ingreso} />
                                             <Route path="/dashboard" component={dashboard} />
                                             <Route path="/hupps" exact component={Hupps} />
-                                            <Route path="/newuser" exact component={IngresosHuper} />
                                             <Route path="/onboarding" exact component={Onboard} />
                                             <Route path="/profile" exact component={Profile} />
+                                            <Route path="/proceso/exito" exact component={Exito} />
 
                                             <Route path="/formulario" exact component={FomularioGlobal} />
-                                            <Route path="/formulario/tipo" exact component={FomularioTipo} />
                                             <Route path="/formulario/empresa" exact component={FomularioEmp} />
                                             <Route path="/formulario/equipo" exact component={FormularioEquipo} />
                                             <Route path="/formulario/codigo" exact component={FormularioCodigo} />
+
+                                            <Route path="/newworkflow" exact component={FLujoCreate} />
                                             
-                                            
+
+
                                         </Switch>
 
 

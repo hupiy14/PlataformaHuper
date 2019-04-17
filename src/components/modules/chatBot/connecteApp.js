@@ -239,13 +239,13 @@ class App extends React.Component {
     }
 
 
-    renderTareaDiaria(chatID, trabajo) {
+    renderTareaDiaria(chatID) {
         this.props.tipoPreguntas('Diaria');
         const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWGFo3s87SjzppL7hoF');
         starCountRef.on('value', (snapshot) => {
             this.props.consultaChats(snapshot.val());
-            console.log(trabajo);
-            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto + trabajo, chatID, this.props.idChatUser);
+         //   console.log(trabajo);
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto , chatID, this.props.idChatUser);
             // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
         });
     }

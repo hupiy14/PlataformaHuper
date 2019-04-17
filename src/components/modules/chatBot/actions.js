@@ -31,40 +31,47 @@ import {
   AVATARES,
   PREGUNTA_FANTASMA,
   DETAIL_US_NEW,
-  
-
+  INPUT_DINAMICO,
 
 } from './types';
 
 
+
+export const inputDinamicos = (inputDinamico) => {
+  return {
+    type: INPUT_DINAMICO,
+    payload: inputDinamico
+  };
+};
+
 export const detailUsNews = (detailUsNew) => {
   return {
-    type:  DETAIL_US_NEW,
+    type: DETAIL_US_NEW,
     payload: detailUsNew
   };
 };
 export const verEquipos = (verEquipo) => {
   return {
-    type:  VER_EQUIPO,
+    type: VER_EQUIPO,
     payload: verEquipo
   };
 };
 export const avatares = (avatar) => {
   return {
-    type:  AVATARES,
+    type: AVATARES,
     payload: avatar
   };
 };
 
 export const pregFantasmas = (pregFantasma) => {
   return {
-    type:  PREGUNTA_FANTASMA,
+    type: PREGUNTA_FANTASMA,
     payload: pregFantasma
   };
 };
 export const selObjetivos = (selObjetivo) => {
   return {
-    type:  SELEC_OBJETIVO,
+    type: SELEC_OBJETIVO,
     payload: selObjetivo
   };
 };
@@ -224,6 +231,7 @@ export const setActiveChat = (contactID) => async dispatch => {
 };
 
 export const submitMessage = (text, chatID, userID) => async dispatch => {
+
 
   dispatch({
     type: SUBMIT_MESSAGE,

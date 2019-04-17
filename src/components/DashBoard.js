@@ -335,7 +335,7 @@ class DashBoard extends React.Component {
         return (
             <ListImportan
                 titulo={'Listado de objetivos'}
-                icono={'copy outline'}
+                icono={'thumbtack'}
                 alingD={aling}
             />
         );
@@ -346,7 +346,7 @@ class DashBoard extends React.Component {
         return (
             <ListaActividades
                 titulo={'Listado de Actividades'}
-                icono={'copy outline'}
+                icono={'thumbtack'}
                 alingD={aling}
             />
         );

@@ -94,20 +94,22 @@ const escribirUsuario = (userId) => {
     // var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
     var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta').push().key;
 
-    // firebase.database().ref(`Tipologia-Pregunta/17`).set({
-    // concepto: "Objetivo Nuevo Criterios",
+     firebase.database().ref(`Preguntas-Chat/-L_gZJBmlV7v-wUeF3Tr/4`).set({
+     concepto: "Que tipo de objetivo es:",
     // concepto: "Obetivo Creado Nuevo",
     //opciones: "Usuario-Objetivos",
     //  tipoPregunta: '1',
     //  camino: '1'
-    //   fecha: new Date().toString(),
+    // estado: 'activo',
+    //fecha: new Date().toString(),
+    //fechaTer: new Date().toString(),
 
     //typeForm: '',
 
-    //  opciones: '1,2,3,4,5',
+     opciones: 'Unico,Empieza en tu flujo de trabajo',
     // opciones: 'Que esta haciendo mi huper,Crear un Objetivo,Dar un Feedback',
-    //  tipoPregunta: '1',
-    // });
+     tipoPregunta: '1',
+    });
 
 
 

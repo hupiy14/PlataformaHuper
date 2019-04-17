@@ -132,9 +132,7 @@ class FomrularioGlobal extends React.Component {
                                 {equipo}
 
                                 <h3>Sincronizate con las herramientas</h3>
-                                <a onClick={this.clickGuardarTemporal} href={`https://slack.com/oauth/authorize?scope=identity.basic&client_id=482555533539.532672221010`}><img src="https://api.slack.com/img/sign_in_with_slack.png" /></a>
-
-
+                                <a onClick={this.clickGuardarTemporal} href={`https://slack.com/oauth/authorize?scope=bot&client_id=482555533539.532672221010`}><img src="https://api.slack.com/img/sign_in_with_slack.png" /></a>
                                 <Message
                                     error
                                     header={this.state.mensajeCodigo ? this.state.mensajeCodigo.titulo : 'Falta campos por llenar'}

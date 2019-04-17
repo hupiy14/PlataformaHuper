@@ -19,7 +19,7 @@ import Avatar from '../../../apis/xpress';
 
 const timeoutLength = 2500;
 
-
+let timeoutLength2 = 300;
 class Home extends React.Component {
 
   state = { carpeta: null, updates: null, color: [], client2: null, avataresN: null, avatarX: 0, avatarY: 0, ultimaTarea: null }
@@ -30,17 +30,37 @@ class Home extends React.Component {
     if (this.state.avatarX === this.state.avatarY) return;
     this.setState({ avatarY: this.state.avatarY + 1 });
 
-    const response = await Avatar.get('/xpresso/v1/search', {
+    const response = await Avatar.get('/gifs/search', {
       params: {
-        apiKey: '6hSjEEYWVHTmSUUwvwjJzTpX8_zq8noEYq2-_r5ABnkq98vSw1jvHFKncRlYUA-C',
-        query: text
+        api_key: 'oXZ3mfKZT6Qcv8B768ozo6OjMO312KN5',
+        offset: 0,
+        limit: 25,
+        rating: 'G',
+        lang: 'en',
+        q: 'hello',
       },
     });
-    //     console.log(response.data);
-    this.props.avatares(response.data.lowResGifs);
+    //  console.log(response);
+    this.props.avatares(response.data.data);
 
   }
 
+  handleOpen = (valorInput, chatID, userID) => {
+
+    timeoutLength2 = 1700;
+    if (userID === '1')
+      timeoutLength2 = 100;
+
+    //console.log(timeoutLength2);
+
+    this.timeout = setTimeout(() => {
+      this.props.submitMessage(
+        valorInput,
+        chatID,
+        userID
+      );
+    }, timeoutLength2)
+  }
 
 
   componentDidMount() {
@@ -62,6 +82,12 @@ class Home extends React.Component {
     nameRef2.on('value', (snapshot2) => {
       this.props.consultaCanales(snapshot2.val());
     });
+  }
+
+  componentDidUpdate() {
+    const messages = document.getElementById('chatHup');
+    // console.log(messages.scrollHeight);
+    messages.scrollTop = messages.scrollHeight;
   }
 
   getWeekNumber(date) {
@@ -92,11 +118,7 @@ class Home extends React.Component {
   //Envio a slack el mensaje 
   renderEnvioSlack(activeChat, userID) {
 
-    this.props.submitMessage(
-      this.props.valorInput,
-      activeChat.chatID,
-      userID
-    );
+    this.handleOpen(this.props.valorInput, activeChat.chatID, userID);
 
 
     if (activeChat.participants !== '6') {
@@ -242,7 +264,8 @@ class Home extends React.Component {
           x2++;
           if (x2 === 1) {
             x2++;
-            return consulta2;
+
+            return consulta2 === undefined ? '' : consulta2;
           }
           else
             return;
@@ -255,7 +278,7 @@ class Home extends React.Component {
         return (<Emoji key={y} emoji={{ id: consulta, skin: 3 }} size={19} />);
       }
       else
-        return ':' + consulta;
+        return ':' + consulta === undefined ? '' : consulta;
     });
 
     x = 0;
@@ -271,10 +294,14 @@ class Home extends React.Component {
         x = 0;
         this.onSearchXpress(consulta);
         if (!this.state.avataresN)
-          this.setState({ avataresN: randon() });
+          this.setState({ avataresN: Math.round(Math.random() * 20) });
+        //   console.log(this.props.avatar);
+
+
         if (this.props.avatar && this.props.avatar[1]) {
           return (<React.Fragment key={y}>
-            <Image src={this.props.avatar[this.state.avataresN]} key={y} size="medium"></Image>
+            <iframe src={this.props.avatar[this.state.avataresN ? this.state.avataresN : 0].embed_url} style={{ width: '160px', height: '90px' }} key={y}></iframe>
+
           </React.Fragment>);
         }
         else
@@ -311,11 +338,9 @@ class Home extends React.Component {
   onSubmit = (activeChat, userID) => {
 
     if (!this.props.valorInput.trim()) { return; }
-    this.props.submitMessage(
-      this.props.valorInput,
-      activeChat.chatID,
-      userID
-    );
+    this.handleOpen(this.props.valorInput, activeChat.chatID, userID);
+
+
 
     let valorNPregunta = this.props.numeroPregunta;
     let consultaBD = this.props.consultaPregunta;
@@ -345,9 +370,10 @@ class Home extends React.Component {
 
         });
 
-        this.props.submitMessage(`Nombre de la tarea: ${valorConsulta.concepto}`, activeChat.chatID, this.props.idChatUser)
-        this.props.submitMessage(`Prioriodad de la tarea: ${valorConsulta.prioridad}`, activeChat.chatID, this.props.idChatUser);
-        this.props.submitMessage(`Tiempo Estimado: ${valorConsulta.tiempoEstimado}`, activeChat.chatID, this.props.idChatUser);
+
+        this.handleOpen(`Nombre de la tarea: ${valorConsulta.concepto}`, activeChat.chatID, this.props.idChatUser)
+        this.handleOpen(`Prioriodad de la tarea: ${valorConsulta.prioridad}`, activeChat.chatID, this.props.idChatUser);
+        this.handleOpen(`Tiempo Estimado: ${valorConsulta.tiempoEstimado}`, activeChat.chatID, this.props.idChatUser);
 
 
       }
@@ -374,7 +400,7 @@ class Home extends React.Component {
           this.props.consultaChats(snapshot.val());
           consultaBD = snapshot.val();
           const mensaje = consultaBD[1].concepto;
-          this.props.submitMessage(mensaje, activeChat.chatID, this.props.idChatUser);
+          this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
         });
 
 
@@ -391,7 +417,7 @@ class Home extends React.Component {
           consultaBD = snapshot.val();
 
           const mensaje = consultaBD[1].concepto;
-          this.props.submitMessage(mensaje, activeChat.chatID, this.props.idChatUser);
+          this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
         });
 
       }
@@ -407,7 +433,7 @@ class Home extends React.Component {
           consultaBD = snapshot.val();
 
           const mensaje = consultaBD[1].concepto;
-          this.props.submitMessage(mensaje, activeChat.chatID, this.props.idChatUser);
+          this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
         });
 
       }
@@ -462,16 +488,23 @@ class Home extends React.Component {
       });
 
       if (pasar === false) {
+
         valorNPregunta = 0;
-        
         const starCountRef = firebase.database().ref().child('Preguntas-Chat/-L_gZJBmlV7v-wUeF3Tr');
         starCountRef.on('value', (snapshot) => {
           this.props.consultaChats(snapshot.val());
           consultaBD = snapshot.val();
+          console.log('carga');
+
+          console.log(consultaBD);
           const opcione = this.props.pregFantasma;
           const reload = true;
           const opcionw = { ...opcione, reload };
           this.props.pregFantasmas(opcionw);
+          valorNPregunta++;
+          const mensaje = consultaBD[valorNPregunta].concepto;
+          this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
+
         });
       }
 
@@ -485,8 +518,9 @@ class Home extends React.Component {
       const chatTrazo = this.props.user.userChats[0].thread;
 
       if (chatTrazo[1].text !== consultaBD[valorNPregunta + 1].concepto) {
+        console.log(consultaBD);
         const mensaje = consultaBD[valorNPregunta + 1].concepto;
-        this.props.submitMessage(mensaje, activeChat.chatID, this.props.idChatUser);
+        this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
       }
       // console.log(valorNPregunta);
     }
@@ -550,7 +584,8 @@ class Home extends React.Component {
             fechafin: this.validarFechaSemanaMax(),
             impacto: chatTrazo[8].text,
             dificultad: chatTrazo[10].text,
-            repeticiones: this.props.valorInput,
+            repeticiones: chatTrazo[12].text,
+            tipo: this.props.valorInput,
           };
         }
 
@@ -928,18 +963,18 @@ class Home extends React.Component {
             if (valore[0] === key) {
               let fechaActividad = moment('2000-01-01 00:00:00').add(moment.duration(parseInt(key))).format('HH-mm-ss');
               const intro = ':thought_balloon: Su ultima actividad fue  ';
-              this.props.submitMessage(
+              this.handleOpen(
                 intro,
                 activeChat.chatID,
                 userID
               );
-              this.props.submitMessage(
+              this.handleOpen(
                 historico[key].concepto,
                 activeChat.chatID,
                 userID
               );
 
-              this.props.submitMessage(
+              this.handleOpen(
                 fechaActividad = ':hourglass_flowing_sand: ' + fechaActividad + ':hourglass_flowing_sand:',
                 activeChat.chatID,
                 userID
@@ -1067,7 +1102,7 @@ class Home extends React.Component {
               ))}
           </ul>
         </div>
-        <div className="active-chat-ch" key="12345" >
+        <div className="active-chat-ch" key="12345" id="chatHup" >
           <div className="active-name" key="12346"  >{activeName}</div>
           <ul  > {thread.map((message, i) => (
             <div key={i}
@@ -1086,8 +1121,8 @@ class Home extends React.Component {
                   ? "group"
                   : ""
                 : ""}
-              > {this.renderTextoEmoji(message.text)}
 
+              > {this.renderTextoEmoji(message.text)}
 
 
 
@@ -1107,10 +1142,16 @@ class Home extends React.Component {
         <form
           onSubmit={(e) => {
             e.preventDefault();
+
+
+
             this.setState({ avatarY: 0 });
             if (activeChat.chatID === '13')//solo para el bot o interno
               this.onSubmit(activeChat, userID);
             else this.renderEnvioSlack(activeChat, userID);
+
+
+
           }}
 
           className="ui form">

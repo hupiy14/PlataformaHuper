@@ -8,12 +8,7 @@ import history from '../../history';
 import firebase from 'firebase';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-
-const opciones = [
-    { key: 'H', text: 'Huper', value: 'Huper' },
-    { key: 'G', text: 'Gestor', value: 'Gestor' },
-    { key: 'O', text: 'Observador', value: 'Observador' },
-];
+const timeoutLength = 3000;
 
 
 class FomrularioGlobal extends React.Component {
@@ -26,10 +21,10 @@ class FomrularioGlobal extends React.Component {
         const client = "482555533539.532672221010";
         const clientSecret = "18c94d458dbe66c7f7fc0d3f2684e63f";
         const code = this.props.detailUsNew.codeSlack;
-       axios.get(`https://slack.com/api/oauth.access?client_id=${client}&client_secret=${clientSecret}&code=${code}`)
+        axios.get(`https://slack.com/api/oauth.access?client_id=${client}&client_secret=${clientSecret}&code=${code}`)
             .then((res, tres) => {
-                console.log(res.data.access_token);
-                this.props.detailUsNews({ ...this.props.detailUsNew, tokenSlack: res.data.access_token });
+                if (res.data.bot)
+                    this.props.detailUsNews({ ...this.props.detailUsNew, tokenSlack: res.data.access_token, tokenBot: res.data.bot.bot_access_token, userSlack: res.data.user_id });
 
             });
     }
@@ -107,6 +102,32 @@ class FomrularioGlobal extends React.Component {
         }
     }
 
+    handleOpen = () => {
+        this.timeout = setTimeout(() => {
+
+            //Carga la otra configurcion de gmail
+            if (window.gapi.client.calendar) {
+                window.gapi.client.calendar.calendars.insert({
+                    "resource": {
+                        "summary": "hupity"
+                    }
+                })
+                    .then((response) => {
+                        // alert(response.result.id);
+                        // Handle the results here (response.result has the parsed body).
+                        this.setState({ calendar: response.result.id })
+                        //calendario google
+
+                        //  console.log(response.result);
+                        firebase.database().ref(`Usuario-CalendarGoogle/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+                            idCalendar: response.result.id,
+                            estado: 'activo',
+                        });
+                    },
+                        function (err) { console.error("Execute error", err); });
+            }
+        }, timeoutLength)
+    }
 
     renderCrearUsuario(cod) {
 
@@ -114,9 +135,12 @@ class FomrularioGlobal extends React.Component {
 
         window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
             .then(() => {
+
                 console.log("GAPI client loaded for API");
             },
                 function (err) { console.error("Error loading GAPI client for API", err); });
+
+        this.handleOpen();
         const Empresas = this.props.detailUsNew.listaEmpresas;
         const sel = this.props.detailUsNew.empresa;
 
@@ -163,8 +187,10 @@ class FomrularioGlobal extends React.Component {
 
         firebase.database().ref(`Usuario-Slack/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
             tokenP: this.props.detailUsNew.tokenSlack,
+            tokenB: this.props.detailUsNew.tokenBot,
+            usuario: this.props.detailUsNew.userSlack,
             /* usuarioSlack: this.state.codigoUsSlack,
-               usuario: this.state.nombreUsuario,
+              
                gestor: this.state.canalGestorSlack,
                equipo: this.state.canalEquipoSlack,
                reporting: this.state.canalReportesSlack,
@@ -194,19 +220,7 @@ class FomrularioGlobal extends React.Component {
             });
         }
 
-        //Carga la otra configurcion de gmail
-        if (window.gapi.client.calendar) {
-            window.gapi.client.calendar.calendars.insert({
-                "resource": {
-                    "summary": "hupity"
-                }
-            })
-                .then((response) => {
-                    // Handle the results here (response.result has the parsed body).
-                    this.setState({ calendar: response.result.id })
-                },
-                    function (err) { console.error("Execute error", err); });
-        }
+
 
 
 
@@ -221,7 +235,7 @@ class FomrularioGlobal extends React.Component {
         firebase.database().ref(`Usuario/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
             area: this.props.detailUsNew.area,
             cargo: this.props.detailUsNew.cargo,
-            //  canalSlack: this.props.detailUsNew.codigoUsSlack,
+            canalSlack: this.props.detailUsNew.userSlack,
             email: this.props.usuarioDetail.usuarioNuevo.correo,
             empresa: keyEquipo,
             equipo: newPostKey1,
@@ -250,13 +264,9 @@ class FomrularioGlobal extends React.Component {
 
         })
 
-        //calendario google
-        if (this.state.calendar)
-            firebase.database().ref(`Usuarios-CalendarGoogle/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
-                idCalendar: this.state.calendar,
-                estado: 'activo',
-            });
 
+        firebase.database().ref(`Usuario-CodeTemporal/${this.props.usuarioDetail.usuarioNuevo.id}`).remove();
+        firebase.database().ref(`Usuario-Temporal/${this.props.usuarioDetail.usuarioNuevo.id}`).remove();
     }
 
 

@@ -29,6 +29,7 @@ import {
     AVATARES,
     DETAIL_US_NEW,
     PREGUNTA_FANTASMA,
+    INPUT_DINAMICO,
 
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -64,6 +65,7 @@ const INITIAL_STATE = {
     avatar: null,
     pregFantasma: null,
     detailUsNew: null,
+    inputdinamico: null,
 
 
 };
@@ -133,6 +135,8 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, pregFantasma: action.payload };
         case DETAIL_US_NEW:
             return { ...state, detailUsNew: action.payload };
+        case INPUT_DINAMICO:
+            return { ...state, inputdinamico: action.payload };
         default:
             return state;
 

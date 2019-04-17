@@ -13,11 +13,11 @@ const timeoutLength2 = 600000;
 
 
 class GoogleAuth extends React.Component {
-    state = { selectedFile: null, loaded: 0, codigo: null, usuario: null, direccion: null }
+    state = { selectedFile: null, loaded: 0, codigo: null, usuario: null, direccion: null, tokenTrello: false }
 
 
     //onSearchXpress2 = async () => {
- 
+
     componentDidMount() {
         //Conectar a google  con el drive,
         window.gapi.load('client:auth2', () => {
@@ -92,8 +92,12 @@ class GoogleAuth extends React.Component {
 
 
             //recupera codigo de acceso de slack
-            const dir = window.location.search;
+            let dir = window.location.search;
             this.recuperarDatos(dir);
+
+             //recupera el token trello
+            dir = window.location.href;
+            this.recuperarDatos2(dir);
 
 
             this.props.nuevoUsuarios(true);
@@ -151,6 +155,8 @@ class GoogleAuth extends React.Component {
                         history.push('/onboarding');
                     }
 
+                  
+                  
                 }
                 else {
                     //  if (this.props.nuevoUsuario !== true) {
@@ -211,24 +217,46 @@ class GoogleAuth extends React.Component {
 
 
     recuperarDatos(direccion) {
+
         if (!direccion.includes('code'))
             return null;
         const vars = direccion.split("?")[1].split("&");
         let code = null;
-      //  alert(vars);
+
         for (var i = 0; i < vars.length; i++) {
             var pair = vars[i].split("=");
 
             if (pair[0] === 'code') {
                 code = pair[1];
-           
                 firebase.database().ref(`Usuario-CodeTemporal/${this.auth.currentUser.get().getId()}`).set({
                     code
                 });
-
             }
         }
         return code;
+    }
+
+    recuperarDatos2(direccion) {
+
+        if (!direccion.includes('token'))
+            return null;
+        const vars = direccion.split("#");
+        let token = null;
+
+        for (var i = 1; i < vars.length; i++) {
+            var pair = vars[i].split("=");
+            if (pair[0] === 'token') {
+
+                token = pair[1];
+                firebase.database().ref(`Usuario-TokenTrelloTemp/${this.auth.currentUser.get().getId()}`).set({
+                    token
+
+                });
+                this.setState({tokenTrello: true})
+              
+            }
+        }
+        return token;
     }
 
 
@@ -255,8 +283,10 @@ class GoogleAuth extends React.Component {
             return null;
         } else if (this.props.isSignedIn) {
 
-
-            history.push('/dashboard');
+            if (this.state.tokenTrello === true)
+                history.push('/proceso/exito');
+            else
+                history.push('/dashboard');
             return (
                 <button onClick={this.onSignOutClick} className="ui red google button bar-top">
                     <i className="google icon" />
