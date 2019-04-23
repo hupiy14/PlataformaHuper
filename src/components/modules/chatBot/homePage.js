@@ -13,18 +13,16 @@ import { Image, Breadcrumb, } from 'semantic-ui-react';
 import moment from 'moment';
 import randon from '../../../lib/randonImage';
 import Avatar from '../../../apis/xpress';
+import { object } from 'prop-types';
 
 
 
 
-const timeoutLength = 2500;
-
+let timeoutLength = 2500;
 let timeoutLength2 = 300;
 class Home extends React.Component {
 
-  state = { carpeta: null, updates: null, color: [], client2: null, avataresN: null, avatarX: 0, avatarY: 0, ultimaTarea: null }
-
-
+  state = { carpeta: null, updates: null, color: [], client2: null, avataresN: null, avatarX: 0, avatarY: 0, ultimaTarea: null, mensajeEnviado: false, personasInv: [] }
 
   onSearchXpress = async (text) => {
     if (this.state.avatarX === this.state.avatarY) return;
@@ -46,19 +44,30 @@ class Home extends React.Component {
   }
 
   handleOpen = (valorInput, chatID, userID) => {
-
-    timeoutLength2 = 1700;
-    if (userID === '1')
+    //valida si ya se contesto si no se espera
+    timeoutLength2 = 1000;
+    if (userID === '1') {
       timeoutLength2 = 100;
-
-    //console.log(timeoutLength2);
-
+      if (this.state.mensajeEnviado === true)
+        timeoutLength2 = 800;
+    }
+    this.setState({ mensajeEnviado: true });
     this.timeout = setTimeout(() => {
-      this.props.submitMessage(
-        valorInput,
-        chatID,
-        userID
-      );
+      this.setState({ mensajeEnviado: false });
+      if (Array.isArray(valorInput))
+        this.props.submitMessage(
+          valorInput,
+          chatID,
+          userID
+        );
+      else {
+        if (valorInput.trim() !== '')
+          this.props.submitMessage(
+            valorInput,
+            chatID,
+            userID
+          );
+      }
     }, timeoutLength2)
   }
 
@@ -70,10 +79,6 @@ class Home extends React.Component {
     const { SlackOAuthClient } = require('messaging-api-slack')
     this.setState({
       client2: SlackOAuthClient.connect(
-        // 'xoxp-482555533539-486285033681-535707706853-443780a32ce31f5f3c8b9b6684e2ad96'
-
-        // 'xoxb-482555533539-532878166725-SImPnsMh0QvM2osXpUnMy7Wa'
-
         'xoxb-482555533539-532878166725-FYre7QYksxMHhIRnQeWzSR1a'
       )
     });
@@ -115,9 +120,15 @@ class Home extends React.Component {
     }, timeoutLength)
   }
 
+  cerrarChat = () => {
+    this.timeout = setTimeout(() => {
+      this.props.chatOff();
+    }, timeoutLength)
+  }
   //Envio a slack el mensaje 
   renderEnvioSlack(activeChat, userID) {
 
+    if (this.props.valorInput.trim() === '') return;
     this.handleOpen(this.props.valorInput, activeChat.chatID, userID);
 
 
@@ -244,8 +255,22 @@ class Home extends React.Component {
   }
 
   ///Decodificar mensaje y poner los emojis
+  renderTextoEmoji(textos) {
+    if (Array.isArray(textos) === true) {
+      const mensajes = Object.keys(textos).map((key, index) => {
+        let separador = ', ';
+        if ((textos.length - 1).toString() === key)
+          separador = '';
+        return this.renderTextoEmojis(textos[key] + separador);
+      });
+      return mensajes;
+    }
+    else {
+      return this.renderTextoEmojis(textos);
+    }
+  }
 
-  renderTextoEmoji(texto) {
+  renderTextoEmojis(texto) {
     let x = 0;
     let y = 0;
     let opciones = texto.split(':').map((consulta) => {
@@ -297,11 +322,9 @@ class Home extends React.Component {
           this.setState({ avataresN: Math.round(Math.random() * 20) });
         //   console.log(this.props.avatar);
 
-
         if (this.props.avatar && this.props.avatar[1]) {
           return (<React.Fragment key={y}>
             <iframe src={this.props.avatar[this.state.avataresN ? this.state.avataresN : 0].embed_url} style={{ width: '160px', height: '90px' }} key={y}></iframe>
-
           </React.Fragment>);
         }
         else
@@ -309,9 +332,6 @@ class Home extends React.Component {
       }
 
     });
-
-
-
 
     return (<React.Fragment>
       {opciones}
@@ -321,15 +341,30 @@ class Home extends React.Component {
   }
 
 
+  PreguntasRepEspecial(tipo, mensaje, arreglo, indice) {
+    let arry = arreglo;
+    let indiceA = indice;
+    if (tipo === '10') {
+      const valRepetido = this.props.valorInput;
+      Object.keys(valRepetido).map(function (key, index) {
+        arry[indiceA] = { concepto: mensaje.replace('#>Nombre<#', valRepetido[key]), tipoPregunta: '5' };
+        indiceA++;
+
+      });
+      this.props.consultaChats(arry);
+      return arry;
+    }
+    else
+      return arreglo;
+  }
+
 
 
   //Relaciona la carpeta con el objetivo
   RelacionarCarpetaObjetivo = (datos, idcarpeta) => {
 
     var updates = {};
-    console.log(datos.datos);
     const dt = { ...datos.datos, carpeta: idcarpeta };
-    console.log(dt);
     updates[datos.key] = dt;
     firebase.database().ref().update(updates);
 
@@ -337,7 +372,10 @@ class Home extends React.Component {
 
   onSubmit = (activeChat, userID) => {
 
-    if (!this.props.valorInput.trim()) { return; }
+
+
+    if (!Array.isArray(this.props.valorInput))
+      if (this.props.valorInput.trim() === '') return;
     this.handleOpen(this.props.valorInput, activeChat.chatID, userID);
 
 
@@ -361,7 +399,6 @@ class Home extends React.Component {
           const ccconsulta = cconsulta[key];
           Object.keys(ccconsulta).map(function (key, index) {
             if (ccconsulta[key].concepto === chatTrazo[2].text) {
-
               valorConsulta = ccconsulta[key];
               return ccconsulta[key];
             }
@@ -415,7 +452,6 @@ class Home extends React.Component {
         starCountRef.on('value', (snapshot) => {
           this.props.consultaChats(snapshot.val());
           consultaBD = snapshot.val();
-
           const mensaje = consultaBD[1].concepto;
           this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
         });
@@ -431,7 +467,6 @@ class Home extends React.Component {
         starCountRef.on('value', (snapshot) => {
           this.props.consultaChats(snapshot.val());
           consultaBD = snapshot.val();
-
           const mensaje = consultaBD[1].concepto;
           this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
         });
@@ -494,9 +529,8 @@ class Home extends React.Component {
         starCountRef.on('value', (snapshot) => {
           this.props.consultaChats(snapshot.val());
           consultaBD = snapshot.val();
-          console.log('carga');
 
-          console.log(consultaBD);
+          //   console.log(consultaBD);
           const opcione = this.props.pregFantasma;
           const reload = true;
           const opcionw = { ...opcione, reload };
@@ -518,13 +552,19 @@ class Home extends React.Component {
       const chatTrazo = this.props.user.userChats[0].thread;
 
       if (chatTrazo[1].text !== consultaBD[valorNPregunta + 1].concepto) {
-        console.log(consultaBD);
-        const mensaje = consultaBD[valorNPregunta + 1].concepto;
+        let mensaje = consultaBD[valorNPregunta + 1].concepto;
+        consultaBD = this.PreguntasRepEspecial(consultaBD[valorNPregunta + 1].tipoPregunta, mensaje, consultaBD, valorNPregunta + 1);
+        mensaje = consultaBD[valorNPregunta + 1].concepto;
+
         this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
       }
       // console.log(valorNPregunta);
     }
     else {
+      //cerrar despues de realizado
+      timeoutLength = 1500;
+      this.cerrarChat();
+
       const chatTrazo = this.props.user.userChats[0].thread;
       const tipPrgutna = this.props.tipoPregunta;
       const consultaObj = this.props.consultax;
@@ -605,6 +645,7 @@ class Home extends React.Component {
         else if (this.props.valorInput.trim() === '2 horas')
           hora = 2;
         else
+
           hora = 3;
         //Restar fechas
         // moment.duration(lunch - breakfast).humanize()
@@ -745,8 +786,6 @@ class Home extends React.Component {
       }
 
       else if (tipPrgutna === 'Despedida') {
-
-
         //registro de hora de salida
         const hoy = new Date();
         let registro;
@@ -830,70 +869,63 @@ class Home extends React.Component {
       /////Preguntas Gestor ......
       else if (tipPrgutna === 'Crear Objetivo Gestor') {
 
-
         let x = 0;
-        const cconsulta = this.props.equipoConsulta;
-        let cconsulta2;
-        const usuario = this.props.valorInput;
+        const equipo = this.props.equipoConsulta;
+        const usuario = chatTrazo[10].text;
         let usuarioGT;
         let keyUsuarioGT;
-        const opciones2 = Object.keys(cconsulta).map(function (key2, index) {
-          if (x === 0) {
-            x = x + 1;
-            const cconsulta2 = cconsulta[key2];
-            console.log(cconsulta2);
-            Object.keys(cconsulta2).map(function (key, index) {
-              if (usuario === cconsulta2[key].usuario) {
-                usuarioGT = cconsulta2[key];
-                keyUsuarioGT = key;
-              }
+        let personaEquipo = 0;
+        const newPostKey = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`).push().key;
 
-            });
-          }
+        //Crea objetivo centralizado
+
+
+        this.setState({ personasInv: [] });
+
+        Object.keys(usuario).map((key3, index) => {
+          x = 0;
+          Object.keys(equipo).map((key2, index) => {
+            if (x === 0) {
+              x = x + 1;
+              const cconsulta2 = equipo[key2];
+              Object.keys(cconsulta2).map((key, index) => {
+                if (usuario[key3] === cconsulta2[key].usuario) {
+                  personaEquipo++;
+                  usuarioGT = cconsulta2[key];
+                  keyUsuarioGT = key;
+                  //              console.log(keyUsuarioGT);
+                  this.GuardarObjetivoGestor(usuarioGT, keyUsuarioGT, chatTrazo, personaEquipo, usuario.length, newPostKey, usuario[key3]);
+                }
+              });
+            }
+          });
         });
 
+        if (chatTrazo[10].text.length > 1) {
+          const postData = {
+            concepto: chatTrazo[2].text === 'Crear un Objetivo' ? chatTrazo[4].text : chatTrazo[2].text,
+            estado: 'activo',
+            prioridad: 'urgente',
+            fechafin: this.validarFechaSemanaMax(),
+            repeticiones: '1',
+            dificultad: chatTrazo[8].text,
+            personasInvolucradas: this.state.personasInv,
+            impacto: chatTrazo[6].text,
+            avance: 0,
+            compartidoEquipo: true,
+            gestor: true,
+          };
 
-        console.log(usuarioGT.wsCompartida);
-        var folderId = usuarioGT.wsCompartida;
-        window.gapi.client.drive.files.create({
-          name: chatTrazo[2].text,
-          mimeType: 'application/vnd.google-apps.folder',
-          parents: [folderId]
-          //fields: 'id'
-        }).then((response) => {
-          //devuelve lo de la carpeta
-          console.log("Response", response);
-          this.RelacionarCarpetaObjetivo(this.state.updates, response.result.id);
-
-        },
-          function (err) { console.error("Execute error", err); });
-        //   this.props.crearCarpetas(xx);
-        const newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${keyUsuarioGT}`).push().key;
-
-        const postData = {
-          numeroTareas: 0,
-          concepto: chatTrazo[2].text === 'Crear un Objetivo' ? chatTrazo[4].text : chatTrazo[2].text,
-          estado: 'activo',
-          carpeta: this.state.carpeta,
-          prioridad: 'urgente',
-          fechafin: this.validarFechaSemanaMax()
-        };
-
-        this.setState({ updates: { key: `Usuario-Objetivos/${keyUsuarioGT}/${newPostKey2}`, datos: postData } });
-
-        var updates = {};
-        updates[`Usuario-Objetivos/${keyUsuarioGT}/${newPostKey2}`] = postData;
-
-
-        firebase.database().ref().update(updates);
-
+          firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${newPostKey}`).set({
+            ...postData
+          });
+        }
 
       }
 
       else if (tipPrgutna === 'Crear Feedback Gestor') {
 
         const chatTrazo = this.props.user.userChats[0].thread;
-
         let x = 0;
         const cconsulta = this.props.equipoConsulta;
         let cconsulta2;
@@ -910,13 +942,10 @@ class Home extends React.Component {
                 usuarioGT = cconsulta2[key];
                 keyUsuarioGT = key;
               }
-
             });
           }
         });
-
         this.renderEnvioSlackGestor(chatTrazo, usuarioGT.canalSlack);
-
       }
 
 
@@ -979,9 +1008,6 @@ class Home extends React.Component {
                 activeChat.chatID,
                 userID
               );
-
-
-
             }
           });
 
@@ -1002,6 +1028,53 @@ class Home extends React.Component {
     this.props.valorInputs(vacio);
     // inputX.value = '';
   }
+
+  GuardarObjetivoGestor(usuarioGT, keyUsuarioGT, chatTrazo, personCont, personEquipo, clavePadre, nombreUsuario) {
+
+    var folderId = usuarioGT.wsCompartida;
+    window.gapi.client.drive.files.create({
+      name: chatTrazo[2].text === 'Crear un Objetivo' ? chatTrazo[4].text : chatTrazo[2].text,
+      mimeType: 'application/vnd.google-apps.folder',
+      parents: [folderId]
+      //fields: 'id'
+    }).then((response) => {
+      //devuelve lo de la carpeta
+      //  console.log("Response", response);
+      this.RelacionarCarpetaObjetivo(this.state.updates, response.result.id);
+    },
+      function (err) { console.error("Execute error", err); });
+
+    const newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${keyUsuarioGT}`).push().key;
+    let arr = this.state.personasInv;
+    arr.push({ nombre: nombreUsuario, key: newPostKey2, idUsuario: keyUsuarioGT });
+    this.setState({ personasInv: arr });
+    const postData = {
+      numeroTareas: 0,
+      concepto: chatTrazo[2].text === 'Crear un Objetivo' ? chatTrazo[4].text : chatTrazo[2].text,
+      estado: 'activo',
+      carpeta: this.state.carpeta,
+      prioridad: 'urgente',
+      fechafin: this.validarFechaSemanaMax(),
+      compartidoEquipo: chatTrazo[10].text.length > 1 ? true : false,
+      repeticiones: '1',
+      dificultad: chatTrazo[8].text,
+      personasInvolucradas: personEquipo > 1 ? chatTrazo[10].text : null,
+      impacto: chatTrazo[6].text,
+      detalle: personEquipo > 1 ? personCont < personEquipo ? chatTrazo[10 + (2 * personCont)].text : this.props.valorInput : this.props.valorInput,
+      porcentajeResp: (100 / personEquipo),
+      objetivoPadre: personEquipo > 1 ? clavePadre : null,
+      idUsuarioGestor: this.props.userId,
+      tipo: 'Unico',
+    };
+
+    this.setState({ updates: { key: `Usuario-Objetivos/${keyUsuarioGT}/${newPostKey2}`, datos: postData } });
+    var updates = {};
+    updates[`Usuario-Objetivos/${keyUsuarioGT}/${newPostKey2}`] = postData;
+    firebase.database().ref().update(updates);
+
+  }
+
+
 
   validarFechaSemanaMax() {
     var fecahMinima = new Date();
@@ -1052,18 +1125,18 @@ class Home extends React.Component {
 
     let y = window.screen.height * 0.395;
     let ubicacionBt = {
-      height: '30px',
-      width: '30px',
+      height: '39.5px',
+      width: '40px',
       position: 'fixed',
       'z-index': '4000',
-      top: '83%',
-      left: '90%',
+      top: '82.1%',
+      left: '89%',
       'font-size': '20px',
       'text-align': 'center',
-      'border-radius': '50%',
+      'border-radius': '5%',
       border: '0 none',
       color: 'rgba(0, 0, 0, 0.4)',
-      background: '0 none',
+      background: 'white',
       cursor: 'pointer',
     };
 
@@ -1124,16 +1197,6 @@ class Home extends React.Component {
 
               > {this.renderTextoEmoji(message.text)}
 
-
-
-
-
-
-
-
-
-
-
               </li>
             </div>
           ))}
@@ -1142,16 +1205,10 @@ class Home extends React.Component {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-
-
-
             this.setState({ avatarY: 0 });
             if (activeChat.chatID === '13')//solo para el bot o interno
               this.onSubmit(activeChat, userID);
             else this.renderEnvioSlack(activeChat, userID);
-
-
-
           }}
 
           className="ui form">

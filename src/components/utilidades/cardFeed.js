@@ -33,8 +33,10 @@ class ListEjemplo extends React.Component {
 
 
 
-    handleOpen = () => {this.handlePaso7();
-        this.setState({ modalOpen: true });}
+    handleOpen = () => {
+        this.handlePaso7();
+        this.setState({ modalOpen: true });
+    }
 
     handleClose(guardar, key) {
         if (!this.state)
@@ -42,20 +44,24 @@ class ListEjemplo extends React.Component {
         if (guardar && this.props) {
             let comentariosEnvio = {};
             const usuario = this.props.nombreUser;
-            const newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${key}/comentarios`).push().key;
+            const newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.propss.userId}/${key}/comentarios`).push().key;
 
             const tipologia = this.props.responsableX ? 'feedback' : 'responder';
 
             comentariosEnvio = { usuario, tipo: tipologia, concepto: this.state.comentario }
-            const usuarioD = this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId;
+            const usuarioD = this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.props.userId;
 
             //  let updates = {};
             //  updates[`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${key}/comentarios/${newPostKey2}`] = comentariosEnvio;
+
+
             firebase.database().ref(`Usuario-Objetivos/${usuarioD}/${key}/comentarios/${newPostKey2}`).set({
                 usuario,
                 tipo: tipologia,
                 concepto: this.state.comentario
             });
+
+
             // console.log(updates);
             //   firebase.database().ref().update(updates);
             this.setState({ guardar: false })
@@ -70,8 +76,10 @@ class ListEjemplo extends React.Component {
         this.setState({ comentario: '' })
         this.setState({ modalOpen: false });
     }
-    handleOpen2 = () => {this.handlePaso7();
-        this.setState({ modalOpen2: true });}
+    handleOpen2 = () => {
+        this.handlePaso7();
+        this.setState({ modalOpen2: true });
+    }
 
     handleClose2 = () => this.setState({ modalOpen2: false })
 
@@ -129,7 +137,7 @@ class ListEjemplo extends React.Component {
 
         const objetivo = { ...this.props.objetivoF, numeroAdjuntos: this.props.objetivoF.numeroAdjuntos - 1 };
         let updates = {};
-        updates[`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${this.props.keyF}`] = objetivo;
+        updates[`Usuario-Objetivos/${this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.props.userId}/${this.props.keyF}`] = objetivo;
         firebase.database().ref().update(updates);
 
     }
@@ -166,7 +174,7 @@ class ListEjemplo extends React.Component {
 
             const objetivo = { ...this.props.objetivoF, numeroAdjuntos: files.length };
             let updates = {};
-            updates[`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${this.props.keyF}`] = objetivo;
+            updates[`Usuario-Objetivos/${this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.props.userId}/${this.props.keyF}`] = objetivo;
             firebase.database().ref().update(updates);
 
         });
@@ -234,10 +242,8 @@ class ListEjemplo extends React.Component {
             });
             const objetivo = { ...this.props.objetivoF, numeroComentarios: numero };
             let updates = {};
-            updates[`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${this.props.keyF}`] = objetivo;
+            updates[`Usuario-Objetivos/${tareas.idUsuario ? tareas.idUsuario : this.props.userId}/${this.props.keyF}`] = objetivo;
             firebase.database().ref().update(updates);
-
-
             return opciones;
         }
 
@@ -267,7 +273,7 @@ class ListEjemplo extends React.Component {
 
             <div className="ui card ">
                 <div className="image big tamaño-Imagen" >
-                    <img ref={this.imageRef} style={{height: '200px'}} src={this.props.image} />
+                    <img ref={this.imageRef} style={{ height: '200px' }} src={this.props.image} />
                 </div>
 
                 <div className="content">
@@ -337,7 +343,7 @@ class ListEjemplo extends React.Component {
                             <div className="ui form">
                                 <div className="ui grid">
                                     <div className="five wide column">
-                                        <Image size='medium'  src={this.props.image} wrapped />
+                                        <Image size='medium' src={this.props.image} wrapped />
 
                                     </div>
                                     <div className="eleven wide column">
@@ -385,8 +391,6 @@ class ListEjemplo extends React.Component {
                             <Button color='green' onClick={() => {
 
                                 if (this.props.usuarioGesto) { this.ConcluirObjetivo(this.props.objetivoF, this.props.usuarioGesto, this.props.keyF); }
-
-
                                 else { this.guardarResaltar(this.props.objetivoF, this.props.userId, this.props.keyF); } this.handleClose2();
                             }
                             }>

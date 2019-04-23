@@ -7,6 +7,7 @@ import Avatar from '../../apis/xpress';
 
 
 
+
 class listPersonasEquipo extends React.Component {
     state = {
         percent: 15,
@@ -168,13 +169,15 @@ class listPersonasEquipo extends React.Component {
             //  console.log('Cambio');
             const cconsulta = this.props.listaPersonas;
             const consultaEq = this.props.equipox;
-            const opciones = Object.keys(consultaEq).map((key, index) => {
+
+             const opciones = Object.keys(consultaEq).map((key, index) => {
                 if (Object.keys(cconsulta).find((key2, index) => key2 === key)) {
 
                     if (key === this.props.userId) {
                         return;
                     }
 
+                    if (cconsulta[key].Rol === '2') return;
                     const resultado = 100;
 
                     return (

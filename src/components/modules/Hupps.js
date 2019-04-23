@@ -112,6 +112,10 @@ class Hupps extends React.Component {
         const opciones = Object.keys(cconsulta).map(function (key2, index) {
 
 
+            if (!cconsulta[key2].concepto) {
+                return;
+            }
+            
             if (x === 0) {
                 x = x + 1;
                 listaPerObjetivos = cconsulta[key2];

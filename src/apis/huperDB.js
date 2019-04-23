@@ -1,7 +1,7 @@
 //import axios from 'axios';
 
 
-///firebase testing
+///firebase testing huputy
 
 export const config = {
     apiKey: 'AIzaSyDKEIQRnNYczx3IZgiLwIucSBCBLg1t0Wg',
@@ -12,7 +12,7 @@ export const config = {
     messagingSenderId: '874067485777'
 }
 
-///firebase desarrollo
+///firebase desarrollo 
 /*
 export const config = {
     apiKey: "AIzaSyAKC1R5XUU8UhfQB8bJB0xc1IPgf2nwFS8",

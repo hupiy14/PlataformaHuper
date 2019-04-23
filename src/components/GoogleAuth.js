@@ -95,7 +95,7 @@ class GoogleAuth extends React.Component {
             let dir = window.location.search;
             this.recuperarDatos(dir);
 
-             //recupera el token trello
+            //recupera el token trello
             dir = window.location.href;
             this.recuperarDatos2(dir);
 
@@ -123,12 +123,10 @@ class GoogleAuth extends React.Component {
                         else ///puedo hacer la reactivacion dependiendo. ****************Importante
                             this.auth.signOut();
                     }
-                    //  console.log(Usuario.empresa);
-                    // console.log(Usuario.equipo);
-                    console.log(this.auth.currentUser.get().getId());
+                    //        console.log(this.auth.currentUser.get().getId());
                     const nameRef3 = firebase.database().ref().child(`Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${this.auth.currentUser.get().getId()}`)
                     nameRef3.on('value', (snapshot3) => {
-                        console.log(snapshot3.val());
+                        //           console.log(snapshot3.val());
                         if (snapshot3.val())
                             this.props.usuarioDetails({ usuario: Usuario, idUsuario: this.auth.currentUser.get().getId(), linkws: snapshot3.val().linkWs });
                     });
@@ -155,8 +153,8 @@ class GoogleAuth extends React.Component {
                         history.push('/onboarding');
                     }
 
-                  
-                  
+
+
                 }
                 else {
                     //  if (this.props.nuevoUsuario !== true) {
@@ -252,8 +250,8 @@ class GoogleAuth extends React.Component {
                     token
 
                 });
-                this.setState({tokenTrello: true})
-              
+                this.setState({ tokenTrello: true })
+
             }
         }
         return token;

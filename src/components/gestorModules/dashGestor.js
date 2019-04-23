@@ -29,7 +29,7 @@ import GraficaG4 from '../gestorModules/CrearGraficaProductividad';
 import firebase from 'firebase';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, verEquipos } from '../modules/chatBot/actions';
 const timeoutLength = 3000;
-const timeoutLength2 = 5000;
+const timeoutLength2 = 500;
 
 const HorizontalSidebar = ({ animation, direction, visible, equipo }) => (
     <Sidebar as={Segment} animation={animation} direction={direction} visible={visible}>
@@ -60,6 +60,22 @@ class DashBoard extends React.Component {
     };
 
 
+    handleSlide = (x) => {
+        this.timeout = setTimeout(() => {
+
+            if (x === 0)
+                this.setState({ slide: this.renderListadoEquipo() });
+
+            else if (x === 1)
+                this.setState({ slide: this.renderListaObjetivo() });
+
+            else if (x === 2)
+                this.setState({ slide: this.renderListaFormaciones() })
+
+
+        }, timeoutLength2)
+    }
+
     handleOpen = () => {
         this.timeout = setTimeout(() => {
 
@@ -67,11 +83,11 @@ class DashBoard extends React.Component {
                 this.setState({ numeroO: 0 });
             else
                 this.setState({ numeroO: this.state.numeroO + 1 });
-          //  this.handleOpen2();
+            //  this.handleOpen2();
         }, timeoutLength)
     }
 
-   
+
 
     actualizarequipoConsulta() {
 
@@ -80,13 +96,28 @@ class DashBoard extends React.Component {
 
             const equipo = snapshot.val();
             this.setState({ equipo });
-
+            let usuariosCompletos = [];
             //carga todos los usuarios
             const starCountRef2 = firebase.database().ref().child(`Usuario`);
             starCountRef2.on('value', (snapshot2) => {
                 const consulta = snapshot2.val();
-                this.setState({ listaPersonas: consulta });
-                this.props.equipoConsultas({ listaPersonas: consulta });
+
+
+                ///Recupera el rol del usuario
+                Object.keys(consulta).map((key, index) => {
+                    const starCountRef3 = firebase.database().ref().child(`Usuario-Rol/${key}`);
+                    starCountRef3.on('value', (snapshot3) => {
+                        const rol = snapshot3.val();
+                        usuariosCompletos[key] = { ...consulta[key], ...rol };
+                        this.setState({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
+                        this.props.equipoConsultas({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
+                    });
+                });
+
+
+
+
+
             });
 
             const fecha = new Date();
@@ -113,7 +144,14 @@ class DashBoard extends React.Component {
                 const starCountRef3 = firebase.database().ref().child(`Usuario-Objetivos/${key}`);
                 starCountRef3.on('value', (snapshot2) => {
                     const objetivo = snapshot2.val();
-                    const objetos = { ...this.props.equipoConsulta, ...objetivo };
+                    let objetivoT = [];
+                    const lista = { ...objetivo };
+
+                    Object.keys(lista).map((key2, index) => {
+                        objetivoT[key2] = { ...lista[key2], idUsuario: key };
+                    })
+
+                    const objetos = { ...this.props.equipoConsulta, ...objetivoT };
                     this.props.equipoConsultas({ ...this.props.equipoConsulta, ...objetos });
                     //      console.log(objetos)
 
@@ -129,6 +167,10 @@ class DashBoard extends React.Component {
 
     componentDidMount() {
 
+        window.gapi.client.load("https://www.googleapis.com/discovery/v1/apis/drive/v3/rest")
+            .then(function () { console.log("GAPI client loaded for API"); },
+                function (err) { console.error("Error loading GAPI client for API", err); });
+                
         this.actualizarequipoConsulta();
         this.handleOpen();
         this.setState({
@@ -136,11 +178,11 @@ class DashBoard extends React.Component {
                 <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
                 <GraficaG1 />
             </div>
-        })
-        
-        window.gapi.client.load("https://www.googleapis.com/discovery/v1/apis/drive/v3/rest")
-        .then(function () { console.log("GAPI client loaded for API"); },
-            function (err) { console.error("Error loading GAPI client for API", err); });
+        });
+
+        this.setState({ slide: this.renderListadoEquipo() });
+        this.props.verEquipos(false);
+     
     }
 
     getWeekNumber(date) {
@@ -284,7 +326,7 @@ class DashBoard extends React.Component {
     renderListaObjetivo() {
         return (<ListaObjetivosE
             titulo={this.renderTituloObjetivo()}
-            icono={'copy outline'}
+            icono={'thumbtack'}
             equipox={this.state.equipo}
 
         />);
@@ -306,7 +348,6 @@ class DashBoard extends React.Component {
         let verUsuario = 'none';
 
         if (this.state.seleccion) {
-            console.log(this.state.seleccion.length);
             porcentajeTexto = this.state.seleccion.length * 8.5;
             verUsuario = 'block';
         }
@@ -353,7 +394,7 @@ class DashBoard extends React.Component {
 
                             <div className="column one wide loaderTEAM">
                                 <div className="ui segment ">
-                                    <Button icon="users" className="opcionesGestor"  label="Equipo" color="yellow" onClick={() => { this.props.verEquipos(!this.props.verEquipo); this.setState({ slide: this.renderListadoEquipo() }); }} >
+                                    <Button icon="users" className="opcionesGestor" label="Equipo" color="yellow" onClick={() => { this.handleSlide(0); this.props.verEquipos(!this.props.verEquipo); }} >
 
                                     </Button>
                                     <Label color='teal' floating style={{ width: `${porcentajeTexto}px`, left: '40px', display: `${verUsuario}`, 'z-index': '1' }}>
@@ -361,10 +402,10 @@ class DashBoard extends React.Component {
                                     </Label>
                                 </div>
                                 <div className="ui segment ">
-                                    <Button icon="tasks" className="opcionesGestor" label="Objetivos" color="yellow" onClick={() => { this.props.verEquipos(!this.props.verEquipo); this.setState({ slide: this.renderListaObjetivo() }); }} ></Button>
+                                    <Button icon="tasks" className="opcionesGestor" label="Objetivos" color="yellow" onClick={() => { this.handleSlide(1); this.props.verEquipos(!this.props.verEquipo); }} ></Button>
                                 </div>
                                 <div className="ui segment ">
-                                    <Button icon="book" className= "opcionesGestor"  label="Formación" color="yellow" onClick={() => { this.props.verEquipos(!this.props.verEquipo); this.setState({ slide: this.renderListaFormaciones() }); }} ></Button>
+                                    <Button icon="book" className="opcionesGestor" label="Formación" color="yellow" onClick={() => { this.handleSlide(2); this.props.verEquipos(!this.props.verEquipo); }} ></Button>
                                 </div>
 
                             </div>

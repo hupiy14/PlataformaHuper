@@ -21,12 +21,7 @@ class Header extends React.Component {
                 <Link to="/dashboard" className="item">
                     <img className="ui tiny rounded image" src={image} id='1' />
                 </Link>
-                <Image size="medium" style={{
-                    transform: 'scale(0.3)',
-                    position: 'fixed',
-                    top: '-52px'
-                }} src={procolombia} id='2' />
-
+             
                 <div className="right menu">
                     <Link to="/hupps" className="item">
                         <h3>Hupps</h3>

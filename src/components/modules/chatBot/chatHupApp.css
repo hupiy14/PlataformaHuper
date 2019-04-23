@@ -866,18 +866,18 @@ textarea {
 }
 
 .send-button-ch {
-  height: 30px;
-  width: 30px;
+  height: 38px;
+  width: 40px;
   position: absolute;
   z-index: 4000;
   top: 1310%;
   left: 90%;
   font-size: 20px;
   text-align: center;
-  border-radius: 50%;
+  border-radius: 10%;
   border: 0 none;
   color: rgba(0, 0, 0, 0.4);
-  background: 0 none;
+  background: white;
   cursor: pointer;
 }
 

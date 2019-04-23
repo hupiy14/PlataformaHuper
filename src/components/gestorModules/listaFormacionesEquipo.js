@@ -140,7 +140,7 @@ class ListaFormacionEquipo extends React.Component {
 
     renderFormacionesCompletas(the, iconos) {
         const cconsulta = the.state.listaFormaciones;
-        console.log(cconsulta);
+       // console.log(cconsulta);
         const opciones = Object.keys(cconsulta).map(function (key2, index) {
             if (cconsulta[key2].estado === 'activo')
                 return (
@@ -198,9 +198,6 @@ class ListaFormacionEquipo extends React.Component {
 
 
     AgregarFormacionHuper() {
-        console.log(this.state.seleccion);
-        console.log(this.props.equipoConsulta.sell);
-        console.log(this.state.formacion);
         if (this.state.seleccion) {
             let updates = {};
             updates[`Usuario-Formcion/${this.props.equipoConsulta.sell}/${this.state.seleccion}`] = this.state.formacion;
@@ -212,7 +209,7 @@ class ListaFormacionEquipo extends React.Component {
     }
 
     ListaOpcionesFormacionA(the, iconos, cconsulta2) {
-        console.log('opcioens');
+     //   console.log('opcioens');
         const cconsulta = the.state.listaFormaciones;
         let x = 0;
         let agregar = true;
@@ -363,7 +360,7 @@ class ListaFormacionEquipo extends React.Component {
             //  console.log(the.props.equipoConsulta);
 
             if (Object.keys(the.state.listaFormacionesEquipo).length === 0 && the.props.equipoConsulta && !the.props.equipoConsulta.sell) {
-                console.log('entro');
+            //    console.log('entro');
                 opciones = the.renderFormacionesCompletas(the, iconos);
 
             }

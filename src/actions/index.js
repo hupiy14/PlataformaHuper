@@ -31,9 +31,9 @@ export const slackApis = () => async dispatch => {
 
 
 
- 
-    const response = await SlackApiss.get().then((response) => {  console.log(response);});
-  
+
+    const response = await SlackApiss.get().then((response) => { console.log(response); });
+
     // const response = await SlackApis.get();
     // console.log(response);
     // dispatch({ type: SLACKAPI, payload: response.data });
@@ -94,21 +94,23 @@ const escribirUsuario = (userId) => {
     // var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
     var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta').push().key;
 
-     firebase.database().ref(`Preguntas-Chat/-L_gZJBmlV7v-wUeF3Tr/4`).set({
-     concepto: "Que tipo de objetivo es:",
-    // concepto: "Obetivo Creado Nuevo",
-    //opciones: "Usuario-Objetivos",
-    //  tipoPregunta: '1',
-    //  camino: '1'
-    // estado: 'activo',
-    //fecha: new Date().toString(),
-    //fechaTer: new Date().toString(),
+    firebase.database().ref(`Tipo-Pregunta/9`).set({
+     concepto: "Delimita el alcance para #>Nombre<#",
+    // opciones: "Usuario-WS",
+     //tipoPregunta: '2'
+        // concepto: "Obetivo Creado Nuevo",
+        //opciones: "Usuario-Objetivos",
+        //  tipoPregunta: '1',
+        //  camino: '1'
+        // estado: 'activo',
+        //fecha: new Date().toString(),
+        //fechaTer: new Date().toString(),
 
-    //typeForm: '',
+        //typeForm: '',
 
-     opciones: 'Unico,Empieza en tu flujo de trabajo',
-    // opciones: 'Que esta haciendo mi huper,Crear un Objetivo,Dar un Feedback',
-     tipoPregunta: '1',
+        //   opciones: 'Unico,Empieza en tu flujo de trabajo',
+        // opciones: 'Que esta haciendo mi huper,Crear un Objetivo,Dar un Feedback',
+        //  tipoPregunta: '1',
     });
 
 
