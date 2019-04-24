@@ -8,9 +8,11 @@ import unsplash from '../../apis/unsplash';
 
 
 
+
 var fs = require('fs');
 
 const timeoutLength = 150000;
+const timeoutLength2 = 600;
 
 class listImportante extends React.Component {
     state = {
@@ -27,7 +29,6 @@ class listImportante extends React.Component {
             params: { query: this.state.buscar[this.props.prioridadObj] },
 
         });
-
         this.setState({ images: response.data.results })
         // console.log(this.state.images);
     }
@@ -37,9 +38,27 @@ class listImportante extends React.Component {
         let variable = {};
         const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`);
         starCountRef.on('value', (snapshot) => {
-            variable = { ...variable, objetivos: snapshot.val() }
-            this.props.listaObjetivos(variable);
 
+            const ObjTrabajo = snapshot.val();
+            let objetivos = [];
+
+            Object.keys(ObjTrabajo).map(function (key2, index) {
+                if (ObjTrabajo[key2].compartidoEquipo) {
+                    const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${ObjTrabajo[key2].idUsuarioGestor}/${ObjTrabajo[key2].objetivoPadre}`);
+                    starCountRef.on('value', (snapshot) => {
+                        const resultado2 = { ...ObjTrabajo[key2], avancePadre: snapshot.val().avance }
+                        objetivos[key2] = { ...resultado2 };
+                    });
+
+                }
+                else {
+                    objetivos[key2] = { ...ObjTrabajo[key2] };
+                }
+
+            });
+
+            variable = { ...variable, objetivos }
+            this.props.listaObjetivos(variable);
         });
 
         const starCountRef2 = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
@@ -52,6 +71,8 @@ class listImportante extends React.Component {
         starCountRef3.on('value', (snapshot) => {
             this.setState({ WorkFlow: snapshot.val() });
         });
+
+        this.handleActualizar();
 
     }
 
@@ -103,12 +124,18 @@ class listImportante extends React.Component {
         })
     }
 
-
-    // habilita el tercer paso
     handlePaso = () => {
         this.timeout = setTimeout(() => {
             this.props.pasoOnboardings(3);
         }, timeoutLength)
+    }
+
+
+    // habilita el tercer paso
+    handleActualizar = () => {
+        this.timeout = setTimeout(() => {
+            this.setState({ver: false});
+        }, timeoutLength2)
     }
 
     componentDidUpdate() {
@@ -153,7 +180,7 @@ class listImportante extends React.Component {
                         });
                         // the.increment(factorObjetivo, numeroTareasTs);
                         factor = { factor: (100 / factorObjetivo), numero: tareasCompleta };
-                        resultado = factor.factor * tareasCompleta;
+                        resultado = Math.round(factor.factor * tareasCompleta);
                         // console.log(resultado);
 
 
@@ -218,10 +245,16 @@ class listImportante extends React.Component {
                     let numFase = null;
                     let flujoActivo = null;
                     let iconoObjetivo = the.props.icono;
+                    let avancePadre = null;
+
+                    //grafica el avance del objetivo compartido
+
+
+
 
                     if (cconsulta[key2].tipo === "Empieza en tu flujo de trabajo") {
                         iconoObjetivo = "th";
-                        numFase = cconsulta[key2].fase ;
+                        numFase = cconsulta[key2].fase;
                         colorFase = "rgba(212, 179, 20, 0.42)";
                         style = { ...style, height: '140px' };
                         if (listaX) {
@@ -242,12 +275,33 @@ class listImportante extends React.Component {
                             flujoActivo = <Label as='a' style={{ background: colorFase }} image>
                                 <Icon name="tasks" size="large" ></Icon>
                                 <h5 color="white" style={{ top: '-20px', position: 'relative' }} >Fase {numFase}:</h5>
-                                <Label.Detail style={{ top: '-27px', left: '-5px', position: 'relative' }}>{labelFase?labelFase: '<"Por definir">'}</Label.Detail>
+                                <Label.Detail style={{ top: '-27px', left: '-5px', position: 'relative' }}>{labelFase ? labelFase : '<"Por definir">'}</Label.Detail>
                             </Label>
                         }
 
                         //if(cconsulta[key2].tipo === "Empieza en tu flujo de trabajo") {}
                     }
+
+                    let topAvance = '-10px';
+                    if (cconsulta[key2].detalle) {
+                        topAvance = '-23px';
+                        if (cconsulta[key2].detalle.length > 10)
+                            topAvance = '-40px';
+                    }
+
+                    if (cconsulta[key2].compartidoEquipo) {
+                        iconoObjetivo = "users";
+                        style.height = cconsulta[key2].detalle.length > 30 ?  cconsulta[key2].detalle.length > 80?  '190px': '160px' :'140px';
+                        avancePadre =
+
+                            <div>
+                                <h5 style={{top: '-70px', position: 'relative'}}>Avance del equipo:</h5>
+                                <Progress percent={cconsulta[key2].avancePadre >= 100 ? 100 : cconsulta[key2].avancePadre === 0 ? 15 : cconsulta[key2].avancePadre} inverted size='small' indicating progress style={{ top: '-80px' }} />
+                            </div>
+
+                    }
+
+
                     return (
                         <div className="item segment" key={key2} >
                             <i className={`large ${iconoObjetivo} aligned icon`} style={{ color: '#fbbd087d' }} ></i>
@@ -380,7 +434,9 @@ class listImportante extends React.Component {
 
                                     </div>
 
-                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ top: cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50 ? '-40px' : '-23px' : '-10px' }} />
+                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ top: topAvance }} />
+
+                                    {avancePadre}
                                 </Segment>
 
                             </div>

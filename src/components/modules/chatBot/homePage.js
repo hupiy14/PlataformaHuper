@@ -840,9 +840,9 @@ class Home extends React.Component {
         let tarea = {};
         const userIDs = this.props.userId;
         const ultimoValor = this.props.valorInput;
-        Object.keys(cconsulta).map(function (key2, index) {
+        Object.keys(cconsulta).map((key2, index) => {
           const ccconsulta = cconsulta[key2];
-          Object.keys(ccconsulta).map(function (key, index) {
+          Object.keys(ccconsulta).map((key, index) => {
             //            console.log(ccconsulta[key]);
             if (chatTrazo[2].text === ccconsulta[key].concepto) {
               tarea = ccconsulta[key];
@@ -853,12 +853,39 @@ class Home extends React.Component {
               this.renderHistoricoHuper(this.props.userId, `Estas trabajando en ${chatTrazo[2].text}`, 'trabajo');
             }
             else if (ultimoValor === ccconsulta[key].concepto) {
+
               tarea = ccconsulta[key];
+              //Actualiza el objetivo conjunto
+              const objs = this.props.listaObjetivo.objetivos;
+              if (tarea.estado === 'activo') {
+                Object.keys(objs).map((key3, index) => {
+                  if (key3 === key2 && objs[key3].compartidoEquipo) {
+
+                    let avanceObjGlobal = Math.round(parseInt(objs[key3].porcentajeResp) * ((100 / Object.keys(cconsulta[key2]).length)*0.01));
+                    let objetivoPadre = null;
+                    //busca el objetivo padre
+                    const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`);
+                    starCountRef.on('value', (snapshot) => {
+                      objetivoPadre = snapshot.val();
+                      objetivoPadre.avance = objetivoPadre.avance + avanceObjGlobal;
+                    })
+                    if (objetivoPadre)
+                      firebase.database().ref(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`).set({
+                        ...objetivoPadre
+                      });
+
+
+
+                  }
+                });
+              }
               tarea.estado = 'finalizado';
               var updates = {};
               updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = tarea;
               firebase.database().ref().update(updates);
               this.renderHistoricoHuper(this.props.userId, `Ha terminado : ${ultimoValor}`, 'trabajo');
+
+
             }
 
           });
@@ -1243,6 +1270,7 @@ const mapHomeStateToProps = (state) => ({
   pregFantasma: state.chatReducer.pregFantasma,
   numeroPregunta: state.chatReducer.numeroPregunta,
   usuarioDetail: state.chatReducer.usuarioDetail,
+  listaObjetivo: state.chatReducer.listaObjetivo,
   avatar: state.chatReducer.avatar,
   user: state.user,
 });

@@ -171,12 +171,14 @@ class App extends React.Component {
                                   // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
                               });
    
-                              */           
+                              */
 
             if (this.props.pasoOnboarding === 0 || this.props.usuarioDetail.usuario.onboarding)
-                this.renderTareaDiaria(chatID);
+            this.rendeSeguimientoTrabajo(chatID);
+            //  this.renderTareaDiaria(chatID);
             else if (this.props.isChat === false || this.props.pasoOnboarding === 1)
-                this.renderTareaDiaria(chatID);
+                this.rendeSeguimientoTrabajo(chatID);
+            //  this.renderTareaDiaria(chatID);
             else if (this.props.pasoOnboarding === 3)
                 this.renderRealizarTIC_EXP(chatID);
 
@@ -239,13 +241,28 @@ class App extends React.Component {
     }
 
 
+
+    //Seguimiento
+    rendeSeguimientoTrabajo(chatID) {
+        this.props.tipoPreguntas('Seguimiento');
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWk8_7EYCjLe-twidsN');
+        starCountRef.on('value', (snapshot) => {
+            this.props.consultaChats(snapshot.val());
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+        });
+    }
+
+
+
+
     renderTareaDiaria(chatID) {
         this.props.tipoPreguntas('Diaria');
         const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWGFo3s87SjzppL7hoF');
         starCountRef.on('value', (snapshot) => {
             this.props.consultaChats(snapshot.val());
-         //   console.log(trabajo);
-            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto , chatID, this.props.idChatUser);
+            //   console.log(trabajo);
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
             // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
         });
     }

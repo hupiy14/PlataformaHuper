@@ -33,7 +33,7 @@ class listActividades extends React.Component {
 
                     const tiempo = 'hora de Inicio: ' + actividadesU[key2].horaPlanificada;
                     const tiempo2 = 'hora a Terminar: ' + actividadesU[key2].horaEstimada;
-
+                    let icono = 'id badge';
                     let actividadT = { completed: true, active: false, colorf: null, backgroundf: null }
                     let anima = null;
                     if (actividadesU[key2].estado === "activo") {
@@ -42,10 +42,16 @@ class listActividades extends React.Component {
                             anima = 'actividadInmediata';
                         x++;
                     }
+                    else if (actividadesU[key2].estado === "trabajando") {
+                        actividadT = { completed: false, active: true, color: "#820bea", background: "rgba(251, 189, 8, 0.06)" }
+                        anima = 'actividadInmediata';
+                        icono = 'cog';
+                        x++;
+                    }
 
                     return (
                         <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ background: actividadT.background }}>
-                            <Icon name='id badge' />
+                            <Icon name={icono} />
                             <Step.Content>
                                 <Step.Title style={{ color: actividadT.color }}>{actividadesU[key2].concepto}</Step.Title>
                                 <Step.Description>{tiempo}</Step.Description>
