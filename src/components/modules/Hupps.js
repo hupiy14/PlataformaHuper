@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import CardFeedback from '../utilidades/cardFeed';
 //import image from '../../images/hupityNewlogo.png';
 import unsplash from '../../apis/unsplash';
+
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs } from '../modules/chatBot/actions';
 
 
@@ -16,23 +17,24 @@ class Hupps extends React.Component {
     componentDidMount() {
         this.onSearchSubmit('business')
 
-      //  console.log('Imagenes Hupps')
-      //  console.log(this.props.listaObjetivo);
+        //  console.log('Imagenes Hupps')
+        //  console.log(this.props.listaObjetivo);
         if (this.props.equipoConsulta) {
-        //    console.log(this.props.equipoConsulta);
+            //    console.log(this.props.equipoConsulta);
             this.props.listaObjetivos({ tareas: this.props.listaObjetivo, objetivos: this.props.equipoConsulta });
         }
 
-        if(window.gapi.client)
-        window.gapi.client.load("https://www.googleapis.com/discovery/v1/apis/drive/v3/rest")
-        .then(function () { console.log("GAPI client loaded for API"); },
-            function (err) { console.error("Error loading GAPI client for API", err); });
+        if (window.gapi.client)
+            window.gapi.client.load("https://www.googleapis.com/discovery/v1/apis/drive/v3/rest")
+                .then(function () { console.log("GAPI client loaded for API"); },
+                    function (err) { console.error("Error loading GAPI client for API", err); });
 
     }
 
     onSearchSubmit = async (buscar) => {
         const response = await unsplash.get('/search/photos', {
-            params: { query: buscar, 
+            params: {
+                query: buscar,
                 "total_photos": 20,
             },
 
@@ -57,7 +59,7 @@ class Hupps extends React.Component {
         let x = 0;
         let y = 0;
         const opciones = Object.keys(cconsulta).map(function (key2, index) {
-          
+
             if (cconsulta[key2].estado === 'concluido') { return; }
             x = x + 1;
 
@@ -72,9 +74,9 @@ class Hupps extends React.Component {
 
             if (y > 8) {
                 y = 0;
-               // the.onSearchSubmit('company')
+                // the.onSearchSubmit('company')
             }
-            y= y + 1;
+            y = y + 1;
             return (
                 <div className="column  " key={key2}>
                     <CardFeedback image={the.state.images[y].urls.regular}
@@ -109,13 +111,14 @@ class Hupps extends React.Component {
         let listaPerObjetivos = {};
         let usuario = null;
         let usuarioGesto = null;
-        const opciones = Object.keys(cconsulta).map(function (key2, index) {
+        console.log(cconsulta);
+        const opciones = Object.keys(cconsulta).map((key2, index) => {
 
 
             if (!cconsulta[key2].concepto) {
                 return;
             }
-            
+
             if (x === 0) {
                 x = x + 1;
                 listaPerObjetivos = cconsulta[key2];
@@ -124,37 +127,31 @@ class Hupps extends React.Component {
 
             //         console.log(cconsulta[key2]);
 
-            if (cconsulta[key2].estado === 'concluido') { return; }
+            if (cconsulta[key2].estado === 'finalizado') { return; }
 
             x = x + 1;
             let tareas = {};
             const tareaO = the.props.listaObjetivo.tareas;
-
-            Object.keys(tareaO).map(function (key3, index) {
-                const tareaOO = tareaO[key3];
-                if(!tareaOO) return;
-                Object.keys(tareaOO).map(function (key4, index) {
-
-                    if (key4 === key2) {
-                        tareas = tareaOO[key4];
-
-                        Object.keys(listaPerObjetivos).map(function (key5, index) {
-                            if (key5 === key3) {
-                                usuario = listaPerObjetivos[key5].usuario;
-                                usuarioGesto = key3;
-                            }
-                        });
+            usuarioGesto = cconsulta[key2].idUsuario;
+            const personas = this.props.listaObjetivo.objetivos.listaPersonas;
+            if (personas) {
+                Object.keys(personas).map((key, index) => {
+                    if (key === cconsulta[key2].idUsuario) {
+                        usuario = personas[key].usuario;
+                        console.log(usuario + '   ' + key);
 
                     }
-                })
-            })
+                });
+            }
+
+
 
             if (y > 8) {
                 y = 0;
-              //  the.onSearchSubmit('company')
+                //  the.onSearchSubmit('company')
             }
 
-            y= y + 1;
+            y = y + 1;
             return (
                 <div className="column  " key={key2}>
                     <CardFeedback image={the.state.images[y].urls.regular}
@@ -183,9 +180,8 @@ class Hupps extends React.Component {
     }
 
     renderGrafico2(the) {
-       // console.log(the.state.images);
+        // console.log(the.state.images);
         if (the.state.images[1]) {
-
             if (the.props.listaObjetivo && the.props.listaObjetivo.objetivos && the.props.listaObjetivo.tareas) {
 
                 if (this.props.equipoConsulta) {

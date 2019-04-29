@@ -20,22 +20,30 @@ class Menu extends React.Component {
     };
 
     render() {
+
+        let seguimientoUsuario = null;
+        let styleUsers = null;
+        if (this.props.userRol === '2') {
+            seguimientoUsuario = <i className="eye icon" onClick={this.onEye} />;
+        }
+        else if (this.props.userRol === '3')
+        {
+            styleUsers = {left: '-50px', position: 'relative'};
+        }
         return (
             <div className="menu-ch">
 
                 <ul className="menu-items">
                     <li>
-                        <i className="users icon" onClick={this.onUsers} />
+                        <i className="users icon" onClick={this.onUsers} style={{...styleUsers}} />
                     </li>
                     <li>
-                        <i className="home icon" onClick={this.onHome} />
+                        <i className="home icon" onClick={this.onHome}  />
+                    </li>
+                    <li>
+                        {seguimientoUsuario}
+                    </li>
 
-                    </li>
-                   
-                    <li>
-                        <i className="eye icon" onClick={this.onEye} />
-                    </li>
-                   
                 </ul>
             </div>
         );
@@ -56,7 +64,10 @@ class Menu extends React.Component {
 </li>
 */
 const mapStateToProps = (state) => {
-    return { isChatUbi: state.chatReducer.isChatUbi };
+    return {
+        isChatUbi: state.chatReducer.isChatUbi,
+        userRol: state.chatReducer.userRol,
+    };
 };
 
 export default connect(mapStateToProps, { setUbicacion })(Menu);

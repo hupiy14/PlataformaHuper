@@ -7,7 +7,7 @@ import '../components/styles/ingresoHupity.css';
 import firebase from 'firebase';
 import SlackA from '../apis/slackApi';
 
-const timeoutLength = 9000;
+const timeoutLength = 3000;
 
 const timeoutLength2 = 600000;
 
@@ -16,8 +16,7 @@ class GoogleAuth extends React.Component {
     state = { selectedFile: null, loaded: 0, codigo: null, usuario: null, direccion: null, tokenTrello: false }
 
 
-    //onSearchXpress2 = async () => {
-
+   
     componentDidMount() {
         //Conectar a google  con el drive,
         window.gapi.load('client:auth2', () => {

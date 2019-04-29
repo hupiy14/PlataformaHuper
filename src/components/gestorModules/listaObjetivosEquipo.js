@@ -22,27 +22,12 @@ class ListaObjetivosEquipo extends React.Component {
     };
 
 
-    renderObtenerInformacionEquipo() {
-        let variable = [];
-
-        Object.keys(this.props.equipox).map((key, index) => {
-            const us = key;
-            const starCountRef2 = firebase.database().ref().child(`Usuario-Tareas/${key}`);
-            starCountRef2.on('value', (snapshot) => {
-                const valor = snapshot.val();
-                if (!valor)
-                    return
-                variable[us] = valor
-                this.props.listaObjetivos({ ...this.props.listaObjetivo, ...variable });
-            });
-        });
-    }
-
+   
 
     componentDidMount() {
         this.onSearchSubmit();
         // console.log(this.example2);
-        this.renderObtenerInformacionEquipo();
+       // this.renderObtenerInformacionEquipo();
     }
 
 
@@ -53,7 +38,6 @@ class ListaObjetivosEquipo extends React.Component {
             params: { query: this.state.buscar[this.props.prioridadObj] },
 
         });
-
         this.setState({ images: response.data.results })
         // console.log(this.state.images);
     }

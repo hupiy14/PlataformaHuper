@@ -23,20 +23,8 @@ class listPersonasEquipo extends React.Component {
     //fotos d
 
 
-    onSearchXpress = async () => {
-        const response = await Avatar.get('/xpresso/v1/search', {
-            params: {
-                apiKey: '6hSjEEYWVHTmSUUwvwjJzTpX8_zq8noEYq2-_r5ABnkq98vSw1jvHFKncRlYUA-C',
-                query: "user"
-            },
 
-        });
-        //     console.log(response.data);
-        this.setState({ avatares: response.data.lowResGifs })
-
-    }
     componentDidMount() {
-        this.onSearchXpress();
         if (this.props.seleccionUsuario)
             this.renderSel(this.props.seleccionUsuario)
     }

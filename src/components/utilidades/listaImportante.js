@@ -41,7 +41,7 @@ class listImportante extends React.Component {
 
             const ObjTrabajo = snapshot.val();
             let objetivos = [];
-
+            if (!snapshot.val()) return;
             Object.keys(ObjTrabajo).map(function (key2, index) {
                 if (ObjTrabajo[key2].compartidoEquipo) {
                     const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${ObjTrabajo[key2].idUsuarioGestor}/${ObjTrabajo[key2].objetivoPadre}`);
@@ -134,7 +134,7 @@ class listImportante extends React.Component {
     // habilita el tercer paso
     handleActualizar = () => {
         this.timeout = setTimeout(() => {
-            this.setState({ver: false});
+            this.setState({ ver: false });
         }, timeoutLength2)
     }
 
@@ -290,12 +290,13 @@ class listImportante extends React.Component {
                     }
 
                     if (cconsulta[key2].compartidoEquipo) {
+                        topAvance = '-40px';
                         iconoObjetivo = "users";
-                        style.height = cconsulta[key2].detalle.length > 30 ?  cconsulta[key2].detalle.length > 80?  '190px': '160px' :'140px';
+                        style.height = cconsulta[key2].detalle.length > 30 ? cconsulta[key2].detalle.length > 80 ? '190px' : '160px' : '140px';
                         avancePadre =
 
                             <div>
-                                <h5 style={{top: '-70px', position: 'relative'}}>Avance del equipo:</h5>
+                                <h5 style={{ top: '-70px', position: 'relative' }}>Avance del equipo:</h5>
                                 <Progress percent={cconsulta[key2].avancePadre >= 100 ? 100 : cconsulta[key2].avancePadre === 0 ? 15 : cconsulta[key2].avancePadre} inverted size='small' indicating progress style={{ top: '-80px' }} />
                             </div>
 

@@ -32,10 +32,17 @@ import {
   PREGUNTA_FANTASMA,
   DETAIL_US_NEW,
   INPUT_DINAMICO,
+  PRIMERA_VEZ,
 
 } from './types';
 
 
+export const primeraVs = (primeraV) => {
+  return {
+    type: PRIMERA_VEZ,
+    payload: primeraV
+  };
+};
 
 export const inputDinamicos = (inputDinamico) => {
   return {

@@ -5,6 +5,7 @@ import { Button, Header, Icon, Modal, Input, Image, Card } from 'semantic-ui-rea
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, pasoOnboardings } from '../modules/chatBot/actions';
 import _ from 'lodash';
 import firebase from 'firebase';
+import moment from 'moment';
 const timeoutLength = 150000;
 
 
@@ -194,9 +195,10 @@ class ListEjemplo extends React.Component {
     ConcluirObjetivo(objetivox, user, key) {
         //     console.log(this.state.valueR);
         let objetivo = objetivox;
-        objetivo.estado = 'concluido';
+        objetivo.estado = 'finalizado';
+        
         let updates = {};
-        updates[`Usuario-Objetivos/${user}/${key}`] = objetivo;
+        updates[`Usuario-Objetivos/${user}/${key}`] = {...objetivo, dateEnd:moment().format('YYYY-MM-DD'),};
         console.log(updates);
         firebase.database().ref().update(updates);
 

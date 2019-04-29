@@ -12,7 +12,7 @@ import ListaActividades from './HuperModules/actividadesHuper';
 import DashGestor from './gestorModules/dashGestor';
 import Hupps from './modules/Hupps';
 import firebase from 'firebase';
-
+import moment from 'moment';
 import Avatar from '../apis/xpress';
 
 
@@ -27,12 +27,7 @@ const timeoutLength2 = 2000;
 const timeoutLength3 = 100000;
 const timeoutLength4 = 500;
 const timeoutLength5 = 5000;
-
-
-
-
-
-
+const timeoutLength6 = 200;
 
 const labelsDias = [
     "Lunes",
@@ -43,18 +38,19 @@ const labelsDias = [
     "Sabado"
 ];
 
-const labelsMonths = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July"
-];
+let labelsMonths = [];
 
 
-const datosG1 = [
+let datosPlanificados = [];
+const datosPlanificados1 = [
+    randomScalingFactor(),
+    randomScalingFactor(),
+    randomScalingFactor(),
+    randomScalingFactor(),
+    randomScalingFactor(),
+    //  randomScalingFactor()
+];
+const datosPlanificados11 = [
     randomScalingFactor(),
     randomScalingFactor(),
     randomScalingFactor(),
@@ -62,49 +58,7 @@ const datosG1 = [
     randomScalingFactor(),
     randomScalingFactor()
 ];
-const datosG11 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG111 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG2 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG22 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
-const datosG222 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
+
 const datosG3 = [
     randomScalingFactor(),
     randomScalingFactor(),
@@ -150,10 +104,12 @@ class DashBoard extends React.Component {
         open: false,
         open2: false,
         open3: false,
-
+        UtilFactors: null,
+        ObjsFactors: [],
+        ObjsFactorsM: [],
+        TareasObjs: null,
+        factorSemana: null,
     }
-
-
 
     handleOpenMenu = () => {
         this.setState({ open: true })
@@ -173,22 +129,33 @@ class DashBoard extends React.Component {
     }
 
 
-
-
-
-
-    onSearchXpress = async (buscar) => {
-        const response = await Avatar.get('/xpresso/v1/search', {
-            params: {
-                apiKey: '6hSjEEYWVHTmSUUwvwjJzTpX8_zq8noEYq2-_r5ABnkq98vSw1jvHFKncRlYUA-C',
-                query: buscar
-            },
-
+    componentDidMount() {
+        const starCountRef3 = firebase.database().ref().child(`Utilidades-Valoraciones`);
+        starCountRef3.on('value', (snapshot) => {
+            this.setState({ UtilFactors: snapshot.val() });
         });
-        //     console.log(response.data);
-        this.setState({ avatares: response.data.lowResGifs })
-
+        //carga el limite que las empresas definan
+        datosPlanificados = [];
+        const factorInicial = 100;
+        const avanceInicial = 20;
+        for (var i = 0; i < 6; i++)
+            datosPlanificados.push(factorInicial - (i * avanceInicial));
     }
+
+
+    handleTareas = () => {
+        this.timeout = setTimeout(() => {
+
+            const starCountRef3 = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
+            starCountRef3.on('value', (snapshot) => {
+                this.setState({ TareasObjs: snapshot.val() });
+            });
+            this.calculoDeAvance();
+            this.renderGraficaSemana();
+            this.setState({ open: true });
+        }, timeoutLength6)
+    }
+
 
     // habilita el tercer paso
     handlePaso = () => {
@@ -197,103 +164,229 @@ class DashBoard extends React.Component {
         }, timeoutLength3)
     }
 
+    arregloFechaSemana() {
+        var fecahMinima = new Date();
+        const diferencia = fecahMinima.getDay() - 1;
+        fecahMinima.setDate(fecahMinima.getDate() + (-(diferencia)));
+        let fechas = [];
+        for (var i = 0; i < 6; i++)
+            fechas.push(moment(fecahMinima).add(i, 'days').format('YYYY-MM-DD'));
+        return fechas;
+    }
 
-    componentDidMount() {
-       
-        this.onSearchXpress("hi");
+    arregloFechaMes() {
+        var fecahMinima = new Date();
+        labelsMonths = [];
+        const diferencia = fecahMinima.getDay() - 1;
+        fecahMinima.setDate(fecahMinima.getDate() + (-(diferencia)));
+        let fechas = [];
+        for (var i = -6; i < 2; i++) {
+            fechas.push(moment(fecahMinima).add(i, 'months').format('MM'));
+            labelsMonths.push(moment(fecahMinima).add(i, 'months').format('MMMM'));
+        }
+        return fechas;
+    }
+    //agrupa los datos y multiplica por su factor
+    calcularAvancePorDia(arreglo, factorTotal) {
+        let actividadesDia = [];
+        Object.keys(arreglo).map((key3, index) => {
+            const arr = arreglo[key3].actividades;
+
+            Object.keys(arr).map((key, index) => {
+                let entro = false;
+                Object.keys(actividadesDia).map((key2, index) => {
+                    if (actividadesDia[key2].fecha === arr[key].fecha) {
+                        entro = true;
+                        actividadesDia[key2] = { fecha: actividadesDia[key2].fecha, avance: actividadesDia[key2].avance + (arr[key].cantidad * arreglo[key3].avance * arreglo[key3].factor) }
+                    }
+                });
+                if (entro === false)
+                    actividadesDia.push({ fecha: arr[key].fecha, avance: arr[key].cantidad * arreglo[key3].avance * arreglo[key3].factor });
+            });
+        });
         let datos = [];
-        datos.push({ label: "Planificación de trabajo", data: datosG1, hidden: true, });
-        datos.push({ label: "Correccón de trabajo", data: datosG11 });
+        let fechas = this.arregloFechaSemana();
+        let acumulado = 100;
+        Object.keys(fechas).map((key0, index) => {
+            let flagRegistro = false;
+            Object.keys(actividadesDia).map((key, index) => {
+                if (fechas[key0] === actividadesDia[key].fecha) {
+                    acumulado = acumulado - Math.round(100 * (actividadesDia[key].avance / factorTotal));
+                    datos.push(acumulado);
+                    flagRegistro = true;
+                }
+            });
+            if (flagRegistro === false)
+                datos.push(acumulado);
+        });
+        return datos;
+    }
 
-        this.setState({
+    calculoDeAvance() {
+        const objs = this.props.listaObjetivo.objetivos;
+        let factorSemana = 0;
+        //Encontrar factor
+        this.setState({ObjsFactors: []});
+        Object.keys(objs).map((key, index) => {
 
-            grafica: <div>
-                <Checkbox checked={this.state.checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-                <CrearGrafica labelsX={labelsDias}
-                    datos={datos}
-                    titleGrafica={"Trabajo (Tareas) vs Dias"}
-                    numeroGrafica={'2'}
-                    maxLen={'140'}
-                    TituloGrafica={"Avance Semanal"}
-                />
-            </div>
+            let facPrioridad = 1;
+            let facDificultad = 1;
+            let facRepeticiones = 1;
+            let facTipo = 1;
+            let facCompartido = objs[key].compartidoEquipo ? objs[key].porcentajeResp * 0.01 : 1;
+            let facCalidad = 1;
+            let facValidacion = 1;
+            let facProductividad = 1;
+            let nTareasFinalizados = 0;
+            let nTareas = 0;
 
+            //Object.keys(this.state.UtilFactors.Calidad).map((key2, index) =>{});
+            Object.keys(this.state.UtilFactors.Dificultad).map((key2, index) => {
+                if (objs[key].dificultad === this.state.UtilFactors.Dificultad[key2].concepto)
+                    facDificultad = this.state.UtilFactors.Dificultad[key2].valor;
+            });
+            Object.keys(this.state.UtilFactors.Prioridad).map((key2, index) => {
+                if (objs[key].prioridad === key2)
+                    facPrioridad = this.state.UtilFactors.Prioridad[key2];
+            });
+            Object.keys(this.state.UtilFactors.Tipo).map((key2, index) => {
+                if (objs[key].tipo === this.state.UtilFactors.Tipo[key2].concepto)
+                    facTipo = this.state.UtilFactors.Tipo[key2].valor;
+            });
+            Object.keys(this.state.UtilFactors.ValidacionGestor).map((key2, index) => {
+                if (objs[key].estado === this.state.UtilFactors.ValidacionGestor[key2].concepto)
+                    facValidacion = this.state.UtilFactors.ValidacionGestor[key2].valor;
+            });
+            //algoritmo de medicion del trabajo
+            const puntos = ((1 + facPrioridad + facTipo) * facRepeticiones * facDificultad) * facCompartido * facCalidad * facValidacion * facProductividad;
+
+            let actividades = [];
+            if (!this.state.TareasObjs)
+                return;
+            Object.keys(this.state.TareasObjs).map((key2, index) => {
+                if (key2 === key) {
+                    const ttareas = this.state.TareasObjs[key2];
+                    nTareas = Object.keys(ttareas).length;
+                    Object.keys(ttareas).map((key3, index) => {
+                        if (ttareas[key3].estado === 'finalizado') {
+                            let entro = false;
+                            Object.keys(actividades).map((key4, index) => {
+                                if (actividades[key4].fecha === ttareas[key3].dateEnd) {
+                                    entro = true;
+                                    actividades[key4] = { fecha: actividades[key4].fecha, cantidad: actividades[key4].cantidad + 1 }
+                                }
+                            });
+                            if (entro === false) {
+                                actividades.push({ fecha: ttareas[key3].dateEnd, cantidad: 1 });
+                            }
+                            nTareasFinalizados++;
+                        }
+                    });
+                }
+            });
+            const fact = this.state.ObjsFactors;
+            fact[key] = { factor: Math.round(puntos), avance: nTareas === 0 ? 0 : 1 / nTareas, actividades, fechafin: objs[key].fechafin, dateEnd: objs[key].dateEnd };
+            this.setState({ ObjsFactors: fact })
+            factorSemana = factorSemana + Math.round(puntos);
+        });
+        this.setState({ factorSemana });
+    }
+
+    calcularAvancePorMes(arreglo) {
+        let factorPlan = [];
+        let factorTrab = [];
+        const fechas = this.arregloFechaMes();
+        Object.keys(fechas).map((key2, index) => {
+            let factorP = 0;
+            let factorT = 0;
+            Object.keys(arreglo).map((key, index) => {
+                if (fechas[key2] === moment(arreglo[key].fechafin, "YYYY-MM-DD").format("MM"))
+                    factorP = factorP + arreglo[key].factor;
+                if (fechas[key2] === moment(arreglo[key].dateEnd, "YYYY-MM-DD").format("MM"))
+                    factorT = factorT + arreglo[key].factor;
+            });
+            factorPlan.push(factorP);
+            factorTrab.push(factorT);
         });
 
-
-      
+        return ({ factorPlan, factorTrab });
 
     }
-    renderGestor() {
-        return (<DashGestor />);
-    }
 
-    handleDimmedChange = (e, { checked }) => {
-        console.log(checked);
-        this.setState({ valueH: checked });
+    renderGraficaSemana() {
+        let datos = [];
+        
+        datosPlanificados = [];
+        const factorInicial = 100;
+        const avanceInicial = 20;
+        for (var i = 0; i < 6; i++)
+            datosPlanificados.push(factorInicial - (i * avanceInicial));
 
-
-        if (checked) {
-            let datos = [];
-            datos.push({ label: "Planificación de trabajo", data: datosG2, hidden: true, });
-            datos.push({ label: "Correccón de trabajo", data: datosG22 });
-
-            this.setState({
-                grafica: <div>
-                    <Checkbox checked={checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-                    <CrearGrafica labelsX={labelsMonths}
-                        datos={datos}
-                        titleGrafica={"Objetivo vs Meses"}
-                        maxLen={'140'}
-                        TituloGrafica={"Avance de tu trabajo"}
-                    />
-                </div>
-            })
-        }
-        else {
-            let datos = [];
-            datos.push({ label: "Planificación de trabajo", data: datosG1, hidden: true, });
-            datos.push({ label: "Correccón de trabajo", data: datosG11 });
-            this.setState({
-                grafica: <div>
-                    <Checkbox checked={checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-                    <CrearGrafica labelsX={labelsDias}
-                        datos={datos}
-                        titleGrafica={"Trabajo (Actividades) vs Dias"}
-                        numeroGrafica={'2'}
-                        maxLen={'140'}
-                        TituloGrafica={"Avance Semanal"}
-                    />
-                </div>
-            })
-        }
-    }
-
-    handleItemClick = (e, { name }) => {
-        this.setState({ activeItem: name })
-
-        if (name === 'semana') {
-
-            let datos = [];
-            datos.push({ label: "Planificación de trabajo", data: datosG1, hidden: true, });
-            datos.push({ label: "Correccón de trabajo", data: datosG11 });
-
-            const graficaG = <div>
+        datos.push({ label: "Trabajo planificado", data: datosPlanificados, });
+        datos.push({ label: "Progreso del trabajo", data: this.calcularAvancePorDia(this.state.ObjsFactors, this.state.factorSemana), hidden: true, });
+        this.setState({
+            grafica: <div>
                 <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
                 <CrearGrafica labelsX={labelsDias}
                     datos={datos}
                     titleGrafica={"Trabajo (Actividades) vs Dias"}
                     numeroGrafica={'2'}
                     maxLen={'140'}
-                    TituloGrafica={"Avance Semanal"}
-
+                    TituloGrafica={"Avance de la semana"}
                 />
             </div>
-            this.setState({ grafica: graficaG })
+        });
+    }
+
+
+
+    renderGraficaMeses() {
+        let datos = [];
+        let dat = this.calcularAvancePorMes(this.state.ObjsFactors);
+        datos.push({ label: "Trabajo planificado", data: dat.factorPlan, hidden: true, });
+        datos.push({ label: "Trabajo realizado", data: dat.factorTrab });
+        this.setState({
+            grafica: <div>
+                <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
+                <CrearGrafica labelsX={labelsMonths}
+                    datos={datos}
+                    titleGrafica={"Objetivo vs Meses"}
+                    maxLen={'140'}
+                    TituloGrafica={"Avance de tu trabajo Historico"}
+                />
+                />
+            </div>
+        });
+    }
+
+
+
+    renderGestor() {
+        return (<DashGestor />);
+    }
+
+    handleDimmedChange = (e, { checked }) => {
+        this.setState({ valueH: checked });
+        this.calculoDeAvance();
+        if (checked) {
+            this.setState({ valueH: false });
+            this.renderGraficaMeses();
+        }
+        else {
+            this.setState({ valueH: true });
+            this.renderGraficaSemana();
+
+        }
+    }
+
+    handleItemClick = (e, { name }) => {
+        this.setState({ activeItem: name })
+        this.calculoDeAvance();
+        if (name === 'semana') {
+            this.renderGraficaSemana();
         }
 
         else if (name === 'MIT') {
-
             let datos = [];
             datos.push({ label: "Motivacion", data: datosG3, hidden: true, });
             datos.push({ label: "Impacto", data: datosG33 });
@@ -321,9 +414,7 @@ class DashBoard extends React.Component {
                     active={this.state.activeItem === 'MIT'}
                     onClick={this.handleItemClick}
                 />
-
             </Menu>
-
             <Segment attached='bottom'>
                 {this.state.grafica}
             </Segment>
@@ -391,7 +482,7 @@ class DashBoard extends React.Component {
                             <div className="ui segment">
                                 <Modal trigger={<div>
                                     <Button icon="chart line" className="opcionesGestor" color={this.state.open ? "teal" : "yellow"}
-                                        label={this.state.open ? 'MIT' : 'Progreso'} onClick={() => { this.setState({ open: true }) }}
+                                        label={this.state.open ? 'MIT' : 'Progreso'} onClick={() => { this.handleTareas(); }}
                                     ></Button>
 
                                 </div>
@@ -417,7 +508,7 @@ class DashBoard extends React.Component {
                                         label={this.state.open2 ? 'Formate' : 'Formación'} onClick={() => { this.setState({ open2: true }) }}
                                     ></Button>
                                     <Label color='teal' floating>
-                                        {this.props.listaFormacion? Object.keys(this.props.listaFormacion).length: 0}
+                                        {this.props.listaFormacion ? Object.keys(this.props.listaFormacion).length : 0}
                                     </Label>
                                 </div>
                                 }
@@ -464,7 +555,7 @@ class DashBoard extends React.Component {
 
 
                         </div>
-                        <div className="column eight wide" style={{ left: '20px'}} >
+                        <div className="column eight wide" style={{ left: '20px' }} >
                             <div className="ui segment">
                                 {this.renderListaObjetivos()}
                             </div>
@@ -764,7 +855,6 @@ class DashBoard extends React.Component {
                 }
                 stylePadre.top = '0em';
                 paso = { title: 'Tus trabajos', active: 'Centralizamos el detalle de cada objetivo y sus adjuntos en cada tarjeta, mira las opciones', icono: 'desktop', style: styleAnt };
-                this.onSearchXpress("go");
                 return (<div>
                     <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({ estadoCel: false }); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
                         {this.renderPasosCEL(style, paso)}
@@ -940,7 +1030,6 @@ class DashBoard extends React.Component {
                 paso4 = { completed: true, active: false, style: styleDep, class: '' };
                 paso5 = { completed: false, active: true, style: styleAnt, class: 'onboardingAppG5' };
                 styleP.width = "50%";
-                this.onSearchXpress("go");
                 return (<div>
                     <div style={styleP}>
                         <Hupps />
@@ -1044,8 +1133,11 @@ const mapStateToProps = (state) => {
     return {
         usuarioDetail: state.chatReducer.usuarioDetail,
         userRol: state.chatReducer.userRol,
+        userId: state.auth.userId,
         pasoOnboarding: state.chatReducer.pasoOnboarding,
         listaFormacion: state.chatReducer.listaFormacion,
+        listaObjetivo: state.chatReducer.listaObjetivo,
+        usuarioDetail: state.chatReducer.usuarioDetail,
     };
 };
 export default connect(mapStateToProps, { createStream, pasoOnboardings, chatOff, chatOn, listaFormaciones })(DashBoard);

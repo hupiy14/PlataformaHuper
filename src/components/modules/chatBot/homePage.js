@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import {
-  setActiveChat, submitMessage, numeroPreguntas, valorInputs, consultaPreguntaControls, pregFantasmas,
+  setActiveChat, submitMessage, numeroPreguntas, valorInputs, consultaPreguntaControls, pregFantasmas, primeraVs,
   tipoPreguntas, mensajeEntradas, borrarChats, consultaChats, consultaCanales, pasoOnboardings, avatares,
 } from './actions';
 import { chatOff, chatOn } from '../../../actions';
@@ -22,7 +22,7 @@ let timeoutLength = 2500;
 let timeoutLength2 = 300;
 class Home extends React.Component {
 
-  state = { carpeta: null, updates: null, color: [], client2: null, avataresN: null, avatarX: 0, avatarY: 0, ultimaTarea: null, mensajeEnviado: false, personasInv: [] }
+  state = { carpeta: null, updates: null, color: [], client2: null, avataresN: null, avatarX: 0, avatarY: 0, ultimaTarea: null, mensajeEnviado: false, personasInv: [], }
 
   onSearchXpress = async (text) => {
     if (this.state.avatarX === this.state.avatarY) return;
@@ -45,11 +45,11 @@ class Home extends React.Component {
 
   handleOpen = (valorInput, chatID, userID) => {
     //valida si ya se contesto si no se espera
-    timeoutLength2 = 1000;
-    if (userID === '1') {
+    timeoutLength2 = 800;
+   if (userID === '1') {
       timeoutLength2 = 100;
       if (this.state.mensajeEnviado === true)
-        timeoutLength2 = 800;
+        timeoutLength2 = 300;
     }
     this.setState({ mensajeEnviado: true });
     this.timeout = setTimeout(() => {
@@ -73,7 +73,6 @@ class Home extends React.Component {
 
 
   componentDidMount() {
-    // this.onSearchXpress('user');
     this.renderConsultarUltimaTarea();
     this.setState({ avatarX: 1 });
     const { SlackOAuthClient } = require('messaging-api-slack')
@@ -535,10 +534,13 @@ class Home extends React.Component {
           const reload = true;
           const opcionw = { ...opcione, reload };
           this.props.pregFantasmas(opcionw);
-          valorNPregunta++;
-          const mensaje = consultaBD[valorNPregunta].concepto;
-          this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
 
+          if (!this.props.primeraV) {
+            valorNPregunta++;
+            const mensaje = consultaBD[valorNPregunta].concepto;
+            this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
+            this.props.primeraVs(true);
+          }
         });
       }
 
@@ -555,11 +557,11 @@ class Home extends React.Component {
         let mensaje = consultaBD[valorNPregunta + 1].concepto;
         consultaBD = this.PreguntasRepEspecial(consultaBD[valorNPregunta + 1].tipoPregunta, mensaje, consultaBD, valorNPregunta + 1);
         mensaje = consultaBD[valorNPregunta + 1].concepto;
-
         this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
       }
       // console.log(valorNPregunta);
     }
+
     else {
       //cerrar despues de realizado
       timeoutLength = 1500;
@@ -621,15 +623,17 @@ class Home extends React.Component {
             estado: 'validar',
             carpeta: this.state.carpeta,
             prioridad: 'normal',
-            fechafin: this.validarFechaSemanaMax(),
+            fechafin: moment(this.validarFechaSemanaMax()).format('YYYY-MM-DD'),
             impacto: chatTrazo[8].text,
             dificultad: chatTrazo[10].text,
             repeticiones: chatTrazo[12].text,
             tipo: this.props.valorInput,
+            fase: 0,
+            dateStart: moment().format('YYYY-MM-DD'),
           };
         }
-
-
+        //Borrar variables
+        this.props.pregFantasmas(null);
 
         var updates = {};
         updates[`Usuario-Objetivos/${this.props.userId}/${newPostKey2}`] = postData;
@@ -664,6 +668,7 @@ class Home extends React.Component {
         firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${newPostKey2}/${newPostKey3}`).set({
           concepto: chatTrazo[2].text,
           estado: 'activo',
+          dateStart: moment().format('YYYY-MM-DD'),
           prioridad: postData.prioridad,
           tiempoEstimado: this.props.valorInput,
           horaPlanificada: this.state.ultimaTarea ? this.state.ultimaTarea.horaEstimada : moment().format('HH:mm'),
@@ -672,6 +677,7 @@ class Home extends React.Component {
 
         firebase.database().ref(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`).set({
           tarea: newPostKey3,
+          dateStart: moment().format('YYYY-MM-DD'),
           horaPlanificada: this.state.ultimaTarea ? this.state.ultimaTarea.horaEstimada : moment().format('HH:mm'),
           horaEstimada: this.state.ultimaTarea ? moment(this.state.ultimaTarea.horaEstimada, 'HH:mm').add('hours', hora).format('HH:mm') : moment().add('hours', hora).format('HH:mm'),
         });
@@ -861,19 +867,28 @@ class Home extends React.Component {
                 Object.keys(objs).map((key3, index) => {
                   if (key3 === key2 && objs[key3].compartidoEquipo) {
 
-                    let avanceObjGlobal = Math.round(parseInt(objs[key3].porcentajeResp) * ((100 / Object.keys(cconsulta[key2]).length)*0.01));
+                    let avanceObjGlobal = Math.round(parseInt(objs[key3].porcentajeResp) * ((100 / Object.keys(cconsulta[key2]).length) * 0.01));
                     let objetivoPadre = null;
                     //busca el objetivo padre
                     const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`);
                     starCountRef.on('value', (snapshot) => {
                       objetivoPadre = snapshot.val();
-                      objetivoPadre.avance = objetivoPadre.avance + avanceObjGlobal;
+                      let devolver = objetivoPadre.avance;
+                      if (objs[key3].avancePadre) {
+                        devolver = devolver - ((objs[key3].avancePadre) * (objs[key3].nTareas));
+                      }
+
+                      objetivoPadre.avance = devolver + avanceObjGlobal;
+
                     })
                     if (objetivoPadre)
                       firebase.database().ref(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`).set({
                         ...objetivoPadre
                       });
 
+                    firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${key3}`).set({
+                      ...objs[key3], avancePadre: avanceObjGlobal, nTareas: Object.keys(cconsulta[key2]).length
+                    });
 
 
                   }
@@ -881,7 +896,7 @@ class Home extends React.Component {
               }
               tarea.estado = 'finalizado';
               var updates = {};
-              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = tarea;
+              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = { ...tarea, dateEnd: moment().format('YYYY-MM-DD') };
               firebase.database().ref().update(updates);
               this.renderHistoricoHuper(this.props.userId, `Ha terminado : ${ultimoValor}`, 'trabajo');
 
@@ -908,7 +923,6 @@ class Home extends React.Component {
 
 
         this.setState({ personasInv: [] });
-
         Object.keys(usuario).map((key3, index) => {
           x = 0;
           Object.keys(equipo).map((key2, index) => {
@@ -933,7 +947,7 @@ class Home extends React.Component {
             concepto: chatTrazo[2].text === 'Crear un Objetivo' ? chatTrazo[4].text : chatTrazo[2].text,
             estado: 'activo',
             prioridad: 'urgente',
-            fechafin: this.validarFechaSemanaMax(),
+            fechafin: moment(this.validarFechaSemanaMax()).format('YYYY-MM-DD'),
             repeticiones: '1',
             dificultad: chatTrazo[8].text,
             personasInvolucradas: this.state.personasInv,
@@ -941,6 +955,7 @@ class Home extends React.Component {
             avance: 0,
             compartidoEquipo: true,
             gestor: true,
+            dateStart: moment().format('YYYY-MM-DD')
           };
 
           firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${newPostKey}`).set({
@@ -1081,7 +1096,7 @@ class Home extends React.Component {
       estado: 'activo',
       carpeta: this.state.carpeta,
       prioridad: 'urgente',
-      fechafin: this.validarFechaSemanaMax(),
+      fechafin: moment(this.validarFechaSemanaMax()).format('YYYY-MM-DD'),
       compartidoEquipo: chatTrazo[10].text.length > 1 ? true : false,
       repeticiones: '1',
       dificultad: chatTrazo[8].text,
@@ -1092,6 +1107,7 @@ class Home extends React.Component {
       objetivoPadre: personEquipo > 1 ? clavePadre : null,
       idUsuarioGestor: this.props.userId,
       tipo: 'Unico',
+      dateStart: moment().format('YYYY-MM-DD'),
     };
 
     this.setState({ updates: { key: `Usuario-Objetivos/${keyUsuarioGT}/${newPostKey2}`, datos: postData } });
@@ -1268,6 +1284,7 @@ const mapHomeStateToProps = (state) => ({
   consultaPregunta: state.chatReducer.consultaPregunta,
   idChatUser: state.chatReducer.idChatUser,
   pregFantasma: state.chatReducer.pregFantasma,
+  primeraV: state.chatReducer.primeraV,
   numeroPregunta: state.chatReducer.numeroPregunta,
   usuarioDetail: state.chatReducer.usuarioDetail,
   listaObjetivo: state.chatReducer.listaObjetivo,
@@ -1276,5 +1293,5 @@ const mapHomeStateToProps = (state) => ({
 });
 export default connect(mapHomeStateToProps, {
   submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas, consultaCanales, chatOff, avatares, pregFantasmas,
-  consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats, pasoOnboardings
+  consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats, pasoOnboardings, primeraVs
 })(Home);

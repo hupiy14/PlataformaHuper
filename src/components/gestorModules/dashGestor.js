@@ -28,9 +28,12 @@ import GraficaG3 from '../gestorModules/GraficoTICgestos';
 import GraficaG4 from '../gestorModules/CrearGraficaProductividad';
 import firebase from 'firebase';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, verEquipos } from '../modules/chatBot/actions';
+import moment from 'moment';
+
 const timeoutLength = 3000;
 const timeoutLength2 = 500;
-
+const timeoutLength3 = 1200;
+let labelsMonths = [];
 const HorizontalSidebar = ({ animation, direction, visible, equipo }) => (
     <Sidebar as={Segment} animation={animation} direction={direction} visible={visible}>
         <Grid textAlign='center'>
@@ -54,10 +57,24 @@ class DashBoard extends React.Component {
         consultaTareas: {}, titulo: null,
         listaPersonas: null, equipo: null,
         avatares: null, colorSeleccion: {}, diateletrabajo: {},
-        valueH: false, slide: null, seleccion: null,
-        grafica: null, numeroO: 0,
+        valueH: false, slide: null, seleccion: null, ObjsFactors: [],
+        grafica: null, numeroO: 0, UtilFactors: null, selEq: null
 
     };
+
+    handleVariables = (x) => {
+        this.timeout = setTimeout(() => {
+            this.calculoDeAvance();
+            this.setState({ valueH: false });
+            this.setState({
+                grafica: <div>
+                    <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
+                    <GraficaG1 tope={100} datosAvance={this.calcularAvancePorDia(this.state.ObjsFactors, this.state.factorSemana)} />
+                </div>
+            });
+
+        }, timeoutLength3)
+    }
 
 
     handleSlide = (x) => {
@@ -97,14 +114,28 @@ class DashBoard extends React.Component {
             const equipo = snapshot.val();
             this.setState({ equipo });
             let usuariosCompletos = [];
+
             //carga todos los usuarios
             const starCountRef2 = firebase.database().ref().child(`Usuario`);
             starCountRef2.on('value', (snapshot2) => {
                 const consulta = snapshot2.val();
-
+                let variable = [];
 
                 ///Recupera el rol del usuario
                 Object.keys(consulta).map((key, index) => {
+
+
+                    //tareas de cada persona
+                    const starCountRef2 = firebase.database().ref().child(`Usuario-Tareas/${key}`);
+                    starCountRef2.on('value', (snapshot) => {
+                        const valor = snapshot.val();
+                        if (!valor)
+                            return
+                        variable[key] = valor
+                        this.props.listaObjetivos({ ...this.props.listaObjetivo, ...variable });
+                    });
+
+                    //rol de cada persona
                     const starCountRef3 = firebase.database().ref().child(`Usuario-Rol/${key}`);
                     starCountRef3.on('value', (snapshot3) => {
                         const rol = snapshot3.val();
@@ -119,6 +150,7 @@ class DashBoard extends React.Component {
 
 
             });
+
 
             const fecha = new Date();
             const cal = this.getWeekNumber(fecha);
@@ -153,7 +185,6 @@ class DashBoard extends React.Component {
 
                     const objetos = { ...this.props.equipoConsulta, ...objetivoT };
                     this.props.equipoConsultas({ ...this.props.equipoConsulta, ...objetos });
-                    //      console.log(objetos)
 
                 });
 
@@ -162,27 +193,185 @@ class DashBoard extends React.Component {
             });
 
         });
+
+
+    }
+    componentDidUpdate() {
+        if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0 && (this.state.selEq === null || this.state.selEq !== this.props.equipoConsulta.sell)) {
+            this.setState({ selEq: this.props.equipoConsulta.sell });
+            this.handleVariables();
+        }
+        else if (this.props.equipoConsulta && this.props.equipoConsulta.sell === 0 && (this.state.selEq === null || this.state.selEq !== this.props.equipoConsulta.sell)) {
+
+            console.log('entros2');
+            this.setState({ selEq: this.props.equipoConsulta.sell });
+            this.handleVariables();
+        }
+
     }
 
+
+    calcularAvancePorDia(arreglo, factorTotal) {
+        let actividadesDia = [];
+        Object.keys(arreglo).map((key3, index) => {
+            const arr = arreglo[key3].actividades;
+
+            Object.keys(arr).map((key, index) => {
+                let entro = false;
+                Object.keys(actividadesDia).map((key2, index) => {
+                    if (actividadesDia[key2].fecha === arr[key].fecha) {
+                        entro = true;
+                        actividadesDia[key2] = { fecha: actividadesDia[key2].fecha, avance: actividadesDia[key2].avance + (arr[key].cantidad * arreglo[key3].avance * arreglo[key3].factor) }
+                    }
+                });
+                if (entro === false)
+                    actividadesDia.push({ fecha: arr[key].fecha, avance: arr[key].cantidad * arreglo[key3].avance * arreglo[key3].factor });
+            });
+        });
+        let datos = [];
+        let fechas = this.arregloFechaSemana();
+        let acumulado = 100;
+        Object.keys(fechas).map((key0, index) => {
+            let flagRegistro = false;
+            Object.keys(actividadesDia).map((key, index) => {
+                if (fechas[key0] === actividadesDia[key].fecha) {
+                    acumulado = acumulado - Math.round(100 * (actividadesDia[key].avance / factorTotal));
+                    datos.push(acumulado);
+                    flagRegistro = true;
+                }
+            });
+            if (flagRegistro === false)
+                datos.push(acumulado);
+        });
+        return datos;
+    }
+
+
+
+    calculoDeAvance() {
+        //  const objs = this.props.listaObjetivo;
+        // const per = this.props.equipoConsulta;
+        const tareas = this.props.listaObjetivo;
+        const objs = this.props.equipoConsulta;
+        let factorSemana = 0;
+        //Encontrar factor
+        this.setState({ ObjsFactors: [] });
+        Object.keys(objs).map((key, index) => {
+
+            if (this.props.userId === objs[key].idUsuario)
+                return;
+            if (!objs[key].concepto)
+                return;
+            if (this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== objs[key].idUsuario)
+                return;
+            let facPrioridad = 1;
+            let facDificultad = 1;
+            let facRepeticiones = 1;
+            let facTipo = 1;
+            let facCompartido = objs[key].compartidoEquipo ? objs[key].porcentajeResp * 0.01 : 1;
+            let facCalidad = 1;
+            let facValidacion = 1;
+            let facProductividad = 1;
+            let nTareasFinalizados = 0;
+            let nTareas = 0;
+
+            //Object.keys(this.state.UtilFactors.Calidad).map((key2, index) =>{});
+            Object.keys(this.state.UtilFactors.Dificultad).map((key2, index) => {
+                if (objs[key].dificultad === this.state.UtilFactors.Dificultad[key2].concepto)
+                    facDificultad = this.state.UtilFactors.Dificultad[key2].valor;
+            });
+            Object.keys(this.state.UtilFactors.Prioridad).map((key2, index) => {
+                if (objs[key].prioridad === key2)
+                    facPrioridad = this.state.UtilFactors.Prioridad[key2];
+            });
+            Object.keys(this.state.UtilFactors.Tipo).map((key2, index) => {
+                if (objs[key].tipo === this.state.UtilFactors.Tipo[key2].concepto)
+                    facTipo = this.state.UtilFactors.Tipo[key2].valor;
+            });
+            Object.keys(this.state.UtilFactors.ValidacionGestor).map((key2, index) => {
+                if (objs[key].estado === this.state.UtilFactors.ValidacionGestor[key2].concepto)
+                    facValidacion = this.state.UtilFactors.ValidacionGestor[key2].valor;
+            });
+            //algoritmo de medicion del trabajo
+            const puntos = ((1 + facPrioridad + facTipo) * facRepeticiones * facDificultad) * facCompartido * facCalidad * facValidacion * facProductividad;
+
+            //            console.log(puntos);
+            let actividades = [];
+            if (!tareas)
+                return;
+            Object.keys(tareas).map((key5, index) => {
+                let tar = tareas[key5];
+                Object.keys(tar).map((key2, index) => {
+                    if (key2 === key) {
+                        const ttareas = tar[key2];
+                        nTareas = Object.keys(ttareas).length;
+                        Object.keys(ttareas).map((key3, index) => {
+
+                            if (ttareas[key3].estado === 'finalizado') {
+                                let entro = false;
+                                Object.keys(actividades).map((key4, index) => {
+                                    if (actividades[key4].fecha === ttareas[key3].dateEnd) {
+                                        entro = true;
+                                        actividades[key4] = { fecha: actividades[key4].fecha, cantidad: actividades[key4].cantidad + 1 }
+                                    }
+                                });
+                                if (entro === false) {
+                                    actividades.push({ fecha: ttareas[key3].dateEnd, cantidad: 1 });
+                                }
+                                nTareasFinalizados++;
+                            }
+                        });
+                    }
+                });
+            });
+            const fact = this.state.ObjsFactors;
+            fact[key] = { factor: Math.round(puntos), avance: nTareas === 0 ? 0 : 1 / nTareas, actividades, fechafin: moment(objs[key].fechafin).format('YYYY-MM-DD'), dateEnd: objs[key].dateEnd ? objs[key].dateEnd : null };
+            this.setState({ ObjsFactors: fact });
+            factorSemana = factorSemana + Math.round(puntos);
+        });
+        this.setState({ factorSemana });
+    }
+
+    arregloFechaSemana() {
+        var fecahMinima = new Date();
+        const diferencia = fecahMinima.getDay() - 1;
+        fecahMinima = moment(fecahMinima).add(-7, 'days').format('YYYY-MM-DD');
+        //fecahMinima.setDate(fecahMinima.getDate() + (-(diferencia)));
+        let fechas = [];
+        for (var i = 0; i < 6; i++)
+            fechas.push(moment(fecahMinima).add(i, 'days').format('YYYY-MM-DD'));
+        return fechas;
+    }
+
+    arregloFechaMes() {
+        var fecahMinima = new Date();
+        labelsMonths = [];
+        const diferencia = fecahMinima.getDay() - 1;
+        fecahMinima = moment(fecahMinima).add(-7, 'days').format('YYYY-MM-DD');
+        //   fecahMinima.setDate(fecahMinima.getDate() + (-(diferencia)));
+        let fechas = [];
+        for (var i = -6; i < 2; i++) {
+            fechas.push(moment(fecahMinima).add(i, 'months').format('MM'));
+            labelsMonths.push(moment(fecahMinima).add(i, 'months').format('MMMM'));
+        }
+        return fechas;
+    }
 
     componentDidMount() {
 
         window.gapi.client.load("https://www.googleapis.com/discovery/v1/apis/drive/v3/rest")
             .then(function () { console.log("GAPI client loaded for API"); },
                 function (err) { console.error("Error loading GAPI client for API", err); });
-                
         this.actualizarequipoConsulta();
         this.handleOpen();
-        this.setState({
-            grafica: <div>
-                <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-                <GraficaG1 />
-            </div>
+        const starCountRef3 = firebase.database().ref().child(`Utilidades-Valoraciones`);
+        starCountRef3.on('value', (snapshot) => {
+            this.setState({ UtilFactors: snapshot.val() });
         });
 
         this.setState({ slide: this.renderListadoEquipo() });
         this.props.verEquipos(false);
-     
+        this.handleVariables();
     }
 
     getWeekNumber(date) {
@@ -198,10 +387,13 @@ class DashBoard extends React.Component {
         this.setState({ valueH: checked });
 
         if (checked) {
+            let datos = [];
+            let dat = this.calcularAvancePorMes(this.state.ObjsFactors);
+            console.log(dat);
             this.setState({
                 grafica: <div>
                     <Checkbox checked={checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-                    <GraficaG2 />
+                    <GraficaG2 datoPlanificar={dat.factorPlan} datoTrabajo={dat.factorTrab} labelsMonths={labelsMonths} />
                 </div>
             })
         }
@@ -209,7 +401,7 @@ class DashBoard extends React.Component {
             this.setState({
                 grafica: <div>
                     <Checkbox checked={checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-                    <GraficaG1 />
+                    <GraficaG1 tope={100} datosAvance={this.calcularAvancePorDia(this.state.ObjsFactors, this.state.factorSemana)} />
                 </div>
             })
         }
@@ -224,7 +416,7 @@ class DashBoard extends React.Component {
             const graficaG =
                 <div>
                     <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-                    <GraficaG1 />
+                    <GraficaG1 tope={100} datosAvance={this.calcularAvancePorDia(this.state.ObjsFactors, this.state.factorSemana)} />
                 </div>
             this.setState({ grafica: graficaG })
 
@@ -258,6 +450,28 @@ class DashBoard extends React.Component {
             return 'Lista de Objetivos';
         }
     }
+
+    calcularAvancePorMes(arreglo) {
+        let factorPlan = [];
+        let factorTrab = [];
+        const fechas = this.arregloFechaMes();
+        Object.keys(fechas).map((key2, index) => {
+            let factorP = 0;
+            let factorT = 0;
+            Object.keys(arreglo).map((key, index) => {
+                if (fechas[key2] === moment(arreglo[key].fechafin, "YYYY-MM-DD").format("MM"))
+                    factorP = factorP + arreglo[key].factor;
+                if (fechas[key2] === moment(arreglo[key].dateEnd, "YYYY-MM-DD").format("MM"))
+                    factorT = factorT + arreglo[key].factor;
+            });
+            factorPlan.push(factorP);
+            factorTrab.push(factorT);
+        });
+
+        return ({ factorPlan, factorTrab });
+
+    }
+
 
     renderTituloFormacion() {
         if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0) {
@@ -300,7 +514,6 @@ class DashBoard extends React.Component {
             Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
                 if (key === this.props.equipoConsulta.sell)
                     titulo = this.props.equipoConsulta.listaPersonas[key].usuario;
-
 
             });
             this.setState({ seleccion: titulo });
@@ -407,6 +620,11 @@ class DashBoard extends React.Component {
                                 <div className="ui segment ">
                                     <Button icon="book" className="opcionesGestor" label="Formación" color="yellow" onClick={() => { this.handleSlide(2); this.props.verEquipos(!this.props.verEquipo); }} ></Button>
                                 </div>
+                                <div>
+                                    <Button icon="arrow right" className="ocultarMenu" circular style={{ visibility: !this.props.verEquipo === true ? 'hidden' : null, position: 'relative', left: '-180px', top: '510px', background: 'purple', color: 'white' }}
+                                        onClick={() => { this.props.verEquipos(!this.props.verEquipo); }}
+                                    ></Button>
+                                </div>
 
                             </div>
 
@@ -431,7 +649,8 @@ const mapStateToProps = (state) => {
         usuarioDetail: state.chatReducer.usuarioDetail,
         listaObjetivo: state.chatReducer.listaObjetivo,
         verEquipo: state.chatReducer.verEquipo,
-        userRol: state.chatReducer.userRol
+        userRol: state.chatReducer.userRol,
+        userId: state.auth.userId,
     };
 };
 export default connect(mapStateToProps, { createStream, equipoConsultas, listaObjetivos, verEquipos })(DashBoard);

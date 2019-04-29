@@ -94,8 +94,10 @@ const escribirUsuario = (userId) => {
     // var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
     var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta').push().key;
 
-    firebase.database().ref(`Tipo-Pregunta/9`).set({
-     concepto: "Delimita el alcance para #>Nombre<#",
+    firebase.database().ref(`Utilidades-Valoraciones/ValidacionGestor/1`).set({
+     //concepto: "Delimita el alcance para #>Nombre<#",
+     concepto : 'true',
+     valor: 1
     // opciones: "Usuario-WS",
      //tipoPregunta: '2'
         // concepto: "Obetivo Creado Nuevo",

@@ -21,18 +21,7 @@ const timeoutLength = 500;
 class App extends React.Component {
 
     state = { avatares: null, }
-    onSearchXpress = async () => {
-        const response = await Avatar.get('/xpresso/v1/search', {
-            params: {
-                apiKey: '6hSjEEYWVHTmSUUwvwjJzTpX8_zq8noEYq2-_r5ABnkq98vSw1jvHFKncRlYUA-C',
-                query: "user"
-            },
-
-        });
-        //     console.log(response.data);
-        this.setState({ avatares: response.data.lowResGifs })
-
-    }
+ 
 
     // habilita el primer paso
     handlePaso = () => {
@@ -46,8 +35,6 @@ class App extends React.Component {
         //primer paso del onboarding de la herramienta
         if (!this.props.usuarioDetail.usuario.onboarding && this.props.pasoOnboarding === 0)
             this.handlePaso();
-
-        // this.onSearchXpress();
         this.props.consultaPreguntaControls(1);
         this.props.borrarChats(this.props.user.activeChat.participants);
         //this.props.endChat('6');
@@ -174,11 +161,11 @@ class App extends React.Component {
                               */
 
             if (this.props.pasoOnboarding === 0 || this.props.usuarioDetail.usuario.onboarding)
-            this.rendeSeguimientoTrabajo(chatID);
-            //  this.renderTareaDiaria(chatID);
+               // this.rendeSeguimientoTrabajo(chatID);
+                this.renderTareaDiaria(chatID);
             else if (this.props.isChat === false || this.props.pasoOnboarding === 1)
-                this.rendeSeguimientoTrabajo(chatID);
-            //  this.renderTareaDiaria(chatID);
+                //    this.rendeSeguimientoTrabajo(chatID);
+                this.renderTareaDiaria(chatID);
             else if (this.props.pasoOnboarding === 3)
                 this.renderRealizarTIC_EXP(chatID);
 

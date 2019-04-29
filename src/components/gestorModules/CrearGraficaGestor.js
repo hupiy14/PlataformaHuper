@@ -1,8 +1,5 @@
 import React from 'react';
 import CrearGrafica from '../utilidades/CrearGrafica';
-import randomScalingFactor from '../../lib/randomScalingFactor';
-
-
 
 const labelsDias = [
     "Lunes",
@@ -13,45 +10,23 @@ const labelsDias = [
     "Sabado"
 ];
 
-const labelsMonths = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July"
-];
 
-
-const datosG1 = [
-    100,
-    80,
-    60,
-    40,
-    20,
-    0
-];
-const datosG11 = [
-    100,
-    88,
-    64,
-    40,
-    25,
-    0
-];
-
-
-
+let datosPlanificados = [];
 
 class CrearGraficaGestor extends React.Component {
 
+  
     render() {
 
         let datos = [];
-        datos.push({ label: "Trabajo Realizado", data: datosG11 });
-        datos.push({ label: "Planificación de la semana", data: datosG1 });
-      
+        datosPlanificados = [];
+        const factorInicial = this.props.tope;
+        const avanceInicial = this.props.tope * 0.20;
+        for (var i = 0; i < 6; i++)
+            datosPlanificados.push(factorInicial - (i * avanceInicial));
+        datos.push({ label: "Trabajo Realizado", data: this.props.datosAvance,  });
+        datos.push({ label: "Planificación de la semana", data: datosPlanificados, hidden: true });
+
         return (
 
             <CrearGrafica labelsX={labelsDias}

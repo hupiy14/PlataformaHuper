@@ -22,7 +22,7 @@ import { Image, Dropdown, Input, } from 'semantic-ui-react';
 let tagOptions = [];
 
 
-
+let timelength = 700;
 
 class boxDinaminco extends React.Component {
 
@@ -64,6 +64,19 @@ class boxDinaminco extends React.Component {
 
 
 
+    }
+
+
+
+    handleMensaje = (valorInput, chatID, userID) => {
+        this.timeout = setTimeout(() => {
+            this.props.submitMessage(
+                valorInput,
+                chatID,
+                userID
+            );
+
+        }, timelength)
     }
 
     renderOpcionesImage() {
@@ -506,13 +519,13 @@ class boxDinaminco extends React.Component {
                     style={{ position: 'fixed', top: '82%', width: '90%', left: '-0.5px', height: '7.5%' }}
                     placeholder='Select Friend'
                     fluid
-                    search
+                    // search
                     selection
                     clearable
                     pointing="bottom"
-                    openOnFocus={true}
                     direction="left"
                     onChange={(e, { value }) => {
+                        console.log(value);
                         this.onInputChange(e, value)
                     }}
                     value={this.state.term}
@@ -557,11 +570,14 @@ class boxDinaminco extends React.Component {
             this.setState({ term: '' });
         }
         else {
-            if (value)
+            if (value) {
                 this.props.valorInputs(value);
-            else
+                this.setState({ term: value });
+            }
+            else {
                 this.props.valorInputs(event.target.value);
-            this.setState({ term: this.props.valorInput });
+                this.setState({ term: this.props.valorInput });
+            }
         }
 
     };
@@ -582,7 +598,7 @@ class boxDinaminco extends React.Component {
 
                     this.props.mensajeEntradas(true);
                     this.props.numeroPreguntas(1);
-                    this.props.submitMessage(result, this.props.user.activeChat.chatID, this.props.idChatUser);
+                    this.handleMensaje(result, this.props.user.activeChat.chatID, this.props.idChatUser);
 
 
                 });
