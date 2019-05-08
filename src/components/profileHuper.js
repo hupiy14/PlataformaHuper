@@ -20,7 +20,12 @@ var trello = null;// new Trello("bb3cab1a303c7bf996d56bb46db2a46f", "136434ae14c
 
 ///pantalla de  perfil del usuario
 //limpiar variables
+const nivel = [
+    { key: 1, text: 'Normal', value: '105' },
+    { key: 2, text: 'Competitivo', value: '115' },
+    { key: 3, text: 'Altamente Competitivo', value: '125' },
 
+]
 class Profile extends React.Component {
 
     state = {
@@ -29,7 +34,7 @@ class Profile extends React.Component {
         errorTipo: null, errorNombreUsuario: null, errorCargo: null, errorArea: null, errorTelefono: null, errorLugar: null, errorEmpresa: null, errorEquipo: null, errorCodigo: null, errorAcepto: null, calendar: null,
         codigoUsSlack: null, tokenUsSlack: null, tokenBotUsSlack: null, canalGestorSlack: null, canalEquipoSlack: null, canalReportesSlack: null, canalNotifiacionesSlack: null,
         codigoWSdrive: null, activo: false, listaCanales_Slack: null, usuarioTrello: null, trelloListaDashBoard: null, trelloLista: null, trelloDashboard: null, errorDashboard: null,
-
+        nivelEquipo: null,
 
         trelloApi: null, tokenTrello: null, listaObjetivostoDO: null, listaOBjetivosDone: null, listaObjetivosTheEnd: null, imagenMostrar: null, imagenFondo: null, imagenPerfil: null,
     }
@@ -426,6 +431,16 @@ class Profile extends React.Component {
     }
 
     renderUsuario() {
+        let nnivel = null;
+        if (this.props.userRol === '2') {
+            nnivel = <Form.Select label='Define el nivel de competitividad de tu equipo' options={nivel} placeholder='Selecciona uno'
+                search
+                onChange={(e, { value }) => this.setState({ nivelEquipo: { ...this.state.nivelEquipo, nivel: value } })}
+                value={this.state.nivelEquipo? this.state.nivelEquipo.nivel : 105}
+
+            />
+        }
+
 
         return (
 
@@ -470,7 +485,7 @@ class Profile extends React.Component {
                         error={this.state.errorLugar}
                     />
 
-
+                    {nnivel}
 
                     <Message
                         error
@@ -557,6 +572,12 @@ class Profile extends React.Component {
                 wsCompartida: this.state.codigoWSdrive ? this.state.codigoWSdrive : this.props.usuarioDetail.usuario.wsCompartida ? this.props.usuarioDetail.usuario.wsCompartida : null,
 
             });
+            if (this.props.userRol === '2')
+                firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`).set({
+                    ...this.state.nivelEquipo,
+                    nivel: this.state.nivelEquipo.nivel,
+                });
+
         }
 
         this.setState({ activo: true });
@@ -671,6 +692,13 @@ class Profile extends React.Component {
                 this.setState({ empresa: snapshot.val().industria })
             });
 
+            if (this.props.userRol === '2') {
+                const starCountRef2 = firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`);
+                starCountRef2.on('value', (snapshot) => {
+                    if (snapshot.val())
+                        this.setState({ nivelEquipo: snapshot.val() })
+                });
+            }
         }
     }
 
@@ -680,8 +708,9 @@ class Profile extends React.Component {
 
         if (this.props.usuarioDetail && this.props.usuarioDetail.usuario && !this.state.entro)
             this.renderCargar();
-
         let tamano = '37em';
+        if (this.props.userRol === '2')
+            tamano = '42em';
         if (this.state.open === 'slack') {
             tamano = '22em';
         }
@@ -721,7 +750,7 @@ class Profile extends React.Component {
                             </Card.Content>
 
                         </Card>
-                        <Button content="Crea tu propio flujo de trabajo" onClick={() => { history.push('/newworkflow'); }} color="purple" icon="object group outline"></Button>
+                        <Button content="Crea tu propio flujo de trabajo" onClick={() => { history.push('/newworkflow'); }} style={{ width: '290px' }} color="purple" icon="object group outline"></Button>
 
                     </div>
                     <div className="column eleven wide">

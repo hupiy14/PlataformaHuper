@@ -18,6 +18,7 @@ import {
     Segment,
     Sidebar,
     Radio,
+    MessageHeader,
 }
     from 'semantic-ui-react';
 import PropTypes from 'prop-types'
@@ -58,13 +59,15 @@ class DashBoard extends React.Component {
         listaPersonas: null, equipo: null,
         avatares: null, colorSeleccion: {}, diateletrabajo: {},
         valueH: false, slide: null, seleccion: null, ObjsFactors: [],
-        grafica: null, numeroO: 0, UtilFactors: null, selEq: null
-
+        grafica: null, numeroO: 0, UtilFactors: null, selEq: null,
+        semanasP: [], facSemana: null, nivelEquipo: null, productividadobj: [],
+        valorSlide: 0,
     };
 
     handleVariables = (x) => {
         this.timeout = setTimeout(() => {
             this.calculoDeAvance();
+            this.calcularAvancePorMes(this.state.ObjsFactors);
             this.setState({ valueH: false });
             this.setState({
                 grafica: <div>
@@ -79,7 +82,7 @@ class DashBoard extends React.Component {
 
     handleSlide = (x) => {
         this.timeout = setTimeout(() => {
-
+            this.setState({ valorSlide: x });
             if (x === 0)
                 this.setState({ slide: this.renderListadoEquipo() });
 
@@ -103,6 +106,75 @@ class DashBoard extends React.Component {
             //  this.handleOpen2();
         }, timeoutLength)
     }
+
+    getWeekNumber(date) {
+        var d = new Date(date);  //Creamos un nuevo Date con la fecha de "this".
+        d.setHours(0, 0, 0, 0);   //Nos aseguramos de limpiar la hora.
+        d.setDate(d.getDate() + 4 - (d.getDay() || 7)); // Recorremos los días para asegurarnos de estar "dentro de la semana"
+        //Finalmente, calculamos redondeando y ajustando por la naturaleza de los números en JS:
+        return Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
+    };
+
+    consultaProductivad(year, Nsemana, puntos, puntosP, fPP, fE, nsemanaMes, mes, tipo) {
+        const fecha = new Date();
+        let valido = false;
+        const list = this.state.semanasP;
+        if (list) {
+            Object.keys(list).map((key, index) => {
+                const listaY = list[key];
+                Object.keys(listaY).map((key2, index) => {
+                    if (year === key && Nsemana === key2)
+                        valido = true;
+                });
+            });
+        }
+
+        if (valido === false) {
+            firebase.database().ref(`Equipo-Puntospro/${tipo}/${year}/${Nsemana}`).set({
+                fechaCreado: moment(new Date).format('YYYY-MM-DD'),
+                unidadesTrabajadas: puntos,
+                unidadesPlan: puntosP,
+                productividadPropia: fPP,
+                productividadEsperada: fE,
+                mes,
+                nsemanaMest: nsemanaMes
+            });
+
+        }
+    }
+
+    consultaProductivadPersonal(year, Nsemana, puntos, puntosP, fPP, fE, fEq, nsemanaMes, mes, tipo) {
+        const fecha = new Date();
+        let valido = false;
+        const list = this.state.semanasP;
+        if (list) {
+            Object.keys(list).map((key, index) => {
+                const listaY = list[key];
+                Object.keys(listaY).map((key2, index) => {
+                    if (year === key && Nsemana === key2)
+                        valido = true;
+                });
+            });
+        }
+
+        if (valido === false) {
+            firebase.database().ref(`Usuario-Puntospro/${tipo}/${year}/${Nsemana}`).set({
+                fechaCreado: moment(new Date).format('YYYY-MM-DD'),
+                unidadesTrabajadas: puntos,
+                unidadesPlan: puntosP,
+                productividadPropia: fPP,
+                productividadEsperada: fE,
+                productividadEquipo: fEq,
+                mes,
+                nsemanaMest: nsemanaMes
+            });
+
+        }
+    }
+
+
+
+
 
 
 
@@ -144,10 +216,6 @@ class DashBoard extends React.Component {
                         this.props.equipoConsultas({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
                     });
                 });
-
-
-
-
 
             });
 
@@ -258,6 +326,7 @@ class DashBoard extends React.Component {
         this.setState({ ObjsFactors: [] });
         Object.keys(objs).map((key, index) => {
 
+
             if (this.props.userId === objs[key].idUsuario)
                 return;
             if (!objs[key].concepto)
@@ -329,6 +398,7 @@ class DashBoard extends React.Component {
             this.setState({ ObjsFactors: fact });
             factorSemana = factorSemana + Math.round(puntos);
         });
+
         this.setState({ factorSemana });
     }
 
@@ -363,11 +433,33 @@ class DashBoard extends React.Component {
             .then(function () { console.log("GAPI client loaded for API"); },
                 function (err) { console.error("Error loading GAPI client for API", err); });
         this.actualizarequipoConsulta();
+        const starCountRef2 = firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`);
+        starCountRef2.on('value', (snapshot) => {
+            this.setState({ nivelEquipo: snapshot.val() })
+            if (!snapshot.val()) {
+                firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`).set({
+                    nivel: 90,
+                });
+                this.setState({ nivelEquipo: { nivel: 90 } })
+            }
+        });
+
+
+
         this.handleOpen();
         const starCountRef3 = firebase.database().ref().child(`Utilidades-Valoraciones`);
         starCountRef3.on('value', (snapshot) => {
             this.setState({ UtilFactors: snapshot.val() });
         });
+
+
+        const starCountRef = firebase.database().ref().child(`Equipo-Puntospro/${this.props.usuarioDetail.idUsuario}`);
+        starCountRef.on('value', (snapshot) => {
+            this.setState({ semanasP: snapshot.val() });
+        });
+
+
+
 
         this.setState({ slide: this.renderListadoEquipo() });
         this.props.verEquipos(false);
@@ -427,7 +519,7 @@ class DashBoard extends React.Component {
 
         }
         else if (name === 'Productividad vs Calidad') {
-            const graficaG = <GraficaG4 />;
+            const graficaG = <GraficaG4 prod={this.state.productividadobj} />;
             this.setState({ grafica: graficaG })
 
         }
@@ -454,21 +546,129 @@ class DashBoard extends React.Component {
     calcularAvancePorMes(arreglo) {
         let factorPlan = [];
         let factorTrab = [];
+        let factorPlanS = [];
+        let factorTrabS = [];
         const fechas = this.arregloFechaMes();
         Object.keys(fechas).map((key2, index) => {
             let factorP = 0;
             let factorT = 0;
+
             Object.keys(arreglo).map((key, index) => {
-                if (fechas[key2] === moment(arreglo[key].fechafin, "YYYY-MM-DD").format("MM"))
+
+                if (fechas[key2] === moment(arreglo[key].fechafin, "YYYY-MM-DD").format("MM")) {
                     factorP = factorP + arreglo[key].factor;
-                if (fechas[key2] === moment(arreglo[key].dateEnd, "YYYY-MM-DD").format("MM"))
+                    const nw = this.getWeekNumber(arreglo[key].fechafin);
+                    const ff = moment(arreglo[key].fechafin, "YYYY-MM-DD").format("YYYY");
+                    const mm = (moment(arreglo[key].fechafin, "YYYY-MM-DD").week() - (moment(arreglo[key].fechafin, "YYYY-MM-DD").month() * 4));
+                    const mes = moment(arreglo[key].fechafin, "YYYY-MM-DD").format('MMMM');
+
+                    if (!factorPlanS[ff + nw.toString()])
+                        factorPlanS[ff + nw.toString()] = { puntos: arreglo[key].factor, year: ff, semana: nw, nsemanMes: mm, mes, fecha: arreglo[key].fechafin, };
+                    else
+                        factorPlanS[ff + nw.toString()].puntos = factorPlanS[ff + nw.toString()].puntos + arreglo[key].factor;
+
+                }
+                if (fechas[key2] === moment(arreglo[key].dateEnd, "YYYY-MM-DD").format("MM")) {
                     factorT = factorT + arreglo[key].factor;
+                    const nw = this.getWeekNumber(arreglo[key].dateEnd);
+                    const ff = moment(arreglo[key].dateEnd, "YYYY-MM-DD").format("YYYY");
+                    const mm = (moment(arreglo[key].dateEnd, "YYYY-MM-DD").week() - (moment(arreglo[key].dateEnd, "YYYY-MM-DD").month() * 4));
+                    const mes = moment(arreglo[key].dateEnd, "YYYY-MM-DD").format('MMMM');
+                    if (!factorTrabS[ff + nw.toString()])
+                        factorTrabS[ff + nw.toString()] = { puntos: arreglo[key].factor, year: ff, semana: nw, nsemanMes: mm, mes };
+
+                    else
+                        factorTrabS[ff + nw.toString()].puntos = factorTrabS[ff + nw.toString()].puntos + arreglo[key].factor;
+
+                    //Agrega semanas cuando no se planifica
+                    if (!factorPlanS[ff + nw.toString()])
+                        factorPlanS[ff + nw.toString()] = { puntos: 0, year: ff, semana: nw, nsemanMes: mm, mes, fecha: arreglo[key].dateEnd, };
+
+
+
+                }
+
             });
+
             factorPlan.push(factorP);
             factorTrab.push(factorT);
         });
+        this.setState({ facSemana: { factorTrabS, factorPlanS } });
 
+        //productividad por semana
+        let productividadSemana = []
+        let maxfT = 0;
+        let afT = [];
+        let numeroPersonas = 0;
+        //numero de personas de equipo
+        Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
+            if (this.props.equipoConsulta.listaPersonas[key].Rol === '3')
+                numeroPersonas++;
+        });
+
+
+        if (factorPlanS.length > 0) {
+            Object.keys(factorPlanS).map((key, index2) => {
+                const fP = factorPlanS[key].puntos === 0 ? factorTrabS[key].puntos : factorPlanS[key].puntos;
+                const fT = factorTrabS[key] !== undefined ? factorTrabS[key].puntos : 0;
+                let fTE = fT;
+                if (this.state.nivelEquipo) {
+                    if (!this.state.nivelEquipo.unidades || index2 !== Object.keys(factorPlanS).length - 1)
+                        fTE = fT * (this.state.nivelEquipo.nivel / 100);
+                    else
+                        fTE = this.state.nivelEquipo.unidades;
+                }
+
+                let fE = fT === 0 ? 1 : fT / fTE;
+                maxfT = fT > maxfT ? fT : maxfT;
+
+                if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0) {
+
+                    let fEq = 0;
+                    Object.keys(this.state.nivelEquipo.unidadesEquipo).map((key2, index) => {
+                        if (key2 === factorPlanS[key].year) {
+                            const arrayValores = this.state.nivelEquipo.unidadesEquipo[key2];
+                            Object.keys(arrayValores).map((key3, index) => {
+                                if (key3 === factorPlanS[key].semana.toString()) {
+
+                                    fEq = arrayValores[key3].valor / numeroPersonas;
+                                    fE = arrayValores[key3].valorEsperado / numeroPersonas;
+                                }
+                            });
+                        }
+                    });
+                    //algortimo de productividad personas
+                    const valor = (fT / fP) * 0.5 + (fT / fE) * 0.2 + (fEq === 0 ? 1 : fT / fEq) * 0.3;
+                    productividadSemana.push({ valor, label: 'sem.' + factorPlanS[key].nsemanMes + ' ' + factorPlanS[key].mes, fecha: factorPlanS[key].fecha });
+                    this.consultaProductivadPersonal(factorPlanS[key].year, factorPlanS[key].semana, fT, fP, fT / fP, fE, fEq, factorPlanS[key].nsemanMes, factorPlanS[key].mes, this.props.equipoConsulta.sell);
+                }
+                else {
+                    this.consultaProductivad(factorPlanS[key].year, factorPlanS[key].semana, fT, fP, fT / fP, fE, factorPlanS[key].nsemanMes, factorPlanS[key].mes, this.props.usuarioDetail.usuario.equipo);
+                    //algortimo de productividad equipo
+                    const valor = (fT / fP) * 0.6 + fE * 0.4;
+                    productividadSemana.push({ valor, label: 'sem.' + factorPlanS[key].nsemanMes + ' ' + factorPlanS[key].mes, fecha: factorPlanS[key].fecha });
+                    afT[factorPlanS[key].year] = { ...afT[factorPlanS[key].year], [factorPlanS[key].semana]: { valor: fT, valorEsperado: fTE } }
+                }
+            });
+        }
+        else { ///si no tiene ningun valor
+            const mm = moment().week() - (moment().month() * 4);
+            const mes = moment().format('MMMM');
+            productividadSemana.push({ valor: 0, label: 'sem.' + mm + ' ' + mes, fecha: moment().format("YYYY-MM-DD") });
+
+        }
+        //actualiza la productividad
+        if (!this.props.equipoConsulta || !this.props.equipoConsulta.sell || this.props.equipoConsulta.sell === 0) {
+            firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`).set({
+                ...this.state.nivelEquipo,
+                unidades: maxfT * this.state.nivelEquipo.nivel * 0.01,
+                unidadesEquipo: afT,
+            });
+        }
+
+        this.setState({ productividadobj: productividadSemana });
         return ({ factorPlan, factorTrab });
+
 
     }
 
@@ -622,7 +822,7 @@ class DashBoard extends React.Component {
                                 </div>
                                 <div>
                                     <Button icon="arrow right" className="ocultarMenu" circular style={{ visibility: !this.props.verEquipo === true ? 'hidden' : null, position: 'relative', left: '-180px', top: '510px', background: 'purple', color: 'white' }}
-                                        onClick={() => { this.props.verEquipos(!this.props.verEquipo); }}
+                                        onClick={() => { this.props.verEquipos(!this.props.verEquipo); this.handleSlide(this.state.valorSlide); this.setState({ activeItem: 'semana' }) }}
                                     ></Button>
                                 </div>
 

@@ -161,8 +161,8 @@ class App extends React.Component {
                               */
 
             if (this.props.pasoOnboarding === 0 || this.props.usuarioDetail.usuario.onboarding)
-               // this.rendeSeguimientoTrabajo(chatID);
-                this.renderTareaDiaria(chatID);
+                this.rendeSeguimientoTrabajo(chatID);
+               // this.renderTareaDiaria(chatID);
             else if (this.props.isChat === false || this.props.pasoOnboarding === 1)
                 //    this.rendeSeguimientoTrabajo(chatID);
                 this.renderTareaDiaria(chatID);

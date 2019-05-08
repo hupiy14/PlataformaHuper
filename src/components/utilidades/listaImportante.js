@@ -46,8 +46,10 @@ class listImportante extends React.Component {
                 if (ObjTrabajo[key2].compartidoEquipo) {
                     const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${ObjTrabajo[key2].idUsuarioGestor}/${ObjTrabajo[key2].objetivoPadre}`);
                     starCountRef.on('value', (snapshot) => {
-                        const resultado2 = { ...ObjTrabajo[key2], avancePadre: snapshot.val().avance }
+                        if(snapshot.val()){
+                        const resultado2 = { ...ObjTrabajo[key2], avancePadre:   snapshot.val().avance }
                         objetivos[key2] = { ...resultado2 };
+                        }
                     });
 
                 }

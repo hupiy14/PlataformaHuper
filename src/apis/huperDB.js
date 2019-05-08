@@ -2,7 +2,7 @@
 
 
 ///firebase testing huputy
-
+/*
 export const config = {
     apiKey: 'AIzaSyDKEIQRnNYczx3IZgiLwIucSBCBLg1t0Wg',
     authDomain: 'upity-9b190.firebaseapp.com',
@@ -13,7 +13,8 @@ export const config = {
 }
 
 ///firebase desarrollo 
-/*
+*/
+
 export const config = {
     apiKey: "AIzaSyAKC1R5XUU8UhfQB8bJB0xc1IPgf2nwFS8",
     authDomain: "pruebahuper.firebaseapp.com",
@@ -23,7 +24,7 @@ export const config = {
     messagingSenderId: "328282757234"
   };
 
-*/
+
 
 //firebase.initializeApp(config);
 //firebase.firestore().settings({ timestampsInSnapshots: true });
