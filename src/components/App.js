@@ -23,7 +23,7 @@ import Onboard from './PruebaP';
 import Profile from './profileHuper';
 import Exito from './continuarProceso';
 import ContinuarProceso from './continuarProceso';
-
+import ModalFormValidacion from './gestorModules/formularioValidacionObj';
 //configuracion de flujo
 
 import  FLujoCreate from './modules/newFlowWork';
@@ -77,12 +77,12 @@ class App extends React.Component {
                                             <Route path="/onboarding" exact component={Onboard} />
                                             <Route path="/profile" exact component={Profile} />
                                             <Route path="/proceso/exito" exact component={Exito} />
-
+                                            <Route path="/formulario/validacion" exact component={ModalFormValidacion} />
                                             <Route path="/formulario" exact component={FomularioGlobal} />
                                             <Route path="/formulario/empresa" exact component={FomularioEmp} />
                                             <Route path="/formulario/equipo" exact component={FormularioEquipo} />
                                             <Route path="/formulario/codigo" exact component={FormularioCodigo} />
-
+                                           
                                             <Route path="/newworkflow" exact component={FLujoCreate} />
                                             
 

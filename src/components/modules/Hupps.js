@@ -3,6 +3,8 @@ import { connect } from 'react-redux';
 import CardFeedback from '../utilidades/cardFeed';
 //import image from '../../images/hupityNewlogo.png';
 import unsplash from '../../apis/unsplash';
+import { Button, Header, Icon, Modal, Input, Image, Card } from 'semantic-ui-react';
+import history from '../../history';
 
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs } from '../modules/chatBot/actions';
 
@@ -216,7 +218,9 @@ class Hupps extends React.Component {
 
         return (
 
-            <div> {this.renderGrafico(this)}
+
+            <div>
+                {this.renderGrafico(this)}
             </div>
         );
 

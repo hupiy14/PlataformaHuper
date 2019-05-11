@@ -61,7 +61,7 @@ class DashBoard extends React.Component {
         valueH: false, slide: null, seleccion: null, ObjsFactors: [],
         grafica: null, numeroO: 0, UtilFactors: null, selEq: null,
         semanasP: [], facSemana: null, nivelEquipo: null, productividadobj: [],
-        valorSlide: 0,
+        valorSlide: 0, actDif: [], calidadSubjetiva: null, factorCalidad: null,
     };
 
     handleVariables = (x) => {
@@ -270,8 +270,6 @@ class DashBoard extends React.Component {
             this.handleVariables();
         }
         else if (this.props.equipoConsulta && this.props.equipoConsulta.sell === 0 && (this.state.selEq === null || this.state.selEq !== this.props.equipoConsulta.sell)) {
-
-            console.log('entros2');
             this.setState({ selEq: this.props.equipoConsulta.sell });
             this.handleVariables();
         }
@@ -366,6 +364,8 @@ class DashBoard extends React.Component {
 
             //            console.log(puntos);
             let actividades = [];
+            let tiempo = 0;
+            let tiempoMM = 0;
             if (!tareas)
                 return;
             Object.keys(tareas).map((key5, index) => {
@@ -382,6 +382,17 @@ class DashBoard extends React.Component {
                                     if (actividades[key4].fecha === ttareas[key3].dateEnd) {
                                         entro = true;
                                         actividades[key4] = { fecha: actividades[key4].fecha, cantidad: actividades[key4].cantidad + 1 }
+
+
+                                        const ho = parseInt(moment(ttareas[key3].horaPlanificada, 'hh:mm').format('hh'));
+                                        const mo = parseInt(moment(ttareas[key3].horaPlanificada, 'hh:mm').format('mm'));
+                                        const valMinutos = moment(ttareas[key3].horaEstimada, 'hh:mm').subtract('minutes', mo);
+                                        const valhoras = moment(ttareas[key3].horaEstimada, 'hh:mm').subtract('hour', ho);
+                                        tiempo = tiempo + parseInt(moment(valhoras).format('hh'));
+                                        tiempoMM = tiempoMM + parseInt(moment(valMinutos).format('mm'));
+
+
+
                                     }
                                 });
                                 if (entro === false) {
@@ -394,7 +405,14 @@ class DashBoard extends React.Component {
                 });
             });
             const fact = this.state.ObjsFactors;
-            fact[key] = { factor: Math.round(puntos), avance: nTareas === 0 ? 0 : 1 / nTareas, actividades, fechafin: moment(objs[key].fechafin).format('YYYY-MM-DD'), dateEnd: objs[key].dateEnd ? objs[key].dateEnd : null };
+            fact[key] = {
+                factor: Math.round(puntos),
+                obj: objs[key],
+                avance: nTareas === 0 ? 0 : 1 / nTareas, actividades,
+                fechafin: moment(objs[key].fechafin).format('YYYY-MM-DD'),
+                tiempo: parseInt(tiempo * 60 + tiempoMM),
+                dateEnd: objs[key].dateEnd ? objs[key].dateEnd : null
+            };
             this.setState({ ObjsFactors: fact });
             factorSemana = factorSemana + Math.round(puntos);
         });
@@ -459,8 +477,12 @@ class DashBoard extends React.Component {
         });
 
 
-
-
+        const starCountRef4 = firebase.database().ref().child(`Equipo-Act-Dif/${this.props.usuarioDetail.usuario.equipo}`);
+        starCountRef4.on('value', (snapshot) => {
+            if (snapshot.val()) {
+                this.setState({ actDif: snapshot.val() });
+            }
+        });
         this.setState({ slide: this.renderListadoEquipo() });
         this.props.verEquipos(false);
         this.handleVariables();
@@ -519,7 +541,7 @@ class DashBoard extends React.Component {
 
         }
         else if (name === 'Productividad vs Calidad') {
-            const graficaG = <GraficaG4 prod={this.state.productividadobj} />;
+            const graficaG = <GraficaG4 prod={this.state.productividadobj} cal={this.state.factorCalidad} />;
             this.setState({ grafica: graficaG })
 
         }
@@ -541,6 +563,36 @@ class DashBoard extends React.Component {
             this.setState({ seleccion: null });
             return 'Lista de Objetivos';
         }
+    }
+
+    calcularCalidad(objCal) {
+        //Algoritmo de calidad del trabajo
+        const vFactor = 0.05;
+        //Acontinacion las primeras cuatro medidas suman el 20%
+        const valorSubjetivo = this.valorCalidadD(objCal.dificultadA, vFactor) + this.valorCalidadD(objCal.impactoA, vFactor) + this.valorCalidadD(objCal.tiempoA, vFactor);
+        const valorSubjetivoF = objCal.dificultadA === '0' || objCal.impactoA === '0' || objCal.tiempoA === '0' ? !objCal.feedback ? 0 : vFactor * 1 / 2 : vFactor;
+        //lA calificacion el 40%
+        const valorCalificacion = (objCal.calificacion ? objCal.calificacion : 3 / 5) * 0.4;
+        //Valor subjetivo
+        const VS = valorSubjetivo + valorSubjetivoF + valorCalificacion;
+        this.setState({ calidadSubjetiva: VS });
+    }
+
+    valorCalidadD(valor, por) {
+        if (valor === '0')
+            return por * 1;
+        else if (valor === '1')
+            return por * 1 / 2;
+        else if (valor === '2')
+            return por * 1 / 4;
+        else
+            return por;
+    }
+
+    guardarDifultad() {
+        firebase.database().ref(`Equipo-Act-Dif/${this.props.usuarioDetail.usuario.equipo}`).set({
+            ...this.state.actDif
+        });
     }
 
     calcularAvancePorMes(arreglo) {
@@ -575,10 +627,17 @@ class DashBoard extends React.Component {
                     const mm = (moment(arreglo[key].dateEnd, "YYYY-MM-DD").week() - (moment(arreglo[key].dateEnd, "YYYY-MM-DD").month() * 4));
                     const mes = moment(arreglo[key].dateEnd, "YYYY-MM-DD").format('MMMM');
                     if (!factorTrabS[ff + nw.toString()])
-                        factorTrabS[ff + nw.toString()] = { puntos: arreglo[key].factor, year: ff, semana: nw, nsemanMes: mm, mes };
+                        factorTrabS[ff + nw.toString()] = {
+                            puntos: arreglo[key].factor, year: ff, semana: nw, nsemanMes: mm, mes, fecha: arreglo[key].dateEnd,
+                            comentarios: (arreglo[key].obj.comentarios ? arreglo[key].obj.comentarios.length : 1), act: (arreglo[key].actividades ? arreglo[key].actividades.length : 0)
+                        };
 
-                    else
+                    else {
                         factorTrabS[ff + nw.toString()].puntos = factorTrabS[ff + nw.toString()].puntos + arreglo[key].factor;
+                        factorTrabS[ff + nw.toString()].comentarios = factorTrabS[ff + nw.toString()].comentarios + (arreglo[key].obj.comentarios ? arreglo[key].obj.comentarios.length : 0);
+                        factorTrabS[ff + nw.toString()].act = factorTrabS[ff + nw.toString()].act + (arreglo[key].actividades ? arreglo[key].actividades.length : 0);
+
+                    }
 
                     //Agrega semanas cuando no se planifica
                     if (!factorPlanS[ff + nw.toString()])
@@ -594,6 +653,88 @@ class DashBoard extends React.Component {
             factorTrab.push(factorT);
         });
         this.setState({ facSemana: { factorTrabS, factorPlanS } });
+
+        this.setState({ factorCalidad: null });
+        //Calidad por semana
+        let calidadF = [];
+        Object.keys(factorTrabS).map((keyP, index) => {
+            let calidad = 0;
+            Object.keys(arreglo).map((keyA, index) => {
+                if (arreglo[keyA].dateEnd) {
+                    const nw = this.getWeekNumber(arreglo[keyA].dateEnd);
+
+                    if (nw === factorTrabS[keyP].semana) {
+
+                        //cuando se selecciona una persona
+
+                        this.calcularCalidad(arreglo[keyA].obj);
+                        //Factor tiempo, tiempo estimado/tiempo trabajado
+                        const tiempoE = Math.round((arreglo[keyA].factor / factorTrabS[keyP].puntos) * 40);
+                        const tiempoW = tiempoE / (arreglo[keyA].tiempo === 0 ? tiempoE : (arreglo[keyA].tiempo / 60));
+                        const facTiempo = (tiempoW > 2 ? 2 : tiempoW) * 0.1;
+
+                        //factor comentarios
+                        const comentariosE = ((factorTrabS[keyP].comentarios ? factorTrabS[keyP].comentarios : 1) / factorTrabS[keyP].puntos) * arreglo[keyA].factor;
+                        const comentariosW = comentariosE / (arreglo[keyA].obj.comentarios ? arreglo[keyA].obj.comentarios.length : comentariosE);
+                        const facComentarios = (comentariosW > 1.5 ? 1.5 : comentariosW) * 0.1;
+
+
+                        //factor actividades por unidad
+                        const actividadesE = (factorTrabS[keyP].act / factorTrabS[keyP].puntos) * arreglo[keyA].factor;
+                        const actividadesW = (arreglo[keyA].actividades ? arreglo[keyA].actividades.length : actividadesE) / actividadesE;
+                        const facActividades = (actividadesW > 2 ? 2 : actividadesW) * 0.1;
+
+                        //factor actividades por dificultad
+                        const dificultadA = (arreglo[keyA].actividades.length > 0 ? arreglo[keyA].actividades.length : 1);
+                        const dificultadB = dificultadA;
+                        let dicultadW = 1;
+
+                        //
+                        if (this.state.actDif.length > 0) {
+                            const list = this.state.actDif;
+                            Object.keys(list).map((keyD, index) => {
+                                if (keyD === arreglo[keyA].obj.prioridad) {
+                                    const list2 = list[keyD];
+                                    Object.keys(list2).map((keyE, index) => {
+                                        if (keyE === arreglo[keyA].obj.dificultad) {
+                                            dificultadA = list2[keyE];
+                                        }
+                                    });
+                                }
+                            });
+                            const lt = this.state.actDif;
+                            if (dificultadB !== dificultadA) {
+                                dicultadW = (((dificultadA + dificultadB) / 2) / dificultadB);
+                                lt[arreglo[keyA].obj.prioridad] = { [arreglo[keyA].obj.dificultad]: (dificultadA + dificultadB) / 2 };
+                            }
+                            else { lt[arreglo[keyA].obj.prioridad] = { [arreglo[keyA].obj.dificultad]: dificultadA }; }
+                            this.setState({ actDif: lt });
+
+                        }
+                        else {
+                            const lt = this.state.actDif;
+                            lt[arreglo[keyA].obj.prioridad] = { [arreglo[keyA].obj.dificultad]: dificultadA };
+                            this.setState({ actDif: lt });
+                        }
+                        const facDificultad = (dicultadW > 2 ? 2 : dicultadW) * 0.1;
+                        if (calidad === 0)
+                            calidad = this.state.calidadSubjetiva + facDificultad + facActividades + facComentarios + facTiempo;
+                        calidad = (calidad + this.state.calidadSubjetiva + facDificultad + facActividades + facComentarios + facTiempo) / 2;
+
+
+                    }
+
+                }
+            });
+
+            calidadF['sem.' + factorTrabS[keyP].nsemanMes + ' ' + factorTrabS[keyP].mes] = { calidad, fecha: factorTrabS[keyP].fecha };
+        });
+        this.setState({ factorCalidad: calidadF });
+        this.guardarDifultad();
+
+
+        /////////////////************************************************************
+        /////////////////************************************************************ 
 
         //productividad por semana
         let productividadSemana = []
@@ -639,14 +780,14 @@ class DashBoard extends React.Component {
                     });
                     //algortimo de productividad personas
                     const valor = (fT / fP) * 0.5 + (fT / fE) * 0.2 + (fEq === 0 ? 1 : fT / fEq) * 0.3;
-                    productividadSemana.push({ valor, label: 'sem.' + factorPlanS[key].nsemanMes + ' ' + factorPlanS[key].mes, fecha: factorPlanS[key].fecha });
+                    productividadSemana['sem.' + factorPlanS[key].nsemanMes + ' ' + factorPlanS[key].mes] = { valor, fecha: factorPlanS[key].fecha };
                     this.consultaProductivadPersonal(factorPlanS[key].year, factorPlanS[key].semana, fT, fP, fT / fP, fE, fEq, factorPlanS[key].nsemanMes, factorPlanS[key].mes, this.props.equipoConsulta.sell);
                 }
                 else {
                     this.consultaProductivad(factorPlanS[key].year, factorPlanS[key].semana, fT, fP, fT / fP, fE, factorPlanS[key].nsemanMes, factorPlanS[key].mes, this.props.usuarioDetail.usuario.equipo);
                     //algortimo de productividad equipo
                     const valor = (fT / fP) * 0.6 + fE * 0.4;
-                    productividadSemana.push({ valor, label: 'sem.' + factorPlanS[key].nsemanMes + ' ' + factorPlanS[key].mes, fecha: factorPlanS[key].fecha });
+                    productividadSemana['sem.' + factorPlanS[key].nsemanMes + ' ' + factorPlanS[key].mes] = { valor, fecha: factorPlanS[key].fecha };
                     afT[factorPlanS[key].year] = { ...afT[factorPlanS[key].year], [factorPlanS[key].semana]: { valor: fT, valorEsperado: fTE } }
                 }
             });
@@ -654,7 +795,7 @@ class DashBoard extends React.Component {
         else { ///si no tiene ningun valor
             const mm = moment().week() - (moment().month() * 4);
             const mes = moment().format('MMMM');
-            productividadSemana.push({ valor: 0, label: 'sem.' + mm + ' ' + mes, fecha: moment().format("YYYY-MM-DD") });
+            productividadSemana['sem.' + mm + ' ' + mes] = { valor: 0, fecha: moment().format("YYYY-MM-DD") };
 
         }
         //actualiza la productividad

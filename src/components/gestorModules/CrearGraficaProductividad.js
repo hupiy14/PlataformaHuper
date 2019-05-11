@@ -9,14 +9,7 @@ import moment from 'moment';
 //calidad medida subjetiva del jefe
 
 
-const datosG1 = [
-    20,
-    45,
-    80,
-    35,
-    70,
-    15,
-];
+let calData = [];
 let prodData = [];
 const datosG111 = [
     80, 80, 60, 80, 60, 80
@@ -34,21 +27,25 @@ class CrearGraficaProd extends React.Component {
         let datos = [];
         labelsDias = [];
         prodData = [];
+        calData = [];
         let fecha = null;
-        console.log(this.props.prod)
+      //  console.log(this.props.prod)
+        //console.log(this.props.cal)
 
         Object.keys(this.props.prod).map((key, index) => {
             if (this.props.prod.length > 6) {
                 if (index => (this.props.prod.length - 6)) {
-                    labelsDias.push(this.props.prod[key].label);
-                    prodData.push(this.props.prod[key].valor *100);
+                    labelsDias.push(key);
+                    prodData.push(this.props.prod[key].valor * 100);
                     fecha = this.props.prod[key].fecha;
-                  
+                    calData.push(this.props.cal[key] ? this.props.cal[key].calidad * 100 : null);
+
                 }
             }
             else {
-                labelsDias.push(this.props.prod[key].label);
-                prodData.push(this.props.prod[key].valor *100);
+                labelsDias.push(key);
+                prodData.push(this.props.prod[key].valor * 100);
+                calData.push(this.props.cal[key] ? this.props.cal[key].calidad * 100 : null);
                 fecha = this.props.prod[key].fecha;
             }
         });
@@ -61,16 +58,16 @@ class CrearGraficaProd extends React.Component {
             }
         }
 
-        datos.push({ label: "Calidad Actual", data: datosG111, hidden: true, });
+        datos.push({ label: "Calidad", data: calData, hidden: true, });
         datos.push({ label: "Productividad", data: prodData });
-    //    datos.push({ label: "Semana Anterior", data: datosG1 });
+        //    datos.push({ label: "Semana Anterior", data: datosG1 });
 
 
         return (
 
             <CrearGrafica labelsX={labelsDias}
                 datos={datos}
-                titleGrafica={"Trabajo (Actividades) vs Dias"}
+                titleGrafica={"Valoración en las ultimas 5 semnanas"}
                 numeroGrafica={'2'}
                 maxLen={'140'}
                 TituloGrafica={"Productividad vs Calidad"}

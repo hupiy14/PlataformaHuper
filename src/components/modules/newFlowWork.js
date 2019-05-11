@@ -126,17 +126,17 @@ class newFlowWork extends React.Component {
         let contador = 0;
         if (!listaX)
             return;
-        let aumento = Math.round(colorFases.length / listaX.length); 
+        let aumento = Math.round(colorFases.length / listaX.length);
         if (listaX.length > colorFases.length)
             aumento = 1;
         Object.keys(listaX).map(function (key, index) {
-           
+
             console.log(listaX[key].valor);
             nuevoLista = [...nuevoLista, { label: listaX[key].valor, color: colorFases[contador] }];
             contador = contador + aumento;
-            
+
             if (contador > colorFases.length - 1)
-            contador = 0;
+                contador = 0;
 
         });
 

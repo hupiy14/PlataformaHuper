@@ -16,7 +16,7 @@ class GoogleAuth extends React.Component {
     state = { selectedFile: null, loaded: 0, codigo: null, usuario: null, direccion: null, tokenTrello: false }
 
 
-   
+
     componentDidMount() {
         //Conectar a google  con el drive,
         window.gapi.load('client:auth2', () => {
@@ -282,8 +282,10 @@ class GoogleAuth extends React.Component {
 
             if (this.state.tokenTrello === true)
                 history.push('/proceso/exito');
-            else
+
+            else if (!this.props.equipoConsulta || !this.props.equipoConsulta.trabajo) {
                 history.push('/dashboard');
+            }
             return (
                 <button onClick={this.onSignOutClick} className="ui red google button bar-top">
                     <i className="google icon" />
@@ -317,6 +319,8 @@ const mapStateToProps = (state) => {
 
         isSignedIn: state.auth.isSignedIn,
         nuevoUsuario: state.chatReducer.nuevoUsuario,
+        equipoConsulta: state.chatReducer.equipoConsulta,
+
 
     };
 };

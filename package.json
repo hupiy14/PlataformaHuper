@@ -1,6 +1,6 @@
 {
   "name": "hupity",
-  "version": "1.2.1",
+  "version": "1.3.1",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^3.8.3",

@@ -6,6 +6,8 @@ import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoCon
 import _ from 'lodash';
 import firebase from 'firebase';
 import moment from 'moment';
+import { Link } from 'react-router-dom';
+import history from '../../history';
 const timeoutLength = 150000;
 
 
@@ -17,10 +19,7 @@ class ListEjemplo extends React.Component {
         this.imageRef = React.createRef();
     }
 
-
-
     onChange = valueR => this.setState({ valueR: !this.state.valueR })
-
 
     componentDidMount() {
         if (this.props.objetivoF.resaltar)
@@ -29,10 +28,6 @@ class ListEjemplo extends React.Component {
             this.setState({ valueR: false });
         // this.imageRef.current.addEventListener('load', this.setSpans);
     }
-
-
-
-
 
     handleOpen = () => {
         this.handlePaso7();
@@ -48,10 +43,8 @@ class ListEjemplo extends React.Component {
             const newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.propss.userId}/${key}/comentarios`).push().key;
 
             const tipologia = this.props.responsableX ? 'feedback' : 'responder';
-
             comentariosEnvio = { usuario, tipo: tipologia, concepto: this.state.comentario }
             const usuarioD = this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.props.userId;
-
             //  let updates = {};
             //  updates[`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${key}/comentarios/${newPostKey2}`] = comentariosEnvio;
 
@@ -193,14 +186,8 @@ class ListEjemplo extends React.Component {
 
 
     ConcluirObjetivo(objetivox, user, key) {
-        //     console.log(this.state.valueR);
-        let objetivo = objetivox;
-        objetivo.estado = 'finalizado';
-        
-        let updates = {};
-        updates[`Usuario-Objetivos/${user}/${key}`] = {...objetivo, dateEnd:moment().format('YYYY-MM-DD'),};
-        console.log(updates);
-        firebase.database().ref().update(updates);
+        this.props.equipoConsultas({ ...this.props.equipoConsulta, trabajo: { objetivox, user, key } })
+        history.push('/formulario/validacion');
 
     }
 
@@ -270,6 +257,25 @@ class ListEjemplo extends React.Component {
 
     render() {
 
+        let btGuardar = <Button color='green' onClick={() => {
+            this.guardarResaltar(this.props.objetivoF, this.props.userId, this.props.keyF); this.handleClose2();
+        }
+        }>Guardar
+         <Icon name='chevron right' />
+        </Button>
+
+        if (this.props.usuarioGesto)
+
+            btGuardar =
+                <Button color='green' onClick={() => {
+                    this.ConcluirObjetivo(this.props.objetivoF, this.props.usuarioGesto, this.props.keyF);
+                }}>
+                    Validar <Icon name='clipboard outline' />
+                </Button>
+
+
+
+
         return (
 
 
@@ -331,9 +337,6 @@ class ListEjemplo extends React.Component {
                         <button className="ui basic green button espaciobb" onClick={this.handleOpen2}>
                             <i className={this.props.usuarioGesto ? "check circle icon" : 'paperclip icon'} ></i>
                             {this.props.usuarioGesto ? 'Validar' : 'Detalle'}</button>
-
-
-
                     }
                         open={this.state.modalOpen2}
                         onClose={this.handleClose2}
@@ -352,7 +355,7 @@ class ListEjemplo extends React.Component {
                                         <Modal.Description >
                                             <Header>{this.props.title}</Header>
                                             <h2>{this.props.title}</h2>
-                                            <p>  <i className="share icon" />Detalle del objetivo:  "  {this.props.descripcion} "</p>
+                                            <p> <i className="share icon" />Detalle del objetivo:  "  {this.props.descripcion} "</p>
                                             <p> <i className="share icon" />Prioridad:  "  {this.props.prioridad} "</p>
                                             <p> <i className="share icon" />Estado :  "  {this.props.estadox} "</p>
                                             <p> <i className="share icon" />Fecha de finalizado el objetivo:  "  {this.props.fechaFin} "</p>
@@ -390,16 +393,7 @@ class ListEjemplo extends React.Component {
                             <Button color='red' onClick={() => { this.handleClose2() }} inverted>
                                 <Icon name='close' /> Cancelar
                           </Button>
-                            <Button color='green' onClick={() => {
-
-                                if (this.props.usuarioGesto) { this.ConcluirObjetivo(this.props.objetivoF, this.props.usuarioGesto, this.props.keyF); }
-                                else { this.guardarResaltar(this.props.objetivoF, this.props.userId, this.props.keyF); } this.handleClose2();
-                            }
-                            }>
-
-
-                                {this.props.usuarioGesto ? 'Validar' : 'Guardar'} <Icon name={this.props.usuarioGesto ? 'clipboard outline' : 'chevron right'} />
-                            </Button>
+                            {btGuardar}
                         </Modal.Actions>
                     </Modal>
 
