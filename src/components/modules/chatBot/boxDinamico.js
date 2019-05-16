@@ -6,6 +6,7 @@ import {
     mensajeEntradas,
     numeroPreguntas,
     consultas,
+    ValorTextos,
     pregFantasmas,
 } from './actions';
 import { connect } from 'react-redux';
@@ -13,7 +14,7 @@ import _ from 'lodash';
 import firebase from 'firebase';
 import randon from '../../../lib/randonImage';
 import { Emoji } from 'emoji-mart';
-import { Image, Dropdown, Input, } from 'semantic-ui-react';
+import { Image, Dropdown, Input } from 'semantic-ui-react';
 
 
 
@@ -91,6 +92,7 @@ class boxDinaminco extends React.Component {
             x++;
             const consultaO = consulta.split('>');
             const values = consultaO[0];
+
             const detalle = consultaO[1].split('$');
             const tipoOb = detalle[0];
             const colorOb = detalle[1];
@@ -115,8 +117,10 @@ class boxDinaminco extends React.Component {
                 label: labelO,
                 icon: iconO,
                 image: imageO,
-                text: values,
-                value: values,
+                text: values.split('☼').length > 1 ? values.split('☼')[0] : values,
+                value: values.split('☼').length > 1 ? values.split('☼')[1] : values,
+
+
             }]
         });
 
@@ -210,11 +214,14 @@ class boxDinaminco extends React.Component {
                             return;
                         if (cconsulta2[key].Rol === '2')
                             return;
+
+
                         tagOptions = [...tagOptions, {
                             key: x,
                             icon: iconO,
-                            text: cconsulta2[key].usuario,
-                            value: cconsulta2[key].usuario,
+                            value: cconsulta[key].usuario.split('☼').length > 1 ? cconsulta[key].usuario.split('☼')[1] : cconsulta[key].usuario,
+                            text: cconsulta[key].usuario.split('☼').length > 1 ? cconsulta[key].usuario.split('☼')[0] : cconsulta[key].usuario,
+
                         }]
                     });
                 }
@@ -229,23 +236,27 @@ class boxDinaminco extends React.Component {
                     const ccconsulta = cconsulta[key];
                     Object.keys(ccconsulta).map(function (key, index) {
                         if (ccconsulta[key].concepto !== input && (ccconsulta[key].estado === 'activo' || ccconsulta[key].estado === 'trabajando')) {
+                            alert('Cuatro');
+                            console.log(ccconsulta[key].concepto.split('☼'));
                             tagOptions = [...tagOptions,
                             {
                                 key: key,
                                 icon: iconO,
-                                text: ccconsulta[key].concepto,
-                                value: ccconsulta[key].concepto,
+                                text: ccconsulta[key].concepto.split('☼').length > 1 ? ccconsulta[key].concepto.split('☼')[0] : ccconsulta[key].concepto,
+                                value: ccconsulta[key].concepto.split('☼').length > 1 ? ccconsulta[key].concepto.split('☼')[1] : ccconsulta[key].concepto,
                             }]
                         }
                     });
                 }
                 else if (cconsulta[key].estado === 'activo') {
+                    console.log('tres');
+                    console.log(cconsulta[key].concepto.split('☼'));
                     tagOptions = [...tagOptions,
                     {
                         key: key,
                         icon: iconO,
-                        text: cconsulta[key].concepto,
-                        value: cconsulta[key].concepto,
+                        text: cconsulta[key].concepto.split('☼').length > 1 ? cconsulta[key].concepto.split('☼')[0] : cconsulta[key].concepto,
+                        value: cconsulta[key].concepto.split('☼').length > 1 ? cconsulta[key].concepto.split('☼')[1] : cconsulta[key].concepto,
                     }]
                 }
             });
@@ -525,8 +536,18 @@ class boxDinaminco extends React.Component {
                     pointing="bottom"
                     direction="left"
                     onChange={(e, { value }) => {
-                        console.log(value);
-                        this.onInputChange(e, value)
+
+                        let text = null;
+                        Object.keys(tagOptions).map((key, index) => {
+                            if (tagOptions[key].value === value) {
+                                text = tagOptions[key].text;
+                            }
+                        });
+
+                        const arr = this.props.ValorTexto ;
+                        arr[value.substring(0, 3)]= { value, text } ;
+                        this.props.ValorTextos(arr);
+                        this.onInputChange(e, value, text)
                     }}
                     value={this.state.term}
                     options={tagOptions}
@@ -564,18 +585,20 @@ class boxDinaminco extends React.Component {
 
 
 
-    onInputChange = (event, value = null) => {
+    onInputChange = (event, value = null, text = null) => {
 
         if (!event) {
             this.setState({ term: '' });
         }
         else {
+
+
             if (value) {
-                this.props.valorInputs(value);
+                this.props.valorInputs({ value, text });
                 this.setState({ term: value });
             }
             else {
-                this.props.valorInputs(event.target.value);
+                this.props.valorInputs({ value: event.target.value, text });
                 this.setState({ term: this.props.valorInput });
             }
         }
@@ -657,9 +680,10 @@ const mapAppStateToProps = (state) => (
         consultaPregunta: state.chatReducer.consultaPregunta,
         idChatUser: state.chatReducer.idChatUser,
         nombreUser: state.chatReducer.nombreUser,
+        ValorTexto: state.chatReducer.ValorTexto,
         user: state.user
 
     });
 
 
-export default connect(mapAppStateToProps, { valorInputs, consultaPreguntaControls, pregFantasmas, submitMessage, mensajeEntradas, numeroPreguntas, consultas })(boxDinaminco);
+export default connect(mapAppStateToProps, { valorInputs, consultaPreguntaControls, pregFantasmas, ValorTextos, submitMessage, mensajeEntradas, numeroPreguntas, consultas })(boxDinaminco);

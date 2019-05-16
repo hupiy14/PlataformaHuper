@@ -5,6 +5,7 @@ import ListImportan from './utilidades/listaImportante';
 import ListEjemplo from './utilidades/ListaEjemplo';
 import Calendario2 from './utilidades/calendar2';
 import CrearGrafica from './utilidades/CrearGrafica';
+import CrearGrafica2 from './utilidades/CrearGrafica2';
 import './styles/ingresoHupity.css';
 import randomScalingFactor from '../lib/randomScalingFactor';
 import { Line } from 'react-chartjs-2';
@@ -22,6 +23,7 @@ import { Grid, Modal, Menu, Segment, Button, Dimmer, Header, Icon, Image, Portal
 import MenuChat from './MenuChat';
 import { pasoOnboardings, listaFormaciones } from './modules/chatBot/actions';
 import { object } from 'prop-types';
+
 const timeoutLength = 1800;
 const timeoutLength2 = 2000;
 const timeoutLength3 = 100000;
@@ -42,22 +44,6 @@ let labelsMonths = [];
 
 
 let datosPlanificados = [];
-const datosPlanificados1 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    //  randomScalingFactor()
-];
-const datosPlanificados11 = [
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor(),
-    randomScalingFactor()
-];
 
 const datosG3 = [
     randomScalingFactor(),
@@ -109,6 +95,7 @@ class DashBoard extends React.Component {
         ObjsFactorsM: [],
         TareasObjs: null,
         factorSemana: null,
+        ticUsuario: null,
     }
 
     handleOpenMenu = () => {
@@ -134,6 +121,9 @@ class DashBoard extends React.Component {
         starCountRef3.on('value', (snapshot) => {
             this.setState({ UtilFactors: snapshot.val() });
         });
+
+
+
         //carga el limite que las empresas definan
         datosPlanificados = [];
         const factorInicial = 100;
@@ -150,6 +140,15 @@ class DashBoard extends React.Component {
             starCountRef3.on('value', (snapshot) => {
                 this.setState({ TareasObjs: snapshot.val() });
             });
+
+            const diat = new Date();
+            const nameRef3 = firebase.database().ref().child(`Usuario-TIC/${this.props.userId}/${diat.getFullYear()}`)
+            nameRef3.on('value', (snapshot2) => {
+                console.log(snapshot2.val());
+                this.setState({ ticUsuario: snapshot2.val() })
+            });
+
+
             this.calculoDeAvance();
             this.renderGraficaSemana();
             this.setState({ open: true });
@@ -226,7 +225,7 @@ class DashBoard extends React.Component {
         const objs = this.props.listaObjetivo.objetivos;
         let factorSemana = 0;
         //Encontrar factor
-        this.setState({ObjsFactors: []});
+        this.setState({ ObjsFactors: [] });
         Object.keys(objs).map((key, index) => {
 
             let facPrioridad = 1;
@@ -315,7 +314,6 @@ class DashBoard extends React.Component {
 
     renderGraficaSemana() {
         let datos = [];
-        
         datosPlanificados = [];
         const factorInicial = 100;
         const avanceInicial = 20;
@@ -326,7 +324,7 @@ class DashBoard extends React.Component {
         datos.push({ label: "Progreso del trabajo", data: this.calcularAvancePorDia(this.state.ObjsFactors, this.state.factorSemana), hidden: true, });
         this.setState({
             grafica: <div>
-                <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
+                <Checkbox checked={false} className="historico-padding" label='Consultar Histórico' onChange={(e, { checked }) => { this.handleDimmedChange(checked); }} toggle />
                 <CrearGrafica labelsX={labelsDias}
                     datos={datos}
                     titleGrafica={"Trabajo (Actividades) vs Dias"}
@@ -342,12 +340,13 @@ class DashBoard extends React.Component {
 
     renderGraficaMeses() {
         let datos = [];
+
         let dat = this.calcularAvancePorMes(this.state.ObjsFactors);
         datos.push({ label: "Trabajo planificado", data: dat.factorPlan, hidden: true, });
         datos.push({ label: "Trabajo realizado", data: dat.factorTrab });
         this.setState({
             grafica: <div>
-                <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
+                <Checkbox checked={true} className="historico-padding" label='Consultar Histórico' onChange={(e, { checked }) => {  this.handleDimmedChange(checked); }} toggle />
                 <CrearGrafica labelsX={labelsMonths}
                     datos={datos}
                     titleGrafica={"Objetivo vs Meses"}
@@ -365,18 +364,62 @@ class DashBoard extends React.Component {
         return (<DashGestor />);
     }
 
-    handleDimmedChange = (e, { checked }) => {
-        this.setState({ valueH: checked });
+    handleDimmedChange(checked) {
+
         this.calculoDeAvance();
-        if (checked) {
-            this.setState({ valueH: false });
+        if (checked)
             this.renderGraficaMeses();
-        }
-        else {
-            this.setState({ valueH: true });
+
+
+        else
+        {
+            this.setState({valueH: false});
             this.renderGraficaSemana();
+        }
+
+
+    }
+
+
+    arregloSemana() {
+        const diat = new Date();
+        const ns = this.getWeekNumber(diat);
+        let datos = [];
+        const arrL = ['Talneto en tus actividades', 'Impacto de mis actividades', 'Responsabilidad en tus actividades', 'Talento grupal', 'Impacto en tu equipo', 'Motivacion en tu equipo', 'Mi talento', 'Mi impacto', 'Mi compromiso'];
+        let inicio = 0;
+        let limite = 2;
+        let valores = [];
+
+        if (ns - 3 > 0) {
+            inicio = ns - 2;
+            limite = ns + 1;
+        }
+        for (let index = inicio; index < limite; index++) {
+            const an = (new Date).getFullYear() + "-01-01";
+            const mm = (moment(an, "YYYY-MM-DD").add('days', index * 7).week() - (moment(an, "YYYY-MM-DD").add('days', index * 7).month() * 4));
+            Object.keys(this.state.ticUsuario).map((key, index2) => {
+                const valores = [];
+
+                if (parseInt(key) === index) {
+                    valores.push(this.state.ticUsuario[key].talentoE ? this.state.ticUsuario[key].talentoE.valorC * 20 : 10);
+                    valores.push(this.state.ticUsuario[key].talentoT ? this.state.ticUsuario[key].talentoT.valorC * 20 : 10);
+                    valores.push(this.state.ticUsuario[key].talentoF ? this.state.ticUsuario[key].talentoF.valorC * 20 : 10);
+
+                    valores.push(this.state.ticUsuario[key].impactoT ? this.state.ticUsuario[key].impactoT.valorC * 20 : 10);
+                    valores.push(this.state.ticUsuario[key].impactoE ? this.state.ticUsuario[key].impactoE.valorC * 20 : 10);
+                    valores.push(this.state.ticUsuario[key].impactoF ? this.state.ticUsuario[key].impactoF.valorC * 20 : 10);
+
+                    valores.push(this.state.ticUsuario[key].compromisoF ? this.state.ticUsuario[key].compromisoF.valorC * 20 : 10);
+                    valores.push(this.state.ticUsuario[key].compromisoE ? this.state.ticUsuario[key].compromisoE.valorC * 20 : 10);
+                    valores.push(this.state.ticUsuario[key].compromisoT ? this.state.ticUsuario[key].compromisoT.valorC * 20 : 10);
+
+                    const lab = 'Sen ' + (mm - 2) + '. ' + moment(an, "YYYY-MM-DD").add('days', index * 7).format('MMMM');
+                    datos.push({ label: "MIT " + lab, data: valores });
+                }
+            });
 
         }
+        return { arrL, datos };
     }
 
     handleItemClick = (e, { name }) => {
@@ -388,13 +431,13 @@ class DashBoard extends React.Component {
 
         else if (name === 'MIT') {
             let datos = [];
-            datos.push({ label: "Motivacion", data: datosG3, hidden: true, });
-            datos.push({ label: "Impacto", data: datosG33 });
-            datos.push({ label: "Talento", data: datosG333 });
-            const graficaG = <CrearGrafica labelsX={labelsMonths}
+            const trab = this.arregloSemana();
+            datos = trab.datos;
+
+            const graficaG = <CrearGrafica2 labelsX={trab.arrL}
                 datos={datos}
-                titleGrafica={"MIT vs Progreso"}
-                maxLen={'140'}
+                titleGrafica={"Medida MIT (Progreso)"}
+
                 TituloGrafica={"Motivacion, Impacto, Talento (MIT)"}
 
             />;
@@ -404,6 +447,13 @@ class DashBoard extends React.Component {
 
     }
 
+    getWeekNumber(date) {
+        var d = new Date(date);  //Creamos un nuevo Date con la fecha de "this".
+        d.setHours(0, 0, 0, 0);   //Nos aseguramos de limpiar la hora.
+        d.setDate(d.getDate() + 4 - (d.getDay() || 7)); // Recorremos los días para asegurarnos de estar "dentro de la semana"
+        //Finalmente, calculamos redondeando y ajustando por la naturaleza de los números en JS:
+        return Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
+    };
 
     renderProgresoTrabajo() {
         return (<div style={{ width: '100%' }}>
@@ -416,6 +466,7 @@ class DashBoard extends React.Component {
                 />
             </Menu>
             <Segment attached='bottom'>
+            
                 {this.state.grafica}
             </Segment>
         </div>)
@@ -450,7 +501,7 @@ class DashBoard extends React.Component {
         datos.push({ label: "Talento", data: datosG333 });
 
         return (
-            <CrearGrafica labelsX={labelsMonths}
+            <CrearGrafica2 labelsX={labelsMonths}
                 datos={datos}
                 fuerza={0.25}
                 titleGrafica={"MIT vs Progreso"}

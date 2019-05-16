@@ -33,9 +33,16 @@ import {
   DETAIL_US_NEW,
   INPUT_DINAMICO,
   PRIMERA_VEZ,
+  VALOR_TEXT,
 
 } from './types';
 
+export const ValorTextos = (ValorTexto) => {
+  return {
+    type: VALOR_TEXT,
+    payload: ValorTexto
+  };
+};
 
 export const primeraVs = (primeraV) => {
   return {

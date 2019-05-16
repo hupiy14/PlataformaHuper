@@ -31,8 +31,8 @@ import firebase from 'firebase';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, verEquipos } from '../modules/chatBot/actions';
 import moment from 'moment';
 
-const timeoutLength = 3000;
-const timeoutLength2 = 500;
+const timeoutLength = 1000;
+const timeoutLength2 = 300;
 const timeoutLength3 = 1200;
 let labelsMonths = [];
 const HorizontalSidebar = ({ animation, direction, visible, equipo }) => (
@@ -91,6 +91,7 @@ class DashBoard extends React.Component {
 
             else if (x === 2)
                 this.setState({ slide: this.renderListaFormaciones() })
+
 
 
         }, timeoutLength2)
@@ -156,7 +157,7 @@ class DashBoard extends React.Component {
                 });
             });
         }
-
+        console.log(fE);
         if (valido === false) {
             firebase.database().ref(`Usuario-Puntospro/${tipo}/${year}/${Nsemana}`).set({
                 fechaCreado: moment(new Date).format('YYYY-MM-DD'),
@@ -172,6 +173,86 @@ class DashBoard extends React.Component {
         }
     }
 
+
+
+
+
+    ticArregloEquipo() {
+        const diat = new Date();
+        const ticUsuarios = this.props.equipoConsulta.listaPersonas;
+        const ns = this.getWeekNumber(diat);
+        let datos = [];
+        let datosA = [];
+        const arrL = ['Talneto en tus actividades', 'Impacto de mis actividades', 'Responsabilidad en tus actividades', 'Talento grupal', 'Impacto en tu equipo', 'Motivacion en tu equipo', 'Mi talento', 'Mi impacto', 'Mi compromiso'];
+        let inicio = 0;
+        let limite = 2;
+        let valores = [];
+
+        if (ns - 3 > 0) {
+            inicio = ns - 2;
+            limite = ns + 1;
+        }
+        for (let index = inicio; index < limite; index++) {
+            const an = (new Date).getFullYear() + "-01-01";
+            const mm = (moment(an, "YYYY-MM-DD").add('days', index * 7).week() - (moment(an, "YYYY-MM-DD").add('days', index * 7).month() * 4));
+            Object.keys(ticUsuarios).map((key2, index2) => {
+                let ticUsuario = [];
+                if (ticUsuarios[key2].rol === '2')
+                    return;
+                if (this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0 && key2 !== this.props.equipoConsulta.sell) {
+                    return;
+                }
+
+
+                ticUsuario = ticUsuarios[key2].tic ? ticUsuarios[key2].tic : [];
+                Object.keys(ticUsuario).map((key, index2) => {
+                    const valores = [];
+
+                    if (parseInt(key) === index) {
+                        const lab = 'Sen ' + (mm - 2) + '. ' + moment(an, "YYYY-MM-DD").add('days', index * 7).format('MMMM');
+                        const dat = datosA[lab] ? datosA[lab] : 0;
+                        valores['te'] = ticUsuario[key].talentoE ? ticUsuario[key].talentoE.valorC * 20 : 10 + dat.te ? dat.te : dat;
+                        valores['tt'] = ticUsuario[key].talentoT ? ticUsuario[key].talentoT.valorC * 20 : 10 + dat.tt ? dat.tt : dat;
+                        valores['tf'] = ticUsuario[key].talentoF ? ticUsuario[key].talentoF.valorC * 20 : 10 + dat.tf ? dat.tf : dat;
+
+                        valores['it'] = ticUsuario[key].impactoT ? ticUsuario[key].impactoT.valorC * 20 : 10 + dat.it ? dat.it : dat;
+                        valores['ie'] = ticUsuario[key].impactoE ? ticUsuario[key].impactoE.valorC * 20 : 10 + dat.ie ? dat.ie : dat;
+                        valores['if'] = ticUsuario[key].impactoF ? ticUsuario[key].impactoF.valorC * 20 : 10 + dat.if ? dat.if : dat;
+
+                        valores['cf'] = ticUsuario[key].compromisoF ? ticUsuario[key].compromisoF.valorC * 20 : 10 + dat.cf ? dat.cf : dat;
+                        valores['ce'] = ticUsuario[key].compromisoE ? ticUsuario[key].compromisoE.valorC * 20 : 10 + dat.ce ? dat.ce : dat;
+                        valores['ct'] = ticUsuario[key].compromisoT ? ticUsuario[key].compromisoT.valorC * 20 : 10 + dat.ct ? dat.ct : dat;
+                        //  console.log(valores);
+                        datosA[lab] = { ...valores };
+
+
+
+                        //   datos.push({ label: "MIT " + lab, data: valores });
+                    }
+                });
+
+            });
+
+            datos = [];
+            Object.keys(datosA).map((key, index2) => {
+                const dt = [];
+                dt.push(datosA[key].te);
+                dt.push(datosA[key].tt);
+                dt.push(datosA[key].tf);
+                dt.push(datosA[key].it);
+                dt.push(datosA[key].ie);
+                dt.push(datosA[key].if);
+                dt.push(datosA[key].cf);
+                dt.push(datosA[key].ce);
+                dt.push(datosA[key].ct);
+                datos.push({ label: "MIT " + key, data: dt });
+
+            });
+
+
+        }
+        return { arrL, datos };
+    }
 
 
 
@@ -212,6 +293,15 @@ class DashBoard extends React.Component {
                     starCountRef3.on('value', (snapshot3) => {
                         const rol = snapshot3.val();
                         usuariosCompletos[key] = { ...consulta[key], ...rol };
+                        this.setState({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
+                        this.props.equipoConsultas({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
+                    });
+
+                    const diat = new Date();
+                    const nameRef3 = firebase.database().ref().child(`Usuario-TIC/${key}/${diat.getFullYear()}`)
+                    nameRef3.on('value', (snapshot2) => {
+                        const tic = snapshot2.val();
+                        usuariosCompletos[key] = { ...this.state.listaPersonas[key], tic };
                         this.setState({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
                         this.props.equipoConsultas({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
                     });
@@ -497,7 +587,7 @@ class DashBoard extends React.Component {
     };
 
     handleDimmedChange = (e, { checked }) => {
-        console.log(checked);
+
         this.setState({ valueH: checked });
 
         if (checked) {
@@ -525,7 +615,7 @@ class DashBoard extends React.Component {
 
     handleItemClick = (e, { name }) => {
         this.setState({ activeItem: name })
-
+        console.log('primero');
         if (name === 'semana') {
             const graficaG =
                 <div>
@@ -536,7 +626,16 @@ class DashBoard extends React.Component {
 
         }
         else if (name === 'MIT') {
-            const graficaG = <GraficaG3 />;
+            let datos = [];
+            const trab = this.ticArregloEquipo();
+            datos = trab.datos;
+
+            const graficaG = <GraficaG3 labelsX={trab.arrL}
+                datos={datos}
+                titleGrafica={"Medida MIT (Progreso)"}
+                TituloGrafica={"Motivacion, Impacto, Talento (MIT)"}
+            />;
+
             this.setState({ grafica: graficaG })
 
         }
@@ -760,8 +859,9 @@ class DashBoard extends React.Component {
                         fTE = this.state.nivelEquipo.unidades;
                 }
 
-                let fE = fT === 0 ? 1 : fT / fTE;
+                let fE = fT === 0 ? 1 : fT / (fTE === 0 ? 1 : fTE);
                 maxfT = fT > maxfT ? fT : maxfT;
+
 
                 if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0) {
 
@@ -772,8 +872,8 @@ class DashBoard extends React.Component {
                             Object.keys(arrayValores).map((key3, index) => {
                                 if (key3 === factorPlanS[key].semana.toString()) {
 
-                                    fEq = arrayValores[key3].valor / numeroPersonas;
-                                    fE = arrayValores[key3].valorEsperado / numeroPersonas;
+                                    fEq = arrayValores[key3].valor / (!numeroPersonas ? 1 : numeroPersonas);
+                                    fE = arrayValores[key3].valorEsperado / (!numeroPersonas ? 1 : numeroPersonas);
                                 }
                             });
                         }
@@ -916,7 +1016,7 @@ class DashBoard extends React.Component {
                         <div className="two column stackable ui grid">
                             <div className="column fifteen wide">
                                 <div className="ui segment ">
-                                    <Sidebar.Pushable as={Segment}>
+                                    <Sidebar.Pushable as={Segment} onClick={() => { this.setState({ valueH: false }); }}>
                                         {
                                             <HorizontalSidebar animation="scale down" direction="right" visible={this.props.verEquipo} equipo={this.state.slide} />
                                         }

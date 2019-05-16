@@ -6,6 +6,7 @@ import ReactDOM from 'react-dom';
 import randomColor from '../../lib/randomColor';
 import randomScalingFactor from '../../lib/randomScalingFactor';
 import { Responsive, Segment } from 'semantic-ui-react';
+import { DatesRangeInput } from 'semantic-ui-calendar-react';
 const randonStyle = require('../../lib/randonStyle')
 
 class legenExample extends React.Component {
@@ -28,9 +29,11 @@ class legenExample extends React.Component {
             tooltips: {
                 mode: 'label'
             },
+         
             hover: {
                 mode: 'dataset'
             },
+        
             scales: {
                 xAxes: [
                     {
@@ -66,7 +69,9 @@ class legenExample extends React.Component {
             dataset.backgroundColor = randomColor(base, style)
             dataset.pointBorderColor = randomColor(0.7, style)
             dataset.pointBackgroundColor = randomColor(0.5, style)
-            dataset.pointBorderWidth = 2
+            dataset.pointBorderWidth = 2;
+            dataset.pointRadius= 5;
+           
             style = style + 1;
             if (style === 4)
                 style = 1;

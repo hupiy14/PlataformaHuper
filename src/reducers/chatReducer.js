@@ -31,6 +31,7 @@ import {
     PREGUNTA_FANTASMA,
     INPUT_DINAMICO,
     PRIMERA_VEZ,
+    VALOR_TEXT,
 
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -68,7 +69,7 @@ const INITIAL_STATE = {
     detailUsNew: null,
     inputdinamico: null,
     primeraV: null,
-
+    ValorTexto: [],
 
 };
 
@@ -139,6 +140,8 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, detailUsNew: action.payload };
         case INPUT_DINAMICO:
             return { ...state, inputdinamico: action.payload };
+        case VALOR_TEXT:
+            return { ...state, ValorTexto: action.payload };
         case PRIMERA_VEZ:
             return { ...state, primeraV: action.payload };
         default:

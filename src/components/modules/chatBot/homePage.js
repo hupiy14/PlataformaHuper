@@ -16,13 +16,19 @@ import Avatar from '../../../apis/xpress';
 import { object } from 'prop-types';
 
 
+let Tic_T = require('../tic_trabajo').default;
 
 
 let timeoutLength = 2500;
 let timeoutLength2 = 300;
 class Home extends React.Component {
 
-  state = { carpeta: null, updates: null, color: [], client2: null, avataresN: null, avatarX: 0, avatarY: 0, ultimaTarea: null, mensajeEnviado: false, personasInv: [], }
+  state = {
+    carpeta: null, updates: null, color: [],
+    client2: null, avataresN: null, avatarX: 0, valoresTIC: null,
+    avatarY: 0, ultimaTarea: null, mensajeEnviado: false, ticUsuario: null,
+    personasInv: [],
+  }
 
   onSearchXpress = async (text) => {
     if (this.state.avatarX === this.state.avatarY) return;
@@ -46,7 +52,7 @@ class Home extends React.Component {
   handleOpen = (valorInput, chatID, userID) => {
     //valida si ya se contesto si no se espera
     timeoutLength2 = 800;
-   if (userID === '1') {
+    if (userID === '1') {
       timeoutLength2 = 100;
       if (this.state.mensajeEnviado === true)
         timeoutLength2 = 300;
@@ -86,6 +92,17 @@ class Home extends React.Component {
     nameRef2.on('value', (snapshot2) => {
       this.props.consultaCanales(snapshot2.val());
     });
+
+    const nameRef = firebase.database().ref().child(`Categorias-TIC`)
+    nameRef.on('value', (snapshot2) => {
+      this.setState({ valoresTIC: snapshot2.val() })
+    });
+    const diat = new Date();
+    const nameRef3 = firebase.database().ref().child(`Usuario-TIC/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}`)
+    nameRef3.on('value', (snapshot2) => {
+      this.setState({ ticUsuario: snapshot2.val() })
+    });
+
   }
 
   componentDidUpdate() {
@@ -104,7 +121,7 @@ class Home extends React.Component {
 
   renderConsultarUltimaTarea() {
     const diat = new Date();
-    const nameRef2 = firebase.database().ref().child(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`)
+    const nameRef2 = firebase.database().ref().child(`Usuario - UltimaTarea / ${this.props.userId} / ${diat.getFullYear()} / ${this.getWeekNumber(diat)} / ${diat.getDate()}`)
     nameRef2.on('value', (snapshot2) => {
       this.setState({ ultimaTarea: snapshot2.val() });
     });
@@ -127,8 +144,9 @@ class Home extends React.Component {
   //Envio a slack el mensaje 
   renderEnvioSlack(activeChat, userID) {
 
-    if (this.props.valorInput.trim() === '') return;
-    this.handleOpen(this.props.valorInput, activeChat.chatID, userID);
+    const valor = this.props.valorInput.text ? this.props.valorInput.text : this.props.valorInput.value;
+    if (valor.trim() === '') return;
+    this.handleOpen(valor, activeChat.chatID, userID);
 
 
     if (activeChat.participants !== '6') {
@@ -144,7 +162,7 @@ class Home extends React.Component {
       this.state.client2.postMessage(
         canal,
         {
-          text: this.props.valorInput,
+          text: valor,
           attachments: [
             {
               text: this.props.nombreUser,
@@ -213,10 +231,9 @@ class Home extends React.Component {
 
     const fecha = new Date();
 
-    firebase.database().ref(`Usuario-Historico/${usuario}/${fecha.getFullYear()}/${fecha.getMonth()}/${fecha.getDate()}/${fecha.getTime()}`).set({
+    firebase.database().ref(`Usuario - Historico / ${usuario} / ${fecha.getFullYear()} / ${fecha.getMonth()} / ${fecha.getDate()} / ${fecha.getTime()}`).set({
       concepto: conceptoT,
       tipo: Tipo
-
     });
 
 
@@ -344,7 +361,8 @@ class Home extends React.Component {
     let arry = arreglo;
     let indiceA = indice;
     if (tipo === '10') {
-      const valRepetido = this.props.valorInput;
+      const valor = this.props.valorInput.text ? this.props.valorInput.text : this.props.valorInput.value;
+      const valRepetido = valor;
       Object.keys(valRepetido).map(function (key, index) {
         arry[indiceA] = { concepto: mensaje.replace('#>Nombre<#', valRepetido[key]), tipoPregunta: '5' };
         indiceA++;
@@ -372,10 +390,10 @@ class Home extends React.Component {
   onSubmit = (activeChat, userID) => {
 
 
-
-    if (!Array.isArray(this.props.valorInput))
-      if (this.props.valorInput.trim() === '') return;
-    this.handleOpen(this.props.valorInput, activeChat.chatID, userID);
+    const valor = this.props.valorInput.text ? this.props.valorInput.text : this.props.valorInput.value;
+    if (!Array.isArray(valor))
+      if (valor.trim() === '') return;
+    this.handleOpen(valor, activeChat.chatID, userID);
 
 
 
@@ -386,9 +404,9 @@ class Home extends React.Component {
     if (this.props.consultaPregunta[this.props.numeroPregunta].tipoPregunta === '3') {
       ///opciones de consulta 
       /// observa la seleccion y cambia la consulta dependiendo la actividad... cualquier cambiar los condicionales 
-      console.log(this.props.valorInput);
 
-      if (this.props.valorInput === 'Consultar') {
+
+      if (valor === 'Consultar') {
         this.props.tipoPreguntas('Consulta Detalle Tarea');
         const chatTrazo = this.props.user.userChats[0].thread
         const cconsulta = this.props.consultax;
@@ -413,7 +431,7 @@ class Home extends React.Component {
 
 
       }
-      else if (this.props.valorInput === 'Editar') {
+      else if (valor === 'Editar') {
 
         valorNPregunta = 0;
         this.props.tipoPreguntas('EditarTarea');
@@ -426,7 +444,7 @@ class Home extends React.Component {
 
 
       }
-      else if (this.props.valorInput === 'Que esta haciendo mi huper') {
+      else if (valor === 'Que esta haciendo mi huper') {
 
         valorNPregunta = 0;
         this.props.tipoPreguntas('Consultar Equipo Gestor');
@@ -442,7 +460,7 @@ class Home extends React.Component {
 
       }
 
-      else if (this.props.valorInput === 'Crear un Objetivo') {
+      else if (valor === 'Crear un Objetivo') {
 
         valorNPregunta = 0;
         this.props.tipoPreguntas('Crear Objetivo Gestor');
@@ -457,7 +475,7 @@ class Home extends React.Component {
 
       }
 
-      else if (this.props.valorInput === 'Dar un Feedback') {
+      else if (valor === 'Dar un Feedback') {
 
         valorNPregunta = 0;
         this.props.tipoPreguntas('Crear Feedback Gestor');
@@ -475,7 +493,7 @@ class Home extends React.Component {
 
 
 
-    if (this.props.valorInput === 'Eliminar') {
+    if (valor === 'Eliminar') {
 
       console.log('elimiar');
       const chatTrazo = this.props.user.userChats[0].thread
@@ -496,10 +514,10 @@ class Home extends React.Component {
         });
       });
       valorNPregunta = valorNPregunta + 1;
-      firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${idObjetivo}/${idTarea}`).remove();
+      firebase.database().ref(`Usuario - Tareas / ${this.props.userId} / ${idObjetivo} / ${idTarea}`).remove();
       this.renderHistoricoHuper(this.props.userId, `Elimino Tarea : ${chatTrazo[2].text}`, 'trabajo');
     }
-    else if (this.props.valorInput === 'Ninguna') {
+    else if (valor === 'Ninguna') {
       valorNPregunta = valorNPregunta + 1;
       this.props.consultaPreguntaControls(valorNPregunta + 1);
     }
@@ -507,7 +525,7 @@ class Home extends React.Component {
 
     if (this.props.pregFantasma && !this.props.pregFantasma.sel) {
       const opcione = this.props.pregFantasma;
-      const sel = this.props.valorInput;
+      const sel = valor;
       const opcionw = { ...opcione, sel }
       this.props.pregFantasmas(opcionw)
     }
@@ -576,7 +594,7 @@ class Home extends React.Component {
       if (tipPrgutna === 'Diaria') {
         //registro de horas Entrada
         const hoy = new Date();
-        firebase.database().ref(`Usuario-Registro/${this.props.userId}/${hoy.getFullYear()}/${hoy.getMonth()}/${hoy.getDate()}`).set({
+        firebase.database().ref(`Usuario - Registro / ${this.props.userId} / ${hoy.getFullYear()} / ${hoy.getMonth()} / ${hoy.getDate()}`).set({
           horaInicio: hoy.getTime(),
         });
 
@@ -615,7 +633,7 @@ class Home extends React.Component {
           },
             function (err) { console.error("Execute error", err); });
           //   this.props.crearCarpetas(xx);
-          newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`).push().key;
+          newPostKey2 = firebase.database().ref().child(`Usuario - Objetivos / ${this.props.userId}`).push().key;
 
           postData = {
             numeroTareas: 1,
@@ -627,7 +645,7 @@ class Home extends React.Component {
             impacto: chatTrazo[8].text,
             dificultad: chatTrazo[10].text,
             repeticiones: chatTrazo[12].text,
-            tipo: this.props.valorInput,
+            tipo: valor,
             fase: 0,
             dateStart: moment().format('YYYY-MM-DD'),
           };
@@ -636,17 +654,17 @@ class Home extends React.Component {
         this.props.pregFantasmas(null);
 
         var updates = {};
-        updates[`Usuario-Objetivos/${this.props.userId}/${newPostKey2}`] = postData;
-        this.setState({ updates: { key: `Usuario-Objetivos/${this.props.userId}/${newPostKey2}`, datos: postData } });
+        updates[`Usuario - Objetivos / ${this.props.userId} / ${newPostKey2}`] = postData;
+        this.setState({ updates: { key: `Usuario - Objetivos / ${this.props.userId} / ${newPostKey2}`, datos: postData } });
         firebase.database().ref().update(updates);
 
         var newPostKey3 = firebase.database().ref().child('Usuario-Tareas').push().key;
 
         ///distincion de horas
         let hora;
-        if (this.props.valorInput.trim() === '1 hora')
+        if (valor.trim() === '1 hora')
           hora = 1;
-        else if (this.props.valorInput.trim() === '2 horas')
+        else if (valor.trim() === '2 horas')
           hora = 2;
         else
 
@@ -658,24 +676,24 @@ class Home extends React.Component {
 
         const diat = new Date();
         if (!this.state.ultimaTarea) {
-          firebase.database().ref(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`).set({
+          firebase.database().ref(`Usuario - UltimaTarea / ${this.props.userId} / ${diat.getFullYear()} / ${this.getWeekNumber(diat)} / ${diat.getDate()}`).set({
             tarea: newPostKey3,
             horaPlanificada: moment().format('HH:mm'),
             horaEstimada: moment().add('hours', hora).format('HH:mm'),
           });
         }
 
-        firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${newPostKey2}/${newPostKey3}`).set({
+        firebase.database().ref(`Usuario - Tareas / ${this.props.userId} / ${newPostKey2} / ${newPostKey3}`).set({
           concepto: chatTrazo[2].text,
           estado: 'activo',
           dateStart: moment().format('YYYY-MM-DD'),
           prioridad: postData.prioridad,
-          tiempoEstimado: this.props.valorInput,
+          tiempoEstimado: valor,
           horaPlanificada: this.state.ultimaTarea ? this.state.ultimaTarea.horaEstimada : moment().format('HH:mm'),
           horaEstimada: this.state.ultimaTarea ? moment(this.state.ultimaTarea.horaEstimada, 'HH:mm').add('hours', hora).format('HH:mm') : moment().add('hours', hora).format('HH:mm'),
         });
 
-        firebase.database().ref(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`).set({
+        firebase.database().ref(`Usuario - UltimaTarea / ${this.props.userId} / ${diat.getFullYear()} / ${this.getWeekNumber(diat)} / ${diat.getDate()}`).set({
           tarea: newPostKey3,
           dateStart: moment().format('YYYY-MM-DD'),
           horaPlanificada: this.state.ultimaTarea ? this.state.ultimaTarea.horaEstimada : moment().format('HH:mm'),
@@ -698,7 +716,7 @@ class Home extends React.Component {
         let tarea = {};
         let idObjetivo = {};
         let idTarea = {};
-        const ultimoValor = this.props.valorInput;
+        const ultimoValor = valor;
         Object.keys(cconsulta).map(function (key2, index) {
           const ccconsulta = cconsulta[key2];
           Object.keys(ccconsulta).map(function (key, index) {
@@ -722,22 +740,30 @@ class Home extends React.Component {
         });
 
         var updates = {};
-        updates[`Usuario-Tareas/${this.props.userId}/${idObjetivo}/${idTarea}`] = tarea;
+        updates[`Usuario - Tareas / ${this.props.userId} / ${idObjetivo} / ${idTarea}`] = tarea;
         firebase.database().ref().update(updates);
         this.renderHistoricoHuper(this.props.userId, `Edito Tarea : ${chatTrazo[2].text} `, 'trabajo');
 
+      }
+      else if (tipPrgutna === 'TIC') {
+        const diat = new Date;
+        firebase.database().ref(`Usuario-TIC/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}`).set({
+          ...Tic_T(this.props.ValorTexto, this.state.valoresTIC, this.state.ticUsuario)
+
+        });
+        return;
       }
       else if (tipPrgutna === 'TIC Quincenal') {
         const postData = {
           FechaTIC: new Date().toString(),
           Talento: chatTrazo[2].text,
           Impacto: chatTrazo[4].text,
-          Compromiso: this.props.valorInput
+          Compromiso: valor
 
         };
         var updates = {};
-        const newPostKey2 = firebase.database().ref().child(`Usuario-TIC-EXP/${this.props.userId}`).push().key;
-        updates[`Usuario-TIC-EXP/${this.props.userId}/${newPostKey2}`] = postData;
+        const newPostKey2 = firebase.database().ref().child(`Usuario - TIC - EXP / ${this.props.userId}`).push().key;
+        updates[`Usuario - TIC - EXP / ${this.props.userId} / ${newPostKey2}`] = postData;
         firebase.database().ref().update(updates);
         this.renderHistoricoHuper(this.props.userId, `Realizo TIC Quincenal`, 'trabajo');
 
@@ -762,15 +788,15 @@ class Home extends React.Component {
           Impacto: chatTrazo[6].text,
           IdObjetivo: idObj,
           Objetivo: chatTrazo[2].text,
-          Compromiso: this.props.valorInput
+          Compromiso: valor
 
         };
 
         objetivo.estado = 'finalizado';
         var updates = {};
-        const newPostKey2 = firebase.database().ref().child(`Usuario-TIC-OBJETIVOS/${this.props.userId}`).push().key;
-        updates[`Usuario-Objetivos/${this.props.userId}/${idObj}`] = objetivo;
-        updates[`Usuario-TIC-OBJETIVOS/${this.props.userId}/${newPostKey2}`] = postData;
+        const newPostKey2 = firebase.database().ref().child(`Usuario - TIC - OBJETIVOS / ${this.props.userId}`).push().key;
+        updates[`Usuario - Objetivos / ${this.props.userId} / ${idObj}`] = objetivo;
+        updates[`Usuario - TIC - OBJETIVOS / ${this.props.userId} / ${newPostKey2}`] = postData;
         firebase.database().ref().update(updates);
         this.renderHistoricoHuper(this.props.userId, `Realizo TIC Objetivos : ${chatTrazo[2].text} `, 'trabajo');
       }
@@ -778,15 +804,14 @@ class Home extends React.Component {
         const postData = {
           FechaTIC: new Date().toString(),
           Obstaculo: chatTrazo[2].text,
-          Recurso: chatTrazo[4] ? chatTrazo[4].text : this.props.valorInput,
-          Descripcion: this.props.valorInput,
-          // Compromiso: this.props.valorInput
+          Recurso: chatTrazo[4] ? chatTrazo[4].text : valor,
+          Descripcion: valor,
 
         };
 
         var updates = {};
-        const newPostKey2 = firebase.database().ref().child(`Usuario-Retrospective/${this.props.userId}`).push().key;
-        updates[`Usuario-Retrospective/${this.props.userId}/${newPostKey2}`] = postData;
+        const newPostKey2 = firebase.database().ref().child(`Usuario - Retrospective / ${this.props.userId}`).push().key;
+        updates[`Usuario - Retrospective / ${this.props.userId} / ${newPostKey2}`] = postData;
         firebase.database().ref().update(updates);
         this.renderHistoricoHuper(this.props.userId, `Preguntas de la semana`, 'trabajo');
       }
@@ -795,11 +820,11 @@ class Home extends React.Component {
         //registro de hora de salida
         const hoy = new Date();
         let registro;
-        const starCountRef5 = firebase.database().ref().child(`Usuario-Registro/${this.props.userId}/${hoy.getFullYear()}/${hoy.getMonth()}/${hoy.getDate()}`);
+        const starCountRef5 = firebase.database().ref().child(`Usuario - Registro / ${this.props.userId} / ${hoy.getFullYear()} / ${hoy.getMonth()} / ${hoy.getDate()}`);
         starCountRef5.on('value', (snapshot) => {
           registro = snapshot.val();
           if (registro) {
-            firebase.database().ref(`Usuario-Registro/${this.props.userId}/${hoy.getFullYear()}/${hoy.getMonth()}/${hoy.getDate()}`).set({
+            firebase.database().ref(`Usuario - Registro / ${this.props.userId} / ${hoy.getFullYear()} / ${hoy.getMonth()} / ${hoy.getDate()}`).set({
               ...registro,
               horaFin: hoy.getTime(),
               tiempoTrabajo: hoy.getTime() - registro.horaInicio,
@@ -807,14 +832,14 @@ class Home extends React.Component {
           }
         });
         //eliminar tareas
-        if (this.props.valorInput === 'Eliminar Tareas') {
+        if (valor === 'Eliminar Tareas') {
 
           ///eliminar tareas 
           let cconsulta;
           var updates = {};
           let tarea = {};
           const usuario = this.props.userId;
-          const starCountRef = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
+          const starCountRef = firebase.database().ref().child(`Usuario - Tareas / ${this.props.userId}`);
           starCountRef.on('value', (snapshot) => {
             cconsulta = snapshot.val();
             Object.keys(cconsulta).map(function (key2, index) {
@@ -824,7 +849,7 @@ class Home extends React.Component {
 
                   tarea = ccconsulta[key];
                   tarea.estado = 'desechadas';
-                  updates[`Usuario-Tareas/${usuario}/${key2}/${key}`] = tarea;
+                  updates[`Usuario - Tareas / ${usuario} / ${key2} / ${key}`] = tarea;
                 }
 
               });
@@ -845,7 +870,7 @@ class Home extends React.Component {
         const cconsulta = this.props.consultax;
         let tarea = {};
         const userIDs = this.props.userId;
-        const ultimoValor = this.props.valorInput;
+        const ultimoValor = valor;
         Object.keys(cconsulta).map((key2, index) => {
           const ccconsulta = cconsulta[key2];
           Object.keys(ccconsulta).map((key, index) => {
@@ -854,7 +879,7 @@ class Home extends React.Component {
               tarea = ccconsulta[key];
               tarea.estado = 'trabajando';
               var updates = {};
-              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = tarea;
+              updates[`Usuario - Tareas / ${userIDs} / ${key2} / ${key}`] = tarea;
               firebase.database().ref().update(updates);
               this.renderHistoricoHuper(this.props.userId, `Estas trabajando en ${chatTrazo[2].text}`, 'trabajo');
             }
@@ -870,7 +895,7 @@ class Home extends React.Component {
                     let avanceObjGlobal = Math.round(parseInt(objs[key3].porcentajeResp) * ((100 / Object.keys(cconsulta[key2]).length) * 0.01));
                     let objetivoPadre = null;
                     //busca el objetivo padre
-                    const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`);
+                    const starCountRef = firebase.database().ref().child(`Usuario - Objetivos / ${objs[key3].idUsuarioGestor} / ${objs[key3].objetivoPadre}`);
                     starCountRef.on('value', (snapshot) => {
                       objetivoPadre = snapshot.val();
                       let devolver = objetivoPadre.avance;
@@ -882,11 +907,11 @@ class Home extends React.Component {
 
                     })
                     if (objetivoPadre)
-                      firebase.database().ref(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`).set({
+                      firebase.database().ref(`Usuario - Objetivos / ${objs[key3].idUsuarioGestor} / ${objs[key3].objetivoPadre}`).set({
                         ...objetivoPadre
                       });
 
-                    firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${key3}`).set({
+                    firebase.database().ref(`Usuario - Objetivos / ${this.props.userId} / ${key3}`).set({
                       ...objs[key3], avancePadre: avanceObjGlobal, nTareas: Object.keys(cconsulta[key2]).length
                     });
 
@@ -896,7 +921,7 @@ class Home extends React.Component {
               }
               tarea.estado = 'finalizado';
               var updates = {};
-              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = { ...tarea, dateEnd: moment().format('YYYY-MM-DD') };
+              updates[`Usuario - Tareas / ${userIDs} / ${key2} / ${key}`] = { ...tarea, dateEnd: moment().format('YYYY-MM-DD') };
               firebase.database().ref().update(updates);
               this.renderHistoricoHuper(this.props.userId, `Ha terminado : ${ultimoValor}`, 'trabajo');
 
@@ -917,7 +942,7 @@ class Home extends React.Component {
         let usuarioGT;
         let keyUsuarioGT;
         let personaEquipo = 0;
-        const newPostKey = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`).push().key;
+        const newPostKey = firebase.database().ref().child(`Usuario - Objetivos / ${this.props.userId}`).push().key;
 
         //Crea objetivo centralizado
 
@@ -958,7 +983,7 @@ class Home extends React.Component {
             dateStart: moment().format('YYYY-MM-DD')
           };
 
-          firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${newPostKey}`).set({
+          firebase.database().ref(`Usuario - Objetivos / ${this.props.userId} / ${newPostKey}`).set({
             ...postData
           });
         }
@@ -971,7 +996,7 @@ class Home extends React.Component {
         let x = 0;
         const cconsulta = this.props.equipoConsulta;
         let cconsulta2;
-        const usuario = this.props.valorInput;
+        const usuario = valor;
         let usuarioGT;
         let keyUsuarioGT;
         const opciones2 = Object.keys(cconsulta).map(function (key2, index) {
@@ -1000,7 +1025,7 @@ class Home extends React.Component {
         let x = 0;
         const cconsulta = this.props.equipoConsulta;
         let cconsulta2;
-        const usuario = this.props.valorInput;
+        const usuario = valor;
         let usuarioGT;
         let keyUsuarioGT;
         const opciones2 = Object.keys(cconsulta).map(function (key2, index) {
@@ -1021,7 +1046,7 @@ class Home extends React.Component {
 
         const fecha = new Date();
 
-        const starCountRef = firebase.database().ref().child(`Usuario-Historico/${keyUsuarioGT}/${fecha.getFullYear()}/${fecha.getMonth()}/${fecha.getDate()}`);
+        const starCountRef = firebase.database().ref().child(`Usuario - Historico / ${keyUsuarioGT} / ${fecha.getFullYear()} / ${fecha.getMonth()} / ${fecha.getDate()}`);
         starCountRef.on('value', (snapshot) => {
           const historico = snapshot.val();
 
@@ -1072,7 +1097,7 @@ class Home extends React.Component {
   }
 
   GuardarObjetivoGestor(usuarioGT, keyUsuarioGT, chatTrazo, personCont, personEquipo, clavePadre, nombreUsuario) {
-
+    const valor = this.props.valorInput.text ? this.props.valorInput.text : this.props.valorInput.value;
     var folderId = usuarioGT.wsCompartida;
     window.gapi.client.drive.files.create({
       name: chatTrazo[2].text === 'Crear un Objetivo' ? chatTrazo[4].text : chatTrazo[2].text,
@@ -1086,7 +1111,7 @@ class Home extends React.Component {
     },
       function (err) { console.error("Execute error", err); });
 
-    const newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${keyUsuarioGT}`).push().key;
+    const newPostKey2 = firebase.database().ref().child(`Usuario - Objetivos / ${keyUsuarioGT}`).push().key;
     let arr = this.state.personasInv;
     arr.push({ nombre: nombreUsuario, key: newPostKey2, idUsuario: keyUsuarioGT });
     this.setState({ personasInv: arr });
@@ -1102,7 +1127,7 @@ class Home extends React.Component {
       dificultad: chatTrazo[8].text,
       personasInvolucradas: personEquipo > 1 ? chatTrazo[10].text : null,
       impacto: chatTrazo[6].text,
-      detalle: personEquipo > 1 ? personCont < personEquipo ? chatTrazo[10 + (2 * personCont)].text : this.props.valorInput : this.props.valorInput,
+      detalle: personEquipo > 1 ? personCont < personEquipo ? chatTrazo[10 + (2 * personCont)].text : valor : valor,
       porcentajeResp: (100 / personEquipo),
       objetivoPadre: personEquipo > 1 ? clavePadre : null,
       idUsuarioGestor: this.props.userId,
@@ -1110,9 +1135,9 @@ class Home extends React.Component {
       dateStart: moment().format('YYYY-MM-DD'),
     };
 
-    this.setState({ updates: { key: `Usuario-Objetivos/${keyUsuarioGT}/${newPostKey2}`, datos: postData } });
+    this.setState({ updates: { key: `Usuario - Objetivos / ${keyUsuarioGT} / ${newPostKey2}`, datos: postData } });
     var updates = {};
-    updates[`Usuario-Objetivos/${keyUsuarioGT}/${newPostKey2}`] = postData;
+    updates[`Usuario - Objetivos / ${keyUsuarioGT} / ${newPostKey2}`] = postData;
     firebase.database().ref().update(updates);
 
   }
@@ -1289,9 +1314,10 @@ const mapHomeStateToProps = (state) => ({
   usuarioDetail: state.chatReducer.usuarioDetail,
   listaObjetivo: state.chatReducer.listaObjetivo,
   avatar: state.chatReducer.avatar,
+  ValorTexto: state.chatReducer.ValorTexto,
   user: state.user,
 });
 export default connect(mapHomeStateToProps, {
   submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas, consultaCanales, chatOff, avatares, pregFantasmas,
-  consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats, pasoOnboardings, primeraVs
+  consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats, pasoOnboardings, primeraVs,
 })(Home);

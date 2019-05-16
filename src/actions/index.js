@@ -94,12 +94,19 @@ const escribirUsuario = (userId) => {
     // var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
     var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta').push().key;
 
-    firebase.database().ref(`Utilidades-Valoraciones/ValidacionGestor/1`).set({
-     //concepto: "Delimita el alcance para #>Nombre<#",
-     concepto : 'true',
-     valor: 1
-    // opciones: "Usuario-WS",
-     //tipoPregunta: '2'
+    /*firebase.database().ref(`Preguntas-Chat/-LekJr_nu74fVLVahibh/2`).set({
+        opciones:  "1.Emocionante>newspaper$#08d83c, 2.Intrigante>newspaper$#80d808, 3. Normal>newspaper$#d8d008,  4. Rutinario>newspaper$#d87908, 5. Aburrido>newspaper$#d81008",
+        objeto: 'icon',
+        concepto: 'Huper, el trabajo realizado en una palabra fue',
+        tipoPregunta: '8'
+        //tipo: 2
+
+
+
+        //porcentaje : 40,
+        //valor: 0.40
+        // opciones: "Usuario-WS",
+        //tipoPregunta: '2'
         // concepto: "Obetivo Creado Nuevo",
         //opciones: "Usuario-Objetivos",
         //  tipoPregunta: '1',
@@ -113,7 +120,7 @@ const escribirUsuario = (userId) => {
         //   opciones: 'Unico,Empieza en tu flujo de trabajo',
         // opciones: 'Que esta haciendo mi huper,Crear un Objetivo,Dar un Feedback',
         //  tipoPregunta: '1',
-    });
+    });*/
 
 
 

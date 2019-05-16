@@ -161,7 +161,8 @@ class App extends React.Component {
                               */
 
             if (this.props.pasoOnboarding === 0 || this.props.usuarioDetail.usuario.onboarding)
-                this.rendeSeguimientoTrabajo(chatID);
+               // this.rendeSeguimientoTrabajo(chatID);
+                this.rendeTalentoImpCom(chatID);
                // this.renderTareaDiaria(chatID);
             else if (this.props.isChat === false || this.props.pasoOnboarding === 1)
                 //    this.rendeSeguimientoTrabajo(chatID);
@@ -226,6 +227,20 @@ class App extends React.Component {
         }
 
     }
+
+
+
+    //Pregunta TIC
+    rendeTalentoImpCom(chatID) {
+        this.props.tipoPreguntas('TIC');
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LekIihkesH_WPL9f624');
+        starCountRef.on('value', (snapshot) => {
+            this.props.consultaChats(snapshot.val());
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+        });
+    }
+
 
 
 

@@ -157,8 +157,8 @@ class listPersonasEquipo extends React.Component {
             //  console.log('Cambio');
             const cconsulta = this.props.listaPersonas;
             const consultaEq = this.props.equipox;
-
-             const opciones = Object.keys(consultaEq).map((key, index) => {
+            console.log(cconsulta);
+            const opciones = Object.keys(consultaEq).map((key, index) => {
                 if (Object.keys(cconsulta).find((key2, index) => key2 === key)) {
 
                     if (key === this.props.userId) {

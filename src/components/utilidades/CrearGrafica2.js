@@ -5,7 +5,9 @@ import randomColor from '../../lib/randomColor';
 import { Responsive, Segment } from 'semantic-ui-react';
 const randonStyle = require('../../lib/randonStyle')
 
-class GraficaGestorTIC extends React.Component {
+class legenExample extends React.Component {
+
+
 
     render() {
 
@@ -15,7 +17,6 @@ class GraficaGestorTIC extends React.Component {
         }
 
         const options = {
-         
             responsive: true,
             title: {
                 display: true,
@@ -27,19 +28,14 @@ class GraficaGestorTIC extends React.Component {
             hover: {
                 mode: 'dataset'
             },
-            
             borderJoinStyle: 'miter',
-            yAxes: [
-                {
-                    display: false,
-
-                }
-            ],
             legend: {
                 display: true,
                 position: 'bottom',
                 reverse: true,
-              }
+            }
+
+
         }
 
         let style = randonStyle();
@@ -88,4 +84,4 @@ class GraficaGestorTIC extends React.Component {
     };
 };
 
-export default connect(null)(GraficaGestorTIC);
+export default connect(null)(legenExample);
