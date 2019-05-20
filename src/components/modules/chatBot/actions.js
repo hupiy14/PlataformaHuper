@@ -34,8 +34,24 @@ import {
   INPUT_DINAMICO,
   PRIMERA_VEZ,
   VALOR_TEXT,
+  INPUT_SLACK,
+  MENSAJESL,
 
 } from './types';
+
+export const Mslacks = (Mslack) => {
+  return {
+    type: MENSAJESL,
+    payload: Mslack
+  };
+};
+
+export const inputSlacks = (inputSlack) => {
+  return {
+    type: INPUT_SLACK,
+    payload: inputSlack
+  };
+};
 
 export const ValorTextos = (ValorTexto) => {
   return {

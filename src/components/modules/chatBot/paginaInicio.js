@@ -11,7 +11,7 @@ class chat extends React.Component {
             ubicacionChat = "container foot-chatHX1";
         }
         return (
-            <div className={ubicacionChat} >
+            <div className={ubicacionChat} style={{ background:'#ffb516'}} >
                 <ChatHuper />
             </div>
         );

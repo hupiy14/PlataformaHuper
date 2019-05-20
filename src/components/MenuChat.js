@@ -81,7 +81,7 @@ class MenuChat extends React.Component {
 
             return (<div>
                 <div className={ubicacionChat} >
-                    <button onClick={this.onChat} className={className}>
+                    <button onClick={this.onChat} style={{ background:'#eca100d4'}}  className={className}>
                         <i className={className2}></i>
                     </button>
 

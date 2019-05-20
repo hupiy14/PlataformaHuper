@@ -1,31 +1,34 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { startChat, updateFilter, endChat, consultaMensajes, submitMessage, consultaCanales } from './actions';
+import { startChat, updateFilter, endChat, Mslacks, consultaMensajes, submitMessage, consultaCanales } from './actions';
 import firebase from 'firebase';
 import { IconGroup } from 'semantic-ui-react';
+import { defaultUser } from '../../../components/modules/chatBot/dummyData';
 
-const timeoutLength = 10000;
+
+const timeoutLength = 30000;
 
 class Contacts extends React.Component {
-  state = { canales: null, client: null, timeout: null };
+  state = { canales: null, client: null, timeout: null, equipo: null, count: 20 };
 
   componentDidMount() {
     const { SlackOAuthClient } = require('messaging-api-slack')
-    this.setState({
 
-      client: SlackOAuthClient.connect(
-       // 'xoxp-482555533539-486285033681-535707706853-443780a32ce31f5f3c8b9b6684e2ad96'
-        'xoxp-482555533539-486285033681-542720051746-2838d41db84ac420a045ab30da38f0f8'
-        //                'xoxb-482555533539-532878166725-SImPnsMh0QvM2osXpUnMy7Wa'
-      )
+    //consulta los canales confirugados alusuario
+    const nameRef3 = firebase.database().ref().child(`Usuario-WS/${this.props.usuarioDetail.usuario.empresa}/${this.props.usuarioDetail.usuario.equipo}`)
+    nameRef3.on('value', (snapshot2) => {
+      this.setState({ equipo: snapshot2.val() });
     });
 
-
-    
     //consulta los canales confirugados alusuario
     const nameRef2 = firebase.database().ref().child(`Usuario-Slack/${this.props.userId}`)
     nameRef2.on('value', (snapshot2) => {
       this.setState({ canales: snapshot2.val() });
+      this.setState({
+        client: SlackOAuthClient.connect(
+          snapshot2.val().tokenP
+        )
+      });
       this.props.consultaCanales(snapshot2.val());
     });
 
@@ -33,53 +36,7 @@ class Contacts extends React.Component {
 
 
 
-  handleOpen = () => {
-    // this.setState({ isOpen: true })
-
-    this.timeout = setTimeout(() => {
-      this.renderActualizarCanales();
-    //  console.log(this.props.user);
-      //this.setState({ isOpen: false })
-    }, timeoutLength)
-  }
-
-
-  renderActualizarCanales() {
-
-    const chatCanal = this.props.user.userChats;
-    let canal = null;
-    Object.keys(chatCanal).map((key, index) => {
-
-      if (chatCanal[key].chatID !== '13') {
-        if (chatCanal[key].participants === '2') {
-          canal = this.state.canales.gestor;
-        }
-        else if (chatCanal[key].participants === '3') {
-          canal = this.state.canales.equipo;
-        }
-        else if (chatCanal[key].participants === '4') {
-          canal = this.state.canales.reporting;
-        }
-        else if (chatCanal[key].participants === '5') {
-          canal = this.state.canales.notificaicones;
-        }
-
-
-        if (this.state.client && canal) {
-          //obtiene el historico y envia el mensaje
-          this.state.client.callMethod('channels.history', { channel: canal, count: 10 }).then(res => {
-            // this.props.consultaMensajes(res.messages);
-
-            if (res.messages[0].text === chatCanal[key].thread[chatCanal[key].thread.length - 1].text)
-              console.log('Cambio');
-            //Insertar codigo de actualizacion del chat despues de 10 minutos,pensar que pasaria si hay mas de 10 mensajes y no coincide ninguno?
-          });
-        }
-
-      }
-
-    });
-  }
+ 
 
 
 
@@ -101,28 +58,32 @@ class Contacts extends React.Component {
     else if (id === '5') {
       canal = this.state.canales.notificaicones;
     }
-
+console.log(canal);
 
     if (this.state.client && canal) {
 
       //obtiene el historico y envia el mensaje
-      this.state.client.callMethod('channels.history', { channel: canal, count: 10 }).then(res => {
-        this.props.consultaMensajes(res.messages);
-
+      this.state.client.callMethod('channels.history', { channel: canal, count: this.state.count }).then(res => {
+        console.log(res.messages);
+        this.props.Mslacks({ estado: true, canal: this.state.canales, client: this.state.client, equipo: this.state.equipo});
         res.messages.sort((a, b) => (a.ts - b.ts))
         Object.keys(res.messages).map((key2, index) => {
+          const trab = this.state.equipo;
+          let usuariox = 'x';
+          Object.keys(trab).map((key3, index) => {
+            if (res.messages[key2].user === trab[key3].usuarioSlack || res.messages[key2].username === trab[key3].usuarioSlack )
+              usuariox = trab[key3].usuario;
+          });
 
+          let link = null;
+          if(res.messages[key2].files)
+            link =  '◘' + res.messages[key2].files[0].url_private_download;
+          
 
-          if (res.messages[key2].username === this.state.canales.usuario || res.messages[key2].user === this.state.canales.usuarioSlack)
-            this.props.submitMessage(res.messages[key2].text, chatId, '1');
+          if (res.messages[key2].username === this.props.usuarioDetail.usuario.usuario || res.messages[key2].user === this.props.usuarioDetail.usuario.canalSlack || res.messages[key2].username === this.props.usuarioDetail.usuario.canalSlack)
+            this.props.submitMessage(res.messages[key2].text  + link, chatId, '1');
           else {
-            //     console.log(id);
-            if (id === '3') {
-              this.props.submitMessage(res.messages[key2].text, chatId, res.messages[key2].user);
-            }
-            else {
-              this.props.submitMessage(res.messages[key2].text, chatId, id);
-            }
+            this.props.submitMessage(res.messages[key2].text  + link + ' •' + usuariox  , chatId, id);
           }
 
         });
@@ -171,7 +132,7 @@ class Contacts extends React.Component {
       );
     }
 
-    
+
     return (
       <div className="contact-search-ch-wrapper-ch">
         <span className="search-icon-ch">
@@ -211,14 +172,15 @@ class Contacts extends React.Component {
 
                     chatting(c) ? () => {
 
-                      clearTimeout(this.timeout);
-
-                      this.props.endChat(c.userID)
+                      this.props.endChat(c.userID);
+                    
+                      
                     }
                       : () => {
                         const chatId = "Hup" + new Date().getTime();
                         this.props.startChat(c.userID, chatId); this.renderChat(c.userID, c.userName, chatId);
-                        this.handleOpen();
+                      
+                        console.log('entroH');
 
                       }}
                 > {c.userName}
@@ -246,10 +208,13 @@ const mapContactsStateToProps = (state) => ({
   contacts: state.user.contacts,
   userChats: state.user.userChats,
   filterString: state.contactsPage.filterString,
+  consultaMensaje: state.chatReducer.consultaMensaje,
+  Mslack: state.chatReducer.Mslack,
   user: state.user,
+  usuarioDetail: state.chatReducer.usuarioDetail,
 
 });
 
-export default connect(mapContactsStateToProps, { startChat, updateFilter, endChat, consultaMensajes, submitMessage, consultaCanales })(Contacts);
+export default connect(mapContactsStateToProps, { startChat, Mslacks, updateFilter, endChat, consultaMensajes, submitMessage, consultaCanales })(Contacts);
 
 

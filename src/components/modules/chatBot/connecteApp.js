@@ -289,7 +289,6 @@ class App extends React.Component {
 
     renderChatButton() {
 
-
         if (this.props.isChatUbi === 'contacs') {
             return <Contacts />;
         }
@@ -306,12 +305,7 @@ class App extends React.Component {
             return <Home user={this.props.user} />;
         }
 
-
     }
-
-
-
-
 
     render() {
         //  if (this.state.avatares)
@@ -323,17 +317,14 @@ class App extends React.Component {
 
 
 
-
-
-
         const y = window.screen.height * 0.48;
         const x2 = 1700 / window.screen.width;
         const x = window.screen.width * 0.17 * x2;
 
 
         const wrapper = {
-            width: x,
-            height: '55%',
+            width: '350px',
+            height: '65%',
             position: 'fixed',
             overflow: 'hidden',
             bottom: '8%',
@@ -345,6 +336,7 @@ class App extends React.Component {
             'margin-left': '5%',
             '-webkit-transform': 'scale(0.9)',
             'transform': 'scale(0.9)',
+            background: '#fffae7b3',
         }
 
 

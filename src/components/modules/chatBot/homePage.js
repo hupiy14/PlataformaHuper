@@ -2,32 +2,38 @@ import React from 'react';
 import { connect } from 'react-redux';
 import {
   setActiveChat, submitMessage, numeroPreguntas, valorInputs, consultaPreguntaControls, pregFantasmas, primeraVs,
-  tipoPreguntas, mensajeEntradas, borrarChats, consultaChats, consultaCanales, pasoOnboardings, avatares,
+  tipoPreguntas, mensajeEntradas, Mslacks, borrarChats, consultaChats, consultaCanales, pasoOnboardings, avatares, inputSlacks,
 } from './actions';
 import { chatOff, chatOn } from '../../../actions';
 import BoxDianmico from './boxDinamico';
 import firebase from 'firebase';
 import { Emoji } from 'emoji-mart';
 import randomColor from '../../../lib/randomColor'
-import { Image, Breadcrumb, } from 'semantic-ui-react';
+import { Image, Breadcrumb, Label } from 'semantic-ui-react';
 import moment from 'moment';
 import randon from '../../../lib/randonImage';
 import Avatar from '../../../apis/xpress';
 import { object } from 'prop-types';
+import info from '../../../images/info.png';
+import report from '../../../images/report.png';
+import huper from '../../../images/huper.png';
 
 
 let Tic_T = require('../tic_trabajo').default;
+const { SlackOAuthClient } = require('messaging-api-slack')
 
 
 let timeoutLength = 2500;
+let timeoutLength3 = 10500;
+
 let timeoutLength2 = 300;
 class Home extends React.Component {
 
   state = {
-    carpeta: null, updates: null, color: [],
+    carpeta: null, updates: null, color: [], client: null, count: 20,
     client2: null, avataresN: null, avatarX: 0, valoresTIC: null,
     avatarY: 0, ultimaTarea: null, mensajeEnviado: false, ticUsuario: null,
-    personasInv: [],
+    personasInv: [], flagConsulta: true,
   }
 
   onSearchXpress = async (text) => {
@@ -80,16 +86,21 @@ class Home extends React.Component {
 
   componentDidMount() {
     this.renderConsultarUltimaTarea();
+
     this.setState({ avatarX: 1 });
-    const { SlackOAuthClient } = require('messaging-api-slack')
-    this.setState({
-      client2: SlackOAuthClient.connect(
-        'xoxb-482555533539-532878166725-FYre7QYksxMHhIRnQeWzSR1a'
-      )
-    });
+
+
+
+
 
     const nameRef2 = firebase.database().ref().child(`Usuario-Slack/${this.props.userId}`)
     nameRef2.on('value', (snapshot2) => {
+      this.setState({
+        client2: SlackOAuthClient.connect(snapshot2.val().tokenB)
+      });
+      this.setState({
+        client: SlackOAuthClient.connect(snapshot2.val().tokenP)
+      });
       this.props.consultaCanales(snapshot2.val());
     });
 
@@ -121,7 +132,7 @@ class Home extends React.Component {
 
   renderConsultarUltimaTarea() {
     const diat = new Date();
-    const nameRef2 = firebase.database().ref().child(`Usuario - UltimaTarea / ${this.props.userId} / ${diat.getFullYear()} / ${this.getWeekNumber(diat)} / ${diat.getDate()}`)
+    const nameRef2 = firebase.database().ref().child(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`)
     nameRef2.on('value', (snapshot2) => {
       this.setState({ ultimaTarea: snapshot2.val() });
     });
@@ -151,22 +162,26 @@ class Home extends React.Component {
 
     if (activeChat.participants !== '6') {
       let canal = null;
-      console.log(activeChat);
+      console.log(this.props.usuarioDetail.usuario.canalSlack);
       if (activeChat.participants === '2') {
-        canal = this.props.consultaCanal.gestor;
+        canal = this.props.consultaCanal.notificaciones;
       }
       else if (activeChat.participants === '3') {
         canal = this.props.consultaCanal.equipo;
       }
 
+      else if (activeChat.participants === '4') {
+        canal = this.props.consultaCanal.reporting;
+      }
       this.state.client2.postMessage(
         canal,
         {
+          username: this.props.usuarioDetail.usuario.canalSlack,
           text: valor,
           attachments: [
             {
               text: this.props.nombreUser,
-              //   fallback: 'You are unable to choose a game',
+              username: this.props.usuarioDetail.usuario.canalSlack,
               callback_id: 'wopr_game',
               color: '#FFA303',
               attachment_type: 'default',
@@ -200,6 +215,7 @@ class Home extends React.Component {
       canal,
       {
         text: this.props.nombreUser,
+        username: this.props.usuarioDetail.usuario.canalSlack,
         attachments: [
           {
             text: mensaje,
@@ -231,7 +247,7 @@ class Home extends React.Component {
 
     const fecha = new Date();
 
-    firebase.database().ref(`Usuario - Historico / ${usuario} / ${fecha.getFullYear()} / ${fecha.getMonth()} / ${fecha.getDate()} / ${fecha.getTime()}`).set({
+    firebase.database().ref(`Usuario-Historico/${usuario}/${fecha.getFullYear()}/${fecha.getMonth()}/${fecha.getDate()}/${fecha.getTime()}`).set({
       concepto: conceptoT,
       tipo: Tipo
     });
@@ -244,34 +260,58 @@ class Home extends React.Component {
 
   /// Identificador de usuario y color 
   renderUsuario(contacts, message) {
-    if (message.from !== '1' && message.from !== '2' && message.from !== '4' && message.from !== '5' && message.from !== '6') {
-      //    return <h3 className='red'> H</h3>; 
-      let varc;
-      let colorU;
-      let col;
 
-      if (this.state.color.find((colores) => (colores.user === message.from))) {
-        colorU = this.state.color.find((colores) => (colores.user === message.from));
-
-      }
-      else {
-
-        const colorx = this.state.color;
-        colorU = { user: message.from, color: randomColor(0.7, 1) };
-        colorx.push(colorU);
-        this.setState({ color: colorx });
-
-      }
-      varc = colorU.user.slice(0, 1);
-      col = ` ${colorU.color}`;
-      return <h3 style={{ color: col }}>{varc}</h3>;
+    let nombre = "Hupp";
+    let image = 'https://files.informabtl.com/uploads/2015/08/perfil.jpg';
+    if (message.from === '6') {
+      nombre = 'Huper';
+      image = huper;
     }
-    else
-      return contacts.filter((c) => (c.userID === message.from)).map(c => c.userName.slice(0, 1));
+
+    else if (message.from === '4') {
+      nombre = 'Report';
+      image = report;
+    }
+
+    else if (message.from === '5') {
+      nombre = 'Info';
+      image = info;
+    }
+    else {
+      nombre = message.text.split('•');
+      nombre = Array.isArray(nombre) ? nombre[1] === 'undefined' ? 'Hupp' : nombre[1] : 'Hupp';
+
+    }
+
+    return <Label as='a' content={nombre} image={
+
+      {
+        avatar: true,
+        spaced: 'right',
+        src: image,
+        style: {
+          transform: message.from === '6' ? 'scale(5,3)' : 'scale(1.8)',
+          'position': 'relative',
+          top: '-20px',
+          left: '-10px',
+        }
+      }
+    } style={{
+      width: '50px',
+      left: '-1px',
+      position: 'relative',
+      color: '#601565',
+      'border-radius': '30px',
+      'background-color': '#ffffff00',
+      transform: 'scale(0.8)'
+    }} />
+
+
   }
 
   ///Decodificar mensaje y poner los emojis
   renderTextoEmoji(textos) {
+    //console.log(textos);
     if (Array.isArray(textos) === true) {
       const mensajes = Object.keys(textos).map((key, index) => {
         let separador = ', ';
@@ -514,7 +554,7 @@ class Home extends React.Component {
         });
       });
       valorNPregunta = valorNPregunta + 1;
-      firebase.database().ref(`Usuario - Tareas / ${this.props.userId} / ${idObjetivo} / ${idTarea}`).remove();
+      firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${idObjetivo}/${idTarea}`).remove();
       this.renderHistoricoHuper(this.props.userId, `Elimino Tarea : ${chatTrazo[2].text}`, 'trabajo');
     }
     else if (valor === 'Ninguna') {
@@ -594,7 +634,7 @@ class Home extends React.Component {
       if (tipPrgutna === 'Diaria') {
         //registro de horas Entrada
         const hoy = new Date();
-        firebase.database().ref(`Usuario - Registro / ${this.props.userId} / ${hoy.getFullYear()} / ${hoy.getMonth()} / ${hoy.getDate()}`).set({
+        firebase.database().ref(`Usuario-Registro/${this.props.userId}/${hoy.getFullYear()}/${hoy.getMonth()}/${hoy.getDate()}`).set({
           horaInicio: hoy.getTime(),
         });
 
@@ -633,7 +673,7 @@ class Home extends React.Component {
           },
             function (err) { console.error("Execute error", err); });
           //   this.props.crearCarpetas(xx);
-          newPostKey2 = firebase.database().ref().child(`Usuario - Objetivos / ${this.props.userId}`).push().key;
+          newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`).push().key;
 
           postData = {
             numeroTareas: 1,
@@ -654,8 +694,8 @@ class Home extends React.Component {
         this.props.pregFantasmas(null);
 
         var updates = {};
-        updates[`Usuario - Objetivos / ${this.props.userId} / ${newPostKey2}`] = postData;
-        this.setState({ updates: { key: `Usuario - Objetivos / ${this.props.userId} / ${newPostKey2}`, datos: postData } });
+        updates[`Usuario-Objetivos/${this.props.userId}/${newPostKey2}`] = postData;
+        this.setState({ updates: { key: `Usuario-Objetivos/${this.props.userId}/${newPostKey2}`, datos: postData } });
         firebase.database().ref().update(updates);
 
         var newPostKey3 = firebase.database().ref().child('Usuario-Tareas').push().key;
@@ -676,14 +716,14 @@ class Home extends React.Component {
 
         const diat = new Date();
         if (!this.state.ultimaTarea) {
-          firebase.database().ref(`Usuario - UltimaTarea / ${this.props.userId} / ${diat.getFullYear()} / ${this.getWeekNumber(diat)} / ${diat.getDate()}`).set({
+          firebase.database().ref(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`).set({
             tarea: newPostKey3,
             horaPlanificada: moment().format('HH:mm'),
             horaEstimada: moment().add('hours', hora).format('HH:mm'),
           });
         }
 
-        firebase.database().ref(`Usuario - Tareas / ${this.props.userId} / ${newPostKey2} / ${newPostKey3}`).set({
+        firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${newPostKey2}/${newPostKey3}`).set({
           concepto: chatTrazo[2].text,
           estado: 'activo',
           dateStart: moment().format('YYYY-MM-DD'),
@@ -693,7 +733,7 @@ class Home extends React.Component {
           horaEstimada: this.state.ultimaTarea ? moment(this.state.ultimaTarea.horaEstimada, 'HH:mm').add('hours', hora).format('HH:mm') : moment().add('hours', hora).format('HH:mm'),
         });
 
-        firebase.database().ref(`Usuario - UltimaTarea / ${this.props.userId} / ${diat.getFullYear()} / ${this.getWeekNumber(diat)} / ${diat.getDate()}`).set({
+        firebase.database().ref(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`).set({
           tarea: newPostKey3,
           dateStart: moment().format('YYYY-MM-DD'),
           horaPlanificada: this.state.ultimaTarea ? this.state.ultimaTarea.horaEstimada : moment().format('HH:mm'),
@@ -740,7 +780,7 @@ class Home extends React.Component {
         });
 
         var updates = {};
-        updates[`Usuario - Tareas / ${this.props.userId} / ${idObjetivo} / ${idTarea}`] = tarea;
+        updates[`Usuario-Tareas/${this.props.userId}/${idObjetivo}/${idTarea}`] = tarea;
         firebase.database().ref().update(updates);
         this.renderHistoricoHuper(this.props.userId, `Edito Tarea : ${chatTrazo[2].text} `, 'trabajo');
 
@@ -762,8 +802,8 @@ class Home extends React.Component {
 
         };
         var updates = {};
-        const newPostKey2 = firebase.database().ref().child(`Usuario - TIC - EXP / ${this.props.userId}`).push().key;
-        updates[`Usuario - TIC - EXP / ${this.props.userId} / ${newPostKey2}`] = postData;
+        const newPostKey2 = firebase.database().ref().child(`Usuario-TIC-EXP/${this.props.userId}`).push().key;
+        updates[`Usuario-TIC-EXP/${this.props.userId}/${newPostKey2}`] = postData;
         firebase.database().ref().update(updates);
         this.renderHistoricoHuper(this.props.userId, `Realizo TIC Quincenal`, 'trabajo');
 
@@ -794,9 +834,9 @@ class Home extends React.Component {
 
         objetivo.estado = 'finalizado';
         var updates = {};
-        const newPostKey2 = firebase.database().ref().child(`Usuario - TIC - OBJETIVOS / ${this.props.userId}`).push().key;
-        updates[`Usuario - Objetivos / ${this.props.userId} / ${idObj}`] = objetivo;
-        updates[`Usuario - TIC - OBJETIVOS / ${this.props.userId} / ${newPostKey2}`] = postData;
+        const newPostKey2 = firebase.database().ref().child(`Usuario-TIC-OBJETIVOS/${this.props.userId}`).push().key;
+        updates[`Usuario-Objetivos/${this.props.userId}/${idObj}`] = objetivo;
+        updates[`Usuario-TIC-OBJETIVOS/${this.props.userId}/${newPostKey2}`] = postData;
         firebase.database().ref().update(updates);
         this.renderHistoricoHuper(this.props.userId, `Realizo TIC Objetivos : ${chatTrazo[2].text} `, 'trabajo');
       }
@@ -810,8 +850,8 @@ class Home extends React.Component {
         };
 
         var updates = {};
-        const newPostKey2 = firebase.database().ref().child(`Usuario - Retrospective / ${this.props.userId}`).push().key;
-        updates[`Usuario - Retrospective / ${this.props.userId} / ${newPostKey2}`] = postData;
+        const newPostKey2 = firebase.database().ref().child(`Usuario-Retrospective/${this.props.userId}`).push().key;
+        updates[`Usuario-Retrospective/${this.props.userId}/${newPostKey2}`] = postData;
         firebase.database().ref().update(updates);
         this.renderHistoricoHuper(this.props.userId, `Preguntas de la semana`, 'trabajo');
       }
@@ -820,11 +860,11 @@ class Home extends React.Component {
         //registro de hora de salida
         const hoy = new Date();
         let registro;
-        const starCountRef5 = firebase.database().ref().child(`Usuario - Registro / ${this.props.userId} / ${hoy.getFullYear()} / ${hoy.getMonth()} / ${hoy.getDate()}`);
+        const starCountRef5 = firebase.database().ref().child(`Usuario-Registro/${this.props.userId}/${hoy.getFullYear()}/${hoy.getMonth()}/${hoy.getDate()}`);
         starCountRef5.on('value', (snapshot) => {
           registro = snapshot.val();
           if (registro) {
-            firebase.database().ref(`Usuario - Registro / ${this.props.userId} / ${hoy.getFullYear()} / ${hoy.getMonth()} / ${hoy.getDate()}`).set({
+            firebase.database().ref(`Usuario-Registro/${this.props.userId}/${hoy.getFullYear()}/${hoy.getMonth()}/${hoy.getDate()}`).set({
               ...registro,
               horaFin: hoy.getTime(),
               tiempoTrabajo: hoy.getTime() - registro.horaInicio,
@@ -839,7 +879,7 @@ class Home extends React.Component {
           var updates = {};
           let tarea = {};
           const usuario = this.props.userId;
-          const starCountRef = firebase.database().ref().child(`Usuario - Tareas / ${this.props.userId}`);
+          const starCountRef = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
           starCountRef.on('value', (snapshot) => {
             cconsulta = snapshot.val();
             Object.keys(cconsulta).map(function (key2, index) {
@@ -849,7 +889,7 @@ class Home extends React.Component {
 
                   tarea = ccconsulta[key];
                   tarea.estado = 'desechadas';
-                  updates[`Usuario - Tareas / ${usuario} / ${key2} / ${key}`] = tarea;
+                  updates[`Usuario-Tareas/${usuario}/${key2}/${key}`] = tarea;
                 }
 
               });
@@ -879,7 +919,7 @@ class Home extends React.Component {
               tarea = ccconsulta[key];
               tarea.estado = 'trabajando';
               var updates = {};
-              updates[`Usuario - Tareas / ${userIDs} / ${key2} / ${key}`] = tarea;
+              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = tarea;
               firebase.database().ref().update(updates);
               this.renderHistoricoHuper(this.props.userId, `Estas trabajando en ${chatTrazo[2].text}`, 'trabajo');
             }
@@ -895,7 +935,7 @@ class Home extends React.Component {
                     let avanceObjGlobal = Math.round(parseInt(objs[key3].porcentajeResp) * ((100 / Object.keys(cconsulta[key2]).length) * 0.01));
                     let objetivoPadre = null;
                     //busca el objetivo padre
-                    const starCountRef = firebase.database().ref().child(`Usuario - Objetivos / ${objs[key3].idUsuarioGestor} / ${objs[key3].objetivoPadre}`);
+                    const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`);
                     starCountRef.on('value', (snapshot) => {
                       objetivoPadre = snapshot.val();
                       let devolver = objetivoPadre.avance;
@@ -907,11 +947,11 @@ class Home extends React.Component {
 
                     })
                     if (objetivoPadre)
-                      firebase.database().ref(`Usuario - Objetivos / ${objs[key3].idUsuarioGestor} / ${objs[key3].objetivoPadre}`).set({
+                      firebase.database().ref(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`).set({
                         ...objetivoPadre
                       });
 
-                    firebase.database().ref(`Usuario - Objetivos / ${this.props.userId} / ${key3}`).set({
+                    firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${key3}`).set({
                       ...objs[key3], avancePadre: avanceObjGlobal, nTareas: Object.keys(cconsulta[key2]).length
                     });
 
@@ -921,7 +961,7 @@ class Home extends React.Component {
               }
               tarea.estado = 'finalizado';
               var updates = {};
-              updates[`Usuario - Tareas / ${userIDs} / ${key2} / ${key}`] = { ...tarea, dateEnd: moment().format('YYYY-MM-DD') };
+              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = { ...tarea, dateEnd: moment().format('YYYY-MM-DD') };
               firebase.database().ref().update(updates);
               this.renderHistoricoHuper(this.props.userId, `Ha terminado : ${ultimoValor}`, 'trabajo');
 
@@ -942,7 +982,7 @@ class Home extends React.Component {
         let usuarioGT;
         let keyUsuarioGT;
         let personaEquipo = 0;
-        const newPostKey = firebase.database().ref().child(`Usuario - Objetivos / ${this.props.userId}`).push().key;
+        const newPostKey = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`).push().key;
 
         //Crea objetivo centralizado
 
@@ -983,7 +1023,7 @@ class Home extends React.Component {
             dateStart: moment().format('YYYY-MM-DD')
           };
 
-          firebase.database().ref(`Usuario - Objetivos / ${this.props.userId} / ${newPostKey}`).set({
+          firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${newPostKey}`).set({
             ...postData
           });
         }
@@ -1046,7 +1086,7 @@ class Home extends React.Component {
 
         const fecha = new Date();
 
-        const starCountRef = firebase.database().ref().child(`Usuario - Historico / ${keyUsuarioGT} / ${fecha.getFullYear()} / ${fecha.getMonth()} / ${fecha.getDate()}`);
+        const starCountRef = firebase.database().ref().child(`Usuario-Historico/${keyUsuarioGT}/${fecha.getFullYear()}/${fecha.getMonth()}/${fecha.getDate()}`);
         starCountRef.on('value', (snapshot) => {
           const historico = snapshot.val();
 
@@ -1085,11 +1125,6 @@ class Home extends React.Component {
       }
 
     }
-    //<option value={chatTrazo[key].concepto} key={key} />
-
-    // });
-    //console.log(this.props.valorInput);
-    // }
     this.props.consultaPreguntaControls(valorNPregunta + 1);
 
     this.props.valorInputs(vacio);
@@ -1111,7 +1146,7 @@ class Home extends React.Component {
     },
       function (err) { console.error("Execute error", err); });
 
-    const newPostKey2 = firebase.database().ref().child(`Usuario - Objetivos / ${keyUsuarioGT}`).push().key;
+    const newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${keyUsuarioGT}`).push().key;
     let arr = this.state.personasInv;
     arr.push({ nombre: nombreUsuario, key: newPostKey2, idUsuario: keyUsuarioGT });
     this.setState({ personasInv: arr });
@@ -1135,9 +1170,9 @@ class Home extends React.Component {
       dateStart: moment().format('YYYY-MM-DD'),
     };
 
-    this.setState({ updates: { key: `Usuario - Objetivos / ${keyUsuarioGT} / ${newPostKey2}`, datos: postData } });
+    this.setState({ updates: { key: `Usuario-Objetivos/${keyUsuarioGT}/${newPostKey2}`, datos: postData } });
     var updates = {};
-    updates[`Usuario - Objetivos / ${keyUsuarioGT} / ${newPostKey2}`] = postData;
+    updates[`Usuario-Objetivos/${keyUsuarioGT}/${newPostKey2}`] = postData;
     firebase.database().ref().update(updates);
 
   }
@@ -1152,6 +1187,106 @@ class Home extends React.Component {
     return new Date(fecahMinima)
   }
 
+
+
+
+  handleSlckRecibir = () => {
+    this.timeout = setTimeout(() => {
+      this.renderActualizarCanales();
+      this.props.Mslacks({ ...this.props.Mslack, estado: false });
+      if (this.state.flagConsulta === false) {
+        this.handleSlckRecibir();
+      }
+
+    }, timeoutLength3)
+  }
+
+
+
+
+  renderActualizarCanales() {
+
+    const chatCanal = this.props.user.userChats;
+    let canal = null;
+
+    Object.keys(chatCanal).map((key, index) => {
+
+      if (chatCanal[key].chatID !== '13') {
+        if (chatCanal[key].participants === '2') {
+          canal = this.props.Mslack.canal.gestor;
+        }
+        else if (chatCanal[key].participants === '3') {
+          canal = this.props.Mslack.canal.equipo;
+        }
+        else if (chatCanal[key].participants === '4') {
+          canal = this.props.Mslack.canal.reporting;
+        }
+        else if (chatCanal[key].participants === '5') {
+          canal = this.props.Mslack.canal.notificaicones;
+        }
+
+        //    console.log('entro0');
+
+
+        if (this.state.client && canal) {
+          //obtiene el historico y envia el mensaje
+
+          this.state.client.callMethod('channels.history', { channel: canal, count: this.state.count }).then(res => {
+            const me = chatCanal[key].thread[chatCanal[key].thread.length - 1].text;
+            let flagActualiza = false;
+            console.log(res.messages);
+            Object.keys(res.messages).map((key2, index) => {
+              if (index === 0)
+                if (res.messages[key2].text !== me)
+                  flagActualiza = true;
+            });
+
+            if (flagActualiza) {
+              res.messages.sort((a, b) => (a.ts - b.ts))
+              let flag = false;
+              Object.keys(res.messages).map((key2, index) => {
+                const trab = this.props.Mslack.equipo;
+                let usuariox = 'x';
+                if (res.messages[key2].text === me && flag === false)
+                  flag = true;
+                if (flag === true && res.messages[key2].text !== me) {
+                  Object.keys(trab).map((key3, index) => {
+                    if (res.messages[key2].user === trab[key3].usuarioSlack || res.messages[key2].username === trab[key3].usuarioSlack)
+                      usuariox = trab[key3].usuario;
+                  });
+                  if (res.messages[key2].username === this.props.usuarioDetail.usuario.usuario || res.messages[key2].user === this.props.usuarioDetail.usuario.canalSlack || res.messages[key2].username === this.props.usuarioDetail.usuario.canalSlack)
+                    this.props.submitMessage(res.messages[key2].text, chatCanal[key].chatID, '1');
+                  else {
+                    this.props.submitMessage(res.messages[key2].text + ' •' + usuariox, chatCanal[key].chatID, chatCanal[key].participants);
+                  }
+                }
+              });
+
+            }
+
+          });
+        }
+      }
+
+    });
+
+  }
+
+
+  renderMensajedif(message) {
+    const mr = message.text.split('•')[0].split('◘');
+    if (mr.length > 1) {
+    
+      return (
+        <a href={Array.isArray((message.text.split('•')[0]).split('◘')) ? (message.text.split('•')[0]).split('◘')[1] : null}>
+          {this.renderTextoEmoji((message.text.split('•')[0]).split('◘')[0])}
+        </a>
+      );
+    }
+    return (
+      this.renderTextoEmoji(message.text.split('•')[0])
+    );
+  }
 
   render() {
     const {
@@ -1179,11 +1314,11 @@ class Home extends React.Component {
     ))[0];
 
     // empty thread if no active chat
-
     thread = thread === undefined ? [] : thread.thread;
-
-
-
+    if (this.props.Mslack && this.props.Mslack.estado === true && this.state.flagConsulta === true) {
+      this.handleSlckRecibir();
+      this.setState({ flagConsulta: false });
+    }
 
     // all chats
     const chatters = userChats.reduce((prev, next) => {
@@ -1197,7 +1332,7 @@ class Home extends React.Component {
       width: '40px',
       position: 'fixed',
       'z-index': '4000',
-      top: '82.1%',
+      top: '85.1%',
       left: '89%',
       'font-size': '20px',
       'text-align': 'center',
@@ -1228,8 +1363,7 @@ class Home extends React.Component {
               chatters.indexOf(c.userID) !== -1)).map((c) => (
                 <li onClick={() => {
                   this.props.setActiveChat(c.userID)
-
-
+                  this.props.inputSlacks(c.userID === '6' ? false : true);
                 }}
                   key={c.userID}
                 >
@@ -1244,7 +1378,9 @@ class Home extends React.Component {
           </ul>
         </div>
         <div className="active-chat-ch" key="12345" id="chatHup" >
-          <div className="active-name" key="12346"  >{activeName}</div>
+          <div className="active-name" key="12346" style={{ 'padding-left': '35%' }}  >{activeName}</div>
+          <br></br>
+          <br></br>
           <ul  > {thread.map((message, i) => (
             <div key={i}
               className={message.from === userID
@@ -1252,19 +1388,20 @@ class Home extends React.Component {
                 : "contact-message"}
             >
               <div className="thread-thumbnail-ch  background-color: black;">
-                <span>
-
-                  {this.renderUsuario(contacts, message)}
-                </span>
+                {this.renderUsuario(contacts, message)}
               </div>
-              <li className={i > 0
-                ? thread[i - 1].from === message.from
+              <li
+
+                style={{
+                  'position': 'relative',
+                  'border-radius': '10%',
+                  left: '20px'
+                }} className={i > 0 ? thread[i - 1].from === message.from
                   ? "group"
                   : ""
-                : ""}
-
-              > {this.renderTextoEmoji(message.text)}
-
+                  : ""}
+              >
+                {this.renderMensajedif(message)}
               </li>
             </div>
           ))}
@@ -1315,9 +1452,12 @@ const mapHomeStateToProps = (state) => ({
   listaObjetivo: state.chatReducer.listaObjetivo,
   avatar: state.chatReducer.avatar,
   ValorTexto: state.chatReducer.ValorTexto,
+  inputSlacks: state.chatReducer.inputSlacks,
+  consultaMensaje: state.chatReducer.consultaMensaje,
+  Mslack: state.chatReducer.Mslack,
   user: state.user,
 });
 export default connect(mapHomeStateToProps, {
-  submitMessage, setActiveChat, numeroPreguntas, mensajeEntradas, consultaCanales, chatOff, avatares, pregFantasmas,
+  submitMessage, setActiveChat, numeroPreguntas, Mslacks, mensajeEntradas, consultaCanales, chatOff, avatares, pregFantasmas, inputSlacks,
   consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats, pasoOnboardings, primeraVs,
 })(Home);

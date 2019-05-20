@@ -32,6 +32,8 @@ import {
     INPUT_DINAMICO,
     PRIMERA_VEZ,
     VALOR_TEXT,
+    INPUT_SLACK,
+    MENSAJESL,
 
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -57,7 +59,7 @@ const INITIAL_STATE = {
     popupDetalle: null,
     numeroTareasTerminadas: 0,
     usuarioDetail: null,
-    consultaMensaje: null,
+    consultaMensaje: [],
     consultaCanal: null,
     equipoConsulta: null,
     nuevoUsuario: null,
@@ -70,6 +72,8 @@ const INITIAL_STATE = {
     inputdinamico: null,
     primeraV: null,
     ValorTexto: [],
+    inputSlack: null,
+    Mslack: null,
 
 };
 
@@ -140,8 +144,12 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, detailUsNew: action.payload };
         case INPUT_DINAMICO:
             return { ...state, inputdinamico: action.payload };
+        case INPUT_SLACK:
+            return { ...state, inputSlack: action.payload };
         case VALOR_TEXT:
             return { ...state, ValorTexto: action.payload };
+        case MENSAJESL:
+            return { ...state, Mslack: action.payload };
         case PRIMERA_VEZ:
             return { ...state, primeraV: action.payload };
         default:

@@ -8,6 +8,7 @@ import {
     consultas,
     ValorTextos,
     pregFantasmas,
+    inputSlacks,
 } from './actions';
 import { connect } from 'react-redux';
 import _ from 'lodash';
@@ -366,8 +367,7 @@ class boxDinaminco extends React.Component {
     renderControl() {
 
 
-        // console.log(this.props.consultaPregunta);
-        if (!this.props.consultaPregunta) {
+        if (!this.props.consultaPregunta || this.props.inputSlack === true) {
 
             return (
                 <input
@@ -527,7 +527,7 @@ class boxDinaminco extends React.Component {
             this.renderOpcionesImage();
             return (
                 <Dropdown
-                    style={{ position: 'fixed', top: '82%', width: '90%', left: '-0.5px', height: '7.5%' }}
+                    style={{ position: 'fixed', top: '85%', width: '90%', left: '-0.5px', height: '41px' }}
                     placeholder='Select Friend'
                     fluid
                     // search
@@ -544,8 +544,8 @@ class boxDinaminco extends React.Component {
                             }
                         });
 
-                        const arr = this.props.ValorTexto ;
-                        arr[value.substring(0, 3)]= { value, text } ;
+                        const arr = this.props.ValorTexto;
+                        arr[value.substring(0, 3)] = { value, text };
                         this.props.ValorTextos(arr);
                         this.onInputChange(e, value, text)
                     }}
@@ -573,7 +573,7 @@ class boxDinaminco extends React.Component {
                     onChange={(e, { value }) => {
                         this.onInputChange(e, value)
                     }}
-                    style={{ position: 'fixed', top: '82%', width: '90%', left: '-0.5px', height: '7.5%', 'font-size': 'xx-small' }}
+                    style={{ position: 'fixed', top: '85%', width: '90%', left: '-0.5px', height: '41px', 'font-size': 'xx-small' }}
 
                     value={this.state.term}
                     options={tagOptions}
@@ -634,7 +634,7 @@ class boxDinaminco extends React.Component {
         const y = window.screen.height * 0.39;
         let mensajeY = {
             position: 'fixed',
-            top: '82%',
+            top: '85%',
             width: '90%',
         }
 
@@ -681,9 +681,10 @@ const mapAppStateToProps = (state) => (
         idChatUser: state.chatReducer.idChatUser,
         nombreUser: state.chatReducer.nombreUser,
         ValorTexto: state.chatReducer.ValorTexto,
+        inputSlack: state.chatReducer.inputSlack,
         user: state.user
 
     });
 
 
-export default connect(mapAppStateToProps, { valorInputs, consultaPreguntaControls, pregFantasmas, ValorTextos, submitMessage, mensajeEntradas, numeroPreguntas, consultas })(boxDinaminco);
+export default connect(mapAppStateToProps, { valorInputs, consultaPreguntaControls, pregFantasmas, ValorTextos, submitMessage, mensajeEntradas, numeroPreguntas, consultas, inputSlacks })(boxDinaminco);

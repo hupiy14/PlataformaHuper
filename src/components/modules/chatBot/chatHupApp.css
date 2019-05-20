@@ -590,7 +590,7 @@ textarea {
   bottom: 0;
   left: 0;
   color: rgba(0, 0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: #efb12b;
   width: 108%;
   height: 60px;
  
@@ -643,7 +643,7 @@ textarea {
   padding-left: 20px;
   padding-right: 60px;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: #efb12b;
   border-width: 0px;
   color: white;
   font-size: 20px;
@@ -670,7 +670,7 @@ textarea {
   width: 40px;
   border-radius: 50%;
   color: black;
-  background-color:white;
+  background-color:#b07a04c7;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -711,7 +711,7 @@ textarea {
   margin-top: 0px;
   color:  rgba(0, 0, 0, 0);
   left: -3em;
-  height: 600%;
+  height: 520px;
   width: 120%;
   overflow-y: auto;
   overflow-x: hidden;
@@ -729,7 +729,7 @@ textarea {
   position: absolute;
   right: 0;
   margin-top: -30px;
-  color: white;
+  color: black;
   background: 0 none;
   border: 0 none;
   font-size: 15px;
@@ -749,7 +749,7 @@ textarea {
   bottom: 91%;
   color:rgba(0, 0, 0, 0);
   left: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: #efb12b;
   height: 60px;
   position: absolute;
   display: flex;
@@ -769,7 +769,7 @@ textarea {
   position: absolute;
   width: 100%;
   display: flex;
-  margin-top: 50px;
+  margin-top: 60px;
   overflow: auto;
   height: 70%;
 }
@@ -777,7 +777,7 @@ textarea {
   position: absolute;
   width: 100%;
   margin-left: 1%;
-  color: white;
+  color: #1a191a;
   margin-top: 20px;
   font-weight: 700;
   font-size: 20px;

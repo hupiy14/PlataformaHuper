@@ -179,6 +179,8 @@ class FomrularioGlobal extends React.Component {
             firebase.database().ref(`Usuario-WS/${keyEquipo}/${newPostKey1}/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
                 fechaCreado: new Date().toString(),
                 linkWs: this.props.detailUsNew.codigoWSdrive,
+                usuarioSlack: this.props.detailUsNew.userSlack,
+                usuario: this.props.detailUsNew.nombreUsuario,
             });
         }
         //crea el usuario slack
@@ -188,13 +190,7 @@ class FomrularioGlobal extends React.Component {
         firebase.database().ref(`Usuario-Slack/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
             tokenP: this.props.detailUsNew.tokenSlack,
             tokenB: this.props.detailUsNew.tokenBot,
-            usuario: this.props.detailUsNew.userSlack,
-            /* usuarioSlack: this.state.codigoUsSlack,
-              
-               gestor: this.state.canalGestorSlack,
-               equipo: this.state.canalEquipoSlack,
-               reporting: this.state.canalReportesSlack,
-               notificaciones: this.state.canalNotifiacionesSlack,*/
+            usuarioSlack: this.props.detailUsNew.userSlack,
             fechaCreado: new Date().toString(),
         });
 

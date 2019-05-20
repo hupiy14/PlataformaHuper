@@ -63,9 +63,7 @@ class Profile extends React.Component {
 
     renderOpcionesZona() {
 
-
         const listaX = zonaEspana();
-
         let entro = null;
         Object.keys(listaX).map(function (key, index) {
             if (listaX[key].name === ' ')
@@ -591,7 +589,7 @@ class Profile extends React.Component {
             const starCountRef = firebase.database().ref().child(`Usuario-Slack/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
-                    this.setState({ codigoUsSlack: snapshot.val().usuario ? snapshot.val().usuario : '' });
+                    this.setState({ codigoUsSlack: snapshot.val().usuarioSlack ? snapshot.val().usuarioSlack : '' });
                     this.setState({ tokenUsSlack: snapshot.val().tokenP ? snapshot.val().tokenP : '' });
                     this.setState({ tokenBotUsSlack: snapshot.val().tokenB ? snapshot.val().tokenB : '' });
                     this.setState({ canalGestorSlack: snapshot.val().gestor ? snapshot.val().gestor : null });

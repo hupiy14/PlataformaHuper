@@ -123,12 +123,24 @@ class GoogleAuth extends React.Component {
                             this.auth.signOut();
                     }
                     //        console.log(this.auth.currentUser.get().getId());
+
+                    let slack = null;
+                    //obtien la configuracion de slack
+                    const nameRef4 = firebase.database().ref().child(`Usuario-Slack/${this.auth.currentUser.get().getId()}`)
+                    nameRef4.on('value', (snapshot3) => {
+                        if (snapshot3.val())
+                            slack = snapshot3.val();
+                    });
+
                     const nameRef3 = firebase.database().ref().child(`Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${this.auth.currentUser.get().getId()}`)
                     nameRef3.on('value', (snapshot3) => {
                         //           console.log(snapshot3.val());
                         if (snapshot3.val())
-                            this.props.usuarioDetails({ usuario: Usuario, idUsuario: this.auth.currentUser.get().getId(), linkws: snapshot3.val().linkWs });
+                            this.props.usuarioDetails({ usuario: Usuario, idUsuario: this.auth.currentUser.get().getId(), linkws: snapshot3.val().linkWs, slack });
                     });
+
+
+
 
 
                     const nameRef2 = firebase.database().ref().child('Usuario-Rol').child(this.auth.currentUser.get().getId());
