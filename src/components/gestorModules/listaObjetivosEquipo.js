@@ -301,7 +301,7 @@ class ListaObjetivosEquipo extends React.Component {
                         if (fec < new Date()) {
                             style = {
                                 borderRadius: 0.5,
-                                background: '#f9333340',
+                                background: '#f9e63340',
                             };
                         }
                     }

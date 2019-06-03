@@ -32,7 +32,7 @@ import  FLujoCreate from './modules/newFlowWork';
 
 //PruebaG
 
-
+// <Feedback />
 
 ///otra forma de link   <Route path="/" exact render={()=> <StreamList />}  />
 
@@ -100,7 +100,7 @@ class App extends React.Component {
                 </div>
                 <div className="pie-Pagina">
 
-                    <Feedback />
+                   
                     {this.renderMenuChat()}
                 </div>
 

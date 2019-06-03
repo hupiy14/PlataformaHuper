@@ -1,18 +1,16 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
+import { chatOn, chatOff } from '../../actions';
 import { Button, Popup, Grid, Input, Header, Modal, Image, Form, Progress, Segment, Label, Divider, Icon } from 'semantic-ui-react';
-import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos } from '../modules/chatBot/actions';
+import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, estadochats, objTIMs } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
-
-
-
-
 
 var fs = require('fs');
 
 const timeoutLength = 150000;
 const timeoutLength2 = 600;
+const timeoutLength3 = 60000;
 
 class listImportante extends React.Component {
     state = {
@@ -46,9 +44,9 @@ class listImportante extends React.Component {
                 if (ObjTrabajo[key2].compartidoEquipo) {
                     const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${ObjTrabajo[key2].idUsuarioGestor}/${ObjTrabajo[key2].objetivoPadre}`);
                     starCountRef.on('value', (snapshot) => {
-                        if(snapshot.val()){
-                        const resultado2 = { ...ObjTrabajo[key2], avancePadre:   snapshot.val().avance }
-                        objetivos[key2] = { ...resultado2 };
+                        if (snapshot.val()) {
+                            const resultado2 = { ...ObjTrabajo[key2], avancePadre: snapshot.val().avance }
+                            objetivos[key2] = { ...resultado2 };
                         }
                     });
 
@@ -139,6 +137,12 @@ class listImportante extends React.Component {
             this.setState({ ver: false });
         }, timeoutLength2)
     }
+    TIMOBJ = () => {
+        this.timeout = setTimeout(() => {
+            this.props.chatOn();
+            alert('er')
+        }, timeoutLength3)
+    }
 
     componentDidUpdate() {
         if (this.state.guardar) {
@@ -154,12 +158,11 @@ class listImportante extends React.Component {
             window.open(`https://drive.google.com/drive/folders/${this.state.objetivoS.carpeta}`);
     }
 
-    renderConstruirObj(images, the) {
-        if (the.props.listaObjetivo && the.props.listaObjetivo.objetivos && the.props.listaObjetivo.tareas) {
-
-            const cconsulta = the.props.listaObjetivo.objetivos;
-
-            const opciones = Object.keys(cconsulta).map(function (key2, index) {
+    renderConstruirObj(images) {
+        if (this.props.listaObjetivo && this.props.listaObjetivo.objetivos) {
+            let flagObjetivosTerminados = true;
+            const cconsulta = this.props.listaObjetivo.objetivos;
+            const opciones = Object.keys(cconsulta).map((key2, index) => {
 
                 const objetivo = cconsulta[key2];
                 const factorObjetivo = cconsulta[key2].numeroTareas;
@@ -170,29 +173,36 @@ class listImportante extends React.Component {
 
                 //the.setState( { listAll : this.state.listAll + 1 });
                 if (cconsulta[key2].estado === 'activo' || cconsulta[key2].estado === 'validar') {
-                    Object.keys(the.props.listaObjetivo.tareas).map(function (key3, index) {
+                    if (this.props.listaObjetivo.tareas)
+                        Object.keys(this.props.listaObjetivo.tareas).map((key3, index) => {
 
-                        const consultaTareaTT = the.props.listaObjetivo.tareas[key3];
-                        Object.keys(consultaTareaTT).map(function (key33, index) {
-                            if (key3 === key2) {
-                                if (consultaTareaTT[key33].estado === 'finalizado') {
-                                    tareasCompleta = tareasCompleta + 1;
+                            const consultaTareaTT = this.props.listaObjetivo.tareas[key3];
+                            Object.keys(consultaTareaTT).map((key33, index) => {
+                                if (key3 === key2) {
+                                    if (consultaTareaTT[key33].estado === 'finalizado') {
+                                        tareasCompleta = tareasCompleta + 1;
+                                    }
                                 }
+                            });
+                            // the.increment(factorObjetivo, numeroTareasTs);
+                            factor = { factor: (100 / factorObjetivo), numero: tareasCompleta };
+                            resultado = Math.round(factor.factor * tareasCompleta);
+                            // console.log(resultado);
+                            if (resultado === 100 && !cconsulta[key2].estadoTIM && this.props.estadochat !== 'TIM objetivo') {
+                                this.props.estadochats('TIM objetivo');
+                                this.props.objTIMs({ obj: cconsulta[key2], key: key2 });
+                                this.TIMOBJ();
                             }
+
+                            if (resultado < 100)
+                                flagObjetivosTerminados = false;
                         });
-                        // the.increment(factorObjetivo, numeroTareasTs);
-                        factor = { factor: (100 / factorObjetivo), numero: tareasCompleta };
-                        resultado = Math.round(factor.factor * tareasCompleta);
-                        // console.log(resultado);
-
-
-                    });
 
                     //color de la seleccion      
                     let style = {
                         borderRadius: 0.5,
                         height: '100px',
-                        background: the.props.selObjetivo === key2 ? '#fbe4ff' : null,
+                        background: this.props.selObjetivo === key2 ? '#fbe4ff' : null,
                     };
 
 
@@ -204,7 +214,7 @@ class listImportante extends React.Component {
                         if (fec < new Date()) {
                             style = {
                                 borderRadius: 0.5,
-                                background: the.props.selObjetivo === key2 ? '#fbe4ff' : '#f9333340',
+                                background: this.props.selObjetivo === key2 ? '#fbe4ff' : '#f9e63340',
                                 height: '100px',
                             };
                         }
@@ -229,7 +239,7 @@ class listImportante extends React.Component {
                         top: cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50 ? '-80px' : '-60px' : '-50px',
                     };
 
-                    if (the.props.alingD) { styleD.left = '25%'; }
+                    if (this.props.alingD) { styleD.left = '25%'; }
 
 
                     //Impacto de las activiadades
@@ -241,12 +251,12 @@ class listImportante extends React.Component {
                     else if (cconsulta[key2].impacto === "Ventas") { iconoImpacto = "hospital outline"; colorImpacto = "yellow"; }
 
                     //Flujo de trabajo
-                    let listaX = the.state.WorkFlow;
+                    let listaX = this.state.WorkFlow;
                     let colorFase = null;
                     let labelFase = null;
                     let numFase = null;
                     let flujoActivo = null;
-                    let iconoObjetivo = the.props.icono;
+                    let iconoObjetivo = this.props.icono;
                     let avancePadre = null;
 
                     //grafica el avance del objetivo compartido
@@ -310,7 +320,7 @@ class listImportante extends React.Component {
                             <i className={`large ${iconoObjetivo} aligned icon`} style={{ color: '#fbbd087d' }} ></i>
                             <div className=" content"   >
 
-                                <Segment style={style} onClick={() => { the.props.selObjetivo === key2 ? the.props.selObjetivos(null) : the.props.selObjetivos(key2); }} >
+                                <Segment style={style} onClick={() => { this.props.selObjetivo === key2 ? this.props.selObjetivos(null) : this.props.selObjetivos(key2); }} >
                                     <div className="header"  >{cconsulta[key2].concepto}</div>
                                     <div className="description" style={{ width: '55%' }}  >{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
                                     <Label as='a' color={cconsulta[key2].prioridad === 'normal' ? 'teal' : cconsulta[key2].prioridad === 'inmediato' ? 'purple' : 'yellow'} basic style={{ left: '84%', position: 'relative', top: cconsulta[key2].detalle ? cconsulta[key2].detalle.length > 50 ? '-52px' : '-28px' : '-22px' }}>
@@ -332,15 +342,15 @@ class listImportante extends React.Component {
                                             trigger={<Button icon='id badge' color='yellow'
                                                 onClick={() => {
 
-                                                    if (!the.props.usuarioDetail.usuario.onboarding)
-                                                        the.handlePaso();
+                                                    if (!this.props.usuarioDetail.usuario.onboarding)
+                                                        this.handlePaso();
 
-                                                    the.onVideoSelect(objetivo);
+                                                    this.onVideoSelect(objetivo);
                                                     //  the.props.prioridadObjs(0); 
-                                                    the.setState({ prioridadOk: true });
-                                                    the.setState({ prioridadOk: false });
-                                                    the.props.prioridadObjs(the.props.prioridadObj + 1 > 2 ? 0 : the.props.prioridadObj + 1);
-                                                    the.setState({ guardar: true });
+                                                    this.setState({ prioridadOk: true });
+                                                    this.setState({ prioridadOk: false });
+                                                    this.props.prioridadObjs(this.props.prioridadObj + 1 > 2 ? 0 : this.props.prioridadObj + 1);
+                                                    this.setState({ guardar: true });
                                                 }}
                                             ></Button>}
                                             content='Cambiar Prioridad'
@@ -355,14 +365,14 @@ class listImportante extends React.Component {
                                                     trigger={<Button color='purple' icon='edit outline'
                                                         onClick={() => {
 
-                                                            if (!the.props.usuarioDetail.usuario.onboarding)
-                                                                the.handlePaso();
+                                                            if (!this.props.usuarioDetail.usuario.onboarding)
+                                                                this.handlePaso();
 
-                                                            the.setState({ cambio: Math.round(Math.random() * 6) });
-                                                            the.onVideoSelect(objetivo);
-                                                            the.setState({ ver: !the.state.ver });
-                                                            the.setState({ titulo: cconsulta[key2].concepto });
-                                                            the.setState({ detalleO: cconsulta[key2].detalle });
+                                                            this.setState({ cambio: Math.round(Math.random() * 6) });
+                                                            this.onVideoSelect(objetivo);
+                                                            this.setState({ ver: !this.state.ver });
+                                                            this.setState({ titulo: cconsulta[key2].concepto });
+                                                            this.setState({ detalleO: cconsulta[key2].detalle });
                                                         }}
                                                     />}
                                                     content='Detalle del Objetivo'
@@ -370,16 +380,16 @@ class listImportante extends React.Component {
                                                 />
 
                                             }
-                                            open={the.state.ver}
+                                            open={this.state.ver}
 
                                         >
 
-                                            <Modal.Header>Detalle de objetivo: " {the.state.titulo} "</Modal.Header>
+                                            <Modal.Header>Detalle de objetivo: " {this.state.titulo} "</Modal.Header>
                                             <Modal.Content image scrolling>
                                                 <div className="ui form">
                                                     <div className="ui grid">
                                                         <div className="eight wide column">
-                                                            <Image wrapped size='medium' src={images[1] ? images[the.state.cambio].urls.regular : ''} />
+                                                            <Image wrapped size='medium' src={images[1] ? images[this.state.cambio].urls.regular : ''} />
                                                         </div>
                                                         <div className="eight wide column">
                                                             <Modal.Description>
@@ -388,13 +398,13 @@ class listImportante extends React.Component {
 
 
                                                                 <Header as='h5'>Describe el detalle :</Header>
-                                                                <Input fluid value={the.state.detalleO}
+                                                                <Input fluid value={this.state.detalleO}
                                                                     key={key2}
                                                                     placeholder='Detalla el objetivo a realizar...'
-                                                                    onChange={e => the.setState({ detalleO: e.target.value })}>
+                                                                    onChange={e => this.setState({ detalleO: e.target.value })}>
                                                                 </Input>
                                                                 <br></br>
-                                                                <button className="ui button green google drive icon  fluid" onClick={() => { the.renderConsultarEW(cconsulta[key2].carpeta) }}>Consultar espacio de trabajo
+                                                                <button className="ui button green google drive icon  fluid" onClick={() => { this.renderConsultarEW(cconsulta[key2].carpeta) }}>Consultar espacio de trabajo
                                                                 <i className="google drive icon prueba-xx"> </i>
                                                                 </button>
                                                             </Modal.Description>
@@ -410,7 +420,7 @@ class listImportante extends React.Component {
                                                         <button className='ui button grey fluid'
                                                             key={key2}
                                                             onClick={() => {
-                                                                the.setState({ ver: !the.state.ver });
+                                                                this.setState({ ver: !this.state.ver });
                                                             }} > Cancelar</button>
 
                                                     </div>
@@ -418,8 +428,8 @@ class listImportante extends React.Component {
                                                         <button className='ui button purple fluid save icon'
                                                             key={key2}
                                                             onClick={() => {
-                                                                the.setState({ ver: !the.state.ver });
-                                                                the.guardarDetalle(the);
+                                                                this.setState({ ver: !this.state.ver });
+                                                                this.guardarDetalle(this);
                                                             }} >
                                                             Guardar
                                                             <i className='large middle  save aligned icon aling-Derecha2 '>
@@ -448,6 +458,8 @@ class listImportante extends React.Component {
                     );
                 }
             });
+            if (flagObjetivosTerminados === true)
+                this.props.estadochats('Objetivos Terminados');
             return opciones;
 
         }
@@ -474,7 +486,7 @@ class listImportante extends React.Component {
                 <h3>{titulo}</h3>
                 <div className=" maximo-list">
                     <div className="ui relaxed divided animated list ">
-                        {this.renderConstruirObj(this.state.images, this)}
+                        {this.renderConstruirObj(this.state.images)}
                     </div>
                 </div>
             </div>
@@ -493,9 +505,10 @@ const mapAppStateToProps = (state) => (
         prioridadObj: state.chatReducer.prioridadObj,
         usuarioDetail: state.chatReducer.usuarioDetail,
         selObjetivo: state.chatReducer.selObjetivo,
+        estadochat: state.chatReducer.estadochat,
         userId: state.auth.userId,
 
     });
 
 
-export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos })(listImportante);
+export default connect(mapAppStateToProps, { listaObjetivos, estadochats, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, chatOn, chatOff, objTIMs })(listImportante);

@@ -58,7 +58,7 @@ class Contacts extends React.Component {
     else if (id === '5') {
       canal = this.state.canales.notificaicones;
     }
-console.log(canal);
+
 
     if (this.state.client && canal) {
 

@@ -34,6 +34,9 @@ import {
     VALOR_TEXT,
     INPUT_SLACK,
     MENSAJESL,
+    ESTADO_CHAT,
+    MENSAJEVIELY,
+    OBJ_TIM,
 
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -74,6 +77,9 @@ const INITIAL_STATE = {
     ValorTexto: [],
     inputSlack: null,
     Mslack: null,
+    estadochat: null,
+    MensajeIvily: null,
+    objTIM: null,
 
 };
 
@@ -150,6 +156,12 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, ValorTexto: action.payload };
         case MENSAJESL:
             return { ...state, Mslack: action.payload };
+        case ESTADO_CHAT:
+            return { ...state, estadochat: action.payload };
+        case MENSAJEVIELY:
+            return { ...state, MensajeIvily: action.payload };
+        case OBJ_TIM:
+            return { ...state, objTIM: action.payload };
         case PRIMERA_VEZ:
             return { ...state, primeraV: action.payload };
         default:

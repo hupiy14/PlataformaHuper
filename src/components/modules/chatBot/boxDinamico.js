@@ -19,8 +19,6 @@ import { Image, Dropdown, Input } from 'semantic-ui-react';
 
 
 
-
-
 let tagOptions = [];
 
 
@@ -33,8 +31,8 @@ class boxDinaminco extends React.Component {
     renderConstruir() {
         let x = 0;
         //  console.log(this.props.user.userChats[0].thread[6]);
-
-        if (this.props.user.userChats[0].thread[6].text === ' Prioridad') {
+        if (!this.props.user.userChats[0].thread[6]) return;
+        if (this.props.user.userChats[0].thread[6].text === 'Importancia') {
             const opciones = this.props.consultaPregunta[this.props.consultaPreguntaControl].opciones3.split(',').map((consulta) => {
                 //  console.log(consulta);
                 x++;
@@ -45,7 +43,7 @@ class boxDinaminco extends React.Component {
 
             return opciones;
         }
-        else if (this.props.user.userChats[0].thread[6].text === ' Tiempo Estimado') {
+        else if (this.props.user.userChats[0].thread[6].text === 'Tiempo Estimado') {
             const opciones = this.props.consultaPregunta[this.props.consultaPreguntaControl].opciones2.split(',').map((consulta) => {
                 //  console.log(consulta);
                 x++;
@@ -136,6 +134,7 @@ class boxDinaminco extends React.Component {
                 <option value={consulta} key={x} />
             );
         });
+
         return opciones;
     }
 
@@ -147,11 +146,13 @@ class boxDinaminco extends React.Component {
                 this.props.consultas(snapshot.val());
             });
         }
+
     }
 
 
 
     renderOpcionesDB4() {
+
         if (this.props.consultax && this.state.consultaY) {
             const cconsulta = this.props.consultax;
             let consultaOp = [];
@@ -185,6 +186,7 @@ class boxDinaminco extends React.Component {
 
             if (!this.props.pregFantasma || (this.props.pregFantasma && this.props.pregFantasma.consultaOp === "Nada"))
                 this.props.pregFantasmas({ key: 1, consultaOp });
+
             return (
                 <datalist id='opciones'>
                     {opciones}
@@ -238,7 +240,6 @@ class boxDinaminco extends React.Component {
                     Object.keys(ccconsulta).map(function (key, index) {
                         if (ccconsulta[key].concepto !== input && (ccconsulta[key].estado === 'activo' || ccconsulta[key].estado === 'trabajando')) {
                             alert('Cuatro');
-                            console.log(ccconsulta[key].concepto.split('☼'));
                             tagOptions = [...tagOptions,
                             {
                                 key: key,
@@ -250,8 +251,6 @@ class boxDinaminco extends React.Component {
                     });
                 }
                 else if (cconsulta[key].estado === 'activo') {
-                    console.log('tres');
-                    console.log(cconsulta[key].concepto.split('☼'));
                     tagOptions = [...tagOptions,
                     {
                         key: key,
@@ -294,6 +293,7 @@ class boxDinaminco extends React.Component {
 
             });
 
+
             return (
                 <datalist id='opciones'>
                     {opciones2}
@@ -332,7 +332,7 @@ class boxDinaminco extends React.Component {
                 }
 
             });
-
+            opciones.push(<option value={'Ninguno'} key={100} />)
             // this.setState({ consultaY: false });
             return (
                 <datalist id='opciones'>
@@ -399,7 +399,7 @@ class boxDinaminco extends React.Component {
 
 
                 <div class="ui labeled input" style={{ 'margin-left': '20px' }}>
-                    <div class="ui label" className={this.state.formmessage} style={{ visibility: this.props.consultaPregunta[this.props.consultaPreguntaControl].label ? 'visible' : 'hidden', background: 'rgb(255, 251, 240)', top: '420px', left: '-33px', 'z-index': 5, 'border-radius': '5px' }}>
+                    <div class="ui label" className={this.state.formmessage} style={{ visibility: this.props.consultaPregunta[this.props.consultaPreguntaControl].label ? 'visible' : 'hidden', background: '#ffbb006e', top: '521px', left: '-33px', 'z-index': 5, 'border-radius': '5px' }}>
                         {this.props.consultaPregunta[this.props.consultaPreguntaControl].label ? this.props.consultaPregunta[this.props.consultaPreguntaControl].label : null}
                     </div>
                     <input type="text" placeholder="message" key={this.props.keyDinamico}
@@ -427,8 +427,6 @@ class boxDinaminco extends React.Component {
                     list='opciones' placeholder='Escoge una Opcion...'
                     className={this.state.formmessage}
                     style={this.state.style}
-                //   rows={10}
-                //   cols={30}
 
                 />
                 <datalist id='opciones'>
@@ -445,13 +443,9 @@ class boxDinaminco extends React.Component {
                 <input
                     value={this.props.valorInput === ' ' ? '' : this.props.term}
                     onChange={this.onInputChange}
-                    //   pattern={`'${this.renderOpcionesDB3()}'`}
                     list='opciones' placeholder='Escoge una Opcion...'
                     className={this.state.formmessage}
                     style={this.state.style}
-                //   rows={10}
-                //    cols={30}
-
                 />
 
                 {this.renderOpcionesDB2()}
@@ -480,15 +474,18 @@ class boxDinaminco extends React.Component {
 
         }
         else if (this.props.consultaPregunta[this.props.consultaPreguntaControl].tipoPregunta === '6') {
-            //            console.log('6');
+            //no ha cargado el ultimo dato del chat
+           
+            if (!this.props.user.userChats[0].thread[6]) return;
             let texto;
-            if (this.props.user.userChats[0].thread[6].text === ' Prioridad') {
+            if (this.props.user.userChats[0].thread[6].text === 'Importancia') {
 
                 texto = this.props.consultaPregunta[this.props.consultaPreguntaControl].opciones3.replace(/,/g, '|');
             }
-            else if (this.props.user.userChats[0].thread[6].text === ' Tiempo Estimado') {
+            else if (this.props.user.userChats[0].thread[6].text === 'Tiempo Estimado') {
                 texto = this.props.consultaPregunta[this.props.consultaPreguntaControl].opciones2.replace(/,/g, '|');
             }
+
 
             return (<React.Fragment>
                 <input
@@ -527,7 +524,7 @@ class boxDinaminco extends React.Component {
             this.renderOpcionesImage();
             return (
                 <Dropdown
-                    style={{ position: 'fixed', top: '85%', width: '90%', left: '-0.5px', height: '41px' }}
+                    style={{ position: 'fixed', top: '85%', width: '90%', 'z-index': '100', left: '-0.5px', height: '41px' }}
                     placeholder='Select Friend'
                     fluid
                     // search
@@ -573,7 +570,7 @@ class boxDinaminco extends React.Component {
                     onChange={(e, { value }) => {
                         this.onInputChange(e, value)
                     }}
-                    style={{ position: 'fixed', top: '85%', width: '90%', left: '-0.5px', height: '41px', 'font-size': 'xx-small' }}
+                    style={{ position: 'fixed', top: '85%', width: '90%', left: '-0.5px', 'z-index': '100', height: '41px', 'font-size': 'xx-small' }}
 
                     value={this.state.term}
                     options={tagOptions}
@@ -611,7 +608,8 @@ class boxDinaminco extends React.Component {
             if (this.props.consultaPreguntaControl === 1) { this.setState({ flag: false }); }
             else {
                 this.setState({ flag: null });
-                const nameRef2 = firebase.database().ref().child('Mensaje-ChatBot').child('Despedida').child('1');
+                const x = Math.round(Math.random() * (2)) + 1;
+                const nameRef2 = firebase.database().ref().child('Mensaje-ChatBot').child(`Despedida/${x}`);
                 nameRef2.on('value', (snapshot2) => {
 
 
@@ -636,6 +634,7 @@ class boxDinaminco extends React.Component {
             position: 'fixed',
             top: '85%',
             width: '90%',
+            'z-index': '100',
         }
 
         if (window.screen.width > 500 && window.screen.height < 800) {

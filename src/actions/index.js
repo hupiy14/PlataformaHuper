@@ -94,11 +94,13 @@ const escribirUsuario = (userId) => {
     // var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta/2').push().key;
     var newPostKey2 = firebase.database().ref().child('Rol-Tipologia-Pregunta').push().key;
 
-    /*firebase.database().ref(`Preguntas-Chat/-LekJr_nu74fVLVahibh/2`).set({
-        opciones:  "1.Emocionante>newspaper$#08d83c, 2.Intrigante>newspaper$#80d808, 3. Normal>newspaper$#d8d008,  4. Rutinario>newspaper$#d87908, 5. Aburrido>newspaper$#d81008",
+    firebase.database().ref(`Preguntas-Chat/-LWGFo3s87SjzppL7hoF/4`).set({
+      //  opciones:  "1.Emocionante>newspaper$#08d83c, 2.Intrigante>newspaper$#80d808, 3. Normal>newspaper$#d8d008,  4. Rutinario>newspaper$#d87908, 5. Aburrido>newspaper$#d81008",
         objeto: 'icon',
-        concepto: 'Huper, el trabajo realizado en una palabra fue',
+        concepto: 'Define el nivel importancia que tendra esta actividad ',
+        opciones: '1>bomb$#c03947,2>bomb$#bd6e2d,3>bomb$#bd9c2d,4>bomb$#b6bd2d,5>bomb$#8ebd2d,6>bomb$#2dbd30,7>bomb$#2dbd79',
         tipoPregunta: '8'
+       // tipoPregunta: '8'
         //tipo: 2
 
 
@@ -120,7 +122,7 @@ const escribirUsuario = (userId) => {
         //   opciones: 'Unico,Empieza en tu flujo de trabajo',
         // opciones: 'Que esta haciendo mi huper,Crear un Objetivo,Dar un Feedback',
         //  tipoPregunta: '1',
-    });*/
+    });
 
 
 

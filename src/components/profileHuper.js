@@ -26,6 +26,12 @@ const nivel = [
     { key: 3, text: 'Altamente Competitivo', value: '125' },
 
 ]
+const Semana = [
+    { key: 1, text: 'Viernes', value: 5 },
+    { key: 2, text: 'Sabado', value: 6 },
+    { key: 3, text: 'Domingo', value: 7 },
+
+]
 class Profile extends React.Component {
 
     state = {
@@ -34,7 +40,7 @@ class Profile extends React.Component {
         errorTipo: null, errorNombreUsuario: null, errorCargo: null, errorArea: null, errorTelefono: null, errorLugar: null, errorEmpresa: null, errorEquipo: null, errorCodigo: null, errorAcepto: null, calendar: null,
         codigoUsSlack: null, tokenUsSlack: null, tokenBotUsSlack: null, canalGestorSlack: null, canalEquipoSlack: null, canalReportesSlack: null, canalNotifiacionesSlack: null,
         codigoWSdrive: null, activo: false, listaCanales_Slack: null, usuarioTrello: null, trelloListaDashBoard: null, trelloLista: null, trelloDashboard: null, errorDashboard: null,
-        nivelEquipo: null,
+        nivelEquipo: null, diaSemana: null,
 
         trelloApi: null, tokenTrello: null, listaObjetivostoDO: null, listaOBjetivosDone: null, listaObjetivosTheEnd: null, imagenMostrar: null, imagenFondo: null, imagenPerfil: null,
     }
@@ -434,7 +440,7 @@ class Profile extends React.Component {
             nnivel = <Form.Select label='Define el nivel de competitividad de tu equipo' options={nivel} placeholder='Selecciona uno'
                 search
                 onChange={(e, { value }) => this.setState({ nivelEquipo: { ...this.state.nivelEquipo, nivel: value } })}
-                value={this.state.nivelEquipo? this.state.nivelEquipo.nivel : 105}
+                value={this.state.nivelEquipo ? this.state.nivelEquipo.nivel : 105}
 
             />
         }
@@ -470,10 +476,11 @@ class Profile extends React.Component {
                         error={this.state.errorArea}
                     />
 
-                    <Form.Input label='Teléfono' placeholder='¿Dondé te podemos contactar? '
-                        value={this.state.telefono}
-                        onChange={e => this.setState({ telefono: e.target.value })}
-                        error={this.state.errorTelefono}
+                    <Form.Select label='En que dia termina tu semana' options={Semana} placeholder='Selecciona uno'
+                        search
+                        onChange={(e, { value }) => this.setState({ diaSemana: value })}
+                        value={this.state.diaSemana}
+
                     />
 
                     <Form.Select label='Lugar de residencia' options={this.renderOpcionesZona()} placeholder='En que lugar vives?'
@@ -481,6 +488,12 @@ class Profile extends React.Component {
                         onChange={(e, { value }) => this.setState({ lugar: value })}
                         value={this.state.lugar}
                         error={this.state.errorLugar}
+                    />
+
+                    <Form.Input label='Teléfono' placeholder='¿Dondé te podemos contactar? '
+                        value={this.state.telefono}
+                        onChange={e => this.setState({ telefono: e.target.value })}
+                        error={this.state.errorTelefono}
                     />
 
                     {nnivel}
@@ -556,6 +569,7 @@ class Profile extends React.Component {
         }
         else {
             firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).set({
+                ...this.props.usuarioDetail.usuario,
                 usuario: this.state.nombreUsuario,
                 cargo: this.state.cargo,
                 area: this.state.area,
@@ -568,7 +582,7 @@ class Profile extends React.Component {
                 equipo: this.props.usuarioDetail.usuario.equipo,
                 onboarding: this.props.usuarioDetail.usuario.onboarding ? this.props.usuarioDetail.usuario.onboarding : null,
                 wsCompartida: this.state.codigoWSdrive ? this.state.codigoWSdrive : this.props.usuarioDetail.usuario.wsCompartida ? this.props.usuarioDetail.usuario.wsCompartida : null,
-
+                diaSemana: this.state.diaSemana ? this.state.diaSemana : 0,
             });
             if (this.props.userRol === '2')
                 firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`).set({
@@ -679,6 +693,7 @@ class Profile extends React.Component {
             this.setState({ nombreUsuario: this.props.usuarioDetail.usuario.usuario });
             // this.setState({ empresa: this.props.usuarioDetail.usuario.empresa });
             this.setState({ cargo: this.props.usuarioDetail.usuario.cargo });
+            this.setState({ diaSemana: this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana : null });
             this.setState({ area: this.props.usuarioDetail.usuario.area });
             this.setState({ imagenFondo: this.props.usuarioDetail.usuario.imagenFondo ? this.props.usuarioDetail.usuario.imagenFondo : null });
             this.setState({ imagenPerfil: this.props.usuarioDetail.usuario.imagenPerfil ? this.props.usuarioDetail.usuario.imagenPerfil : null });
@@ -706,9 +721,9 @@ class Profile extends React.Component {
 
         if (this.props.usuarioDetail && this.props.usuarioDetail.usuario && !this.state.entro)
             this.renderCargar();
-        let tamano = '37em';
+        let tamano = '42em';
         if (this.props.userRol === '2')
-            tamano = '42em';
+            tamano = '46em';
         if (this.state.open === 'slack') {
             tamano = '22em';
         }

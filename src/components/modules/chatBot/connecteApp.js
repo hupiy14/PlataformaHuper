@@ -8,20 +8,27 @@ import Profile from './profilePage';
 import { settings as Senttings } from './settingsPage';
 import {
     submitMessage, consultaChats, chatIdentifiador, numeroPreguntas, mensajeEntradas, consultaPreguntaControls,
-    tipoPreguntas, endChat, startChat, borrarChats, pasoOnboardings
+    tipoPreguntas, endChat, startChat, borrarChats, pasoOnboardings, MensajeIvilys, consultas
 } from './actions';
 import firebase from 'firebase';
 import _ from 'lodash';
+import moment from 'moment';
 import Avatar from '../../../apis/xpress';
 
 
 
-const timeoutLength = 500;
+
+
+
+const timeoutLength = 300;
+const TIM_Sem = ['-LekIihkesH_WPL9f624', '-LekJr_nu74fVLVahibh', '-LekJMj3-rwVXgPFojaK'] //2
+const TIM_Med = ['-LekKwo9EJUp9fVE5Yex', '-LekKv_Vsij6ttgXmttU', '-LekI_vYF1zGvglusBXr'] //4
+const TIM_Obj = ['-LekL3NOrjyYW8PsT-Vq', '-LekISO8phY6r4v3EYRD', '-LeknuHNolKbHgs7Visj'] //3
 
 class App extends React.Component {
 
-    state = { avatares: null, }
- 
+    state = { avatares: null, horaMax: 8 }
+
 
     // habilita el primer paso
     handlePaso = () => {
@@ -31,31 +38,37 @@ class App extends React.Component {
     }
 
 
+
+
     componentDidMount() {
+
         //primer paso del onboarding de la herramienta
         if (!this.props.usuarioDetail.usuario.onboarding && this.props.pasoOnboarding === 0)
             this.handlePaso();
+        this.props.numeroPreguntas(1); ///borra el chat    
         this.props.consultaPreguntaControls(1);
+        this.props.consultaChats(null);
+        this.props.consultas(null);
         this.props.borrarChats(this.props.user.activeChat.participants);
         //this.props.endChat('6');
         //this.props.startChat('6');
         this.props.chatIdentifiador('6');
         const chatID = '13';
         if (this.props.mensajeEnt) {
-
-            const nameRef2 = firebase.database().ref().child('Mensaje-ChatBot').child('Saludo').child('1');
+            const x = Math.round(Math.random() * (2)) + 1;
+            const nameRef2 = firebase.database().ref().child('Mensaje-ChatBot').child(`Saludo/${x}`);
             nameRef2.on('value', (snapshot2) => {
                 const mensaje = snapshot2.val().concepto;
                 const result = _.replace(mensaje, /@nombre/g, this.props.nombreUser);
                 //    const imf = <Image src='https://xpresso2.mobigraph.co/xpresso/v2/media/1bfaLcimzkhPQ2w9jwolG3qxXUqmdjw-1/7d140000.gif' size='small' />;
                 this.props.submitMessage(result, chatID, '6');
                 this.props.mensajeEntradas(false);
-
             });
         }
         else {
             this.props.submitMessage('@<Hola Huper@<', chatID, '6');
         }
+
         //Notificaciones
         /*
         const nameRef2 = firebase.database().ref().child('Notificaciones/108587547313274842109/-LWlp6LbqCPoZ9XBipaG')
@@ -160,15 +173,96 @@ class App extends React.Component {
    
                               */
 
-            if (this.props.pasoOnboarding === 0 || this.props.usuarioDetail.usuario.onboarding)
-               // this.rendeSeguimientoTrabajo(chatID);
-                this.rendeTalentoImpCom(chatID);
-               // this.renderTareaDiaria(chatID);
-            else if (this.props.isChat === false || this.props.pasoOnboarding === 1)
-                //    this.rendeSeguimientoTrabajo(chatID);
-                this.renderTareaDiaria(chatID);
-            else if (this.props.pasoOnboarding === 3)
-                this.renderRealizarTIC_EXP(chatID);
+            //   if (this.props.pasoOnboarding === 0 || this.props.usuarioDetail.usuario.onboarding) {
+            // this.rendeSeguimientoTrabajo(chatID);
+            // this.rendeTalentoImpCom(chatID);
+            // if (this.props.MensajeIvily && this.props.MensajeIvily.nActIVi > 5)
+            //   this.rendeSeguimientoTrabajo(chatID);
+            // else
+            // this.renderTareaDiaria(chatID);
+
+
+
+
+            //******************************************************************************************************** */
+            //Primera Regla si no se ha planificado el dia anterior se debe planificar el dia de inicio
+
+            if (this.props.usuarioDetail.usuario.fechaPlan === moment(new Date()).format('YYYY/MM/DD')) {
+
+                if (this.props.MensajeIvily.inicio) { ///comienza el dia 
+
+                    if (this.props.MensajeIvily.nActIVi < 6) { /// no tiene todas las actividades
+                        this.renderTareaDiaria(chatID);
+                        return;
+                    }
+                    if (this.props.estadochat === 'pausa') { // se encuentra en pauda
+                        this.renderContinuarTrabajo(chatID);
+                        return;
+                    }
+                    else if (this.props.estadochat === 'seguimienT' || this.props.estadochat === 'seguimiento') { // se encuentra en seguimiento
+                        this.rendeSeguimientoTrabajo(chatID);
+                        return;
+                    }
+                    else if (this.props.estadochat === 'TIM objetivo') { // Validacion TIM del Objetivo
+                        this.rendeTalentoImpCom(chatID, 0)
+                        return;
+                    }
+                    else if (this.props.estadochat === 'TIM Media') { // Validacion TIM de la mitad Semana
+                        this.rendeTalentoImpCom(chatID, 1)
+                        return;
+                    }
+                    else if (this.props.estadochat === 'TIM Semana') { // Validacion TIM fin de semana
+                        this.rendeTalentoImpCom(chatID, 2)
+                        return;
+                    }
+
+                    else if (this.props.estadochat === 'Objetivos Terminados') {
+                        // this.renderFinalizarTrabajo(chatID);
+                        this.renderTareaDiaria(chatID);
+                        return;
+                    }
+                    if (this.props.estadochat === 'Termino dia') ///Planificacion para el dia siguiente
+                    {
+                        this.renderFinalizarTrabajo(chatID);
+                        this.props.estadochats('Despedida')
+                        return;
+                    }
+                    if (this.props.estadochat === 'Despedida') ///Planificacion para el dia siguiente
+                    {
+                        this.renderTareaDiaria(chatID);
+                        return;
+                    }
+                    this.renderConsultaTrabajo(chatID);// exporadico
+                    //this.rendeSeguimientoTrabajo(chatID);
+                    // this.renderContinuarTrabajo(chatID);
+                }
+                else {
+
+                    if (this.props.MensajeIvily.nActIVi < 6) { /// no tiene todas las actividades
+                        this.renderTareaDiaria(chatID);
+                    }
+                    else {
+                        this.rendeSeguimientoTrabajo(chatID);
+                    }
+                }
+
+
+
+            }
+            else {
+                if (this.props.MensajeIvily.nActIVi < 6) { /// no tiene todas las actividades
+                    this.renderTareaDiaria(chatID);
+                }
+                else {
+                    //Mensaje de no trabajo
+                }
+            }
+
+
+            //******************************************************************************************************* */
+
+
+
 
 
         }
@@ -228,12 +322,53 @@ class App extends React.Component {
 
     }
 
+    renderContinuarTrabajo(chatID) {
+        this.props.tipoPreguntas('ContinuarTrabajo');
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-Lg7m_frD1fsRs_0db-N');
+        starCountRef.on('value', (snapshot) => {
+            this.props.consultaChats(snapshot.val());
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+        });
+
+    }
+
+    renderConsultaTrabajo(chatID) {
+        this.props.tipoPreguntas('Editar');
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWekXxzIhU5ezBWot-t');
+        starCountRef.on('value', (snapshot) => {
+            this.props.consultaChats(snapshot.val());
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+        });
+
+    }
+
+    renderFinalizarTrabajo(chatID) {
+        this.props.tipoPreguntas('Despedida');
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWl1r4nhd8kxizVeVWv');
+        starCountRef.on('value', (snapshot) => {
+            this.props.consultaChats(snapshot.val());
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+        });
+
+    }
+
 
 
     //Pregunta TIC
-    rendeTalentoImpCom(chatID) {
+    rendeTalentoImpCom(chatID, tipo) {
         this.props.tipoPreguntas('TIC');
-        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LekIihkesH_WPL9f624');
+        const x = Math.round(Math.random() * (2));
+        let arrayTIC = [];
+        if (tipo === 0)
+            arrayTIC = TIM_Obj;
+        else if (tipo === 1)
+            arrayTIC = TIM_Med;
+        else if (tipo === 2)
+            arrayTIC = TIM_Sem;
+
+        const starCountRef = firebase.database().ref().child(`Preguntas-Chat/${arrayTIC[x]}`);
         starCountRef.on('value', (snapshot) => {
             this.props.consultaChats(snapshot.val());
             this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
@@ -264,7 +399,7 @@ class App extends React.Component {
         starCountRef.on('value', (snapshot) => {
             this.props.consultaChats(snapshot.val());
             //   console.log(trabajo);
-            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto + ', ¡Recuerda planificar solo 6 actividades al día!', chatID, this.props.idChatUser);
             // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
         });
     }
@@ -324,7 +459,7 @@ class App extends React.Component {
 
         const wrapper = {
             width: '350px',
-            height: '65%',
+            height: '650px',
             position: 'fixed',
             overflow: 'hidden',
             bottom: '8%',
@@ -354,14 +489,14 @@ class App extends React.Component {
             wrapper.width = '80%';
             wrapper.bottom = '12%';
             wrapper.height = '90%';
-            tamañoForm = ` ${this.props.theme} right floated`;
+            tamañoForm = ` ${this.props.theme} right floated `;
         }
 
 
         return (
             <div className="ui grid" >
 
-                <div className={tamañoForm} style={wrapper} >
+                <div className={tamañoForm + 'animationIntro'} style={wrapper} >
                     {this.renderChatButton()}
                     <Menu />
                 </div>
@@ -386,14 +521,16 @@ const mapAppStateToProps = (state) => (
         isChatUbi: state.chatReducer.isChatUbi,
         usuarioDetail: state.chatReducer.usuarioDetail,
         pasoOnboarding: state.chatReducer.pasoOnboarding,
+        MensajeIvily: state.chatReducer.MensajeIvily,
+        estadochat: state.chatReducer.estadochat,
         isChat: state.chatReducer.isChat,
     });
 
 
 
 export default connect(mapAppStateToProps, {
-    submitMessage, consultaChats, tipoPreguntas, mensajeEntradas, borrarChats, pasoOnboardings,
-    chatIdentifiador, numeroPreguntas, consultaPreguntaControls, endChat, startChat
+    submitMessage, consultaChats, tipoPreguntas, mensajeEntradas, borrarChats, consultas, pasoOnboardings,
+    chatIdentifiador, numeroPreguntas, consultaPreguntaControls, endChat, startChat, MensajeIvilys
 })(App);
 
 

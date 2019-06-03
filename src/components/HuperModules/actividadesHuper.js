@@ -2,74 +2,209 @@ import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
 import { Button, Popup, Grid, Input, Header, Modal, Image, Form, Progress, Segment, Label, Divider, Icon, Step } from 'semantic-ui-react';
-import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, } from '../modules/chatBot/actions';
+import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, estadochats, MensajeIvilys } from '../modules/chatBot/actions';
 import moment from 'moment';
 
 
 
-
-const timeoutLength = 150000;
+const timeoutLength = 900000; //900000
 
 class listActividades extends React.Component {
-    state = { actividades: null }
+    state = { actividades: null, tiempos: 0, horamaxima: 8 }
 
     componentDidMount() {
         if (this.props.usuarioDetail) {
             const starCountRef = firebase.database().ref().child(`Usuario-Tareas/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot2) => {
                 this.setState({ actividades: snapshot2.val() });
+
             });
         }
+        this.consultaTiempo();
     }
 
-    renderActividadXactividad(the) {
+    consultaTiempo = () => {
+        this.timeout = setTimeout(() => {
+            this.renderConsultarTiempoTrabajado();
+            this.consultaTiempo();
+        }, timeoutLength)
+    }
+
+    renderConsultarTiempoTrabajado() {
+        this.renderTiempo();
+        let ant = moment(new Date(this.props.MensajeIvily.horaActivacion ? this.props.MensajeIvily.horaActivacion : this.props.MensajeIvily.inicio));
+        let hora = moment().add('minutes', -ant.minutes()).add('hours', -ant.hours());
+        if (this.props.MensajeIvily.horaActivacion) {
+            hora = moment(this.props.MensajeIvily.tiempoTrabajado, 'HH:mm').add('hours', parseInt(moment(hora).format('HH'))).add('minutes', parseInt(moment(hora).format('mm')));
+        }
+        let tt = parseFloat(hora.format('HH')) + parseFloat(hora.format('mm')) / 60;
+        tt = Math.round(tt * 10) / 10;
+        if (tt > this.state.tiempos) {
+            this.props.estadochats('seguimiento');
+        }
+
+        if (tt > 4 && !this.props.MensajeIvily.estadoTIMS && (new Date().getDay() === 2 || new Date().getDay() === 4)) {
+            this.props.estadochats('TIM Media');
+        }
+        if (tt > 4 && !this.props.MensajeIvily.estadoTIMS && (new Date().getDay() === 3 || new Date().getDay() === 5)) {
+            this.props.estadochats('TIM Semana');
+        }
+
+        if (tt > this.state.horamaxima && this.props.estadochat !== "Despedida") { this.props.estadochats('Termino dia') }
+
+    }
+
+
+    renderTiempo() {
+
         const ObjetivosU = this.state.actividades;
         let x = 0;
-        const opciones = Object.keys(ObjetivosU).map(function (key, index) {
+        let y = 0;
+        let arrayT = [];
+        Object.keys(ObjetivosU).map((key, index) => {
             const actividadesU = ObjetivosU[key];
+            Object.keys(actividadesU).map((key, index) => {
+                const objTar = { ...actividadesU[key], key: key }
+                arrayT.push(objTar);
+            });
+        });
 
-            if (the.props.selObjetivo === null || the.props.selObjetivo === key) {
-                const opciones2 = Object.keys(actividadesU).map(function (key2, index) {
-
-                    const tiempo = 'hora de Inicio: ' + actividadesU[key2].horaPlanificada;
-                    const tiempo2 = 'hora a Terminar: ' + actividadesU[key2].horaEstimada;
-                    let icono = 'id badge';
-                    let actividadT = { completed: true, active: false, colorf: null, backgroundf: null }
-                    let anima = null;
+        arrayT.sort((obj1, obj2) => { return parseInt(obj1.dificultad) - parseInt(obj2.dificultad); });
+        let tiempos = 0;
+        Object.keys(arrayT).map((key3, index) => {
+            Object.keys(ObjetivosU).map((key, index) => {
+                const actividadesU = ObjetivosU[key];
+                Object.keys(actividadesU).map((key2, index) => {
+                    if (arrayT[key3].key !== key2) return;
+                    if (moment().format('YYYY-MM-DD') !== actividadesU[key2].dateStart) {
+                        actividadesU[key2].estado = 'anulado';
+                        return;
+                    }
                     if (actividadesU[key2].estado === "activo") {
-                        actividadT = { completed: false, active: true, color: "#820bea", background: "rgba(251, 189, 8, 0.06)" }
-                        if (x === 0)
-                            anima = 'actividadInmediata';
+                        if (x === 0) {
+                            tiempos = parseInt(actividadesU[key2].tiempoEstimado.substring(0, 2)) + tiempos;
+                        }
                         x++;
                     }
                     else if (actividadesU[key2].estado === "trabajando") {
-                        actividadT = { completed: false, active: true, color: "#820bea", background: "rgba(251, 189, 8, 0.06)" }
-                        anima = 'actividadInmediata';
-                        icono = 'cog';
+                        if (x === 0)
+                            tiempos = parseInt(actividadesU[key2].tiempoEstimado.substring(0, 2)) + tiempos;
                         x++;
                     }
-
-                    return (
-                        <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ background: actividadT.background }}>
-                            <Icon name={icono} />
-                            <Step.Content>
-                                <Step.Title style={{ color: actividadT.color }}>{actividadesU[key2].concepto}</Step.Title>
-                                <Step.Description>{tiempo}</Step.Description>
-                                <Step.Description>{tiempo2}</Step.Description>
-                            </Step.Content>
-                        </Step>
-                    );
+                    else if (actividadesU[key2].estado === "finalizado") {
+                        y++;
+                        const ti = moment(new Date(actividadesU[key2].fechaInicio));
+                        const tf = moment(new Date(actividadesU[key2].fechaFin));
+                        const td = tf.add('hours', -ti.hours('HH')).add('minutes', -tf.minutes);
+                        let tt = parseFloat(td.format('HH')) + parseFloat(td.format('mm')) / 60;
+                        tt = Math.round(tt * 10) / 10;
+                        if (!actividadesU[key2].fechaInicio)
+                            tt = 1;
+                        tiempos = parseInt(tt + tiempos);
+                    }
                 });
-                return opciones2;
-            }
-        });
 
-        return opciones;
+            });
+
+        });
+        this.setState({ tiempos })
     }
 
-    renderActividades(the) {
-        return (<Step.Group vertical>
-            {this.renderActividadXactividad(the)}
+
+
+
+
+
+    renderActividadXactividad() {
+        const ObjetivosU = this.state.actividades;
+        let flag = false;
+        let x = 0;
+
+        let arrayT = [];
+        Object.keys(ObjetivosU).map((key, index) => {
+            const actividadesU = ObjetivosU[key];
+            Object.keys(actividadesU).map((key, index) => {
+                const objTar = { ...actividadesU[key], key: key }
+                arrayT.push(objTar);
+            });
+        });
+
+        arrayT.sort((obj1, obj2) => { return parseInt(obj1.dificultad) - parseInt(obj2.dificultad); });
+
+        let fechaTrabajo = null;
+        const opcionesX = Object.keys(arrayT).map((key3, index) => {
+
+            const opciones = Object.keys(ObjetivosU).map((key, index) => {
+                const actividadesU = ObjetivosU[key];
+
+                if (this.props.selObjetivo === null || this.props.selObjetivo === key) {
+                    const opciones2 = Object.keys(actividadesU).map((key2, index) => {
+
+                        if (arrayT[key3].key !== key2) return;
+
+                        const h = parseInt(actividadesU[key2].tiempoEstimado.substring(0, 2));
+                        actividadesU[key2].horaPlanificada = fechaTrabajo === null ? actividadesU[key2].horaEstimada : fechaTrabajo;
+                        actividadesU[key2].horaEstimada = moment(actividadesU[key2].horaPlanificada, 'HH:mm').add('hours', h).format('HH:mm');
+                        fechaTrabajo = actividadesU[key2].horaEstimada;
+
+                        if (moment().format('YYYY-MM-DD') !== actividadesU[key2].dateStart) {
+                            if (actividadesU[key2].estado !== 'anulado')
+                                flag = true;
+                            actividadesU[key2].estado = 'anulado';
+                            return;
+                        }
+
+                        const tiempo = 'hora de Inicio: ' + actividadesU[key2].horaPlanificada;
+                        const tiempo2 = 'hora a Terminar: ' + actividadesU[key2].horaEstimada;
+                        let icono = 'id badge';
+                        let actividadT = { completed: true, active: false, colorf: null, backgroundf: null }
+                        let anima = null;
+
+                        if (actividadesU[key2].estado === "activo") {
+                            actividadT = { completed: false, active: true, color: "#820bea", background: "rgba(251, 189, 8, 0.06)" }
+                            if (x === 0) {
+                                anima = 'actividadInmediata';
+                            }
+                            x++;
+                        }
+                        else if (actividadesU[key2].estado === "trabajando") {
+                            actividadT = { completed: false, active: true, color: "#820bea", background: "rgba(251, 189, 8, 0.06)" }
+                            anima = 'actividadInmediata';
+                            icono = 'cog';
+
+                            x++;
+                        }
+
+                        return (
+                            <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ background: actividadT.background }}>
+                                <Icon name={icono} />
+                                <Icon name='star outline' style={{ transform: 'scale(0.5)', position: 'relative', left: '65%', top: '-25px', color: '#d39d00' }}> <div style={{ position: 'relative', top: '-35px', left: '-40px' }} > {actividadesU[key2].dificultad} </div>
+                                </Icon>
+                                <Step.Content style={{ left: '-10%', position: 'relative' }}>
+                                    <Step.Title style={{ color: actividadT.color }}>{actividadesU[key2].concepto}</Step.Title>
+                                    <Step.Description>{tiempo}</Step.Description>
+                                    <Step.Description>{tiempo2}</Step.Description>
+                                </Step.Content>
+                            </Step>
+                        );
+                    });
+
+                    return opciones2;
+                }
+            });
+            if (flag === true)
+                firebase.database().ref(`Usuario-Tareas/${this.props.usuarioDetail.idUsuario}`).set({
+                    ...ObjetivosU,
+                });
+            return opciones;
+        });
+
+        return opcionesX;
+    }
+
+    renderActividades() {
+        return (<Step.Group vertical style={{ width: '100%' }}>
+            {this.renderActividadXactividad()}
         </Step.Group>);
     }
 
@@ -79,7 +214,7 @@ class listActividades extends React.Component {
         // console.log( moment().add('hours', 2).format('HH:mm')); // 13:23:41
         let contenido;
         if (this.state.actividades)
-            contenido = this.renderActividades(this);
+            contenido = this.renderActividades();
 
 
         return (<div>
@@ -102,9 +237,10 @@ const mapAppStateToProps = (state) => (
         prioridadObj: state.chatReducer.prioridadObj,
         usuarioDetail: state.chatReducer.usuarioDetail,
         selObjetivo: state.chatReducer.selObjetivo,
+        MensajeIvily: state.chatReducer.MensajeIvily,
         userId: state.auth.userId,
 
     });
 
 
-export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings })(listActividades);
+export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, estadochats, pasoOnboardings, MensajeIvilys })(listActividades);

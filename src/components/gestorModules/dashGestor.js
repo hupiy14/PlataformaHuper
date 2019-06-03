@@ -301,7 +301,8 @@ class DashBoard extends React.Component {
                     const nameRef3 = firebase.database().ref().child(`Usuario-TIC/${key}/${diat.getFullYear()}`)
                     nameRef3.on('value', (snapshot2) => {
                         const tic = snapshot2.val();
-                        usuariosCompletos[key] = { ...this.state.listaPersonas[key], tic };
+                        const info = this.state.listaPersonas? this.state.listaPersonas[key]: null
+                        usuariosCompletos[key] = { ...info , tic };
                         this.setState({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
                         this.props.equipoConsultas({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
                     });
@@ -463,7 +464,7 @@ class DashBoard extends React.Component {
                 Object.keys(tar).map((key2, index) => {
                     if (key2 === key) {
                         const ttareas = tar[key2];
-                        nTareas = Object.keys(ttareas).length;
+                        nTareas = Object.keys(ttareas).length; ///observar para un cambio futuro si es que solo se cuentan las tareas planificadas y realizadas
                         Object.keys(ttareas).map((key3, index) => {
 
                             if (ttareas[key3].estado === 'finalizado') {

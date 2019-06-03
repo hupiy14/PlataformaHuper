@@ -122,7 +122,7 @@ class newFlowWork extends React.Component {
 
         const listaX = this.props.inputdinamico;
         let nuevoLista = [];
-        const colorFases = ['rgba(2, 245, 211, 0.92)', 'rgb(0, 255, 196)', 'rgb(0, 253, 148)', '#19ec21e8', 'rgba(244, 251, 71, 0.91)', 'rgba(220, 236, 14, 0.9)', 'rgb(246, 164, 28)', 'rgba(249, 96, 7, 0.87)', 'rgba(247, 60, 1, 0.97)', 'rgba(241, 4, 4, 0.79)', '#ad0eceed'];
+        const colorFases = ['#FFFDE7', '#FFF9C4', '#FFF59D', '#FFF176', '#FFEE58', '#FFEB3B', '#FDD835', '#FBC02D', '#F9A825', '#F57F17', '#FFD600'];
         let contador = 0;
         if (!listaX)
             return;

@@ -26,6 +26,18 @@ export const config = {
 
 
 
+
+/*
+  export const config = {
+    apiKey: "AIzaSyB-2Y-livEMq0CUmCBtcCCtk-gkcwoONOc",
+    authDomain: "hupity-visual.firebaseapp.com",
+    databaseURL: "https://hupity-visual.firebaseio.com",
+    projectId: "hupity-visual",
+    storageBucket: "hupity-visual.appspot.com",
+    messagingSenderId: "80713476876",
+    appId: "1:80713476876:web:0116352d070bc423"
+  };
+*/
 //firebase.initializeApp(config);
 //firebase.firestore().settings({ timestampsInSnapshots: true });
 

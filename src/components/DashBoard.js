@@ -95,7 +95,7 @@ class DashBoard extends React.Component {
         ObjsFactorsM: [],
         TareasObjs: null,
         factorSemana: null,
-        ticUsuario: null,
+        ticUsuario: [],
     }
 
     handleOpenMenu = () => {
@@ -122,6 +122,7 @@ class DashBoard extends React.Component {
             this.setState({ UtilFactors: snapshot.val() });
         });
 
+      
 
 
         //carga el limite que las empresas definan
@@ -145,7 +146,7 @@ class DashBoard extends React.Component {
             const nameRef3 = firebase.database().ref().child(`Usuario-TIC/${this.props.userId}/${diat.getFullYear()}`)
             nameRef3.on('value', (snapshot2) => {
                 console.log(snapshot2.val());
-                this.setState({ ticUsuario: snapshot2.val() })
+                this.setState({ ticUsuario: snapshot2.val() ? snapshot2.val() : [] })
             });
 
 
@@ -346,7 +347,7 @@ class DashBoard extends React.Component {
         datos.push({ label: "Trabajo realizado", data: dat.factorTrab });
         this.setState({
             grafica: <div>
-                <Checkbox checked={true} className="historico-padding" label='Consultar Histórico' onChange={(e, { checked }) => {  this.handleDimmedChange(checked); }} toggle />
+                <Checkbox checked={true} className="historico-padding" label='Consultar Histórico' onChange={(e, { checked }) => { this.handleDimmedChange(checked); }} toggle />
                 <CrearGrafica labelsX={labelsMonths}
                     datos={datos}
                     titleGrafica={"Objetivo vs Meses"}
@@ -371,9 +372,8 @@ class DashBoard extends React.Component {
             this.renderGraficaMeses();
 
 
-        else
-        {
-            this.setState({valueH: false});
+        else {
+            this.setState({ valueH: false });
             this.renderGraficaSemana();
         }
 
@@ -466,7 +466,7 @@ class DashBoard extends React.Component {
                 />
             </Menu>
             <Segment attached='bottom'>
-            
+
                 {this.state.grafica}
             </Segment>
         </div>)
@@ -1189,6 +1189,7 @@ const mapStateToProps = (state) => {
         listaFormacion: state.chatReducer.listaFormacion,
         listaObjetivo: state.chatReducer.listaObjetivo,
         usuarioDetail: state.chatReducer.usuarioDetail,
+       
     };
 };
 export default connect(mapStateToProps, { createStream, pasoOnboardings, chatOff, chatOn, listaFormaciones })(DashBoard);

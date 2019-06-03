@@ -2,9 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails, chatOn, chatOff } from '../actions';
 import history from '../history';
-import { nuevoUsuarios, detailUsNews } from '../components/modules/chatBot/actions';
+import { nuevoUsuarios, detailUsNews, MensajeIvilys } from '../components/modules/chatBot/actions';
 import '../components/styles/ingresoHupity.css';
 import firebase from 'firebase';
+import moment from 'moment';
+
 import SlackA from '../apis/slackApi';
 
 const timeoutLength = 3000;
@@ -13,12 +15,14 @@ const timeoutLength2 = 600000;
 
 
 class GoogleAuth extends React.Component {
-    state = { selectedFile: null, loaded: 0, codigo: null, usuario: null, direccion: null, tokenTrello: false }
+    state = { selectedFile: null, loaded: 0, codigo: null, usuario: null, direccion: null, tokenTrello: false, }
 
 
 
     componentDidMount() {
-        //Conectar a google  con el drive,
+
+
+        //Conectar a google  con el drive --- auth,
         window.gapi.load('client:auth2', () => {
             window.gapi.client.init({
                 clientId: '114346141609-03hh8319khfkq8o3fc6m2o02vr4v14m3.apps.googleusercontent.com',
@@ -149,8 +153,48 @@ class GoogleAuth extends React.Component {
 
                         this.props.userRolIn(snapshot2.val().Rol);
                         if (snapshot2.val().Rol === '3') {
+
+                            let dateF = new Date();
+                            if (Usuario.fechaPlan)
+                                dateF = moment(Usuario.fechaPlan, 'YYYY/MM/DD').format('YYYY,MM,DD')
+                            const hoy = new Date(dateF);
+
+                            //Reglas de planificacion
+                            let diaS = moment(hoy);
+                           
+                            if (this.props.MensajeIvily && this.props.MensajeIvily.nActIVi > 5 && this.props.estadochat === 'Despedida') {
+                                diaS = moment(hoy).add('days', 1);
+                              
+                            }
+                            else {
+                               
+                                if (hoy.getDate() < new Date().getDate()) { diaS = moment(hoy).add('days', 1); }
+                                else if (hoy.getDate() > new Date().getDate()) { diaS = moment(new Date()); }
+                              
+                            }
+
+                            const maxdia = Usuario.diaSemana ? Usuario.diaSemana : 5;
+                            if (moment(diaS).day() > maxdia ) {
+                                diaS = diaS.add('days', new Date(diaS.format('YYYY,MM,DD')).getDay() - (Usuario.diaSemana ? Usuario.diaSemana - 1 : 4)); 
+                               
+                            }
+                           
+                            const ConsultaAct = firebase.database().ref().child(`Usuario-Activiades/${this.auth.currentUser.get().getId()}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`);
+                            ConsultaAct.on('value', (snapshot) => {
+                                this.props.MensajeIvilys({ ...this.props.MensajeIvilys, nActIVi: snapshot.val() ? snapshot.val().cantidad : 0 })
+                            });
+
+                           
+                            const ConsultaAct2 = firebase.database().ref().child(`Usuario-Inicio/${this.auth.currentUser.get().getId()}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`);
+                            ConsultaAct2.on('value', (snapshot) => {
+                                if (snapshot.val())
+                                    this.props.MensajeIvilys({ ...this.props.MensajeIvily, ...snapshot.val() })
+                            });
+
                             this.handleOpen();
                         }
+
+
 
 
                     });
@@ -332,9 +376,11 @@ const mapStateToProps = (state) => {
         isSignedIn: state.auth.isSignedIn,
         nuevoUsuario: state.chatReducer.nuevoUsuario,
         equipoConsulta: state.chatReducer.equipoConsulta,
+        MensajeIvily: state.chatReducer.MensajeIvily,
+
 
 
     };
 };
 
-export default connect(mapStateToProps, { signIn, signOut, userRolIn, nombreUsuario, usuarioDetails, chatOn, chatOff, nuevoUsuarios, detailUsNews })(GoogleAuth);
+export default connect(mapStateToProps, { signIn, signOut, userRolIn, MensajeIvilys, nombreUsuario, usuarioDetails, chatOn, chatOff, nuevoUsuarios, detailUsNews })(GoogleAuth);

@@ -36,8 +36,29 @@ import {
   VALOR_TEXT,
   INPUT_SLACK,
   MENSAJESL,
+  MENSAJEVIELY,
+  ESTADO_CHAT,
+  OBJ_TIM,
 
 } from './types';
+export const objTIMs = (objTIM) => {
+  return {
+    type: OBJ_TIM,
+    payload: objTIM
+  };
+};
+export const estadochats = (estadochat) => {
+  return {
+    type: ESTADO_CHAT,
+    payload: estadochat
+  };
+};
+export const MensajeIvilys = (MensajeIvily) => {
+  return {
+    type: MENSAJEVIELY,
+    payload: MensajeIvily
+  };
+};
 
 export const Mslacks = (Mslack) => {
   return {

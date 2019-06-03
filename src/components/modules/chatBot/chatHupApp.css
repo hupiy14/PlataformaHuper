@@ -143,9 +143,9 @@
 
 .foot-chat{
     position: fixed;
-    bottom: 3%; 
-    right: 1%;
-    z-index: 10;
+    bottom: -12%; 
+    right: -7%;
+    z-index: 3;
     animation: back-to-docs 1.5s ease-in-out 0s infinite normal none running;
    
 }
@@ -251,6 +251,39 @@
 }
 
 
+.animationIntro {
+  animation: animationIntro-spin 2S cubic-bezier(0.19, 1, 0.22, 1);
+  animation-delay: 0s;
+  animation-iteration-count: initial;
+}
+
+@keyframes animationIntro-spin {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    transition: opacity 2s linear;
+    transform: scale(0.9);
+  }
+}
+
+.animationIntro2 {
+  animation: animationIntro2-spin 1S cubic-bezier(0.19, 1, 0.22, 1);
+  animation-delay: 0s;
+  animation-iteration-count: initial;
+}
+
+@keyframes animationIntro2-spin {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    transition: opacity 1s linear;
+    transform: scale(1);
+  }
+}
 
 .ocultarMenu {
   animation: ocultarMenu-spin 5S cubic-bezier(0.19, 1, 0.22, 1);
@@ -457,26 +490,20 @@
 .chatGestorAni {
   animation: chatGestorAni-spin 2s cubic-bezier(0.680, 0, 0.265, 1);
   animation-delay: 2s;
-  animation-iteration-count: 6;
+  animation-iteration-count: 2;
   animation-direction: alternate;
 }
 
 @keyframes chatGestorAni-spin {
  
+ 
   from {
-    transform: scale(1);
+    transform: scale(0.25);
   }
   to {
     background:#a333c8;
-    transform: translate(0em, -5em);
-    
-  }
-  from {
-    transform: scale(1.2);
-  }
-  to {
-    background:#a333c8;
-    transform: translate(0em, -5em);
+    transform: scale(0.27);
+
     
   }
 }
@@ -484,28 +511,41 @@
 .chatGestorAni2 {
   animation: chatGestorAni2-spin 2s cubic-bezier(0.680, 0, 0.265, 1);
   animation-delay: 1s;
-  animation-iteration-count: 6;
+  animation-iteration-count: 2;
   animation-direction: alternate;
 }
 
 
 
 @keyframes chatGestorAni2-spin {
- 
   from {
-    transform: scale(1);
+    transform: scale(0.25);
   }
   to {
-    background:#a333c8;
-    transform: translate(0em, -5em);
+    background:#ed5500;
+    transform: scale(0.27);
     
   }
+}
+
+
+
+.chatGestorAni3 {
+  animation: chatGestorAni3-spin 3s cubic-bezier(0.680, 0, 0.265, 1);
+  animation-delay: 1s;
+  animation-iteration-count: 1;
+  animation-direction: alternate;
+}
+
+
+
+@keyframes chatGestorAni3-spin {
   from {
-    transform: scale(1.2);
+    transform: scale(0.25);
   }
   to {
-    background:#a333c8;
-    transform: translate(0em, -5em);
+   
+    transform: scale(0.26) rotateX('360');
     
   }
 }
@@ -590,7 +630,7 @@ textarea {
   bottom: 0;
   left: 0;
   color: rgba(0, 0, 0, 0);
-  background-color: #efb12b;
+  background: linear-gradient(to right, #fbbd08 0%, #f9eaca0a 100%);
   width: 108%;
   height: 60px;
  

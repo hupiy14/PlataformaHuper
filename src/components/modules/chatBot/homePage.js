@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import {
-  setActiveChat, submitMessage, numeroPreguntas, valorInputs, consultaPreguntaControls, pregFantasmas, primeraVs,
-  tipoPreguntas, mensajeEntradas, Mslacks, borrarChats, consultaChats, consultaCanales, pasoOnboardings, avatares, inputSlacks,
+  setActiveChat, submitMessage, numeroPreguntas, valorInputs, consultaPreguntaControls, pregFantasmas, primeraVs, estadochats, MensajeIvilys,
+  tipoPreguntas, mensajeEntradas, Mslacks, borrarChats, consultaChats, consultaCanales, pasoOnboardings, avatares, inputSlacks, objTIMs,
 } from './actions';
 import { chatOff, chatOn } from '../../../actions';
 import BoxDianmico from './boxDinamico';
@@ -13,7 +13,7 @@ import { Image, Breadcrumb, Label } from 'semantic-ui-react';
 import moment from 'moment';
 import randon from '../../../lib/randonImage';
 import Avatar from '../../../apis/xpress';
-import { object } from 'prop-types';
+import { object, string } from 'prop-types';
 import info from '../../../images/info.png';
 import report from '../../../images/report.png';
 import huper from '../../../images/huper.png';
@@ -25,7 +25,7 @@ const { SlackOAuthClient } = require('messaging-api-slack')
 
 let timeoutLength = 2500;
 let timeoutLength3 = 10500;
-
+let timeoutLength4 = 1000;
 let timeoutLength2 = 300;
 class Home extends React.Component {
 
@@ -33,7 +33,7 @@ class Home extends React.Component {
     carpeta: null, updates: null, color: [], client: null, count: 20,
     client2: null, avataresN: null, avatarX: 0, valoresTIC: null,
     avatarY: 0, ultimaTarea: null, mensajeEnviado: false, ticUsuario: null,
-    personasInv: [], flagConsulta: true,
+    personasInv: [], flagConsulta: true, actividadesIvi: null, nActIVi: 0, colorPausa: '#f5deb3',
   }
 
   onSearchXpress = async (text) => {
@@ -53,6 +53,12 @@ class Home extends React.Component {
     //  console.log(response);
     this.props.avatares(response.data.data);
 
+  }
+
+  handleCloseChat = () => {
+    this.timeout = setTimeout(() => {
+      this.props.chatOff();
+    }, timeoutLength4)
   }
 
   handleOpen = (valorInput, chatID, userID) => {
@@ -89,7 +95,10 @@ class Home extends React.Component {
 
     this.setState({ avatarX: 1 });
 
-
+    if ((this.props.estadochat && this.props.estadochat === 'pausa') || this.props.MensajeIvily.estado === 'pausa') {
+      this.setState({ colorPausa: '#593b03' });
+      this.props.estadochats('pausa');
+    }
 
 
 
@@ -120,6 +129,7 @@ class Home extends React.Component {
     const messages = document.getElementById('chatHup');
     // console.log(messages.scrollHeight);
     messages.scrollTop = messages.scrollHeight;
+
   }
 
   getWeekNumber(date) {
@@ -139,19 +149,15 @@ class Home extends React.Component {
   }
 
 
-  ///paso numero 4 del onboarding
-  handlePaso4 = () => {
-    this.timeout = setTimeout(() => {
-      this.props.chatOff();
-      this.props.pasoOnboardings(4);
-    }, timeoutLength)
-  }
+
 
   cerrarChat = () => {
     this.timeout = setTimeout(() => {
       this.props.chatOff();
     }, timeoutLength)
   }
+
+
   //Envio a slack el mensaje 
   renderEnvioSlack(activeChat, userID) {
 
@@ -427,10 +433,55 @@ class Home extends React.Component {
 
   }
 
+  renderActualizarActividades(cconsulta) {
+
+    let arrayT = [];
+    let array = [];
+    const obj = cconsulta;
+    Object.keys(obj).map((key2, index) => {
+      let tar = obj[key2];
+      Object.keys(tar).map((key, index) => {
+        const objTar = { ...tar[key], key: key }
+        arrayT.push(objTar);
+      });
+    });
+
+    arrayT.sort((obj1, obj2) => { return parseInt(obj1.dificultad) - parseInt(obj2.dificultad); });
+
+    let fechaTrabajo = '09:00';
+    Object.keys(arrayT).map((key, index) => {
+      if (arrayT[key].dateStart === moment(new Date()).format('YYYY-MM-DD')) {
+        const h = parseInt(arrayT[key].tiempoEstimado.substring(0, 2));
+        arrayT[key].horaPlanificada = fechaTrabajo;
+        arrayT[key].horaEstimada = moment(fechaTrabajo, 'HH:mm').add('hours', h).format('HH:mm');
+        fechaTrabajo = arrayT[key].horaEstimada;
+        const valorTarea = { ...arrayT[key], key: null }
+        array[arrayT[key].key] = valorTarea;
+      }
+    });
+
+    Object.keys(cconsulta).map((key2, index) => {
+      let tar = cconsulta[key2];
+      Object.keys(tar).map((key, index) => {
+        Object.keys(array).map((key3, index) => {
+          if (key3 == key) {
+            tar[key] = array[key3];
+          }
+        });
+      });
+    });
+
+    return cconsulta;
+
+  }
+
+
   onSubmit = (activeChat, userID) => {
 
 
+    if (!this.props.valorInput) return;
     const valor = this.props.valorInput.text ? this.props.valorInput.text : this.props.valorInput.value;
+    if (!valor) return;
     if (!Array.isArray(valor))
       if (valor.trim() === '') return;
     this.handleOpen(valor, activeChat.chatID, userID);
@@ -464,15 +515,19 @@ class Home extends React.Component {
 
         });
 
-
-        this.handleOpen(`Nombre de la tarea: ${valorConsulta.concepto}`, activeChat.chatID, this.props.idChatUser)
-        this.handleOpen(`Prioriodad de la tarea: ${valorConsulta.prioridad}`, activeChat.chatID, this.props.idChatUser);
-        this.handleOpen(`Tiempo Estimado: ${valorConsulta.tiempoEstimado}`, activeChat.chatID, this.props.idChatUser);
-
+        let imp = 'Baja';
+        if (parseInt(valorConsulta.dificultad) >= 0 && parseInt(valorConsulta.dificultad) < 3)
+          imp = 'Alta';
+        else if (parseInt(valorConsulta.dificultad) >= 3 && parseInt(valorConsulta.dificultad) < 6)
+          imp = 'Media';
+        this.handleOpen(`Nombre de la tarea:    ${valorConsulta.concepto}`, activeChat.chatID, this.props.idChatUser)
+        this.handleOpen(`Prioriodad de la tarea:   ${valorConsulta.prioridad}`, activeChat.chatID, this.props.idChatUser);
+        this.handleOpen(`Nivel de Importancia:   ${valorConsulta.dificultad}`, activeChat.chatID, this.props.idChatUser);
+        this.handleOpen(`Tiempo Estimado:   ${imp}`, activeChat.chatID, this.props.idChatUser);
+        timeoutLength = 10000;
 
       }
       else if (valor === 'Editar') {
-
         valorNPregunta = 0;
         this.props.tipoPreguntas('EditarTarea');
         vacio = 'x';
@@ -480,9 +535,75 @@ class Home extends React.Component {
         starCountRef.on('value', (snapshot) => {
           this.props.consultaChats(snapshot.val());
           consultaBD = snapshot.val();
+          if (!this.props.primeraV) {
+            const mensaje = consultaBD[1].concepto;
+            this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
+            this.props.primeraVs(true);
+          }
         });
 
 
+      }
+      else if (valor === 'Marcar como terminada') {
+        const cconsulta = this.props.consultax;
+        const chatTrazo = this.props.user.userChats[0].thread;
+        let tarea = {};
+        const userIDs = this.props.userId;
+        const ultimoValor = chatTrazo[2].text;
+        Object.keys(cconsulta).map((key2, index) => {
+          const ccconsulta = cconsulta[key2];
+
+
+          Object.keys(ccconsulta).map((key, index) => {
+            if (ultimoValor === ccconsulta[key].concepto) {
+              tarea = ccconsulta[key];
+              //Actualiza el objetivo conjunto
+              const objs = this.props.listaObjetivo.objetivos;
+              if (tarea.estado === 'activo' || tarea.estado === 'trabajando') {
+                Object.keys(objs).map((key3, index) => {
+                  if (key3 === key2 && objs[key3].compartidoEquipo) {
+
+                    let avanceObjGlobal = Math.round(parseInt(objs[key3].porcentajeResp) * ((100 / Object.keys(cconsulta[key2]).length) * 0.01));
+                    let objetivoPadre = null;
+                    //busca el objetivo padre
+                    const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`);
+                    starCountRef.on('value', (snapshot) => {
+                      objetivoPadre = snapshot.val();
+                      let devolver = objetivoPadre.avance;
+                      if (objs[key3].avancePadre) {
+                        devolver = devolver - ((objs[key3].avancePadre) * (objs[key3].nTareas));
+                      }
+
+                      objetivoPadre.avance = devolver + avanceObjGlobal;
+
+                    })
+                    if (objetivoPadre)
+                      firebase.database().ref(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`).set({
+                        ...objetivoPadre
+                      });
+
+                    firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${key3}`).set({
+                      ...objs[key3], avancePadre: avanceObjGlobal, nTareas: Object.keys(cconsulta[key2]).length
+                    });
+
+
+                  }
+                });
+              }
+              tarea.estado = 'finalizado';
+
+              var updates = {};
+              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = { ...tarea, dateEnd: moment().format('YYYY-MM-DD'), tiempoFin: new Date().getTime() };
+              firebase.database().ref().update(updates);
+              this.renderHistoricoHuper(this.props.userId, `Ha terminado : ${ultimoValor}`, 'trabajo');
+
+
+            }
+
+          });
+        });
+
+        this.props.estadochats('seguimienT');// Seguimiento por terminar la Actividad
       }
       else if (valor === 'Que esta haciendo mi huper') {
 
@@ -531,11 +652,10 @@ class Home extends React.Component {
       }
     }
 
-
+    let flagEliminar = false;
 
     if (valor === 'Eliminar') {
-
-      console.log('elimiar');
+      flagEliminar = true;
       const chatTrazo = this.props.user.userChats[0].thread
       const cconsulta = this.props.consultax;
       let tarea = {};
@@ -555,6 +675,15 @@ class Home extends React.Component {
       });
       valorNPregunta = valorNPregunta + 1;
       firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${idObjetivo}/${idTarea}`).remove();
+
+      const hoy = new Date();
+      let diaS = moment(hoy).add('days', hoy.getDay() > 5 ? hoy.getDay() - 4 : 0);
+
+      firebase.database().ref(`Usuario-Activiades/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
+        horaInicio: hoy.getTime(),
+        cantidad: this.props.MensajeIvily.nActIVi - 1,
+      });
+      this.props.MensajeIvilys({ ...this.props.MensajeIvily.nActIVi, nActIVi: this.props.MensajeIvily.nActIVi - 1 });
       this.renderHistoricoHuper(this.props.userId, `Elimino Tarea : ${chatTrazo[2].text}`, 'trabajo');
     }
     else if (valor === 'Ninguna') {
@@ -571,6 +700,7 @@ class Home extends React.Component {
     }
 
 
+    let saltar = false;
     if (this.props.pregFantasma && this.props.pregFantasma.sel && !this.props.pregFantasma.reload) {
       let pasar = false;
       Object.keys(this.props.pregFantasma.consultaOp).map((key, index) => {
@@ -581,21 +711,21 @@ class Home extends React.Component {
 
       if (pasar === false) {
 
+        if (!this.props.primeraV)
+          saltar = true;
         valorNPregunta = 0;
         const starCountRef = firebase.database().ref().child('Preguntas-Chat/-L_gZJBmlV7v-wUeF3Tr');
         starCountRef.on('value', (snapshot) => {
           this.props.consultaChats(snapshot.val());
           consultaBD = snapshot.val();
-
-          //   console.log(consultaBD);
           const opcione = this.props.pregFantasma;
           const reload = true;
           const opcionw = { ...opcione, reload };
           this.props.pregFantasmas(opcionw);
+          this.props.numeroPreguntas(1);
 
           if (!this.props.primeraV) {
-            valorNPregunta++;
-            const mensaje = consultaBD[valorNPregunta].concepto;
+            const mensaje = consultaBD[1].concepto;
             this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
             this.props.primeraVs(true);
           }
@@ -606,38 +736,77 @@ class Home extends React.Component {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///valida para reescribir la pregunta.
+
     if (valorNPregunta < consultaBD.length - 1) {
 
-      this.props.numeroPreguntas(valorNPregunta + 1);
-      const chatTrazo = this.props.user.userChats[0].thread;
+      if (saltar === false) {
+        this.props.numeroPreguntas(valorNPregunta + 1);
+        const chatTrazo = this.props.user.userChats[0].thread;
 
-      if (chatTrazo[1].text !== consultaBD[valorNPregunta + 1].concepto) {
-        let mensaje = consultaBD[valorNPregunta + 1].concepto;
-        consultaBD = this.PreguntasRepEspecial(consultaBD[valorNPregunta + 1].tipoPregunta, mensaje, consultaBD, valorNPregunta + 1);
-        mensaje = consultaBD[valorNPregunta + 1].concepto;
-        this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
+        if (chatTrazo[1].text !== consultaBD[valorNPregunta + 1].concepto) {
+          let mensaje = consultaBD[valorNPregunta + 1].concepto;
+          consultaBD = this.PreguntasRepEspecial(consultaBD[valorNPregunta + 1].tipoPregunta, mensaje, consultaBD, valorNPregunta + 1);
+          mensaje = consultaBD[valorNPregunta + 1].concepto;
+          this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
+        }
       }
       // console.log(valorNPregunta);
     }
-
     else {
-      //cerrar despues de realizado
-      timeoutLength = 1500;
-      this.cerrarChat();
+
 
       const chatTrazo = this.props.user.userChats[0].thread;
       const tipPrgutna = this.props.tipoPregunta;
       const consultaObj = this.props.consultax;
-      // Object.keys(chatTrazo).map(function (key, index) {
-      //if (chatTrazo[key].from !== '6') {
-      //  console.log(tipPrgutna);
+
       if (tipPrgutna === 'Diaria') {
         //registro de horas Entrada
         const hoy = new Date();
-        firebase.database().ref(`Usuario-Registro/${this.props.userId}/${hoy.getFullYear()}/${hoy.getMonth()}/${hoy.getDate()}`).set({
-          horaInicio: hoy.getTime(),
-        });
+        //si la fecha es el viernes
+        const diamaximo = this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana : 5;
+        let diaS = moment(hoy).add('days', hoy.getDay() > diamaximo ? hoy.getDay() - (diamaximo - 1) : !this.props.MensajeIvily.inicio ? 0 : this.props.MensajeIvily.nActIVi < 6 ? 0 : 1);
 
+
+        firebase.database().ref(`Usuario-Activiades/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
+          horaInicio: hoy.getTime(),
+          cantidad: this.props.MensajeIvily.nActIVi ? + 1 + this.props.MensajeIvily.nActIVi : 1
+        });
+        //graba el inicio del dia
+
+
+
+        if (!this.props.MensajeIvily.fin && this.props.MensajeIvily.nActIVi >= 5) {
+          //graba el ultimo dia planificado
+          firebase.database().ref(`Usuario-Registro/${this.props.userId}/${hoy.getFullYear()}/${hoy.getMonth()}/${hoy.getDate()}`).set({
+            horaInicio: hoy.getTime(),
+          });
+          firebase.database().ref(`Usuario/${this.props.userId}`).set({
+            ...this.props.usuarioDetail.usuario, fechaPlan: diaS.format('YYYY/MM/DD'),
+          });
+
+          diaS = moment(hoy);
+          if (this.props.MensajeIvily.inicio && this.props.estadochat === 'Despedida') {
+
+            firebase.database().ref(`Usuario-Inicio/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
+              ...this.props.MensajeIvily,
+              fin: hoy.getTime(),
+            });
+
+          }
+        }
+
+        //planificacion dia siguiente
+        if (this.props.estadochat === 'Despedida') {
+          if (moment(diaS).day() > diamaximo) {
+            diaS = diaS.add('days', new Date(diaS.format('YYYY,MM,DD')).getDay() - (this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana - 1 : 4));
+          }
+          firebase.database().ref(`Usuario-Activiades/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
+            cantidad: this.props.MensajeIvily.nActIVi ? + 1 + this.props.MensajeIvily.nActIVi : 1
+          });
+
+          if (this.props.MensajeIvily.nActIVi + 1 > 5)
+            this.props.estadochat(null);
+        }
 
         let postData;
         let newPostKey2;
@@ -646,19 +815,18 @@ class Home extends React.Component {
 
           //Edita el objetivo
           Object.keys(consultaObj).map(function (key2, index) {
-
             if (consultaObj[key2].concepto === chatTrazo[4].text) {
               consultaObj[key2].numeroTareas = 1 + consultaObj[key2].numeroTareas;
               postData = consultaObj[key2];
               newPostKey2 = key2;
             }
-
           });
         }
 
         //Crea el objetivo 
+        let flagOb = false;
         if (!newPostKey2) {
-
+          flagOb = true;
           ///Crea la carpeta en donde se subiran los archivos adjuntos al objetivo
           //Crear espacio de trabajo para el objetio
           console.log(this.props.usuarioDetail.usuario.wsCompartida);
@@ -674,7 +842,7 @@ class Home extends React.Component {
             function (err) { console.error("Execute error", err); });
           //   this.props.crearCarpetas(xx);
           newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`).push().key;
-
+          console.log(consultaBD);
           postData = {
             numeroTareas: 1,
             concepto: chatTrazo[4].text,
@@ -701,14 +869,7 @@ class Home extends React.Component {
         var newPostKey3 = firebase.database().ref().child('Usuario-Tareas').push().key;
 
         ///distincion de horas
-        let hora;
-        if (valor.trim() === '1 hora')
-          hora = 1;
-        else if (valor.trim() === '2 horas')
-          hora = 2;
-        else
-
-          hora = 3;
+        let hora = parseInt(chatTrazo[6].text.substring(0, 2));
         //Restar fechas
         // moment.duration(lunch - breakfast).humanize()
         //recupera la ultima tarea
@@ -726,10 +887,11 @@ class Home extends React.Component {
         firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${newPostKey2}/${newPostKey3}`).set({
           concepto: chatTrazo[2].text,
           estado: 'activo',
-          dateStart: moment().format('YYYY-MM-DD'),
+          dateStart: moment(diaS).format('YYYY-MM-DD'),
           prioridad: postData.prioridad,
-          tiempoEstimado: valor,
-          horaPlanificada: this.state.ultimaTarea ? this.state.ultimaTarea.horaEstimada : moment().format('HH:mm'),
+          tiempoEstimado: chatTrazo[6].text,
+          dificultad: flagOb === true ? '3' : valor,
+          horaPlanificada: this.state.ultimaTarea ? this.state.ultimaTarea.horaEstimada : moment('09:00', 'HH:mm').format('HH:mm'),
           horaEstimada: this.state.ultimaTarea ? moment(this.state.ultimaTarea.horaEstimada, 'HH:mm').add('hours', hora).format('HH:mm') : moment().add('hours', hora).format('HH:mm'),
         });
 
@@ -750,49 +912,107 @@ class Home extends React.Component {
         // console.log(chatTrazo[key].text);
       }
       else if (tipPrgutna === 'EditarTarea') {
-        console.log(this.props.consultax);
 
-        const cconsulta = this.props.consultax;
-        let tarea = {};
-        let idObjetivo = {};
-        let idTarea = {};
-        const ultimoValor = valor;
-        Object.keys(cconsulta).map(function (key2, index) {
-          const ccconsulta = cconsulta[key2];
-          Object.keys(ccconsulta).map(function (key, index) {
-            //            console.log(ccconsulta[key]);
-            if (chatTrazo[2].text === ccconsulta[key].concepto) {
-              tarea = ccconsulta[key];
-              if (chatTrazo[6].text === ' Prioridad') {
-                tarea.prioridad = ultimoValor;
+        if (flagEliminar === false) {
+          const cconsulta = this.props.consultax;
+          let tarea = {};
+          const ultimoValor = valor;
+          Object.keys(cconsulta).map(function (key2, index) {
+            const ccconsulta = cconsulta[key2];
+            Object.keys(ccconsulta).map(function (key, index) {
+              //            console.log(ccconsulta[key]);
+              if (chatTrazo[2].text === ccconsulta[key].concepto) {
+                tarea = ccconsulta[key];
+                if (chatTrazo[6].text === 'Importancia') {
+                  ccconsulta[key].dificultad = ultimoValor;
+                }
+                else if (chatTrazo[6].text === 'Tiempo Estimado') {
+                  ccconsulta[key].tiempoEstimado = ultimoValor;
+                  ccconsulta[key].horaEstimada = moment(ccconsulta[key].horaPlanificada, 'hh:mm').add('hours', parseInt(ultimoValor.substring(0, 2))).format('HH:mm')
+                }
+                else {
+                  ccconsulta[key].concepto = ultimoValor;
+                }
               }
-              else if (chatTrazo[6].text === ' Tiempo Estimado') {
-                tarea.tiempoEstimado = ultimoValor;
-              }
-              else {
-                tarea.concepto = ultimoValor;
-              }
-              idObjetivo = key2;
-              idTarea = key;
-            }
-
+            });
           });
-        });
 
-        var updates = {};
-        updates[`Usuario-Tareas/${this.props.userId}/${idObjetivo}/${idTarea}`] = tarea;
-        firebase.database().ref().update(updates);
-        this.renderHistoricoHuper(this.props.userId, `Edito Tarea : ${chatTrazo[2].text} `, 'trabajo');
 
+
+
+          var updates = {};
+          updates[`Usuario-Tareas/${this.props.userId}`] = this.renderActualizarActividades(cconsulta);
+          firebase.database().ref().update(updates);
+          this.renderHistoricoHuper(this.props.userId, `Edito Tarea : ${chatTrazo[2].text} `, 'trabajo');
+        }
       }
+
       else if (tipPrgutna === 'TIC') {
         const diat = new Date;
+
+        //Reglas de planificacion
+        let diaS = moment(diat);
+
         firebase.database().ref(`Usuario-TIC/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}`).set({
           ...Tic_T(this.props.ValorTexto, this.state.valoresTIC, this.state.ticUsuario)
 
         });
+        if (this.props.objTIM) {
+          firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${this.props.objTIM.key}`).set({
+            ...this.props.objTIM.obj, estadoTIM: true
+          });
+        }
+        if (this.props.estadochat === 'TIM Media') {
+          firebase.database().ref(`Usuario-Inicio/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
+            ...this.props.MensajeIvily,
+            estadoTIMS: true
+          });
+        }
+        if (this.props.estadochat === 'TIM Semana') {
+          firebase.database().ref(`Usuario-Inicio/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
+            ...this.props.MensajeIvily,
+            estadoTIMF: true
+          });
+        }
+        this.props.estadochats(null);
+        this.props.objTIMs(null);
+
+      }
+      else if (tipPrgutna === 'ContinuarTrabajo') {
+        if (this.props.MensajeIvily.inicio && valor === 'Si') {
+          let dateF = new Date();
+          if (this.props.usuarioDetail.usuario.fechaPlan)
+            dateF = moment(this.props.usuarioDetail.usuario.fechaPlan, 'YYYY/MM/DD').format('YYYY,MM,DD')
+          const hoy = new Date(dateF);
+          const tiempo = new Date().getTime();
+          let ant = moment(new Date(this.props.MensajeIvily.inicio));
+
+          //Reglas de planificacion
+          let diaS = moment(hoy);
+          if (this.props.MensajeIvily && this.props.MensajeIvily.nActIVi > 5 && this.props.estadochat === 'PlanSiguiente') {
+            diaS = moment(hoy).add('days', 1);
+
+          }
+          else {
+            if (hoy.getDate() < new Date().getDate()) { diaS = moment(hoy).add('days', 1); }
+            else if (hoy.getDate() > new Date().getDate()) { diaS = moment(new Date()); }
+          }
+          const maxdia = this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana : 5;
+          if (moment(diaS).day() > maxdia) {
+            diaS = diaS.add('days', new Date(diaS.format('YYYY,MM,DD')).getDay() - (this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana - 1 : 4));
+          }
+
+          firebase.database().ref(`Usuario-Inicio/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
+            ...this.props.MensajeIvily,
+            horaActivacion: tiempo,
+            estado: 'activo'
+          });
+          this.setState({ colorPausa: '#f5deb3' });
+          this.props.estadochats('activo');
+        }
         return;
       }
+
       else if (tipPrgutna === 'TIC Quincenal') {
         const postData = {
           FechaTIC: new Date().toString(),
@@ -871,41 +1091,84 @@ class Home extends React.Component {
             });
           }
         });
-        //eliminar tareas
-        if (valor === 'Eliminar Tareas') {
 
-          ///eliminar tareas 
-          let cconsulta;
-          var updates = {};
-          let tarea = {};
-          const usuario = this.props.userId;
-          const starCountRef = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
-          starCountRef.on('value', (snapshot) => {
-            cconsulta = snapshot.val();
-            Object.keys(cconsulta).map(function (key2, index) {
-              const ccconsulta = cconsulta[key2];
-              Object.keys(ccconsulta).map(function (key, index) {
-                if (ccconsulta[key].estado === 'activo') {
 
-                  tarea = ccconsulta[key];
-                  tarea.estado = 'desechadas';
+        ///eliminar tareas o dar para el siguiente dia 
+        let cconsulta;
+        var updates = {};
+        let tarea = {};
+        let tareasMan = 0;
+        const diamaximo = this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana : 5;
+        let diaS = moment().add('days', 1);
+        if (moment(diaS).day() > diamaximo) {
+          diaS = diaS.add('days', new Date(diaS.format('YYYY,MM,DD')).getDay() - (this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana - 1 : 4));
+        }
+
+        const usuario = this.props.userId;
+        const starCountRef = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
+        starCountRef.on('value', (snapshot) => {
+          cconsulta = snapshot.val();
+          Object.keys(cconsulta).map(function (key2, index) {
+            const ccconsulta = cconsulta[key2];
+            Object.keys(ccconsulta).map(function (key, index) {
+              if (ccconsulta[key].estado === 'activo') {
+
+                if (valor !== 'Eliminar Tareas')
+                  tareasMan++;
+                else
+                  tarea.estado = 'anulado';
+                tarea = ccconsulta[key];
+
+                tarea.dateStart = moment(diaS).format('YYYY-MM-DD');
                   updates[`Usuario-Tareas/${usuario}/${key2}/${key}`] = tarea;
-                }
-
-              });
+              }
 
             });
 
-            firebase.database().ref().update(updates);
           });
-        }
-        //console.log(cconsulta);
+
+          firebase.database().ref().update(updates);
+        });
+
+        if (tareasMan > 0)
+          firebase.database().ref(`Usuario-Activiades/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
+            cantidad: tareasMan
+          });
         this.renderHistoricoHuper(this.props.userId, `Despedida del dia`, 'fin');
 
       }
 
 
       else if (tipPrgutna === 'Seguimiento') {
+
+        const hoy = new Date();
+        let diaS = moment(hoy);
+
+        if (this.props.MensajeIvily && this.props.MensajeIvily.nActIVi > 5 && this.props.estadochat === 'PlanSiguiente') {
+          diaS = moment(hoy).add('days', 1);
+
+        }
+        else {
+
+          if (hoy.getDate() < new Date().getDate()) { diaS = moment(hoy).add('days', 1); }
+          else if (hoy.getDate() > new Date().getDate()) { diaS = moment(new Date()); }
+        }
+        const maxdia = this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana : 5;
+
+        if (moment(diaS).day() > maxdia) {
+          diaS = diaS.add('days', new Date(diaS.format('YYYY,MM,DD')).getDay() - (this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana - 1 : 4));
+        }
+
+
+        if (!this.props.MensajeIvily.inicio) {
+          firebase.database().ref(`Usuario-Inicio/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
+            inicio: hoy.getTime(),
+          });
+
+          firebase.database().ref(`Usuario/${this.props.userId}`).set({
+            ...this.props.usuarioDetail.usuario, fechaPlan: diaS.format('YYYY/MM/DD'),
+          })
+        }
 
         const cconsulta = this.props.consultax;
         let tarea = {};
@@ -916,10 +1179,11 @@ class Home extends React.Component {
           Object.keys(ccconsulta).map((key, index) => {
             //            console.log(ccconsulta[key]);
             if (chatTrazo[2].text === ccconsulta[key].concepto) {
+              this.props.estadochats(null);
               tarea = ccconsulta[key];
               tarea.estado = 'trabajando';
               var updates = {};
-              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = tarea;
+              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = { ...tarea, tiempoInicio: new Date().getTime() };
               firebase.database().ref().update(updates);
               this.renderHistoricoHuper(this.props.userId, `Estas trabajando en ${chatTrazo[2].text}`, 'trabajo');
             }
@@ -928,7 +1192,7 @@ class Home extends React.Component {
               tarea = ccconsulta[key];
               //Actualiza el objetivo conjunto
               const objs = this.props.listaObjetivo.objetivos;
-              if (tarea.estado === 'activo') {
+              if (tarea.estado === 'activo' || tarea.estado === 'trabajando') {
                 Object.keys(objs).map((key3, index) => {
                   if (key3 === key2 && objs[key3].compartidoEquipo) {
 
@@ -960,8 +1224,9 @@ class Home extends React.Component {
                 });
               }
               tarea.estado = 'finalizado';
+
               var updates = {};
-              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = { ...tarea, dateEnd: moment().format('YYYY-MM-DD') };
+              updates[`Usuario-Tareas/${userIDs}/${key2}/${key}`] = { ...tarea, dateEnd: moment().format('YYYY-MM-DD'), tiempoFin: new Date().getTime() };
               firebase.database().ref().update(updates);
               this.renderHistoricoHuper(this.props.userId, `Ha terminado : ${ultimoValor}`, 'trabajo');
 
@@ -1123,6 +1388,8 @@ class Home extends React.Component {
 
 
       }
+      //cerrar despues de realizado
+      this.cerrarChat();
 
     }
     this.props.consultaPreguntaControls(valorNPregunta + 1);
@@ -1276,7 +1543,7 @@ class Home extends React.Component {
   renderMensajedif(message) {
     const mr = message.text.split('•')[0].split('◘');
     if (mr.length > 1) {
-    
+
       return (
         <a href={Array.isArray((message.text.split('•')[0]).split('◘')) ? (message.text.split('•')[0]).split('◘')[1] : null}>
           {this.renderTextoEmoji((message.text.split('•')[0]).split('◘')[0])}
@@ -1286,6 +1553,33 @@ class Home extends React.Component {
     return (
       this.renderTextoEmoji(message.text.split('•')[0])
     );
+  }
+
+  pausaProceso() {
+    if (this.props.MensajeIvily.inicio && this.props.estadochat !== 'pausa') {
+      let dateF = new Date();
+      if (this.props.usuarioDetail.usuario.fechaPlan)
+        dateF = moment(this.props.usuarioDetail.usuario.fechaPlan, 'YYYY/MM/DD').format('YYYY,MM,DD')
+      const hoy = new Date(dateF);
+      const diaS = moment(hoy).add('days', hoy.getDay() > 5 ? hoy.getDay() - 4 : this.props.usuarioDetail.usuario.fechaPlan && new Date().getDay() !== hoy.getDay() ? 1 : 0);
+      const tiempo = new Date().getTime();
+      let ant = moment(new Date(this.props.MensajeIvily.horaActivacion ? this.props.MensajeIvily.horaActivacion : this.props.MensajeIvily.inicio));
+      let hora = moment().add('minutes', -ant.minutes()).add('hours', -ant.hours());
+      if (this.props.MensajeIvily.horaActivacion) {
+        hora = moment(this.props.MensajeIvily.tiempoTrabajado, 'HH:mm').add('hours', parseInt(moment(hora).format('HH'))).add('minutes', parseInt(moment(hora).format('mm')));
+      }
+
+
+      firebase.database().ref(`Usuario-Inicio/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
+        ...this.props.MensajeIvily,
+        horaPausa: tiempo,
+        tiempoTrabajado: hora.format('HH:mm'),
+        estado: 'pausa'
+      });
+      this.setState({ colorPausa: '#593b03' });
+      this.props.estadochats('pausa');
+      this.handleCloseChat();
+    }
   }
 
   render() {
@@ -1331,7 +1625,7 @@ class Home extends React.Component {
       height: '39.5px',
       width: '40px',
       position: 'fixed',
-      'z-index': '4000',
+      'z-index': '8000',
       top: '85.1%',
       left: '89%',
       'font-size': '20px',
@@ -1354,10 +1648,25 @@ class Home extends React.Component {
       ubicacionBt.position = 'fixed';
     }
 
+    let actLabel = null;
+    let pausabt = null;
+
+    if (this.props.tipoPregunta === 'Diaria') {
+      actLabel = <Label circular floating style={{ top: '20px', left: '320px', 'background-color': '#f7e997', 'color': 'chocolate', transform: 'scale(1.5)' }}>
+        {this.props.MensajeIvily ? this.props.MensajeIvily.nActIVi : 1}  /6
+        </Label>
+    }
+    else {
+      pausabt = <button onClick={() => { this.pausaProceso() }} style={{ background: '#e09e0b', position: 'relative', color: this.state.colorPausa, left: '80%', top: '10px' }} className='ui button circular pause circle outline icon' >
+        <i className=" ui pause circle outline icon" style={{ transform: 'scale(2.4)' }}></i>
+      </button>
+    }
+
 
     return (
       <div>
         <div className="user-chats-ch">
+          {actLabel}
           <ul>
             {contacts.filter((c) => (
               chatters.indexOf(c.userID) !== -1)).map((c) => (
@@ -1377,10 +1686,10 @@ class Home extends React.Component {
               ))}
           </ul>
         </div>
+        {pausabt}
         <div className="active-chat-ch" key="12345" id="chatHup" >
-          <div className="active-name" key="12346" style={{ 'padding-left': '35%' }}  >{activeName}</div>
-          <br></br>
-          <br></br>
+          <div className="active-name" key="12346" style={{ 'padding-left': '35%', top: '-15px' }}  >{activeName}</div>
+
           <ul  > {thread.map((message, i) => (
             <div key={i}
               className={message.from === userID
@@ -1396,10 +1705,7 @@ class Home extends React.Component {
                   'position': 'relative',
                   'border-radius': '10%',
                   left: '20px'
-                }} className={i > 0 ? thread[i - 1].from === message.from
-                  ? "group"
-                  : ""
-                  : ""}
+                }} className={"animationIntro2 group"}
               >
                 {this.renderMensajedif(message)}
               </li>
@@ -1455,9 +1761,13 @@ const mapHomeStateToProps = (state) => ({
   inputSlacks: state.chatReducer.inputSlacks,
   consultaMensaje: state.chatReducer.consultaMensaje,
   Mslack: state.chatReducer.Mslack,
+  MensajeIvily: state.chatReducer.MensajeIvily,
+  estadochat: state.chatReducer.estadochat,
+  objTIM: state.chatReducer.objTIM,
+
   user: state.user,
 });
 export default connect(mapHomeStateToProps, {
-  submitMessage, setActiveChat, numeroPreguntas, Mslacks, mensajeEntradas, consultaCanales, chatOff, avatares, pregFantasmas, inputSlacks,
-  consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats, pasoOnboardings, primeraVs,
+  submitMessage, setActiveChat, numeroPreguntas, Mslacks, mensajeEntradas, consultaCanales, chatOff, avatares, pregFantasmas, inputSlacks, objTIMs,
+  consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats, pasoOnboardings, primeraVs, estadochats, MensajeIvilys,
 })(Home);
