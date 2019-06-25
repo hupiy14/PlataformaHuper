@@ -10,18 +10,18 @@ import './styles/ingresoHupity.css';
 import randomScalingFactor from '../lib/randomScalingFactor';
 import { Line } from 'react-chartjs-2';
 import ListaActividades from './HuperModules/actividadesHuper';
-import DashGestor from './gestorModules/dashGestor';
+import DashGestor from './gestorModules/dashboardG';
 import Hupps from './modules/Hupps';
 import firebase from 'firebase';
 import moment from 'moment';
-import Avatar from '../apis/xpress';
+import history from '../history';
 
 
 
 
 import { Grid, Modal, Menu, Segment, Button, Dimmer, Header, Icon, Image, Portal, Step, Label, Checkbox } from 'semantic-ui-react';
 import MenuChat from './MenuChat';
-import { pasoOnboardings, listaFormaciones } from './modules/chatBot/actions';
+import { pasoOnboardings, listaFormaciones, estadochats } from './modules/chatBot/actions';
 import { object } from 'prop-types';
 
 const timeoutLength = 1800;
@@ -96,6 +96,7 @@ class DashBoard extends React.Component {
         TareasObjs: null,
         factorSemana: null,
         ticUsuario: [],
+        activeItem2: null,
     }
 
     handleOpenMenu = () => {
@@ -117,12 +118,17 @@ class DashBoard extends React.Component {
 
 
     componentDidMount() {
+
+
+        if (!this.props.isSignedIn)
+            history.push('/login');
+
         const starCountRef3 = firebase.database().ref().child(`Utilidades-Valoraciones`);
         starCountRef3.on('value', (snapshot) => {
             this.setState({ UtilFactors: snapshot.val() });
         });
 
-      
+
 
 
         //carga el limite que las empresas definan
@@ -425,6 +431,7 @@ class DashBoard extends React.Component {
     handleItemClick = (e, { name }) => {
         this.setState({ activeItem: name })
         this.calculoDeAvance();
+        console.log(name);
         if (name === 'semana') {
             this.renderGraficaSemana();
         }
@@ -437,7 +444,6 @@ class DashBoard extends React.Component {
             const graficaG = <CrearGrafica2 labelsX={trab.arrL}
                 datos={datos}
                 titleGrafica={"Medida MIT (Progreso)"}
-
                 TituloGrafica={"Motivacion, Impacto, Talento (MIT)"}
 
             />;
@@ -476,7 +482,7 @@ class DashBoard extends React.Component {
 
         return (
             <ListImportan
-                titulo={'Listado de objetivos'}
+                titulo={'Lista de tus objetivos de la semana'}
                 icono={'thumbtack'}
                 alingD={aling}
             />
@@ -487,7 +493,7 @@ class DashBoard extends React.Component {
 
         return (
             <ListaActividades
-                titulo={'Listado de Actividades'}
+                titulo={'Lista de las actividades del día'}
                 icono={'thumbtack'}
                 alingD={aling}
             />
@@ -520,6 +526,7 @@ class DashBoard extends React.Component {
             />
         );
     }
+    handleItemClick2 = (e, { name }) => this.setState({ activeItem: name })
     renderTeletrabajador() {
         //   <iframe className="yellow4" title="Ultimos archivos subidos" src={this.props.usuarioDetail ? `https://drive.google.com/embeddedfolderview?id=${this.props.usuarioDetail.linkws}#grid` : null}
 
@@ -529,90 +536,101 @@ class DashBoard extends React.Component {
 
                 <div className="ui form">
                     <div className="two column stackable ui grid">
-                        <div className="column three wide">
-                            <div className="ui segment">
-                                <Modal trigger={<div>
-                                    <Button icon="chart line" className="opcionesGestor" color={this.state.open ? "teal" : "yellow"}
-                                        label={this.state.open ? 'MIT' : 'Progreso'} onClick={() => { this.handleTareas(); }}
-                                    ></Button>
+                        <div className="column two wide">
+                            <div className="ui segment" style={{ width: "11em",     background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)' }}>
 
-                                </div>
 
-                                }
-                                    open={this.state.open}
-                                >
-                                    <Modal.Content image style={{ height: '740px' }}>
-                                        {this.renderProgresoTrabajo()}
-                                    </Modal.Content>
-                                    <Modal.Actions>
-                                        <Button onClick={() => { this.setState({ open: false }) }} negative>
-                                            Salir
+                                <Menu text vertical style={{ width: "11em" }}>
+                                    <Menu.Item header>Recuros</Menu.Item>
+
+
+                                    <Modal trigger={<div>
+                                        <Menu.Item
+                                            name='Progreso'
+                                            active={this.state.activeItem2 === 'Progreso'}
+                                            onClick={(e, { name }) => { this.handleTareas(); this.handleItemClick2(e, name); }}
+                                        >
+                                            <Icon name="line graph"></Icon>
+                                            Progreso
+                                    </Menu.Item>
+
+                                    </div>
+
+                                    }
+                                        open={this.state.open}
+                                    >
+                                        <Modal.Content image style={{ height: '740px' }}>
+                                            {this.renderProgresoTrabajo()}
+                                        </Modal.Content>
+                                        <Modal.Actions>
+                                            <Button onClick={() => { this.setState({ open: false }) }} negative>
+                                                Salir
                                          </Button>
-                                    </Modal.Actions>
-                                </Modal>
+                                        </Modal.Actions>
+                                    </Modal>
+                                    <Modal trigger={<div>
+                                        <Menu.Item
+                                            name='Formacíon'
+                                            active={this.state.activeItem2 === 'Formacíon'}
+                                            onClick={(e, name) => { this.handleItemClick2(e, name); this.setState({ open2: true }); }}
+                                        >
+                                            <Icon name="book"></Icon>
+                                            Formacion
+                                        </Menu.Item>
+                                        <Label  style={{ position: 'absolute',color: 'rgb(80, 0, 99)', top: '85px', left: '120px', background: 'linear-gradient(to top, rgb(253, 205, 98) 5%, rgb(255, 255, 255) 20%)'}}>
+                                            {this.props.listaFormacion ? Object.keys(this.props.listaFormacion).length : 0}
+                                        </Label>
+                                    </div>
+                                    }
+                                        open={this.state.open2}
+                                        style={{ width: '350px' }}
+                                    >
+                                        <Modal.Content image style={{ height: '510px' }}>
+                                            {this.renderformaciones()}
+                                        </Modal.Content>
+                                        <Modal.Actions>
+                                            <Button onClick={() => { this.setState({ open2: false }) }} negative>
+                                                Salir
+                                         </Button>
+                                        </Modal.Actions>
+                                    </Modal>
+
+
+                                    <Modal trigger={<div>
+                                        <Menu.Item
+                                            name='Calendario'
+                                            active={this.state.activeItem2 === 'Calendario'}
+                                            onClick={(e, name) => { this.handleItemClick2(e, name); this.setState({ open3: true }); }}
+                                        >
+                                            <Icon name="calendar alternate"></Icon>
+                                            Calendario
+                                        </Menu.Item>
+                                       
+                                    </div>
+                                    }
+                                        open={this.state.open3}
+                                        style={{ width: '390px' }}
+                                    >
+                                        <Modal.Content image style={{ height: '400px' }}>
+                                            <Calendario2 className="tamaño-Calendario" />
+                                        </Modal.Content>
+                                        <Modal.Actions>
+                                            <Button onClick={() => { this.setState({ open3: false }) }} negative>
+                                                Salir
+                                         </Button>
+                                        </Modal.Actions>
+                                    </Modal>
+                                </Menu>
 
                             </div>
-                            <div className="ui segment ">
-
-                                <Modal trigger={<div>
-                                    <Button icon="chart line" className="opcionesGestor" color={this.state.open2 ? "teal" : "yellow"}
-                                        label={this.state.open2 ? 'Formate' : 'Formación'} onClick={() => { this.setState({ open2: true }) }}
-                                    ></Button>
-                                    <Label color='teal' floating>
-                                        {this.props.listaFormacion ? Object.keys(this.props.listaFormacion).length : 0}
-                                    </Label>
-                                </div>
-                                }
-                                    open={this.state.open2}
-                                    style={{ width: '350px' }}
-                                >
-                                    <Modal.Content image style={{ height: '510px' }}>
-                                        {this.renderformaciones()}
-                                    </Modal.Content>
-                                    <Modal.Actions>
-                                        <Button onClick={() => { this.setState({ open2: false }) }} negative>
-                                            Salir
-                                         </Button>
-                                    </Modal.Actions>
-                                </Modal>
-
-                            </div>
-                            <div className="ui segment ">
-                                <Modal trigger={<div>
-                                    <Button icon="chart line" className="opcionesGestor" color={this.state.open3 ? "teal" : "yellow"}
-                                        label={this.state.open3 ? 'Selecciona' : 'Día Teletrabajo'} onClick={() => { this.setState({ open3: true }) }}
-                                    ></Button>
-                                    <Label color='teal' floating>
-                                        09/03
-                                     </Label>
-                                </div>
-                                }
-                                    open={this.state.open3}
-                                    style={{ width: '390px' }}
-                                >
-                                    <Modal.Content image style={{ height: '400px' }}>
-                                        <Calendario2 className="tamaño-Calendario" />
-                                    </Modal.Content>
-                                    <Modal.Actions>
-                                        <Button onClick={() => { this.setState({ open3: false }) }} negative>
-                                            Salir
-                                         </Button>
-                                    </Modal.Actions>
-                                </Modal>
-
-                            </div>
-
-
-
-
                         </div>
-                        <div className="column eight wide" style={{ left: '20px' }} >
-                            <div className="ui segment">
+                        <div className="column nine wide" style={{ left: '20px' }} >
+                            <div className="ui segment" style={{ 'background': 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)' }}>
                                 {this.renderListaObjetivos()}
                             </div>
                         </div>
                         <div className="column five wide">
-                            <div className="ui segment" style={{ position: 'relative', height: '55em' }} >
+                            <div className="ui segment" style={{ position: 'relative', height: '54.8em', 'background': 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)' }}  >
                                 {this.renderListaActividades()}
                             </div>
                         </div>
@@ -640,7 +658,7 @@ class DashBoard extends React.Component {
 
     handlePaso3 = () => {
         this.timeout = setTimeout(() => {
-            this.props.chatOn();
+            // this.props.chatOn();
             this.setState({ activo: null });
         }, timeoutLength2)
     }
@@ -838,6 +856,7 @@ class DashBoard extends React.Component {
                     {modulo}
 
                 </div>
+
 
                 );
                 return;
@@ -1135,27 +1154,35 @@ class DashBoard extends React.Component {
 
 
         if (this.props.userRol === '3') {
-            varriable = this.renderTeletrabajador();
 
 
-            if (!this.props.usuarioDetail || (this.props.usuarioDetail && this.props.usuarioDetail.usuario && !this.props.usuarioDetail.usuario.onboarding)) {
-                if (window.screen.width < 450) {
-                    onboarding = <Dimmer active={true} page>
-                        {this.renderOnboardingCEL()}
-                        <MenuChat />
-                        {bt}
-                    </Dimmer>
+            let pageActivi = null
+            if (!this.props.MensajeIvily && !this.props.listaObjetivo) {
+                pageActivi = <Dimmer active={true} page>
+                    <h1>Bienvenido</h1>
 
-                }
-                else {
-
-                    onboarding = <Dimmer active={true} page>
-                        {this.renderOnboarding()}
-                        <MenuChat />
-                        {bt}
-                    </Dimmer>
-                }
+                </Dimmer>
             }
+            else if ((this.props.MensajeIvily && this.props.MensajeIvily.nActIVi && this.props.MensajeIvily.nActIVi < 6) || !this.props.listaObjetivo || !this.props.listaObjetivo.objetivos) {
+                let xAct = 6
+                this.props.estadochats('dimmer Plan');
+                if (this.props.MensajeIvily && this.props.MensajeIvily.nActIVi)
+                    xAct = 6 - this.props.MensajeIvily.nActIVi;
+                pageActivi = <Dimmer active={true} page>
+                    <h2>Te quedan {xAct} actividades por planificar</h2>
+                    <h1>¡Animo!</h1>
+                    <MenuChat />
+                </Dimmer>
+            }
+
+            varriable = <div>
+                {pageActivi}
+                {this.renderTeletrabajador()}
+            </div>
+
+
+
+           
 
 
 
@@ -1189,9 +1216,11 @@ const mapStateToProps = (state) => {
         listaFormacion: state.chatReducer.listaFormacion,
         listaObjetivo: state.chatReducer.listaObjetivo,
         usuarioDetail: state.chatReducer.usuarioDetail,
-       
+        MensajeIvily: state.chatReducer.MensajeIvily,
+        isSignedIn: state.auth.isSignedIn,
+
     };
 };
-export default connect(mapStateToProps, { createStream, pasoOnboardings, chatOff, chatOn, listaFormaciones })(DashBoard);
+export default connect(mapStateToProps, { createStream, pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats })(DashBoard);
 
 ///<ListAdjuntos />

@@ -27,17 +27,17 @@ class FomrularioGlobal extends React.Component {
 
 
     componentDidMount() {
-       
+
 
         if (this.props.detailUsNew && this.props.detailUsNew.recupero) {
             this.continuar();
-            
+
         }
     }
 
     // recupera los datos del navegador despues de la autorizacion del slack
 
-   
+
 
 
     cancelar = () => {
@@ -49,7 +49,7 @@ class FomrularioGlobal extends React.Component {
     continuar() {
         let error = false;
 
-       
+
         if (!this.props.detailUsNew.equipo) {
             this.setState({ errorEquipo: true });
             error = true;
@@ -78,7 +78,7 @@ class FomrularioGlobal extends React.Component {
             return;
         const listaX = this.props.detailUsNew.listaEquipos;
         let lista = {};
-      //  console.log(listaX);
+        //  console.log(listaX);
         if (!this.props.detailUsNew.listaEquipos) return;
         const opciones = Object.keys(listaX).map(function (key, index) {
             //  console.log(listaX[key]);
@@ -100,7 +100,7 @@ class FomrularioGlobal extends React.Component {
     }
     close = () => this.setState({ open: false })
     render() {
-      //  console.log(this.props.detailUsNew);
+        //  console.log(this.props.detailUsNew);
         const { open2, open3, open4 } = this.state
         if (this.props.slackApi)
             console.log(this.props.slackApi);
@@ -119,38 +119,42 @@ class FomrularioGlobal extends React.Component {
             onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, equipo: value })}
             error={this.state.errorEquipo}
 
+
         />
         return (
 
-            <div>
 
-                <Modal size='tiny' open={this.state.open} onClose={this.close}>
-                    <Modal.Header>Bienvenido a hupity</Modal.Header>
-                    <Modal.Content image>
-                        <Modal.Description>
-                            <Form error={this.state.formError}>
-                                {equipo}
 
-                                <h3>Sincronizate con las herramientas</h3>
-                                <a onClick={this.clickGuardarTemporal} href={`https://slack.com/oauth/authorize?scope=bot&client_id=482555533539.532672221010`}><img src="https://api.slack.com/img/sign_in_with_slack.png" /></a>
-                                <Message
-                                    error
-                                    header={this.state.mensajeCodigo ? this.state.mensajeCodigo.titulo : 'Falta campos por llenar'}
-                                    content={this.state.mensajeCodigo ? this.state.mensajeCodigo.detalle : 'Debes diligenciar todos los campos'}
-                                />
-                            </Form>
-                        </Modal.Description>
-                    </Modal.Content>
-                    <Modal.Actions>
-                        <Button color='grey' onClick={this.cancelar}>
-                            Cancelar
+            <Modal size='tiny' open={this.state.open} >
+                <Modal.Header>Bienvenido a hupity</Modal.Header>
+                <Modal.Content image>
+                    <div className="ui form" >
+                        <div className="ui grid">
+                            <Modal.Description style={{width: '38em'}}>
+                                <Form error={this.state.formError}>
+                                    {equipo}
+
+                                    <h3>Sincronizate con las herramientas</h3>
+                                    <a onClick={this.clickGuardarTemporal} href={`https://slack.com/oauth/authorize?scope=bot&redirect_uri=https://hupity-9b190.firebaseapp.com&client_id=482555533539.532672221010`}><img src="https://api.slack.com/img/sign_in_with_slack.png" /></a>
+                                    <Message
+                                        error
+                                        header={this.state.mensajeCodigo ? this.state.mensajeCodigo.titulo : 'Falta campos por llenar'}
+                                        content={this.state.mensajeCodigo ? this.state.mensajeCodigo.detalle : 'Debes diligenciar todos los campos'}
+                                    />
+                                </Form>
+                            </Modal.Description>
+                        </div>
+                    </div>
+                </Modal.Content>
+                <Modal.Actions>
+                    <Button color='grey' onClick={this.cancelar}>
+                        Cancelar
                         </Button>
 
 
 
-                    </Modal.Actions>
-                </Modal>
-            </div>
+                </Modal.Actions>
+            </Modal>
 
         );
     }

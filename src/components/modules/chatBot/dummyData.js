@@ -5,7 +5,7 @@ export const contacts = [
   { userID: "2", userName: "Gestor" },
   { userID: "3", userName: "Equipo" },
   { userID: "4", userName: "Reporting" },
-  { userID: "5", userName: "Notifiaciones" },
+  { userID: "5", userName: "Notifica" },
   { userID: "6", userName: "Huper" },
   //{ userID: "7", userName: "Informal" }
   /* {userID: "8", userName: "Ted"},

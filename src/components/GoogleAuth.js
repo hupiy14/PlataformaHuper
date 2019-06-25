@@ -6,12 +6,13 @@ import { nuevoUsuarios, detailUsNews, MensajeIvilys } from '../components/module
 import '../components/styles/ingresoHupity.css';
 import firebase from 'firebase';
 import moment from 'moment';
-
+import { Link } from 'react-router-dom';
+import { List, Icon } from 'semantic-ui-react'
 import SlackA from '../apis/slackApi';
 
 const timeoutLength = 3000;
 
-const timeoutLength2 = 600000;
+const timeoutLength2 = 86400000;
 
 
 class GoogleAuth extends React.Component {
@@ -43,13 +44,6 @@ class GoogleAuth extends React.Component {
             });
         });
 
-    }
-
-
-    handleOpen = () => {
-        this.timeout = setTimeout(() => {
-            this.props.chatOn();
-        }, timeoutLength)
     }
 
 
@@ -150,53 +144,7 @@ class GoogleAuth extends React.Component {
                     const nameRef2 = firebase.database().ref().child('Usuario-Rol').child(this.auth.currentUser.get().getId());
                     nameRef2.on('value', (snapshot2) => {
                         //      console.log(snapshot2.val());
-
                         this.props.userRolIn(snapshot2.val().Rol);
-                        if (snapshot2.val().Rol === '3') {
-
-                            let dateF = new Date();
-                            if (Usuario.fechaPlan)
-                                dateF = moment(Usuario.fechaPlan, 'YYYY/MM/DD').format('YYYY,MM,DD')
-                            const hoy = new Date(dateF);
-
-                            //Reglas de planificacion
-                            let diaS = moment(hoy);
-                           
-                            if (this.props.MensajeIvily && this.props.MensajeIvily.nActIVi > 5 && this.props.estadochat === 'Despedida') {
-                                diaS = moment(hoy).add('days', 1);
-                              
-                            }
-                            else {
-                               
-                                if (hoy.getDate() < new Date().getDate()) { diaS = moment(hoy).add('days', 1); }
-                                else if (hoy.getDate() > new Date().getDate()) { diaS = moment(new Date()); }
-                              
-                            }
-
-                            const maxdia = Usuario.diaSemana ? Usuario.diaSemana : 5;
-                            if (moment(diaS).day() > maxdia ) {
-                                diaS = diaS.add('days', new Date(diaS.format('YYYY,MM,DD')).getDay() - (Usuario.diaSemana ? Usuario.diaSemana - 1 : 4)); 
-                               
-                            }
-                           
-                            const ConsultaAct = firebase.database().ref().child(`Usuario-Activiades/${this.auth.currentUser.get().getId()}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`);
-                            ConsultaAct.on('value', (snapshot) => {
-                                this.props.MensajeIvilys({ ...this.props.MensajeIvilys, nActIVi: snapshot.val() ? snapshot.val().cantidad : 0 })
-                            });
-
-                           
-                            const ConsultaAct2 = firebase.database().ref().child(`Usuario-Inicio/${this.auth.currentUser.get().getId()}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`);
-                            ConsultaAct2.on('value', (snapshot) => {
-                                if (snapshot.val())
-                                    this.props.MensajeIvilys({ ...this.props.MensajeIvily, ...snapshot.val() })
-                            });
-
-                            this.handleOpen();
-                        }
-
-
-
-
                     });
 
                     /// onboarding de la plataforma
@@ -343,20 +291,41 @@ class GoogleAuth extends React.Component {
                 history.push('/dashboard');
             }
             return (
-                <button onClick={this.onSignOutClick} className="ui red google button bar-top">
-                    <i className="google icon" />
-                    Sign Out
-            </button>
+                <div style={{ height: '1.2em' }}>
+                    <Icon style={{ position: 'relative' }} name="google icon"></Icon>
+                    <List.Content style={{ top: '-15px', left: '25px', position: 'relative' }} onClick={this.onSignOutClick}>
+                        <List.Header> Sign Out</List.Header>
+                    </List.Content>
+                </div>
+
             );
         } else {
             history.push('/login');
-            return (
-                <button onClick={this.onSignInClick} className="ui red google button">
-                    <i className="google icon" />
-                    Sign In with Google
-          </button>
 
-            );
+
+            if (this.props.googleIn) {
+                return (<div style={{ height: '1.2em' }}>
+                    <Icon style={{ position: 'relative' }} name="google icon"></Icon>
+                    <List.Content style={{ top: '-15px', left: '25px', position: 'relative' }}>
+                        <List.Header> Tu cuenta Google</List.Header>
+                    </List.Content>
+                </div>
+                );
+            }
+            else {
+
+
+                return (
+                    <button style={{
+                        position: 'relative',
+                        left: '30%'
+                    }} onClick={this.onSignInClick} className="ui red google button">
+                        <i className="google icon" />
+                        Tu cuenta Google
+                   </button>
+
+                );
+            }
         }
     }
 

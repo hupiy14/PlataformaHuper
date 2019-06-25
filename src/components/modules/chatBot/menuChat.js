@@ -1,9 +1,10 @@
 import React from 'react';
 import { setUbicacion } from './actions';
 import { connect } from 'react-redux';
+import { Dropdown, Menu, Icon, List, Popup, Button } from 'semantic-ui-react';
+import { chatOff, } from '../../../actions';
 
-
-class Menu extends React.Component {
+class Menus extends React.Component {
 
 
     onSlider = () => {
@@ -18,34 +19,90 @@ class Menu extends React.Component {
     onEye = () => {
         this.props.setUbicacion('profile');
     };
-
+    CerrarChatCel() {
+        this.props.chatOff();
+    }
     render() {
+
+        let btCancelarCel = null
+        if (window.screen.width <= 500) {
+            btCancelarCel = < Icon name='cancel' circular
+                onClick={() => { this.CerrarChatCel() }}
+                style={{
+                    position: 'absolute',
+                    left: '88%',
+                    top: '30px',
+                    color: '#fffbee',
+                    transform: 'scale(1.3)',
+                }
+                }></Icon >
+        }
 
         let seguimientoUsuario = null;
         let styleUsers = null;
         if (this.props.userRol === '2') {
-            seguimientoUsuario = <i className="eye icon" onClick={this.onEye} />;
+            seguimientoUsuario = <Dropdown.Item onClick={this.onEye} >
+                <Icon name="eye icon"></Icon>
+                Seguimiento</Dropdown.Item>
+
         }
-        else if (this.props.userRol === '3')
-        {
-            styleUsers = {left: '-50px', position: 'relative'};
+        else if (this.props.userRol === '3') {
+            styleUsers = { left: '-50px', position: 'relative' };
         }
         return (
-            <div className="menu-ch">
 
-                <ul className="menu-items">
-                    <li>
-                        <i className="users icon" onClick={this.onUsers} style={{...styleUsers}} />
-                    </li>
-                    <li>
-                        <i className="home icon" onClick={this.onHome}  />
-                    </li>
-                    <li>
-                        {seguimientoUsuario}
-                    </li>
+            <div>
+                {btCancelarCel}
+                < Popup trigger={
 
-                </ul>
+                    < Icon name='ellipsis vertical' circular
+
+                        style={{
+                            position: 'absolute',
+                            left: window.screen.width <= 500 ? '76%' : '86%',
+                            top: '30px',
+                            color: '#fffbee',
+                            transform: 'scale(1.3)',
+                        }
+                        }></Icon >
+
+                }
+                    position='bottom right'
+                    style={{ 'border-color': '#fbbd08', 'box-shadow': '1px 1px 7px 1px #fbbd08' }}
+                    flowing hoverable >
+                    <List selection animated verticalAlign='middle' style={{ width: '12em' }}>
+
+                        <List.Item onClick={this.onUsers}>
+                            <Icon style={{ position: 'relative' }} name="users icon"></Icon>
+                            <List.Content >
+                                <List.Header>Canales</List.Header>
+                            </List.Content>
+                        </List.Item>
+                        <List.Item onClick={this.onHome}>
+                            <Icon style={{ position: 'relative' }} name="home icon"></Icon>
+                            <List.Content >
+                                <List.Header>Conversaciones</List.Header>
+                            </List.Content>
+                        </List.Item>
+
+                    </List>
+                </Popup >
             </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         );
     }
 };
@@ -70,5 +127,5 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, { setUbicacion })(Menu);
+export default connect(mapStateToProps, { setUbicacion, chatOff })(Menus);
 

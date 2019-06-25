@@ -14,21 +14,21 @@ export default function Tic_T(array, valTIC, TicUsuario) {
           case '1':
             valor = parseInt(array[key].value.substring(3, 4)) * (valTIC.Talento.Trabajo.valor);
             valorAnt = valor;
-            if (TicUsuario.talentoT)
+            if (TicUsuario && TicUsuario.talentoT)
               valorAnt = TicUsuario.talentoT.valorC;
             valorTalento['talentoT'] = { valor, ['valorC']: ((valor + valorAnt) / 2) }
             break;
           case '2':
             valor = parseInt(array[key].value.substring(3, 4)) * (valTIC.Talento.Equipo.valor);
             valorAnt = valor;
-            if (TicUsuario.talentoE)
+            if (TicUsuario && TicUsuario.talentoE)
               valorAnt = TicUsuario.talentoE.valorC;
             valorTalento['talentoE'] = { valor, ['valorC']: ((valor + valorAnt) / 2) }
             break;
           case '3':
             valor = parseInt(array[key].value.substring(3, 4)) * (valTIC.Talento.Futuro.valor);
             valorAnt = valor;
-            if (TicUsuario.talentoF)
+            if (TicUsuario && TicUsuario.talentoF)
             valorAnt = TicUsuario.talentoF.valorC;
             valorTalento['talentoF'] = { valor, ['valorC']: ((valor + valorAnt) / 2) }
             break;
@@ -41,14 +41,14 @@ export default function Tic_T(array, valTIC, TicUsuario) {
           case '1':
             valor = parseInt(array[key].value.substring(3, 4)) * (valTIC.Impacto.Trabajo.valor);
             valorAnt = valor;
-            if (TicUsuario.impactoT)
+            if (TicUsuario && TicUsuario.impactoT)
             valorAnt = TicUsuario.impactoT.valorC;
             valorTalento['impactoT'] = { valor, ['valorC']: ((valor + valorAnt) / 2) }
             break;
           case '2':
             valor = parseInt(array[key].value.substring(3, 4)) * (valTIC.Impacto.Equipo.valor);
             valorAnt = valor;
-            if (TicUsuario.impactoE)
+            if (TicUsuario && TicUsuario.impactoE)
             valorAnt = TicUsuario.impactoE.valorC;
             valorTalento['impactoE'] = { valor, ['valorC']: ((valor + valorAnt) / 2) }
 
@@ -56,7 +56,7 @@ export default function Tic_T(array, valTIC, TicUsuario) {
           case '3':
             valor = parseInt(array[key].value.substring(3, 4)) * (valTIC.Impacto.Futuro.valor);
             valorAnt = valor;
-            if (TicUsuario.impactoF)
+            if (TicUsuario && TicUsuario.impactoF)
             valorAnt = TicUsuario.impactoF.valorC;
             valorTalento['impactoF'] = { valor, ['valorC']: ((valor + valorAnt) / 2) }
 
@@ -70,14 +70,14 @@ export default function Tic_T(array, valTIC, TicUsuario) {
           case '1':
             valor = parseInt(array[key].value.substring(3, 4)) * (valTIC.Compromiso.Trabajo.valor);
             valorAnt = valor;
-            if (TicUsuario.compromisoT)
+            if (TicUsuario && TicUsuario.compromisoT)
             valorAnt = TicUsuario.compromisoT.valorC;
             valorTalento['compromisoT'] = { valor, ['valorC']: ((valor + valorAnt) / 2) }
             break;
           case '2':
             valor = parseInt(array[key].value.substring(3, 4)) * (valTIC.Compromiso.Equipo.valor);
             valorAnt = valor;
-            if (TicUsuario.compromisoE)
+            if (TicUsuario && TicUsuario.compromisoE)
             valorAnt = TicUsuario.compromisoE.valorC;
             
             valorTalento['compromisoE'] = { valor, ['valorC']: ((valor + valorAnt) / 2) }
@@ -86,7 +86,7 @@ export default function Tic_T(array, valTIC, TicUsuario) {
           case '3':
             valor = parseInt(array[key].value.substring(3, 4)) * (valTIC.Compromiso.Futuro.valor);
             valorAnt = valor;
-            if (TicUsuario.compromisoF)
+            if (TicUsuario && TicUsuario.compromisoF)
             valorAnt = TicUsuario.compromisoF.valorC;
             
             valorTalento['compromisoF'] = { valor, ['valorC']: ((valor + valorAnt) / 2) }

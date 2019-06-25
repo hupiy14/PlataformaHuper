@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { Button, Dimmer, Image, Segment } from 'semantic-ui-react'
-import DashBoard from './DashBoard'
 
 class DimmerExampleBlurringInverted extends Component {
     state = {}

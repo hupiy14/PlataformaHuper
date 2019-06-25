@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
 import { Button, Popup, Grid, Input, Header, Modal, Image, Form, Progress, Segment, Label, Divider, Icon, Step } from 'semantic-ui-react';
-import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, estadochats, MensajeIvilys } from '../modules/chatBot/actions';
+import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, estadochats, MensajeIvilys, celPerfs } from '../modules/chatBot/actions';
 import moment from 'moment';
 
 
@@ -22,6 +22,8 @@ class listActividades extends React.Component {
             });
         }
         this.consultaTiempo();
+
+        this.props.celPerfs('perfil');
     }
 
     consultaTiempo = () => {
@@ -33,7 +35,7 @@ class listActividades extends React.Component {
 
     renderConsultarTiempoTrabajado() {
         this.renderTiempo();
-        if(!this.props.MensajeIvily) return;
+        if (!this.props.MensajeIvily) return;
         let ant = moment(new Date(this.props.MensajeIvily.horaActivacion ? this.props.MensajeIvily.horaActivacion : this.props.MensajeIvily.inicio));
         let hora = moment().add('minutes', -ant.minutes()).add('hours', -ant.hours());
         if (this.props.MensajeIvily.horaActivacion) {
@@ -175,14 +177,14 @@ class listActividades extends React.Component {
                         let anima = null;
 
                         if (actividadesU[key2].estado === "activo") {
-                            actividadT = { completed: false, active: true, color: "#cf6d10", background: "linear-gradient(to right, #fff7e6 10%, rgb(255, 255, 255) 15%, rgb(253, 245, 2)600%)" }
+                            actividadT = { completed: false, active: true, color: "#cf6d10", background: " linear-gradient(to right, rgb(255, 255, 255) 15%, rgb(255, 118, 1) 600%)" }
                             if (x === 0) {
                                 anima = 'actividadInmediata';
                             }
                             x++;
                         }
                         else if (actividadesU[key2].estado === "trabajando") {
-                            actividadT = { completed: false, active: true, color: "#820bea", background: "linear-gradient(to right, rgb(220, 169, 247) 10%, rgb(255, 255, 255) 15%, rgb(184, 0, 245) 500%)" }
+                            actividadT = { completed: false, active: true, color: "#820bea", background: "linear-gradient(to bottom, rgb(255, 255, 255) 50%, rgb(162, 21, 251) 150%)" }
                             anima = 'actividadInmediata';
                             icono = 'cog';
                             actividadProceso++;
@@ -190,24 +192,24 @@ class listActividades extends React.Component {
                         }
                         actNum++;
                         return (
-                            <div style={{ height: '7.5em' }}>
+                            <div style={{ height: '7em' }}>
                                 <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{
-                                    height: '6.5em',  'box-shadow':actividadT.background ? '#fbbd0894 0.5px 0.5px 5px 0.5px': 'rgba(43, 41, 34, 0.58) 0.5px 0.5px 5px 0.5px', 'border-radius': '10px',
-                                    background: actividadT.background ? actividadT.background: 'linear-gradient(to right, rgb(218, 215, 215) 10%, rgb(255, 255, 255) 15%, rgb(243, 236, 226) 200%)'
+                                    height: '6.5em', 'box-shadow': actividadT.background ? '#fbbd0894 0.5px 0.5px 5px 0.5px' : 'rgba(43, 41, 34, 0.58) 0.5px 0.5px 5px 0.5px', 'border-radius': '5px',
+                                    background: actividadT.background ? actividadT.background : 'linear-gradient(to right, rgb(218, 215, 215) 10%, rgb(255, 255, 255) 15%, rgb(243, 236, 226) 200%)'
                                 }}>
-                                    <h1 style={{ position: 'relative', top: '5%', left: '-20px', }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
-                                    <Icon name='star outline' style={{ transform: 'scale(0.5)', position: 'relative', left: '85%', top: '-25px', color: '#d39d00' }}> <div style={{ position: 'relative', top: '-35px', left: '-40px' }} > {actividadesU[key2].dificultad} </div>
+                                    <h1 style={{ position: 'relative', top: '10%', left: '-20px', }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
+                                    <Icon name='star outline' style={{ transform: 'scale(0.5)', position: 'relative', left: '85%', top: '-15px', color: '#d39d00' }}> <div style={{ position: 'relative', top: '-35px', left: '-40px' }} > {actividadesU[key2].dificultad} </div>
                                     </Icon>
-                                    <Step.Content style={{ left: '8%', width: '90%', top: '-60px', position: 'relative' }}>
+                                    <Step.Content style={{ left: '8%', width: '90%', top: '-5px', position: 'relative' }}>
                                         <Step.Description style={{
                                             position: 'relative',
-                                            top: '5px',
-                                            left: '10%',
+                                            top: '-5px',
+                                            left: '-35%',
                                             'font-size': 'smaller'
                                         }}>
                                             <Icon name="clock outline"></Icon>
                                             {tiempo}</Step.Description>
-                                        <Step.Title style={{ color: actividadT.color, top: '15px', position: 'relative' }}>{actividadesU[key2].concepto}</Step.Title>
+                                        <Step.Title style={{ color: actividadT.color, left: '-30%', top: '-1px', position: 'relative' }}>{actividadesU[key2].concepto}</Step.Title>
 
                                     </Step.Content>
                                 </Step>
@@ -233,7 +235,7 @@ class listActividades extends React.Component {
                     <Icon name={'book'} style={{ color: '#b5b4ab4a', transform: 'scale(0.6)', top: '-20px', left: '-30px', position: 'relative' }} />
                     <Icon name='star outline' style={{ transform: 'scale(0.5)', position: 'relative', left: '65%', top: '-25px', color: '#b5b4ab4a' }}> <div style={{ position: 'relative', top: '-35px', left: '-40px' }} > {'3'} </div>
                     </Icon>
-                    <Step.Content style={{ left: '10%', top: '-40px', position: 'relative' }}>
+                    <Step.Content style={{ left: '-30%', position: 'relative' }}>
                         <Step.Title style={{ color: '#b5b4ab4a' }}>{'Por Completar'}</Step.Title>
                         <Step.Description style={{ color: '#b5b4ab4a' }}>>{'Hoara de Inicio : 2022-01-01'}</Step.Description>
                         <Step.Description style={{ color: '#b5b4ab4a' }}>>{'Hora de Fin: 2022-01-01'}</Step.Description>
@@ -250,7 +252,7 @@ class listActividades extends React.Component {
     renderActividades() {
         return (<Step.Group vertical style={{
             width: '100%', 'border-radius': '10px',
-            'border-color': 'cornsilk',
+          
         }}>
             {this.renderActividadXactividad()}
         </Step.Group>);
@@ -291,4 +293,4 @@ const mapAppStateToProps = (state) => (
     });
 
 
-export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, estadochats, pasoOnboardings, MensajeIvilys })(listActividades);
+export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, celPerfs, numeroTareasTs, estadochats, pasoOnboardings, MensajeIvilys })(listActividades);

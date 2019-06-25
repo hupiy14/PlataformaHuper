@@ -9,7 +9,7 @@ class ingresoPlataforma extends React.Component {
     render() {
         return (
 
-            <div className="ui placeholder segment icon-right">
+            <div className="ui placeholder segment icon-right" style={{ 'border-color': '#fcd45e', 'height': '100%'}}>
                 <br></br>
                 <br></br>
                 <div className="inline center">
@@ -18,7 +18,7 @@ class ingresoPlataforma extends React.Component {
                 </div>
                 <div className="inline center">
                     <br></br>
-                    <Link to="/login" className="ui big button">Ingresar</Link>
+                    <Link to="/login" style={{background: '#fde19e' }} className="ui big button">Ingresar</Link>
                 </div>
 
             </div>

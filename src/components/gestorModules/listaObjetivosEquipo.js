@@ -5,10 +5,6 @@ import { Button, Popup, Grid, Input, Header, Modal, Image, Message, Form, Progre
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
 import MaskedInput from 'react-text-mask';
-import { COLOR_THEME } from '../modules/chatBot/types';
-
-
-
 
 
 
@@ -22,12 +18,12 @@ class ListaObjetivosEquipo extends React.Component {
     };
 
 
-   
+
 
     componentDidMount() {
         this.onSearchSubmit();
         // console.log(this.example2);
-       // this.renderObtenerInformacionEquipo();
+        // this.renderObtenerInformacionEquipo();
     }
 
 
@@ -70,7 +66,7 @@ class ListaObjetivosEquipo extends React.Component {
             });
         }
 
-        if (max > 100 && this.state.detalleO.personasInvolucradas) {
+        if (max > 100 && this.state.detalleO.detalleO.personasInvolucradas) {
             this.setState({ mensajeCodigo: { titulo: 'Error la distribución del objetivo', detalle: 'La suma parcial de cada persona del equipo, supera el 100% del objetivo' } })
             this.setState({ error: true })
             return;
@@ -230,13 +226,12 @@ class ListaObjetivosEquipo extends React.Component {
                 if (!cconsulta[key2])
                     return;
                 //muestra los objetivos propios del gestor y compartidos
-                if (cconsulta[key2].gestor) {
-                    if (!cconsulta[key2].propio && !cconsulta[key2].compartidoEquipo)
-                        return;
-                }
-                else if (cconsulta[key2].compartidoEquipo && (!this.props.equipoConsulta.sell || this.props.equipoConsulta.sell === 0)) {
+             
+                if (cconsulta[key2].compartidoEquipo && (!this.props.equipoConsulta.sell || this.props.equipoConsulta.sell === 0)) {
                     return;
                 }
+                else if (cconsulta[key2].compartidoEquipo && !cconsulta[key2].idUsuarioGestor)
+                    return;
 
                 const objetivo = cconsulta[key2];
                 const factorObjetivo = cconsulta[key2].numeroTareas;
@@ -248,7 +243,7 @@ class ListaObjetivosEquipo extends React.Component {
                 const usuarioIF = cconsulta[key2].idUsuario;
 
                 let iconoObjetivo = this.props.icono;
-                if (cconsulta[key2].tipo === "Empieza en tu flujo de trabajo")
+                if (cconsulta[key2].tipo === "Es parte de mi flujo de trabajo")
                     iconoObjetivo = "th";
                 if (cconsulta[key2].compartidoEquipo)
                     iconoObjetivo = "users";

@@ -39,8 +39,23 @@ import {
   MENSAJEVIELY,
   ESTADO_CHAT,
   OBJ_TIM,
+  
+  CEL_CHAT,
+  CEL_PERF,
 
 } from './types';
+export const celPerfs = (celPerf) => {
+  return {
+    type: CEL_PERF,
+    payload: celPerf
+  };
+};
+export const celChats = (celChat) => {
+  return {
+    type: CEL_CHAT,
+    payload: celChat
+  };
+};
 export const objTIMs = (objTIM) => {
   return {
     type: OBJ_TIM,

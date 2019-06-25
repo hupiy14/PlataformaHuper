@@ -37,10 +37,12 @@ class Profile extends React.Component {
     state = {
         open: null, listaEmpresas: {}, formError: false, openImagen: false, entro: false, mensajeCodigo: null,
         tipo: null, empresa: null, nombreUsuario: null, cargo: null, listaEquipos: {}, area: null, lugar: null, telefono: null, equipo: null, codigo: null, acepto: null,
-        errorTipo: null, errorNombreUsuario: null, errorCargo: null, errorArea: null, errorTelefono: null, errorLugar: null, errorEmpresa: null, errorEquipo: null, errorCodigo: null, errorAcepto: null, calendar: null,
+        errorTipo: null, errorNombreUsuario: null, errorCargo: null, errorArea: null, errorTelefono: null, errorLugar: null, errorEmpresa: null, errorEquipo: null, errorCodigo: null, errorAcepto: null, idCalendar: null,
         codigoUsSlack: null, tokenUsSlack: null, tokenBotUsSlack: null, canalGestorSlack: null, canalEquipoSlack: null, canalReportesSlack: null, canalNotifiacionesSlack: null,
         codigoWSdrive: null, activo: false, listaCanales_Slack: null, usuarioTrello: null, trelloListaDashBoard: null, trelloLista: null, trelloDashboard: null, errorDashboard: null,
         nivelEquipo: null, diaSemana: null,
+
+        trelloIn: '100%', slackIn: '100%', driveIn: '0%', calendarIn: '100%',
 
         trelloApi: null, tokenTrello: null, listaObjetivostoDO: null, listaOBjetivosDone: null, listaObjetivosTheEnd: null, imagenMostrar: null, imagenFondo: null, imagenPerfil: null,
     }
@@ -274,8 +276,8 @@ class Profile extends React.Component {
             <div>
                 <Form >
                     <Form.Input label='Id de tu calendario de Google' placeholder='...@group.calendar.google.com'
-                        value={this.state.calendar}
-                        onChange={e => this.setState({ calendar: e.target.value })}
+                        value={this.state.idCalendar}
+                        onChange={e => this.setState({ idCalendar: e.target.value })}
                     />
                 </Form >
                 <br />
@@ -529,8 +531,15 @@ class Profile extends React.Component {
 
     renderGuardar() {
 
+
+
+
         let tamano = '37em';
         if (this.state.open === 'slack') {
+            this.setState({ slackIn: '0%' });
+            if (!this.state.canalEquipoSlack || this.state.canalEquipoSlack === '')
+                this.setState({ slackIn: '100%' });
+
             firebase.database().ref(`Usuario-Slack/${this.props.usuarioDetail.idUsuario}`).set({
                 usuarioSlack: this.state.codigoUsSlack,
                 tokenP: this.state.tokenUsSlack,
@@ -542,6 +551,10 @@ class Profile extends React.Component {
             });
         }
         else if (this.state.open === 'drive') {
+            this.setState({ driveIn: '0%' });
+            if (!this.state.codigoWSdrive || this.state.codigoWSdrive === '')
+                this.setState({ driveIn: '100%' });
+
             firebase.database().ref(`Usuario-WS/${this.props.usuarioDetail.usuario.empresa}/${this.props.usuarioDetail.usuario.equipo}/${this.props.usuarioDetail.idUsuario}`).set({
                 linkWs: this.state.codigoWSdrive,
                 fechaCreado: new Date(),
@@ -550,12 +563,20 @@ class Profile extends React.Component {
         }
 
         else if (this.state.open === 'calendar') {
+            this.setState({ calendarIn: '0%' });
+            if (!this.state.calendar || this.state.calendar === '')
+                this.setState({ calendarIn: '100%' });
+
             firebase.database().ref(`Usuario-CalendarGoogle/${this.props.usuarioDetail.idUsuario}`).set({
-                calendar: this.state.calendar,
+                idCalendar: this.state.idCalendar,
                 fechaCreado: new Date(),
             });
         }
         else if (this.state.open === 'trello') {
+            this.setState({ trelloIn: '0%' });
+            if (!this.state.trelloApi || this.state.trelloApi === '' || !this.state.trelloDashboard || this.state.trelloDashboard === '' || !this.state.listaObjetivostoDO || this.state.listaObjetivostoDO === '')
+                this.setState({ trelloIn: '100%' });
+
             firebase.database().ref(`Usuario-Trello/${this.props.usuarioDetail.idUsuario}`).set({
                 usuarioTrello: this.state.usuarioTrello,
                 trelloApi: this.state.trelloApi,
@@ -612,6 +633,8 @@ class Profile extends React.Component {
                     this.setState({ canalEquipoSlack: snapshot.val().equipo ? snapshot.val().equipo : '' });
 
 
+
+
                     axios.get(` https://slack.com/api/channels.list?token=${snapshot.val().tokenB}&pretty=1`)
                         .then((res, tres) => {
                             // console.log(res.data);
@@ -629,6 +652,10 @@ class Profile extends React.Component {
                     this.setState({ canalEquipoSlack: '' });
                 }
 
+                if (!snapshot.val() || !snapshot.val().equipo)
+                    this.setState({ slackIn: '100%' });
+                else
+                    this.setState({ slackIn: '0%' });
 
 
 
@@ -643,7 +670,10 @@ class Profile extends React.Component {
                 else {
                     this.setState({ codigoWSdrive: '' });
                 }
-
+                if (!snapshot.val() || !snapshot.val().linkWs)
+                    this.setState({ driveIn: '100%' });
+                else
+                    this.setState({ driveIn: '0%' });
             });
         }
 
@@ -651,11 +681,15 @@ class Profile extends React.Component {
             const starCountRef = firebase.database().ref().child(`Usuario-CalendarGoogle/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
-                    this.setState({ calendar: snapshot.val().idCalendar ? snapshot.val().idCalendar : '' });
+                    this.setState({ idCalendar: snapshot.val().idCalendar ? snapshot.val().idCalendar : '' });
                 }
                 else {
-                    this.setState({ calendar: '' });
+                    this.setState({ idCalendar: '' });
                 }
+                if (!snapshot.val() || !snapshot.val().idCalendar)
+                    this.setState({ calendarIn: '100%' });
+                else
+                    this.setState({ calendarIn: '0%' });
 
             });
         }
@@ -684,6 +718,10 @@ class Profile extends React.Component {
                     this.setState({ listaOBjetivosDone: '' });
                     this.setState({ listaObjetivosTheEnd: '' });
                 }
+                if (!snapshot.val() || !snapshot.val().trelloApi || !snapshot.val().trelloDashboard  || !snapshot.val().listaObjetivostoDO)
+                    this.setState({ trelloIn: '100%' });
+                else
+                    this.setState({ trelloIn: '0%' });
 
             });
 
@@ -743,19 +781,19 @@ class Profile extends React.Component {
             <div className="ui form">
                 <div className="two column stackable ui grid">
                     <div className="column five wide">
-                        <Card>
-                            <Image src={this.state.imagenFondo ? this.state.imagenFondo : 'https://cdn.pixabay.com/photo/2016/08/09/21/54/yellowstone-national-park-1581879_960_720.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} />
+                        <Card style={{ background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)', 'box-shadow': 'rgba(251, 189, 8, 0.51) 2px 2px 5px 1px'}}>
+                            <Image src={this.state.imagenFondo ? this.state.imagenFondo : 'https://cdn.pixabay.com/photo/2016/08/09/21/54/yellowstone-national-park-1581879_960_720.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} style={{height:'250px'}} />
                             <Card.Content style={{ height: '250px' }}>
-                                <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '21%', position: 'relative', top: '-80px' }} />
+                                <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '21%', height:'140px', position: 'relative', top: '-80px' }} />
                                 <Card.Header style={{ top: '-65px', position: 'relative', 'padding-left': '35%' }}>{this.state.nombreUsuario}</Card.Header>
                                 <Card.Meta style={{ top: '-65px', position: 'relative', 'padding-left': '30%' }}>
                                     <span className='date'>{this.state.cargo}</span>
                                 </Card.Meta>
                                 <Card.Description style={{ top: '-65px', position: 'relative', 'padding-left': '5%' }}>{this.state.area}.</Card.Description>
-                                <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.renderCargar('slack'); }} circular size="mini" style={{ background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '5%', position: 'relative', top: '-50px' }} />
-                                <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '15%', position: 'relative', top: '-50px' }} />
-                                <Image src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '25%', position: 'relative', top: '-50px' }} />
-                                <Image src={trelloImg} onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '35%', position: 'relative', top: '-50px' }} />
+                                <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.renderCargar('slack'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.slackIn + ')', background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '5%', position: 'relative', top: '-50px' }} />
+                                <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.driveIn + ')', background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '15%', position: 'relative', top: '-50px' }} />
+                                <Image src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.calendarIn + ')', background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '25%', position: 'relative', top: '-50px' }} />
+                                <Image src={trelloImg} onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.trelloIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '35%', position: 'relative', top: '-50px' }} />
 
                                 <Button circular color="grey" style={{ position: 'relative', top: '-13em', left: '10%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
                                 <Button circular color="grey" style={{ position: 'relative', top: '-19.2em', left: '20%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
@@ -767,7 +805,7 @@ class Profile extends React.Component {
 
                     </div>
                     <div className="column eleven wide">
-                        <div className="ui segment" style={{ height: tamano, top: '1.5em' }}>
+                        <div className="ui segment" style={{ height: tamano, top: '1.5em', background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)' }}>
                             <Modal open={this.state.openImagen}
                                 closeOnEscape={false}
                                 closeOnDimmerClick={true}

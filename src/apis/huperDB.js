@@ -11,9 +11,9 @@ export const config = {
     storageBucket: 'hupity-9b190.appspot.com',
     messagingSenderId: '874067485777'
 }
-
-///firebase desarrollo 
 */
+///firebase desarrollo 
+
 
 export const config = {
     apiKey: "AIzaSyAKC1R5XUU8UhfQB8bJB0xc1IPgf2nwFS8",

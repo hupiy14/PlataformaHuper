@@ -1,10 +1,15 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { startChat, updateFilter, endChat, Mslacks, consultaMensajes, submitMessage, consultaCanales } from './actions';
+import { startChat, updateFilter, setActiveChat, endChat, Mslacks, consultaMensajes, submitMessage, consultaCanales, setUbicacion } from './actions';
 import firebase from 'firebase';
-import { IconGroup } from 'semantic-ui-react';
+import { IconGroup, Image } from 'semantic-ui-react';
 import { defaultUser } from '../../../components/modules/chatBot/dummyData';
 
+import info from '../../../images/info.png';
+import report from '../../../images/report.png';
+import huper from '../../../images/huper.png';
+import equipo from '../../../images/equipo.png';
+import perfil from '../../../images/perfil.png';
 
 const timeoutLength = 30000;
 
@@ -36,7 +41,7 @@ class Contacts extends React.Component {
 
 
 
- 
+
 
 
 
@@ -65,25 +70,25 @@ class Contacts extends React.Component {
       //obtiene el historico y envia el mensaje
       this.state.client.callMethod('channels.history', { channel: canal, count: this.state.count }).then(res => {
         console.log(res.messages);
-        this.props.Mslacks({ estado: true, canal: this.state.canales, client: this.state.client, equipo: this.state.equipo});
+        this.props.Mslacks({ estado: true, canal: this.state.canales, client: this.state.client, equipo: this.state.equipo });
         res.messages.sort((a, b) => (a.ts - b.ts))
         Object.keys(res.messages).map((key2, index) => {
           const trab = this.state.equipo;
           let usuariox = 'x';
           Object.keys(trab).map((key3, index) => {
-            if (res.messages[key2].user === trab[key3].usuarioSlack || res.messages[key2].username === trab[key3].usuarioSlack )
+            if (res.messages[key2].user === trab[key3].usuarioSlack || res.messages[key2].username === trab[key3].usuarioSlack)
               usuariox = trab[key3].usuario;
           });
 
           let link = null;
-          if(res.messages[key2].files)
-            link =  '◘' + res.messages[key2].files[0].url_private_download;
-          
+          if (res.messages[key2].files)
+            link = '◘' + res.messages[key2].files[0].url_private_download;
+
 
           if (res.messages[key2].username === this.props.usuarioDetail.usuario.usuario || res.messages[key2].user === this.props.usuarioDetail.usuario.canalSlack || res.messages[key2].username === this.props.usuarioDetail.usuario.canalSlack)
-            this.props.submitMessage(res.messages[key2].text  + link, chatId, '1');
+            this.props.submitMessage(res.messages[key2].text + link, chatId, '1');
           else {
-            this.props.submitMessage(res.messages[key2].text  + link + ' •' + usuariox  , chatId, id);
+            this.props.submitMessage(res.messages[key2].text + link + ' •' + usuariox, chatId, id);
           }
 
         });
@@ -97,6 +102,47 @@ class Contacts extends React.Component {
 
 
 
+  renderUsuarioImagen(message) {
+
+    let nombre = message;
+    let image = perfil;
+    if (message === 'Huper') {
+      nombre = 'Huper';
+      image = huper;
+    }
+
+    else if (message === 'Equipo') {
+      nombre = 'Equipo';
+      image = equipo;
+    }
+
+    else if (message === 'Reporting') {
+      nombre = 'Report';
+      image = report;
+    }
+    else if (message === 'Notifica') {
+      nombre = 'Notificaciones';
+      image = info;
+    }
+
+    return (
+
+      <div style={{ height: "5em", width: "20em" }}>
+        <Image src={image} size="small" circular style={{ position: 'relative', top: '-4em' ,transform: 'scale(0.3)', left: '5em'
+      }}>
+        </Image>
+        <div style={{ height: "3em", width: "20em", top: '-10.5em', left: this.props.estadochat === "dimmer Plan"? '140px': '220px', position: 'relative'}}>
+          <h3 >
+            {nombre}
+          </h3>
+        </div>
+      </div>
+    );
+
+
+
+
+  }
 
 
 
@@ -133,16 +179,16 @@ class Contacts extends React.Component {
     }
 
 
+
+
     return (
       <div className="contact-search-ch-wrapper-ch">
         <span className="search-icon-ch">
           <i className="search icon" />
         </span>
-        <textarea
+        <textarea style={{left: this.props.estadochat === "dimmer Plan"? null :  '20px'}}
           className="contact-search-ch"
           placeholder="search..."
-          rows={10}
-          cols={30}
           ref={node => { input = node }}
           onKeyUp={(e) => {
 
@@ -154,46 +200,42 @@ class Contacts extends React.Component {
             .filter(searchFilter)
             .sort(compare)
             .map((c) => (
-              <li key={c.userID} >
+              <li key={c.userID} style={{ background: chatting(c) ? '#ffe8b2e0' : null }} onClick={
+
+                chatting(c) ? () => {
+
+                  this.props.endChat(c.userID);
+
+
+                }
+                  : () => {
+                    const chatId = "Hup" + new Date().getTime();
+                    this.props.startChat(c.userID, chatId); this.renderChat(c.userID, c.userName, chatId);
+                    this.props.setActiveChat(c.userID)
+                    this.props.setUbicacion('chats');
+
+                  }}>
 
                 <div className={chatting(c)
                   ? "contact-thumbnail-ch"
                   : "contact-thumbnail-ch flat"}
-                > {c.userName.slice(0, 1)}
+                >   {this.renderUsuarioImagen(c.userName)}
 
                 </div>
-                <i className={chatting(c)
-                  ? "spinner icon App-logo huge  chatting-ch"
+
+
+
+
+
+
+                <i style={{ color: this.props.estadochat === "dimmer Plan"? null : 'black', left: this.props.estadochat === "dimmer Plan"? null :  '260px'}} className={chatting(c)
+                  ? "spinner icon App-logo large  chatting-ch"
                   : "hide-ch"}
                   aria-hidden="true"
                 ></i>
                 <button className="contact-name"
-                  onClick={
 
-                    chatting(c) ? () => {
-
-                      this.props.endChat(c.userID);
-                    
-                      
-                    }
-                      : () => {
-                        const chatId = "Hup" + new Date().getTime();
-                        this.props.startChat(c.userID, chatId); this.renderChat(c.userID, c.userName, chatId);
-                      
-                        console.log('entroH');
-
-                      }}
-                > {c.userName}
-                  <i className={chatting(c)
-                    ? "hide-ch"
-                    : "plus icon"}
-                    aria-hidden="true"
-                  ></i>
-                  <i className={chatting(c)
-                    ? "minus icon"
-                    : "hide-ch"}
-                    aria-hidden="true"
-                  ></i>
+                >
                 </button>
               </li>
             ))}
@@ -212,9 +254,10 @@ const mapContactsStateToProps = (state) => ({
   Mslack: state.chatReducer.Mslack,
   user: state.user,
   usuarioDetail: state.chatReducer.usuarioDetail,
+  estadochat: state.chatReducer.estadochat,
 
 });
 
-export default connect(mapContactsStateToProps, { startChat, Mslacks, updateFilter, endChat, consultaMensajes, submitMessage, consultaCanales })(Contacts);
+export default connect(mapContactsStateToProps, { setUbicacion, setActiveChat, startChat, Mslacks, updateFilter, endChat, consultaMensajes, submitMessage, consultaCanales })(Contacts);
 
 

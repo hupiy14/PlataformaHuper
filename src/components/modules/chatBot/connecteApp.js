@@ -8,7 +8,7 @@ import Profile from './profilePage';
 import { settings as Senttings } from './settingsPage';
 import {
     submitMessage, consultaChats, chatIdentifiador, numeroPreguntas, mensajeEntradas, consultaPreguntaControls,
-    tipoPreguntas, endChat, startChat, borrarChats, pasoOnboardings, MensajeIvilys, consultas
+    tipoPreguntas, endChat, startChat, borrarChats, pasoOnboardings, MensajeIvilys, consultas, estadochats, setUbicacion
 } from './actions';
 import firebase from 'firebase';
 import _ from 'lodash';
@@ -17,23 +17,192 @@ import Avatar from '../../../apis/xpress';
 
 
 
-
-
-
-const timeoutLength = 300;
+const timeoutLength = 20;
 const TIM_Sem = ['-LekIihkesH_WPL9f624', '-LekJr_nu74fVLVahibh', '-LekJMj3-rwVXgPFojaK'] //2
 const TIM_Med = ['-LekKwo9EJUp9fVE5Yex', '-LekKv_Vsij6ttgXmttU', '-LekI_vYF1zGvglusBXr'] //4
 const TIM_Obj = ['-LekL3NOrjyYW8PsT-Vq', '-LekISO8phY6r4v3EYRD', '-LeknuHNolKbHgs7Visj'] //3
 
 class App extends React.Component {
 
-    state = { avatares: null, horaMax: 8 }
+    state = { avatares: null, horaMax: 8, mensajeInicio: null }
 
 
     // habilita el primer paso
-    handlePaso = () => {
+    handlePaso = (chatID) => {
         this.timeout = setTimeout(() => {
-            this.props.pasoOnboardings(1);
+
+            if (this.props.listaObjetivo && this.props.listaObjetivo.tareas) {
+                let valTl = 0;
+                const arrayObj = this.props.listaObjetivo.tareas;
+                Object.keys(arrayObj).map((key, index) => {
+                    const arrayAct = arrayObj[key];
+                    Object.keys(arrayAct).map((key2, index) => {
+                        if (arrayAct[key2].estado === 'trabajando')
+                            valTl++;
+                    });
+                });
+                if (valTl === 0)
+                    this.props.estadochats('Seguimiento Inicio');
+            }
+
+
+            if (this.props.userRol === '3') {
+                if (this.props.usuarioDetail.usuario.fechaPlan === moment(new Date()).format('YYYY/MM/DD')) {
+
+                    if (this.props.MensajeIvily.inicio) { ///comienza el dia 
+
+                        console.log(1);
+                        if (this.props.MensajeIvily.nActIVi < 6) { /// no tiene todas las actividades
+                            if (!this.props.listaObjetivo || !this.props.listaObjetivo.objetivos)
+                                this.renderTareaDiariaDU(chatID);
+                            else
+                                this.renderTareaDiariaD(chatID);
+                            console.log(2);
+                            return;
+                        }
+                        if (this.props.estadochat === 'pausa') { // se encuentra en pauda
+                            this.renderContinuarTrabajo(chatID);
+                            console.log(3);
+                            return;
+                        }
+                        else if (this.props.estadochat === 'seguimienT' || this.props.estadochat === 'seguimiento') { // se encuentra en seguimiento
+                            this.rendeSeguimientoTrabajo(chatID);
+                            console.log(4);
+                            return;
+                        }
+                        else if (this.props.estadochat === 'TIM objetivo') { // Validacion TIM del Objetivo
+                            this.rendeTalentoImpCom(chatID, 0)
+                            console.log(5);
+                            return;
+                        }
+                        else if (this.props.estadochat === 'TIM Media') { // Validacion TIM de la mitad Semana
+                            this.rendeTalentoImpCom(chatID, 1)
+                            console.log(6);
+                            return;
+                        }
+                        else if (this.props.estadochat === 'Seguimiento Inicio') { // Validacion TIM de la mitad Semana
+                            this.rendeSeguimientoTrabajoU(chatID, 1)
+                            console.log(16);
+                            return;
+                        }
+                        else if (this.props.estadochat === 'TIM Semana') { // Validacion TIM fin de semana
+                            this.rendeTalentoImpCom(chatID, 2)
+                            console.log(7);
+                            return;
+                        }
+
+                        else if (this.props.estadochat === 'Objetivos Terminados') {
+                            // this.renderFinalizarTrabajo(chatID);
+                            this.renderTareaDiariaD(chatID);
+                            console.log(8);
+                            return;
+                        }
+                        else if (this.props.estadochat === 'Termino dia') ///Planificacion para el dia siguiente
+                        {
+                            this.renderFinalizarTrabajo(chatID);
+                            this.props.estadochats('Despedida')
+                            console.log(9);
+                            return;
+                        }
+                        else if (this.props.estadochat === 'Despedida') ///Planificacion para el dia siguiente
+                        {
+
+                            const nameRef2 = firebase.database().ref().child('Mensaje-ChatBot').child(`DespedidaPlan`);
+                            nameRef2.on('value', (snapshot2) => {
+                                const mensaje = snapshot2.val().concepto;
+                                const result = _.replace(mensaje, /@nombre/g, this.props.nombreUser);
+                                this.props.submitMessage(result, chatID, '6');
+                            });
+
+                            this.setState({ mensajeInicio: true });
+                            this.renderTareaDiaria(chatID);
+                            console.log(10);
+                            return;
+                        }
+                        this.renderConsultaTrabajo(chatID);// exporadico
+
+
+
+
+                    }
+                    else {
+
+                        if (this.props.MensajeIvily.nActIVi < 6) { /// no tiene todas las actividades
+
+                            if (!this.state.mensajeInicio) {
+                                const nameRef2 = firebase.database().ref().child('Mensaje-ChatBot').child(`SaludoPlan`);
+                                nameRef2.on('value', (snapshot2) => {
+                                    const mensaje = snapshot2.val().concepto;
+                                    const result = _.replace(mensaje, /@n/g, this.props.MensajeIvily.nActIVi);
+                                    this.props.submitMessage(result, chatID, '6');
+                                });
+                            }
+                            this.setState({ mensajeInicio: true });
+
+                            if (!this.props.listaObjetivo || !this.props.listaObjetivo.objetivos)
+                                this.renderTareaDiariaDU(chatID);
+                            else
+                                this.renderTareaDiariaD(chatID);
+                            console.log(11);
+                        }
+                        else {
+
+
+                            if (this.props.estadochat === 'Seguimiento Inicio') { // Validacion TIM de la mitad Semana
+                                this.rendeSeguimientoTrabajoU(chatID, 1)
+                                console.log(16);
+                                return;
+                            }
+
+                            this.rendeSeguimientoTrabajo(chatID);
+                            console.log(12);
+                        }
+                    }
+
+
+
+                }
+                else {
+                    if (this.props.MensajeIvily && this.props.MensajeIvily.nActIVi < 6) { /// no tiene todas las actividades
+
+                        if (!this.state.mensajeInicio) {
+                            const nameRef2 = firebase.database().ref().child('Mensaje-ChatBot').child(`SaludoPlan`);
+                            nameRef2.on('value', (snapshot2) => {
+                                const mensaje = snapshot2.val().concepto;
+                                const result = _.replace(mensaje, /@n/g, this.props.MensajeIvily.nActIVi);
+                                this.props.submitMessage(result, chatID, '6');
+                            });
+                        }
+                        this.setState({ mensajeInicio: true });
+                        if (!this.props.listaObjetivo || !this.props.listaObjetivo.objetivos)
+                            this.renderTareaDiariaUD(chatID);
+                        else
+                            this.renderTareaDiariaD(chatID);
+
+                        console.log(13);
+                    }
+                    else {
+                        console.log(14);
+
+                        if (this.props.MensajeIvily && this.props.MensajeIvily.tiempoTrabajado && parseInt(moment(this.props.MensajeIvily.tiempoTrabajado, 'HH:mm').format('HH')) < 8)
+                            this.rendeSeguimientoTrabajo(chatID);
+                        //Mensaje de no trabajo
+                    }
+                }
+            }
+            else if (this.props.userRol === '2') {
+                this.props.tipoPreguntas('Consulta Gestor');
+                const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_TDJQilcvBxWh955');
+                starCountRef.on('value', (snapshot) => {
+                    this.props.consultaChats(snapshot.val());
+
+                    this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                    // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                });
+            }
+            if (!this.state.mensajeInicio)
+                this.props.submitMessage('@<Hola Huper@<', chatID, '6');
+            this.setState({ mensajeInicio: null });
         }, timeoutLength)
     }
 
@@ -42,9 +211,6 @@ class App extends React.Component {
 
     componentDidMount() {
 
-        //primer paso del onboarding de la herramienta
-        if (!this.props.usuarioDetail.usuario.onboarding && this.props.pasoOnboarding === 0)
-            this.handlePaso();
         this.props.numeroPreguntas(1); ///borra el chat    
         this.props.consultaPreguntaControls(1);
         this.props.consultaChats(null);
@@ -64,11 +230,10 @@ class App extends React.Component {
                 this.props.submitMessage(result, chatID, '6');
                 this.props.mensajeEntradas(false);
             });
-        }
-        else {
-            this.props.submitMessage('@<Hola Huper@<', chatID, '6');
+            this.setState({ mensajeInicio: true });
         }
 
+        this.handlePaso(chatID);
         //Notificaciones
         /*
         const nameRef2 = firebase.database().ref().child('Notificaciones/108587547313274842109/-LWlp6LbqCPoZ9XBipaG')
@@ -187,76 +352,7 @@ class App extends React.Component {
             //******************************************************************************************************** */
             //Primera Regla si no se ha planificado el dia anterior se debe planificar el dia de inicio
 
-            if (this.props.usuarioDetail.usuario.fechaPlan === moment(new Date()).format('YYYY/MM/DD')) {
 
-                if (this.props.MensajeIvily.inicio) { ///comienza el dia 
-
-                    if (this.props.MensajeIvily.nActIVi < 6) { /// no tiene todas las actividades
-                        this.renderTareaDiaria(chatID);
-                        return;
-                    }
-                    if (this.props.estadochat === 'pausa') { // se encuentra en pauda
-                        this.renderContinuarTrabajo(chatID);
-                        return;
-                    }
-                    else if (this.props.estadochat === 'seguimienT' || this.props.estadochat === 'seguimiento') { // se encuentra en seguimiento
-                        this.rendeSeguimientoTrabajo(chatID);
-                        return;
-                    }
-                    else if (this.props.estadochat === 'TIM objetivo') { // Validacion TIM del Objetivo
-                        this.rendeTalentoImpCom(chatID, 0)
-                        return;
-                    }
-                    else if (this.props.estadochat === 'TIM Media') { // Validacion TIM de la mitad Semana
-                        this.rendeTalentoImpCom(chatID, 1)
-                        return;
-                    }
-                    else if (this.props.estadochat === 'TIM Semana') { // Validacion TIM fin de semana
-                        this.rendeTalentoImpCom(chatID, 2)
-                        return;
-                    }
-
-                    else if (this.props.estadochat === 'Objetivos Terminados') {
-                        // this.renderFinalizarTrabajo(chatID);
-                        this.renderTareaDiaria(chatID);
-                        return;
-                    }
-                    if (this.props.estadochat === 'Termino dia') ///Planificacion para el dia siguiente
-                    {
-                        this.renderFinalizarTrabajo(chatID);
-                        this.props.estadochats('Despedida')
-                        return;
-                    }
-                    if (this.props.estadochat === 'Despedida') ///Planificacion para el dia siguiente
-                    {
-                        this.renderTareaDiaria(chatID);
-                        return;
-                    }
-                    this.renderConsultaTrabajo(chatID);// exporadico
-                    //this.rendeSeguimientoTrabajo(chatID);
-                    // this.renderContinuarTrabajo(chatID);
-                }
-                else {
-
-                    if (this.props.MensajeIvily.nActIVi < 6) { /// no tiene todas las actividades
-                        this.renderTareaDiaria(chatID);
-                    }
-                    else {
-                        this.rendeSeguimientoTrabajo(chatID);
-                    }
-                }
-
-
-
-            }
-            else {
-                if (this.props.MensajeIvily.nActIVi < 6) { /// no tiene todas las actividades
-                    this.renderTareaDiaria(chatID);
-                }
-                else {
-                    //Mensaje de no trabajo
-                }
-            }
 
 
             //******************************************************************************************************* */
@@ -310,14 +406,7 @@ class App extends React.Component {
 
         //Consulta opciones fase 1 Gestor
         else if (this.props.userRol === '2') {
-            this.props.tipoPreguntas('Consulta Gestor');
-            const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_TDJQilcvBxWh955');
-            starCountRef.on('value', (snapshot) => {
-                this.props.consultaChats(snapshot.val());
 
-                this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-            });
         }
 
     }
@@ -348,7 +437,11 @@ class App extends React.Component {
         const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWl1r4nhd8kxizVeVWv');
         starCountRef.on('value', (snapshot) => {
             this.props.consultaChats(snapshot.val());
-            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+            const mensaje = snapshot.val()[this.props.numeroPregunta].concepto;
+            let result = _.replace(mensaje, /@nombre/g, this.props.nombreUser);
+            result = _.replace(result, /@n/g, this.props.MensajeIvily.nActIVi);
+
+            this.props.submitMessage(result, chatID, this.props.idChatUser);
             // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
         });
 
@@ -370,8 +463,11 @@ class App extends React.Component {
 
         const starCountRef = firebase.database().ref().child(`Preguntas-Chat/${arrayTIC[x]}`);
         starCountRef.on('value', (snapshot) => {
+
+            const mensaje = snapshot.val()[this.props.numeroPregunta].concepto;
+            const result = _.replace(mensaje, /@n/g, this.props.MensajeIvily.nActIVi);
             this.props.consultaChats(snapshot.val());
-            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+            this.props.submitMessage(result, chatID, this.props.idChatUser);
             // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
         });
     }
@@ -380,6 +476,15 @@ class App extends React.Component {
 
 
     //Seguimiento
+    rendeSeguimientoTrabajoU(chatID) {
+        this.props.tipoPreguntas('Seguimiento Inicio');
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LgfcxXGdxcQUnESu34r');
+        starCountRef.on('value', (snapshot) => {
+            this.props.consultaChats(snapshot.val());
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+        });
+    }
     rendeSeguimientoTrabajo(chatID) {
         this.props.tipoPreguntas('Seguimiento');
         const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LWk8_7EYCjLe-twidsN');
@@ -391,7 +496,36 @@ class App extends React.Component {
     }
 
 
-
+    renderTareaDiariaD(chatID) {
+        this.props.tipoPreguntas('Diaria');
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LgWkJYCoe1SyY4rDqWO');
+        starCountRef.on('value', (snapshot) => {
+            this.props.consultaChats(snapshot.val());
+            //   console.log(trabajo);
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto + ', ¡Recuerda planificar solo 6 actividades al día!', chatID, this.props.idChatUser);
+            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+        });
+    }
+    renderTareaDiariaUD(chatID) {
+        this.props.tipoPreguntas('Diaria');
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LgWkPpwDzR9otHnn92I');
+        starCountRef.on('value', (snapshot) => {
+            this.props.consultaChats(snapshot.val());
+            //   console.log(trabajo);
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto + ', ¡Recuerda planificar solo 6 actividades al día!', chatID, this.props.idChatUser);
+            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+        });
+    }
+    renderTareaDiariaU(chatID) {
+        this.props.tipoPreguntas('Diaria');
+        const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LgWjtj5b2vHVj1fPnm6');
+        starCountRef.on('value', (snapshot) => {
+            this.props.consultaChats(snapshot.val());
+            //   console.log(trabajo);
+            this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto + ', ¡Recuerda planificar solo 6 actividades al día!', chatID, this.props.idChatUser);
+            // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+        });
+    }
 
     renderTareaDiaria(chatID) {
         this.props.tipoPreguntas('Diaria');
@@ -442,6 +576,7 @@ class App extends React.Component {
 
     }
 
+
     render() {
         //  if (this.state.avatares)
         //    console.log(this.state.avatares[1]);
@@ -457,6 +592,7 @@ class App extends React.Component {
         const x = window.screen.width * 0.17 * x2;
 
 
+
         const wrapper = {
             width: '350px',
             height: '650px',
@@ -464,9 +600,9 @@ class App extends React.Component {
             overflow: 'hidden',
             bottom: '8%',
             right: '3%',
-            'z-index': '8000',
+            'z-index': '100000',
             'border-radius': '30px',
-            'box-shadow': '10px 10px 10px -8px rgba(0, 0, 0, 0.35)',
+            'box-shadow': 'rgb(241, 230, 190) -3px 3px 20px 8px',
             'margin-top:': '3%',
             'margin-left': '5%',
             '-webkit-transform': 'scale(0.9)',
@@ -478,25 +614,37 @@ class App extends React.Component {
         ///configuracion responsive
         let tamañoForm = `${this.props.theme} right floated `;
 
-        if (window.screen.width > 500 && window.screen.height < 800) {
-            const y = window.screen.height * 0.63;
-            wrapper.bottom = '12%';
-            //   wrapper.width = '22%';
-            wrapper.height = y;
-        }
-        if (window.screen.width < 500) {
+
+        if (window.screen.width <= 500) {
             //  const y = window.screen.height * 0.72;
-            wrapper.width = '80%';
-            wrapper.bottom = '12%';
-            wrapper.height = '90%';
-            tamañoForm = ` ${this.props.theme} right floated `;
+
+
+            // console.log(messages.scrollHeight);
+            //console.log( messages.scrollTop);
+            // messages.scrollTop = messages.scrollHeight; 
+
+            wrapper.width = window.screen.width;
+
+            wrapper.bottom = "-3%";
+            wrapper.height = window.screen.height - 30;
+            if (this.props.celChat === true) {
+                wrapper.height = window.screen.height + 25 ;
+                wrapper.bottom = "-4%";
+            }
+
+            wrapper.right = '0%';
+
+            wrapper.background = "#fffbee";
+            //   wrapper.bottom = '12%';
+
+            tamañoForm = `  ${this.props.theme} right floated `;
         }
 
 
         return (
             <div className="ui grid" >
 
-                <div className={tamañoForm + 'animationIntro'} style={wrapper} >
+                <div className={tamañoForm + 'animationIntro'} id="chatInt" style={wrapper} >
                     {this.renderChatButton()}
                     <Menu />
                 </div>
@@ -522,15 +670,17 @@ const mapAppStateToProps = (state) => (
         usuarioDetail: state.chatReducer.usuarioDetail,
         pasoOnboarding: state.chatReducer.pasoOnboarding,
         MensajeIvily: state.chatReducer.MensajeIvily,
+        listaObjetivo: state.chatReducer.listaObjetivo,
         estadochat: state.chatReducer.estadochat,
         isChat: state.chatReducer.isChat,
+        celChat: state.chatReducer.celChat,
     });
 
 
 
 export default connect(mapAppStateToProps, {
-    submitMessage, consultaChats, tipoPreguntas, mensajeEntradas, borrarChats, consultas, pasoOnboardings,
-    chatIdentifiador, numeroPreguntas, consultaPreguntaControls, endChat, startChat, MensajeIvilys
+    submitMessage, consultaChats, tipoPreguntas, mensajeEntradas, borrarChats, consultas, pasoOnboardings, setUbicacion,
+    chatIdentifiador, numeroPreguntas, consultaPreguntaControls, endChat, startChat, MensajeIvilys, estadochats
 })(App);
 
 

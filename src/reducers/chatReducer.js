@@ -38,6 +38,9 @@ import {
     MENSAJEVIELY,
     OBJ_TIM,
 
+    CEL_CHAT,
+    CEL_PERF,
+
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
 import { config } from '../apis/huperDB';
@@ -80,6 +83,9 @@ const INITIAL_STATE = {
     estadochat: null,
     MensajeIvily: null,
     objTIM: null,
+
+    celChat: null,
+    celPerf: null,
 
 };
 
@@ -162,8 +168,12 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, MensajeIvily: action.payload };
         case OBJ_TIM:
             return { ...state, objTIM: action.payload };
+        case CEL_CHAT:
+            return { ...state, celChat: action.payload };
         case PRIMERA_VEZ:
             return { ...state, primeraV: action.payload };
+        case CEL_PERF:
+            return { ...state, celPerf: action.payload };
         default:
             return state;
 

@@ -121,11 +121,6 @@ class Hupps extends React.Component {
                 return;
             }
 
-            if (x === 0) {
-                x = x + 1;
-                listaPerObjetivos = cconsulta[key2];
-                return;
-            }
 
             //         console.log(cconsulta[key2]);
 
@@ -236,6 +231,7 @@ const mapAppStateToProps = (state) => (
         equipoConsulta: state.chatReducer.equipoConsulta,
         listaObjetivo: state.chatReducer.listaObjetivo,
         prioridadObj: state.chatReducer.prioridadObj,
+        userRol: state.chatReducer.userRol,
         userId: state.auth.userId,
 
     });

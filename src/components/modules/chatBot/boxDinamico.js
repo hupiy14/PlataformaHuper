@@ -19,6 +19,7 @@ import { Image, Dropdown, Input } from 'semantic-ui-react';
 
 
 
+
 let tagOptions = [];
 
 
@@ -222,8 +223,8 @@ class boxDinaminco extends React.Component {
                         tagOptions = [...tagOptions, {
                             key: x,
                             icon: iconO,
-                            value: cconsulta[key].usuario.split('☼').length > 1 ? cconsulta[key].usuario.split('☼')[1] : cconsulta[key].usuario,
-                            text: cconsulta[key].usuario.split('☼').length > 1 ? cconsulta[key].usuario.split('☼')[0] : cconsulta[key].usuario,
+                            value: cconsulta2[key].usuario.split('☼').length > 1 ? cconsulta2[key].usuario.split('☼')[1] : cconsulta2[key].usuario,
+                            text: cconsulta2[key].usuario.split('☼').length > 1 ? cconsulta2[key].usuario.split('☼')[0] : cconsulta2[key].usuario,
 
                         }]
                     });
@@ -239,7 +240,7 @@ class boxDinaminco extends React.Component {
                     const ccconsulta = cconsulta[key];
                     Object.keys(ccconsulta).map(function (key, index) {
                         if (ccconsulta[key].concepto !== input && (ccconsulta[key].estado === 'activo' || ccconsulta[key].estado === 'trabajando')) {
-                            alert('Cuatro');
+
                             tagOptions = [...tagOptions,
                             {
                                 key: key,
@@ -394,12 +395,22 @@ class boxDinaminco extends React.Component {
 
         else if (this.props.consultaPregunta[this.props.consultaPreguntaControl].tipoPregunta === '5') {
             // console.log('3');
-
+            const messages = document.getElementById('chatInt');
+            
+         
             return (
 
 
                 <div class="ui labeled input" style={{ 'margin-left': '20px' }}>
-                    <div class="ui label" className={this.state.formmessage} style={{ visibility: this.props.consultaPregunta[this.props.consultaPreguntaControl].label ? 'visible' : 'hidden', background: '#ffbb006e', top: '521px', left: '-33px', 'z-index': 5, 'border-radius': '5px' }}>
+                    <div class="ui label" className={this.state.formmessage}
+
+
+
+                        style={{
+                            visibility: this.props.consultaPregunta[this.props.consultaPreguntaControl].label ? 'visible' : 'hidden', background: '#ffbb006e', 
+                            
+                            top: !messages? '565px': messages.offsetHeight * 0.87, left: '-10px', 'z-index': 5, 'border-radius': '20px 20px 20px 5px', width: '70%'
+                        }}>
                         {this.props.consultaPregunta[this.props.consultaPreguntaControl].label ? this.props.consultaPregunta[this.props.consultaPreguntaControl].label : null}
                     </div>
                     <input type="text" placeholder="message" key={this.props.keyDinamico}
@@ -475,7 +486,7 @@ class boxDinaminco extends React.Component {
         }
         else if (this.props.consultaPregunta[this.props.consultaPreguntaControl].tipoPregunta === '6') {
             //no ha cargado el ultimo dato del chat
-           
+
             if (!this.props.user.userChats[0].thread[6]) return;
             let texto;
             if (this.props.user.userChats[0].thread[6].text === 'Importancia') {
@@ -523,32 +534,35 @@ class boxDinaminco extends React.Component {
             //Crea una lista con diferentes imagenes  con seleccion unica
             this.renderOpcionesImage();
             return (
-                <Dropdown
-                    style={{ position: 'fixed', top: '85%', width: '90%', 'z-index': '100', left: '-0.5px', height: '41px' }}
-                    placeholder='Select Friend'
-                    fluid
-                    // search
-                    selection
-                    clearable
-                    pointing="bottom"
-                    direction="left"
-                    onChange={(e, { value }) => {
+                <div style={{ overflow: 'auto' }}>
+                    <Dropdown
+                        style={{ position: 'fixed', top: '92%', width: '80%', 'z-index': '100', height: '41px', 'border-radius': '20px' }}
 
-                        let text = null;
-                        Object.keys(tagOptions).map((key, index) => {
-                            if (tagOptions[key].value === value) {
-                                text = tagOptions[key].text;
-                            }
-                        });
+                        placeholder='Select Friend'
+                        fluid
+                        // search
+                        selection
+                        clearable
+                        pointing="bottom"
+                        direction="left"
+                        onChange={(e, { value }) => {
 
-                        const arr = this.props.ValorTexto;
-                        arr[value.substring(0, 3)] = { value, text };
-                        this.props.ValorTextos(arr);
-                        this.onInputChange(e, value, text)
-                    }}
-                    value={this.state.term}
-                    options={tagOptions}
-                />
+                            let text = null;
+                            Object.keys(tagOptions).map((key, index) => {
+                                if (tagOptions[key].value === value) {
+                                    text = tagOptions[key].text;
+                                }
+                            });
+
+                            const arr = this.props.ValorTexto;
+                            arr[value.substring(0, 3)] = { value, text };
+                            this.props.ValorTextos(arr);
+                            this.onInputChange(e, value, text)
+                        }}
+                        value={this.state.term}
+                        options={tagOptions}
+                    />
+                </div>
             );
         }
         else if (this.props.consultaPregunta[this.props.consultaPreguntaControl].tipoPregunta === '9') {
@@ -557,24 +571,27 @@ class boxDinaminco extends React.Component {
             this.renderOpcionesDBMultiple(); //organiza la informacion  en el arreglo
             //filtro/detalle/
             return (
-                <Dropdown
-                    placeholder='Select Friend'
-                    fluid
-                    search
-                    multiple
-                    selection
-                    clearable
-                    pointing="bottom"
-                    openOnFocus={true}
-                    direction="left"
-                    onChange={(e, { value }) => {
-                        this.onInputChange(e, value)
-                    }}
-                    style={{ position: 'fixed', top: '85%', width: '90%', left: '-0.5px', 'z-index': '100', height: '41px', 'font-size': 'xx-small' }}
+                <div style={{ overflow: 'auto' }}>
+                    <Dropdown
+                        placeholder='Select Friend'
+                        fluid
+                        search
+                        multiple
+                        selection
+                        clearable
+                        pointing="bottom"
+                        openOnFocus={true}
+                        direction="left"
+                        onChange={(e, { value }) => {
+                            this.onInputChange(e, value)
+                        }}
+                        style={{ position: 'fixed', top: '92%', width: '80%', 'z-index': '100', height: '41px', 'border-radius': '20px' }}
 
-                    value={this.state.term}
-                    options={tagOptions}
-                />
+                        value={this.state.term}
+                        options={tagOptions}
+                    />
+                </div>
+
             );
         }
 
@@ -632,18 +649,20 @@ class boxDinaminco extends React.Component {
         const y = window.screen.height * 0.39;
         let mensajeY = {
             position: 'fixed',
-            top: '85%',
-            width: '90%',
+            top: '92%',
+            width: '85%',
+            left: '5px',
+            'border-radius': '20px',
             'z-index': '100',
         }
 
         if (window.screen.width > 500 && window.screen.height < 800) {
-            mensajeY.top = '80%';
+            //  mensajeY.top = '80%';
         }
 
 
         if (window.screen.width < 500) {
-            mensajeY.top = '78%';
+            //  mensajeY.top = '78%';
             this.setState({ formmessage: 'message-input-chX1' })
         }
         this.setState({ style: mensajeY })

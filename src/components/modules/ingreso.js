@@ -13,30 +13,34 @@ class ingreso extends React.Component {
         // this.props.nuevoUsuarios(null);
     }
 
-   
+
     render() {
         return ReactDOM.createPortal(
             <div onClick={this.props.onDismiss} className="ui dimmer modals visible active">
-                <div onClick={(e) => e.stopPropagation()} className="ui standard modal visible active">
+                <div onClick={(e) => e.stopPropagation()} style={{ width: window.screen.width <= 500 ? '100%' : '30%' }} className="ui standard modal visible active">
 
                     <div className="header center">
-                        Bienvenido a
-                    <img className="ui small rounded image" src={image} />
-
+                        <div style={{ top: '40px', position: 'relative' }}>
+                            <h2 style={{ left: window.screen.width <= 500 ? '15px' :'40px', position: 'relative' }}>
+                                Bienvenido a
+                            </h2>
+                        </div>
+                        <img style={{ position: 'relative', left:  window.screen.width <= 500 ? '160px':'200px', top: '-1em' }} className="ui small rounded image" src={image} />
                     </div>
 
 
 
 
-                    <div className="content">Ingresa el correo para entrar.</div>
-                    <div className="ui secondary pointing menu">
-                        <div className="item"></div>
-                        <div className="right menu"> <GoogleAuth /> </div>
-                   
 
 
 
+                    <div className="content">
+                        <h3>
+                            Ingresa tu correo para entrar.
+                        </h3>
+                        <GoogleAuth />
                     </div>
+                 
 
 
                 </div>

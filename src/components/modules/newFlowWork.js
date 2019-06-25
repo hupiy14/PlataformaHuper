@@ -75,8 +75,10 @@ class newFlowWork extends React.Component {
 
         Object.keys(listaX).map(function (key, index) {
 
-            if (contadorBuscar.toString() !== key) {
-                nuevoListaProps = [...nuevoListaProps, { ...listaX[key] }];
+            if (contadorBuscar) {
+                if (contadorBuscar.toString() !== key) {
+                    nuevoListaProps = [...nuevoListaProps, { ...listaX[key] }];
+                }
             }
         });
 
@@ -153,25 +155,28 @@ class newFlowWork extends React.Component {
 
             <Form style={{
                 'margin-left': '10%',
-                background: 'rgba(253, 242, 208, 0.26)',
-                width: '50%', 'border-radius': '20px',
+                background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)',
+                width: '80%', 'border-radius': '20px',
             }} >
                 <br />
                 <div className=" center menu">
-                    <h3 style={{ 'margin-left': '50px' }}>Describe el flujo de trabajo de tus actividades</h3>
+                    <h3 style={{ 'margin-left': '28%' }}>Describe el flujo de trabajo de tus actividades</h3>
                     {this.renderInputs(this)}
-                    <Button icon="plus" circular color="purple" size="medium" style={{
+                    <Button icon="plus" circular  size="medium" style={{
                         top: '-30px',
-                        left: '90%',
+                        left: '85%',
+                        background: 'linear-gradient(to right, rgb(205, 166, 226) 50%, rgb(158, 20, 204) 90%)',
+                        transform: 'scale(1.3)',
                         position: 'relative'
                     }} onClick={() => { this.renderAgregarNuevoInput() }}></Button>
                 </div>
 
                 <br />
-                <Button content="Guardar" icon="save" color="teal" style={{
+                <Button content="Guardar" icon="save"  style={{
                     top: '-40px',
                     left: '40%',
-                    position: 'relative'
+                    position: 'relative',
+                    background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 80%)'
                 }} onClick={() => { this.renderGuardarFlujo(); }}></Button>
             </Form>
         );

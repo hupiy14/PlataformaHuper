@@ -4,7 +4,8 @@ import { createStream } from '../../actions';//from '   ../actions';
 import ListFormacion from './listaFormacionesEquipo';
 import '../styles/ingresoHupity.css';
 import randomScalingFactor from '../../lib/randomScalingFactor'
-import ListaObjetivosE from '../../components/gestorModules/listaObjetivosEquipo';
+import ListaObjetivosE from '../../components/gestorModules/objetivosG';
+import DetailObj from '../../components/gestorModules/detailobjectG';
 import ListaPersonasEquipo from '../utilidades/listaPersonasEquipo';
 import {
     Button,
@@ -411,14 +412,15 @@ class DashBoard extends React.Component {
         const tareas = this.props.listaObjetivo;
         const objs = this.props.equipoConsulta;
         let factorSemana = 0;
+        let factorEqHup = [];
         //Encontrar factor
         this.setState({ ObjsFactors: [] });
+
         Object.keys(objs).map((key, index) => {
 
-
-            if (this.props.userId === objs[key].idUsuario)
+            if (!objs[key] || !objs[key].concepto)
                 return;
-            if (!objs[key].concepto)
+            if (this.props.userId === objs[key].idUsuario)
                 return;
             if (this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== objs[key].idUsuario)
                 return;
@@ -452,6 +454,7 @@ class DashBoard extends React.Component {
             });
             //algoritmo de medicion del trabajo
             const puntos = ((1 + facPrioridad + facTipo) * facRepeticiones * facDificultad) * facCompartido * facCalidad * facValidacion * facProductividad;
+            factorEqHup.push({ key, puntos, usuario: objs[key].idUsuario })
 
             //            console.log(puntos);
             let actividades = [];
@@ -509,7 +512,7 @@ class DashBoard extends React.Component {
             this.setState({ ObjsFactors: fact });
             factorSemana = factorSemana + Math.round(puntos);
         });
-
+        this.props.equipoConsultas({ ...this.props.equipoConsulta, factorProgreso: factorEqHup.length === 0 ? this.props.equipoConsulta.factorEqHup : factorEqHup })
         this.setState({ factorSemana });
     }
 
@@ -982,7 +985,7 @@ class DashBoard extends React.Component {
 
     renderListaObjetivo() {
         return (<ListaObjetivosE
-            titulo={this.renderTituloObjetivo()}
+            titulo={'Lista de Objetivos de la semana'}
             icono={'thumbtack'}
             equipox={this.state.equipo}
 
@@ -1013,66 +1016,24 @@ class DashBoard extends React.Component {
 
             // console.log(this.props.usuarioDetail);
             return (
-
-                <div>
-                    <div className="ui form">
-                        <div className="two column stackable ui grid">
-                            <div className="column fifteen wide">
-                                <div className="ui segment ">
-                                    <Sidebar.Pushable as={Segment} onClick={() => { this.setState({ valueH: false }); }}>
-                                        {
-                                            <HorizontalSidebar animation="scale down" direction="right" visible={this.props.verEquipo} equipo={this.state.slide} />
-                                        }
-                                        <Sidebar.Pusher dimmed={this.props.verEquipo}>
-                                            <Segment basic>
-                                                <Menu pointing secondary>
-                                                    <Menu.Item name='semana' active={this.state.activeItem === 'semana'} onClick={this.handleItemClick} />
-                                                    <Menu.Item
-                                                        name='MIT'
-                                                        active={this.state.activeItem === 'MIT'}
-                                                        onClick={this.handleItemClick}
-                                                    />
-                                                    <Menu.Item
-                                                        name='Productividad vs Calidad'
-                                                        active={this.state.activeItem === 'Productividad vs Calidad'}
-                                                        onClick={this.handleItemClick}
-                                                    />
-                                                </Menu>
-
-                                                <Segment attached='bottom'>
-                                                    {this.state.grafica}
-                                                </Segment>
-
-                                            </Segment>
-                                        </Sidebar.Pusher>
-                                    </Sidebar.Pushable>
-                                </div>
-                            </div>
-
-                            <div className="column one wide loaderTEAM">
-                                <div className="ui segment ">
-                                    <Button icon="users" className="opcionesGestor" label="Equipo" color="yellow" onClick={() => { this.handleSlide(0); this.props.verEquipos(!this.props.verEquipo); }} >
-
-                                    </Button>
-                                    <Label color='teal' floating style={{ width: `${porcentajeTexto}px`, left: '40px', display: `${verUsuario}`, 'z-index': '1' }}>
-                                        {this.state.seleccion}
-                                    </Label>
-                                </div>
-                                <div className="ui segment ">
-                                    <Button icon="tasks" className="opcionesGestor" label="Objetivos" color="yellow" onClick={() => { this.handleSlide(1); this.props.verEquipos(!this.props.verEquipo); }} ></Button>
-                                </div>
-                                <div className="ui segment ">
-                                    <Button icon="book" className="opcionesGestor" label="Formación" color="yellow" onClick={() => { this.handleSlide(2); this.props.verEquipos(!this.props.verEquipo); }} ></Button>
-                                </div>
-                                <div>
-                                    <Button icon="arrow right" className="ocultarMenu" circular style={{ visibility: !this.props.verEquipo === true ? 'hidden' : null, position: 'relative', left: '-180px', top: '510px', background: 'purple', color: 'white' }}
-                                        onClick={() => { this.props.verEquipos(!this.props.verEquipo); this.handleSlide(this.state.valorSlide); this.setState({ activeItem: 'semana' }) }}
-                                    ></Button>
-                                </div>
-
-                            </div>
-
-                        </div>
+                <div className="ui form">
+                    <div className="two column stackable ui grid">
+                        <div className="column five wide">
+                            <h2 style={{
+                                left: '10%',
+                                position: 'relative',
+                                color: '#d06327',
+                            }}>Lista de Objetivos</h2>
+                            {this.renderListaObjetivo()}
+                        </div >
+                        <div className="column eleven wide">
+                            <h2 style={{
+                                left: '10%',
+                                position: 'relative',
+                                color: '#d06327',
+                            }}>Detalle del objetivo</h2>
+                            <DetailObj />
+                        </div >
                     </div >
                 </div >
             );

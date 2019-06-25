@@ -21,7 +21,7 @@ class FomrularioGlobal extends React.Component {
         const client = "482555533539.532672221010";
         const clientSecret = "18c94d458dbe66c7f7fc0d3f2684e63f";
         const code = this.props.detailUsNew.codeSlack;
-        axios.get(`https://slack.com/api/oauth.access?client_id=${client}&client_secret=${clientSecret}&code=${code}`)
+        axios.get(`https://slack.com/api/oauth.access?client_id=${client}&redirect_uri=https://hupity-9b190.firebaseapp.com&client_secret=${clientSecret}&code=${code}`)
             .then((res, tres) => {
                 if (res.data.bot)
                     this.props.detailUsNews({ ...this.props.detailUsNew, tokenSlack: res.data.access_token, tokenBot: res.data.bot.bot_access_token, userSlack: res.data.user_id });
@@ -175,6 +175,7 @@ class FomrularioGlobal extends React.Component {
         }
 
         //crea el espacio de trabajo
+        console.log(this.props.detailUsNew);
         if (this.props.detailUsNew.codigoWSdrive) {
             firebase.database().ref(`Usuario-WS/${keyEquipo}/${newPostKey1}/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
                 fechaCreado: new Date().toString(),
@@ -292,57 +293,59 @@ class FomrularioGlobal extends React.Component {
 
         return (
 
-            <div>
 
-                <Modal size='tiny' open={this.state.open} onClose={this.close}>
-                    <Modal.Header>Bienvenido a hupity</Modal.Header>
-                    <Modal.Content image>
-                        <Modal.Description>
-                            <Form error={this.state.formError}>
 
-                                <Form.Input label='Codigo de acceso' fluid placeholder='Escribe el codigo de acceso dado por Hupity' error={this.state.errorCodigo}
-                                    value={this.props.detailUsNew ? this.props.detailUsNew.codigo : null}
-                                    onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, codigo: value })}
-                                />
+            <Modal size='tiny' open={this.state.open} >
+                <Modal.Header>Bienvenido a hupity</Modal.Header>
+                <Modal.Content image>
+                    <div className="ui form" >
+                        <div className="ui grid">
+                            <Modal.Description style={{width: '38em'}}>
+                                <Form error={this.state.formError}>
 
-                                <Form.Checkbox label='Esta de acuedo con los terminos y condiciones'
-                                    error={this.state.errorAcepto}
-                                    value={this.props.detailUsNew ? this.props.detailUsNew.acepto : null}
-                                    onChange={(e, { checked }) => this.props.detailUsNews({ ...this.props.detailUsNew, acepto: checked })}
-                                />
+                                    <Form.Input label='Codigo de acceso' fluid placeholder='Escribe el codigo de acceso dado por Hupity' error={this.state.errorCodigo}
+                                        value={this.props.detailUsNew ? this.props.detailUsNew.codigo : null}
+                                        onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, codigo: value })}
+                                    />
 
-                                <Message
-                                    error
-                                    header={this.state.mensajeCodigo ? this.state.mensajeCodigo.titulo : 'Falta campos por llenar'}
-                                    content={this.state.mensajeCodigo ? this.state.mensajeCodigo.detalle : 'Debes diligenciar todos los campos'}
-                                />
-                            </Form>
-                        </Modal.Description>
-                    </Modal.Content>
-                    <Modal.Actions>
-                        <Button color='grey' onClick={this.cancelar}>
-                            Cancelar
+                                    <Form.Checkbox label='Esta de acuedo con los terminos y condiciones'
+                                        error={this.state.errorAcepto}
+                                        value={this.props.detailUsNew ? this.props.detailUsNew.acepto : null}
+                                        onChange={(e, { checked }) => this.props.detailUsNews({ ...this.props.detailUsNew, acepto: checked })}
+                                    />
+
+                                    <Message
+                                        error
+                                        header={this.state.mensajeCodigo ? this.state.mensajeCodigo.titulo : 'Falta campos por llenar'}
+                                        content={this.state.mensajeCodigo ? this.state.mensajeCodigo.detalle : 'Debes diligenciar todos los campos'}
+                                    />
+                                </Form>
+                            </Modal.Description>
+                        </div></div>
+                </Modal.Content>
+                <Modal.Actions>
+                    <Button color='grey' onClick={this.cancelar}>
+                        Cancelar
           </Button>
-                        <Button
+                    <Button
 
-                            color="purple"
-                            icon='arrow right'
-                            labelPosition='right'
-                            content="Comenzar"
-                            onClick={this.ingreso}
-                            disabled=
-                            {
-                                this.props.usuarioDetail && (
-                                    !this.props.detailUsNew.codigo ||
-                                    !this.props.detailUsNew.acepto)
-                            }
-                        //  disabled={this.props.detailUsNew ? this.props.detailUsNew.tipo ? false : true : true}
-                        />
+                        color="purple"
+                        icon='arrow right'
+                        labelPosition='right'
+                        content="Comenzar"
+                        onClick={this.ingreso}
+                        disabled=
+                        {
+                            this.props.usuarioDetail && (
+                                !this.props.detailUsNew.codigo ||
+                                !this.props.detailUsNew.acepto)
+                        }
+                    //  disabled={this.props.detailUsNew ? this.props.detailUsNew.tipo ? false : true : true}
+                    />
 
 
-                    </Modal.Actions>
-                </Modal>
-            </div>
+                </Modal.Actions>
+            </Modal>
 
         );
     }
