@@ -16,6 +16,7 @@ import firebase from 'firebase';
 import moment from 'moment';
 import history from '../history';
 
+import { signOut } from '../actions';
 
 
 
@@ -30,6 +31,7 @@ const timeoutLength3 = 100000;
 const timeoutLength4 = 500;
 const timeoutLength5 = 5000;
 const timeoutLength6 = 200;
+
 
 const labelsDias = [
     "Lunes",
@@ -129,7 +131,7 @@ class DashBoard extends React.Component {
         });
 
 
-
+     
 
         //carga el limite que las empresas definan
         datosPlanificados = [];
@@ -169,6 +171,9 @@ class DashBoard extends React.Component {
             this.props.pasoOnboardings(3);
         }, timeoutLength3)
     }
+
+   
+    
 
     arregloFechaSemana() {
         var fecahMinima = new Date();
@@ -537,7 +542,7 @@ class DashBoard extends React.Component {
                 <div className="ui form">
                     <div className="two column stackable ui grid">
                         <div className="column two wide">
-                            <div className="ui segment" style={{ width: "11em",     background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)' }}>
+                            <div className="ui segment" style={{ width: "11em", background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)' }}>
 
 
                                 <Menu text vertical style={{ width: "11em" }}>
@@ -577,7 +582,7 @@ class DashBoard extends React.Component {
                                             <Icon name="book"></Icon>
                                             Formacion
                                         </Menu.Item>
-                                        <Label  style={{ position: 'absolute',color: 'rgb(80, 0, 99)', top: '85px', left: '120px', background: 'linear-gradient(to top, rgb(253, 205, 98) 5%, rgb(255, 255, 255) 20%)'}}>
+                                        <Label style={{ position: 'absolute', color: 'rgb(80, 0, 99)', top: '85px', left: '120px', background: 'linear-gradient(to top, rgb(253, 205, 98) 5%, rgb(255, 255, 255) 20%)' }}>
                                             {this.props.listaFormacion ? Object.keys(this.props.listaFormacion).length : 0}
                                         </Label>
                                     </div>
@@ -605,7 +610,7 @@ class DashBoard extends React.Component {
                                             <Icon name="calendar alternate"></Icon>
                                             Calendario
                                         </Menu.Item>
-                                       
+
                                     </div>
                                     }
                                         open={this.state.open3}
@@ -1182,7 +1187,7 @@ class DashBoard extends React.Component {
 
 
 
-           
+
 
 
 
@@ -1209,7 +1214,6 @@ class DashBoard extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        usuarioDetail: state.chatReducer.usuarioDetail,
         userRol: state.chatReducer.userRol,
         userId: state.auth.userId,
         pasoOnboarding: state.chatReducer.pasoOnboarding,
@@ -1221,6 +1225,6 @@ const mapStateToProps = (state) => {
 
     };
 };
-export default connect(mapStateToProps, { createStream, pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats })(DashBoard);
+export default connect(mapStateToProps, { signOut, createStream, pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats })(DashBoard);
 
 ///<ListAdjuntos />

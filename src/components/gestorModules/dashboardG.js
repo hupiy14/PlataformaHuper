@@ -158,7 +158,7 @@ class DashBoard extends React.Component {
                 });
             });
         }
-        console.log(fE);
+    
         if (valido === false) {
             firebase.database().ref(`Usuario-Puntospro/${tipo}/${year}/${Nsemana}`).set({
                 fechaCreado: moment(new Date).format('YYYY-MM-DD'),
@@ -357,6 +357,7 @@ class DashBoard extends React.Component {
 
     }
     componentDidUpdate() {
+
         if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0 && (this.state.selEq === null || this.state.selEq !== this.props.equipoConsulta.sell)) {
             this.setState({ selEq: this.props.equipoConsulta.sell });
             this.handleVariables();
@@ -407,8 +408,7 @@ class DashBoard extends React.Component {
 
 
     calculoDeAvance() {
-        //  const objs = this.props.listaObjetivo;
-        // const per = this.props.equipoConsulta;
+
         const tareas = this.props.listaObjetivo;
         const objs = this.props.equipoConsulta;
         let factorSemana = 0;
@@ -422,8 +422,11 @@ class DashBoard extends React.Component {
                 return;
             if (this.props.userId === objs[key].idUsuario)
                 return;
-            if (this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== objs[key].idUsuario)
+
+            if (this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== objs[key].idUsuario && !this.props.equipoConsulta.factorProgreso)
                 return;
+
+
             let facPrioridad = 1;
             let facDificultad = 1;
             let facRepeticiones = 1;
@@ -455,7 +458,6 @@ class DashBoard extends React.Component {
             //algoritmo de medicion del trabajo
             const puntos = ((1 + facPrioridad + facTipo) * facRepeticiones * facDificultad) * facCompartido * facCalidad * facValidacion * facProductividad;
             factorEqHup.push({ key, puntos, usuario: objs[key].idUsuario })
-
             //            console.log(puntos);
             let actividades = [];
             let tiempo = 0;
@@ -512,7 +514,7 @@ class DashBoard extends React.Component {
             this.setState({ ObjsFactors: fact });
             factorSemana = factorSemana + Math.round(puntos);
         });
-        this.props.equipoConsultas({ ...this.props.equipoConsulta, factorProgreso: factorEqHup.length === 0 ? this.props.equipoConsulta.factorEqHup : factorEqHup })
+        this.props.equipoConsultas({ ...this.props.equipoConsulta, factorProgreso: factorEqHup })
         this.setState({ factorSemana });
     }
 
@@ -540,6 +542,7 @@ class DashBoard extends React.Component {
         }
         return fechas;
     }
+
 
     componentDidMount() {
 
@@ -592,66 +595,11 @@ class DashBoard extends React.Component {
         return Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
     };
 
-    handleDimmedChange = (e, { checked }) => {
-
-        this.setState({ valueH: checked });
-
-        if (checked) {
-            let datos = [];
-            let dat = this.calcularAvancePorMes(this.state.ObjsFactors);
-            console.log(dat);
-            this.setState({
-                grafica: <div>
-                    <Checkbox checked={checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-                    <GraficaG2 datoPlanificar={dat.factorPlan} datoTrabajo={dat.factorTrab} labelsMonths={labelsMonths} />
-                </div>
-            })
-        }
-        else {
-            this.setState({
-                grafica: <div>
-                    <Checkbox checked={checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-                    <GraficaG1 tope={100} datosAvance={this.calcularAvancePorDia(this.state.ObjsFactors, this.state.factorSemana)} />
-                </div>
-            })
-        }
-    }
+    
 
 
 
-    handleItemClick = (e, { name }) => {
-        this.setState({ activeItem: name })
-        console.log('primero');
-        if (name === 'semana') {
-            const graficaG =
-                <div>
-                    <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-                    <GraficaG1 tope={100} datosAvance={this.calcularAvancePorDia(this.state.ObjsFactors, this.state.factorSemana)} />
-                </div>
-            this.setState({ grafica: graficaG })
-
-        }
-        else if (name === 'MIT') {
-            let datos = [];
-            const trab = this.ticArregloEquipo();
-            datos = trab.datos;
-
-            const graficaG = <GraficaG3 labelsX={trab.arrL}
-                datos={datos}
-                titleGrafica={"Medida MIT (Progreso)"}
-                TituloGrafica={"Motivacion, Impacto, Talento (MIT)"}
-            />;
-
-            this.setState({ grafica: graficaG })
-
-        }
-        else if (name === 'Productividad vs Calidad') {
-            const graficaG = <GraficaG4 prod={this.state.productividadobj} cal={this.state.factorCalidad} />;
-            this.setState({ grafica: graficaG })
-
-        }
-
-    }
+ 
 
     renderTituloObjetivo() {
         if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0) {

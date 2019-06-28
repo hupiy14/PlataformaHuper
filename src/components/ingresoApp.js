@@ -5,11 +5,11 @@ import { Link } from 'react-router-dom';
 
 
 class ingresoPlataforma extends React.Component {
-  
+
     render() {
         return (
 
-            <div className="ui placeholder segment icon-right" style={{ 'border-color': '#fcd45e', 'height': '100%'}}>
+            <div className="ui placeholder segment icon-right" style={{ 'border-color': '#fcd45e', 'height': '100%' }}>
                 <br></br>
                 <br></br>
                 <div className="inline center">
@@ -18,7 +18,10 @@ class ingresoPlataforma extends React.Component {
                 </div>
                 <div className="inline center">
                     <br></br>
-                    <Link to="/login" style={{background: '#fde19e' }} className="ui big button">Ingresar</Link>
+                    <Link to="/login" style={{
+                        background: 'linear-gradient(to right, #fce64d -30%, rgb(255, 106, 0)100%)',
+                        'border-radius': '50px 15px', color:'#fffcfc'
+                    }} className="ui big button">Ingresar</Link>
                 </div>
 
             </div>

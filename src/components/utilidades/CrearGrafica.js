@@ -29,11 +29,11 @@ class legenExample extends React.Component {
             tooltips: {
                 mode: 'label'
             },
-         
+
             hover: {
                 mode: 'dataset'
             },
-        
+
             scales: {
                 xAxes: [
                     {
@@ -62,7 +62,7 @@ class legenExample extends React.Component {
 
         let style = randonStyle();
 
-        const base = 0.15 + this.props.fuerza?this.props.fuerza:0;
+        const base = 0.15 + this.props.fuerza ? this.props.fuerza : 0;
         for (let dataset of data.datasets) {
 
             dataset.borderColor = randomColor(0.4, style)
@@ -70,39 +70,35 @@ class legenExample extends React.Component {
             dataset.pointBorderColor = randomColor(0.7, style)
             dataset.pointBackgroundColor = randomColor(0.5, style)
             dataset.pointBorderWidth = 2;
-            dataset.pointRadius= 5;
-           
+            dataset.pointRadius = 5;
+
             style = style + 1;
             if (style === 4)
                 style = 1;
+        } 
+        let box = 'rgb(189, 93, 26)  6px 11px 12px 0px';
+        let t = <h3 style={{ left: '40%', position: 'relative', color: '#d05600' }}>{this.props.TituloGrafica}</h3>
+
+    
+        if (this.props.equipoGrafica) {
+             box = '#ab778e -13px 17px 12px 0px';
+             t = <h2 style={{ left: '40%', position: 'relative', color: '#d05600' }}>{this.props.TituloGrafica}</h2>
         }
 
-        let largo = 60;
-        let ancho = 100;
-        if (window.screen.width < 500) {
-
-            largo = 250;
-            ancho = 160;
-        }
 
 
 
 
 
         return (
-            <Segment.Group>
-                <Responsive as={Segment}>
 
-                    <React.Fragment>
-                        <h3 className="center">{this.props.TituloGrafica}</h3>
-                        <div >
-                            <Line className="ui form" data={data} width={ancho}
-                                height={largo} options={options} />
-                        </div>
-                    </React.Fragment>
-
-                </Responsive>
-            </Segment.Group>
+            <div>
+                  {t}
+                <div style={{ 'box-shadow': box }}>
+                    <Line className="ui form" data={data}
+                        options={options} />
+                </div>
+            </div>
 
         )
     };

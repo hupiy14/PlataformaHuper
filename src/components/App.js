@@ -2,8 +2,6 @@ import React from 'react';
 import { Router, Route, Switch } from 'react-router-dom';
 import history from '../history';
 
-
-
 import MenuChat from './MenuChat';
 import Header from './Header';
 //formulario de ingreso
@@ -33,12 +31,13 @@ import FLujoCreate from './modules/newFlowWork';
 import { celChats } from '../components/modules/chatBot/actions';
 
 
-import pruebaE from '../components/gestorModules/pruebaE';
+import equipoDash from './gestorModules/equipoData';
 
 //celular
 
 import HeaderC from './celphone/HeaderC';
 import DashBoardC from './celphone/DashboardC';
+
 
 
 
@@ -168,8 +167,9 @@ class App extends React.Component {
                                                 <Route path="/hupps" exact component={Hupps} />
                                                 <Route path="/onboarding" exact component={Onboard} />
                                                 <Route path="/profile" exact component={Profile} />
-
-                                                <Route path="/prueba" exact component={pruebaE} />
+                                                <Route path="/equipoData" exact component={equipoDash} />
+                                                
+                                           
 
                                                 <Route path="/proceso/exito" exact component={Exito} />
                                                 <Route path="/formulario/validacion" exact component={ModalFormValidacion} />

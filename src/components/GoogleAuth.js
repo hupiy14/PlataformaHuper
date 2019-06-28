@@ -12,7 +12,7 @@ import SlackA from '../apis/slackApi';
 
 const timeoutLength = 3000;
 
-const timeoutLength2 = 86400000;
+const timeoutLength2 = 5000;
 
 
 class GoogleAuth extends React.Component {
@@ -47,26 +47,32 @@ class GoogleAuth extends React.Component {
     }
 
 
-    handleOpen2 = () => {
+    handleOpen2 = (Usuario) => {
         this.timeout = setTimeout(() => {
-            const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${this.state.codigo}`);
+
+
+
+            const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${Usuario.codigo}`);
             starCountRef.on('value', (snapshot) => {
                 const cod = snapshot.val();
+
                 if (cod) {
-                    if (cod.estado !== 'activo' && cod.estado !== 'anulado' && cod.estado !== 'usado') {
-                        cod.estado = 'usado';
-                        const us = this.state.usuario;
-                        us.estado = 'inactivo';
+                    if (cod.estado === 'usado') {
+                        if (moment().diff(moment(cod.fechaUso, 'YYYY-MM-DD'), 'days') > 15) {
+                            cod.estado = 'usado';
+                            const us = Usuario;
+                            us.estado = 'inactivo';
 
-                        firebase.database().ref(`Codigo-Acceso/${this.state.codigo}`).set({
-                            ...cod,
-                            fechaTer: new Date().toString(),
-                        })
+                            firebase.database().ref(`Codigo-Acceso/${Usuario.codigo}`).set({
+                                ...cod,
+                                fechaTer: new Date().toString(),
+                            })
 
-                        firebase.database().ref(`Usuario/${this.auth.currentUser.get().getId()}`).set({
-                            ...us,
-                        })
-                        this.auth.signOut();
+                            firebase.database().ref(`Usuario/${this.auth.currentUser.get().getId()}`).set({
+                                ...us,
+                            })
+                            this.auth.signOut();
+                        }
                     }
                 }
             })
@@ -112,13 +118,13 @@ class GoogleAuth extends React.Component {
                     if (Usuario.codigo) {
 
                         if (Usuario.estado === 'activo') {
-                            console.log(Usuario.codigo);
-                            this.setState({ codigo: Usuario.codigo })
                             this.setState({ usuario: Usuario })
-                            this.handleOpen2();
+                            this.handleOpen2(Usuario);
                         }
                         else ///puedo hacer la reactivacion dependiendo. ****************Importante
+                        {
                             this.auth.signOut();
+                        }
                     }
                     //        console.log(this.auth.currentUser.get().getId());
 
@@ -289,7 +295,10 @@ class GoogleAuth extends React.Component {
 
             else if (!this.props.equipoConsulta || !this.props.equipoConsulta.trabajo) {
                 history.push('/dashboard');
+
+
             }
+            
             return (
                 <div style={{ height: '1.2em' }}>
                     <Icon style={{ position: 'relative' }} name="google icon"></Icon>
@@ -345,6 +354,7 @@ const mapStateToProps = (state) => {
         isSignedIn: state.auth.isSignedIn,
         nuevoUsuario: state.chatReducer.nuevoUsuario,
         equipoConsulta: state.chatReducer.equipoConsulta,
+        usuarioDetail: state.chatReducer.usuarioDetail,
         MensajeIvily: state.chatReducer.MensajeIvily,
 
 

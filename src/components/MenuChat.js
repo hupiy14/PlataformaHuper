@@ -10,9 +10,6 @@ import { MensajeIvilys, estadochats } from './modules/chatBot/actions';
 import { chatOn, chatOff, } from '../actions';
 
 
-
-
-
 const timeoutLength = 500;
 
 class MenuChat extends React.Component {
@@ -27,7 +24,7 @@ class MenuChat extends React.Component {
             err => this.setState({ errorMessage: err.message })
         );
 
-        this.setState({ inicio: window.screen.width <= 500 ?'chatGestorAni4Cel': 'chatGestorAni4' });
+        this.setState({ inicio: window.screen.width <= 500 ? 'chatGestorAni4Cel' : 'chatGestorAni4' });
     }
 
 
@@ -74,7 +71,7 @@ class MenuChat extends React.Component {
 
     handlePasoR = () => {
         this.timeout = setTimeout(() => {
-          
+
             this.props.chatOn();
         }, timeoutLength)
     }
@@ -83,13 +80,13 @@ class MenuChat extends React.Component {
             this.props.chatOff();
 
             if (this.state.inicio === "chatGestorAni" || this.state.inicio === "chatGestorAniCel")
-                this.setState({ inicio: window.screen.width <= 500 ?'chatGestorAni2Cel': 'chatGestorAni2' })
+                this.setState({ inicio: window.screen.width <= 500 ? 'chatGestorAni2Cel' : 'chatGestorAni2' })
             else
-                this.setState({ inicio: window.screen.width <= 500 ?'chatGestorAniCel': 'chatGestorAni' })
+                this.setState({ inicio: window.screen.width <= 500 ? 'chatGestorAniCel' : 'chatGestorAni' })
 
         } else {
 
-            if( !this.props.usuarioDetail) return;
+            if (!this.props.usuarioDetail) return;
             this.setState({ efecto: null });
             let dateF = new Date();
             if (this.props.usuarioDetail && this.props.usuarioDetail.usuario.fechaPlan)
@@ -107,13 +104,15 @@ class MenuChat extends React.Component {
                 if (hoy.getDate() < new Date().getDate()) { diaS = moment(hoy).add('days', 1); }
                 else if (hoy.getDate() > new Date().getDate()) { diaS = moment(new Date()); }
             }
-            const maxdia =   this.props.usuarioDetail && this.props.usuarioDetail.usuario.diaSemana? this.props.usuarioDetail.usuario.diaSemana : 5;
+            const maxdia = this.props.usuarioDetail && this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana : 5;
 
             if (moment(diaS).day() > maxdia) {
                 diaS = diaS.add('days', new Date(diaS.format('YYYY,MM,DD')).getDay() - (this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana - 1 : 4));
             }
 
-
+            if (moment(moment(diaS).format('YYYY-MM-DD')) < moment())
+                diaS = moment();
+            console.log(diaS.format('YYYY-MM-DD'));
 
             const ConsultaAct = firebase.database().ref().child(`Usuario-Activiades/${this.props.usuarioDetail.idUsuario}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`);
             ConsultaAct.on('value', (snapshot) => {
@@ -152,10 +151,11 @@ class MenuChat extends React.Component {
             if (window.screen.width <= 500) {
                 btChat =
                     <div style={{
-                 
-                        position: 'fixed', left: '82%', width: '8em', bottom: '-8%', transform: 'scale(1.5)', 'z-index': '6'}}>
-                        <button onClick={this.onChat} con style={{ background: this.state.colorC, transform: 'scale(0.5)' , left:' -1.1em',  top: '-1em', position: 'relative' }} className={"massive ui  tiny circular lightbulb outline icon button " + this.state.inicio}>
-                           
+
+                        position: 'fixed', left: '82%', width: '8em', bottom: '-8%', transform: 'scale(1.5)', 'z-index': '6'
+                    }}>
+                        <button onClick={this.onChat} con style={{ background: this.state.colorC, transform: 'scale(0.5)', left: ' -1.1em', top: '-1em', position: 'relative' }} className={"massive ui  tiny circular lightbulb outline icon button " + this.state.inicio}>
+
                             <Image size="medium" style={{ transform: 'scale(1.8)', position: 'relative' }}
                                 src={chat} id='2' />
                         </button>
@@ -209,10 +209,10 @@ class MenuChat extends React.Component {
     render() {
 
         let pausabt = null;
-       
-        if (this.props.tipoPregunta !== 'Diaria' && this.props.tipoPregunta) {
+
+        if (this.props.tipoPregunta !== 'Diaria' && this.props.tipoPregunta && this.props.MensajeIvily && this.props.MensajeIvily.inicio) {
             pausabt = <button onClick={() => { this.pausaProceso() }}
-                style={{ background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 80%)', position: 'fixed', color: this.props.estadochat === 'pausa'?'#593b03':'#f5deb3', left: window.screen.width > 500 ? '97.5%' : '90%', bottom: '8%', 'z-index': '6' }} 
+                style={{ background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 80%)', position: 'fixed', color: this.props.estadochat === 'pausa' ? '#593b03' : '#f5deb3', left: window.screen.width > 500 ? '97.5%' : '90%', bottom: '8%', 'z-index': '6' }}
                 className='ui button circular pause circle outline icon' >
                 <i className=" ui pause circle outline icon" style={{ transform: 'scale(2.4)' }}></i>
             </button>
@@ -224,7 +224,7 @@ class MenuChat extends React.Component {
 
             <div>
                 {pausabt}
-                {this.renderMenu() }
+                {this.renderMenu()}
 
             </div>
 

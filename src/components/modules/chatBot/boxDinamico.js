@@ -27,7 +27,7 @@ let timelength = 700;
 
 class boxDinaminco extends React.Component {
 
-    state = { term: '', flag: false, consultaY: true, formmessage: 'message-input-ch', style: {} };
+    state = { term: '', flag: false, consultaY: null, nPreg: null, formmessage: 'message-input-ch', style: {} };
 
     renderConstruir() {
         let x = 0;
@@ -141,10 +141,16 @@ class boxDinaminco extends React.Component {
 
 
     renderOpcionesDB() {
-        if (!this.props.consultax && this.state.consultaY) {
-            const starCountRef = firebase.database().ref().child(`${this.props.consultaPregunta[this.props.consultaPreguntaControl].opciones}/${this.props.userId}`);
+        if (!this.props.consultax && this.state.nPreg !== this.props.consultaPreguntaControl) {
+            let complemento = this.props.userId;
+            if (this.props.consultaPregunta[this.props.consultaPreguntaControl].filtro)
+                complemento = `${this.props.usuarioDetail.usuario.empresa}/${this.props.usuarioDetail.usuario.equipo}`
+
+            const starCountRef = firebase.database().ref().child(`${this.props.consultaPregunta[this.props.consultaPreguntaControl].opciones}/${complemento}`);
             starCountRef.on('value', (snapshot) => {
                 this.props.consultas(snapshot.val());
+                this.setState({ consultaY: snapshot.val() });
+                this.setState({ nPreg: this.props.consultaPreguntaControl });
             });
         }
 
@@ -154,7 +160,7 @@ class boxDinaminco extends React.Component {
 
     renderOpcionesDB4() {
 
-        if (this.props.consultax && this.state.consultaY) {
+        if (this.props.consultax) {
             const cconsulta = this.props.consultax;
             let consultaOp = [];
             const input = this.props.user.userChats[0].thread[2] ? this.props.user.userChats[0].thread[2].text : '';
@@ -207,32 +213,34 @@ class boxDinaminco extends React.Component {
         const iconO = { name: 'hand point right4 p', style: { 'color': '#e2d117' } };
         if (this.props.equipoConsulta) {
             let x = 0;
-            const cconsulta = this.props.equipoConsulta;
+            const cconsulta = this.props.equipoConsulta.listaPersonas;
             const usuario = this.props.userId;
-            Object.keys(cconsulta).map(function (key2, index) {
-                if (x === 0) {
-                    x++;
-                    let cconsulta2 = cconsulta[key2];
-                    Object.keys(cconsulta2).map(function (key, index) {
+            const consultaW = this.state.consultaY;
+            if (consultaW) {
+                Object.keys(consultaW).map((keyW, index) => {
+
+                    Object.keys(cconsulta).map((key, index) => {
+                        if (keyW !== key)
+                            return;
                         if (usuario === key)
                             return;
-                        if (cconsulta2[key].Rol === '2')
+                        if (cconsulta[key].Rol === '2')
                             return;
-
 
                         tagOptions = [...tagOptions, {
                             key: x,
                             icon: iconO,
-                            value: cconsulta2[key].usuario.split('☼').length > 1 ? cconsulta2[key].usuario.split('☼')[1] : cconsulta2[key].usuario,
-                            text: cconsulta2[key].usuario.split('☼').length > 1 ? cconsulta2[key].usuario.split('☼')[0] : cconsulta2[key].usuario,
+                            value: cconsulta[key].usuario.split('☼').length > 1 ? cconsulta[key].usuario.split('☼')[1] : cconsulta[key].usuario,
+                            text: cconsulta[key].usuario.split('☼').length > 1 ? cconsulta[key].usuario.split('☼')[0] : cconsulta[key].usuario,
 
                         }]
+
                     });
-                }
-            });
+                });
+            }
         }
 
-        else if (this.props.consultax && this.state.consultaY) {
+        else if (this.props.consultax) {
             const cconsulta = this.props.consultax;
             const input = this.props.user.userChats[0].thread[2] ? this.props.user.userChats[0].thread[2].text : '';
             Object.keys(cconsulta).map(function (key, index) {
@@ -261,7 +269,6 @@ class boxDinaminco extends React.Component {
                     }]
                 }
             });
-
         }
 
     }
@@ -270,42 +277,39 @@ class boxDinaminco extends React.Component {
     renderOpcionesDB2() {
 
         if (this.props.equipoConsulta) {
+            console.log(this.props.equipoConsulta);
             let x = 0;
 
-            const cconsulta = this.props.equipoConsulta;
-            let cconsulta2;
+            const cconsulta = this.props.equipoConsulta.listaPersonas;
             const usuario = this.props.userId;
+            const consultaW = this.state.consultaY;
+            if (consultaW) {
+                const opciones2 = Object.keys(consultaW).map((keyW, index) => {
 
-            const opciones2 = Object.keys(cconsulta).map(function (key2, index) {
-                if (x === 0) {
-                    x = x + 1;
-                    const cconsulta2 = cconsulta[key2];
-                    const opciones = Object.keys(cconsulta2).map(function (key, index) {
+                    const opciones = Object.keys(cconsulta).map((key, index) => {
+                        if (keyW !== key)
+                            return;
                         if (usuario === key)
                             return;
 
                         return (
-                            <option value={cconsulta2[key].usuario} key={key} />
+                            <option value={cconsulta[key].usuario} key={key} />
                         );
                     });
                     return opciones;
-                }
+                });
 
-
-            });
-
-
-            return (
-                <datalist id='opciones'>
-                    {opciones2}
-                </datalist>
-            );
-
+                return (
+                    <datalist id='opciones'>
+                        {opciones2}
+                    </datalist>
+                );
+            }
         }
 
 
-        else if (this.props.consultax && this.state.consultaY) {
-            //  console.log(this.props.consultax);
+        else if (this.props.consultax) {
+            console.log(this.props.consultax);
             const cconsulta = this.props.consultax;
 
             const input = this.props.user.userChats[0].thread[2] ? this.props.user.userChats[0].thread[2].text : '';
@@ -334,7 +338,7 @@ class boxDinaminco extends React.Component {
 
             });
             opciones.push(<option value={'Ninguno'} key={100} />)
-            // this.setState({ consultaY: false });
+
             return (
                 <datalist id='opciones'>
                     {opciones}
@@ -346,7 +350,7 @@ class boxDinaminco extends React.Component {
     }
 
     renderOpcionesDB3() {
-        if (this.props.consultax && this.state.consultaY) {
+        if (this.props.consultax) {
 
             const cconsulta = this.props.consultax;
 
@@ -396,8 +400,8 @@ class boxDinaminco extends React.Component {
         else if (this.props.consultaPregunta[this.props.consultaPreguntaControl].tipoPregunta === '5') {
             // console.log('3');
             const messages = document.getElementById('chatInt');
-            
-         
+
+
             return (
 
 
@@ -407,9 +411,9 @@ class boxDinaminco extends React.Component {
 
 
                         style={{
-                            visibility: this.props.consultaPregunta[this.props.consultaPreguntaControl].label ? 'visible' : 'hidden', background: '#ffbb006e', 
-                            
-                            top: !messages? '565px': messages.offsetHeight * 0.87, left: '-10px', 'z-index': 5, 'border-radius': '20px 20px 20px 5px', width: '70%'
+                            visibility: this.props.consultaPregunta[this.props.consultaPreguntaControl].label ? 'visible' : 'hidden', background: '#ffbb006e',
+
+                            top: !messages ? '565px' : messages.offsetHeight * 0.87, left: '-10px', 'z-index': 5, 'border-radius': '20px 20px 20px 5px', width: '70%'
                         }}>
                         {this.props.consultaPregunta[this.props.consultaPreguntaControl].label ? this.props.consultaPregunta[this.props.consultaPreguntaControl].label : null}
                     </div>
@@ -700,6 +704,7 @@ const mapAppStateToProps = (state) => (
         nombreUser: state.chatReducer.nombreUser,
         ValorTexto: state.chatReducer.ValorTexto,
         inputSlack: state.chatReducer.inputSlack,
+        usuarioDetail: state.chatReducer.usuarioDetail,
         user: state.user
 
     });

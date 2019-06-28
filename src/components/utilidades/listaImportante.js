@@ -11,7 +11,7 @@ import unsplash from '../../apis/unsplash';
 var fs = require('fs');
 
 const timeoutLength = 150000;
-const timeoutLength2 = 600;
+const timeoutLength2 = 1000;
 const timeoutLength3 = 60000;
 
 class listImportante extends React.Component {
@@ -20,7 +20,7 @@ class listImportante extends React.Component {
         consultaTareas: {}, titulo: null, selectedFile: null, loaded: 0, WorkFlow: null, files: null, keyF: null,
         prioridadx: [{ prio: 'inmediato', color: 'red' }, { prio: 'urgente', color: 'yellow' }, { prio: 'normal', color: 'olive' }], activiadesObj: null, comentariosObj: null, adjuntosObj: null,
 
-
+        factores: null, UtilFactors: null,
         modalOpen: false, comentario: null, modalOpen2: null,
     };
 
@@ -39,6 +39,9 @@ class listImportante extends React.Component {
         this.onSearchSubmit()
         // console.log(this.example2);
         let variable = {};
+
+
+
         const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`);
         starCountRef.on('value', (snapshot) => {
 
@@ -66,6 +69,11 @@ class listImportante extends React.Component {
             this.props.listaObjetivos(variable);
         });
 
+        const starCountRef33 = firebase.database().ref().child(`Utilidades-Valoraciones`);
+        starCountRef33.on('value', (snapshot) => {
+            this.setState({ UtilFactors: snapshot.val() });
+        });
+
         const starCountRef2 = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
         starCountRef2.on('value', (snapshot) => {
             variable = { ...variable, tareas: snapshot.val() }
@@ -80,6 +88,58 @@ class listImportante extends React.Component {
         this.handleActualizar();
 
     }
+
+
+
+    calculoDeAvance() {
+        const objs = this.props.listaObjetivo.objetivos;
+        let factorEqHup = [];
+        //Encontrar factor
+        this.setState({ ObjsFactors: [] });
+        if (objs)
+            Object.keys(objs).map((key, index) => {
+
+                if (!objs[key] || !objs[key].concepto)
+                    return;
+
+                let facPrioridad = 1;
+                let facDificultad = 1;
+                let facRepeticiones = 1;
+                let facTipo = 1;
+                let facCompartido = objs[key].compartidoEquipo ? objs[key].porcentajeResp * 0.01 : 1;
+                let facCalidad = 1;
+                let facValidacion = 1;
+                let facProductividad = 1;
+                let nTareasFinalizados = 0;
+                let nTareas = 0;
+
+                //Object.keys(this.state.UtilFactors.Calidad).map((key2, index) =>{});
+                Object.keys(this.state.UtilFactors.Dificultad).map((key2, index) => {
+                    if (objs[key].dificultad === this.state.UtilFactors.Dificultad[key2].concepto)
+                        facDificultad = this.state.UtilFactors.Dificultad[key2].valor;
+                });
+                Object.keys(this.state.UtilFactors.Prioridad).map((key2, index) => {
+                    if (objs[key].prioridad === key2)
+                        facPrioridad = this.state.UtilFactors.Prioridad[key2];
+                });
+                Object.keys(this.state.UtilFactors.Tipo).map((key2, index) => {
+                    if (objs[key].tipo === this.state.UtilFactors.Tipo[key2].concepto)
+                        facTipo = this.state.UtilFactors.Tipo[key2].valor;
+                });
+                Object.keys(this.state.UtilFactors.ValidacionGestor).map((key2, index) => {
+                    if (objs[key].estado === this.state.UtilFactors.ValidacionGestor[key2].concepto)
+                        facValidacion = this.state.UtilFactors.ValidacionGestor[key2].valor;
+                });
+                //algoritmo de medicion del trabajo
+                const puntos = ((1 + facPrioridad + facTipo) * facRepeticiones * facDificultad) * facCompartido * facCalidad * facValidacion * facProductividad;
+                factorEqHup.push({ key, puntos, usuario: objs[key].idUsuario })
+
+            });
+
+        this.setState({ factores: factorEqHup })
+    }
+
+
 
     guardarDetalle() {
 
@@ -136,6 +196,7 @@ class listImportante extends React.Component {
     // habilita el tercer paso
     handleActualizar = () => {
         this.timeout = setTimeout(() => {
+            this.calculoDeAvance();
             this.setState({ ver: false });
         }, timeoutLength2)
     }
@@ -328,9 +389,27 @@ class listImportante extends React.Component {
                 let tareasCompleta = 0;
                 let resultado = 0;
 
-                let backgroundTar = ' linear-gradient(to right, rgb(255, 255, 255) 85%, rgb(253, 216, 183) 120%)';
+                let backgroundTar = ' linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 144, 4) 100%)';
                 //the.setState( { listAll : this.state.listAll + 1 });
                 if (cconsulta[key2].estado === 'activo' || cconsulta[key2].estado === 'validar') {
+
+
+                    //factor de progreso por horas 
+                    let factorSemana = 0;
+                    let factorObjetivo = 0;
+                    if (this.state.factores !== null) {
+                        Object.keys(this.state.factores).map((keyfac, index) => {
+                            if (cconsulta[key2].idUsuario === this.state.factores[keyfac].usuario)
+                                factorSemana = factorSemana + this.state.factores[keyfac].puntos;
+
+                            if (key2 === this.state.factores[keyfac].key)
+                                factorObjetivo = this.state.factores[keyfac].puntos;
+
+                        });
+
+                    }
+
+
                     if (this.props.listaObjetivo.tareas) {
                         Object.keys(this.props.listaObjetivo.tareas).map((key3, index) => {
 
@@ -342,9 +421,25 @@ class listImportante extends React.Component {
                                     }
                                 }
                             });
-                            // the.increment(factorObjetivo, numeroTareasTs);
-                            factor = { factor: (100 / factorObjetivo), numero: tareasCompleta };
-                            resultado = Math.round(factor.factor * tareasCompleta);
+
+                            const horasAtrabajar = 40;
+                            const horasObj = horasAtrabajar * (factorObjetivo / factorSemana);
+                            const atrabajo = Math.round(horasObj) / 3;
+                            const atrabajo2 = ((Math.round(horasObj) * 0.35) / 2) + 1;
+                            let resul = 15;
+
+
+                            if (atrabajo < tareasCompleta) {
+                                const ob = (tareasCompleta - atrabajo) / atrabajo2 > 1 ? 1 : (tareasCompleta - atrabajo) / atrabajo2;
+                                resul = 65 + Math.round(ob * 35);
+                            }
+
+                            else
+                                resul = Math.round((tareasCompleta / atrabajo) * 65);
+
+                            factor = { factor: factorObjetivo, numero: tareasCompleta };
+                            resultado = cconsulta[key2].avance ? resultado : resul;
+
                             // console.log(resultado);
                             if (resultado === 100 && !cconsulta[key2].estadoTIM && this.props.estadochat !== 'TIM objetivo') {
                                 this.props.estadochats('TIM objetivo');
@@ -365,13 +460,13 @@ class listImportante extends React.Component {
                     }
                     //color de la seleccion      
                     let style = {
-                        borderRadius: '15px',
+                        borderRadius: '250px 300px 300px 900px',
                         height: '160px',
                         position: 'relative',
                         left: '30px',
                         top: '-170px',
                         width: '95%',
-                        'box-shadow': '#fbbd0894 0.5px 0.5px 5px 0.5px',
+                        'box-shadow': this.props.selObjetivo === key2 ? 'rgba(23, 22, 20, 0.58) 1.5px 1.5px 5px 1.5px' : '#fbbd0894 0.5px 0.5px 5px 0.5px',
                         background: this.props.selObjetivo === key2 ? 'linear-gradient(to right, rgb(255, 255, 255) 85%, rgb(240, 166, 253) 110%)' : backgroundTar,
                     };
 
@@ -383,14 +478,14 @@ class listImportante extends React.Component {
 
                         if (fec < new Date()) {
                             style = {
-                                background: this.props.selObjetivo === key2 ? 'linear-gradient(to right, rgb(255, 255, 255) 85%, rgb(240, 166, 253) 110%)' : 'linear-gradient(to right, rgb(255, 255, 255) 70%, rgb(243, 227, 38) 110%)',
-                                borderRadius: '15px',
+                                background: this.props.selObjetivo === key2 ? 'linear-gradient(to right, rgb(255, 255, 255) 85%, rgb(240, 166, 253) 110%)' : 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 80, 0) 100%)',
+                                borderRadius: '250px 300px 300px 900px',
                                 height: '160px',
                                 position: 'relative',
                                 left: '30px',
                                 top: '-170px',
                                 width: '95%',
-                                'box-shadow': '#fbbd0894 0.5px 0.5px 5px 0.5px',
+                                'box-shadow': this.props.selObjetivo === key2 ? 'rgba(23, 22, 20, 0.58) 1.5px 1.5px 5px 1.5px' : '#fbbd0894 0.5px 0.5px 5px 0.5px',
 
                             };
                         }
@@ -462,7 +557,7 @@ class listImportante extends React.Component {
 
 
 
-                            flujoActivo = <Label as='a' style={{ background: colorFase, 'z-index': '100', position: 'relative', 'top': '-320px', 'border': '0.5px solid', 'left': '28%', border: '2px #f39010' }} ribbon ="right">
+                            flujoActivo = <Label as='a' style={{ background: colorFase, 'z-index': '100', position: 'relative', 'top': '-320px', 'border': '0.5px solid', 'left': '28%', border: '2px #f39010' }} ribbon="right">
                                 {labelFase ? labelFase : '<"Por definir">'}
                             </Label>
 
@@ -470,14 +565,14 @@ class listImportante extends React.Component {
 
                         }
 
-                     
+
                     }
-                
+                    const tAvanceTitulo = Math.round((cconsulta[key2].concepto.length + 9) / 40);
 
                     if (cconsulta[key2].compartidoEquipo) {
                         iconoObjetivo = "users";
-                        const topLabel = 10 - ((Math.round(cconsulta[key2].detalle ? cconsulta[key2].detalle.length : 0 + 18) / 32) * 9);
-                        const topProgress = -10 - ((Math.round(cconsulta[key2].detalle ? cconsulta[key2].detalle.length : 0 + 18) / 32) * 10);
+                        const topLabel = 10 - ((Math.round((cconsulta[key2].detalle ? cconsulta[key2].detalle.length : 0 + 18) / 32) + tAvanceTitulo) * 9);
+                        const topProgress = -10 - ((Math.round((cconsulta[key2].detalle ? cconsulta[key2].detalle.length : 0 + 18) / 32) + tAvanceTitulo) * 10);
                         avancePadre =
 
                             <div style={{ left: '28%', position: 'relative' }}>
@@ -488,8 +583,13 @@ class listImportante extends React.Component {
 
                     }
 
-                    const topAvance = 92 - ((Math.round(cconsulta[key2].detalle ? cconsulta[key2].detalle.length : 0 + 9) / 40) * 15) ;
 
+                    const topAvance = 92 - ((Math.round((cconsulta[key2].detalle ? cconsulta[key2].detalle.length : 0 + 9) / 40) + tAvanceTitulo) * 15);
+
+                    if (!cconsulta[key2].avanceObjetivo || resultado !== cconsulta[key2].avanceObjetivo)
+                        firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${key2}`).set({
+                            ...cconsulta[key2], avanceObjetivo: resultado ? resultado : 0
+                        });
 
                     return (
 
@@ -499,7 +599,7 @@ class listImportante extends React.Component {
                                 <img src={this.state.images[y - 1] ? this.state.images[y - 1].urls.regular : ''} style={{
                                     height: '120px', with: '100px', top: '50px',
                                     'border-radius': '55px 15px 55px 8px',
-                                    'position': 'relative', 'box-shadow': 'rgba(251, 189, 8, 0.51) 2px 2px 5px 1px', 'z-index': '100', 
+                                    'position': 'relative', 'box-shadow': 'rgba(251, 189, 8, 0.51) 2px 2px 5px 1px', 'z-index': '100',
 
                                 }} />
                             </div>
@@ -582,14 +682,14 @@ class listImportante extends React.Component {
 
 
                             <i className={`large ${iconoObjetivo} aligned icon`} style={{
-                                color: '#fbbd087d', position: 'relative', top: '-135px', transform: 'scale(0.8)',
-                                left: '6%', 'z-index': '1'
+                                color: '#ffcd32', position: 'relative', top: '-15px', transform: 'scale(0.8)',
+                                left: '1%', 'z-index': '100'
                             }} ></i>
                             <div className=" content"   ></div>
 
-                           
+
                             <Segment style={style} onClick={() => { this.props.selObjetivo === key2 ? this.props.selObjetivos(null) : this.props.selObjetivos(key2); }} >
-                                <div className="header" style={{ left: '28%', width: '40%',  'font-size': 'unset',position: 'relative' }}  >{cconsulta[key2].concepto}</div>
+                                <div className="header" style={{ left: '28%', width: '40%', 'font-size': 'unset', position: 'relative' }}  >{cconsulta[key2].concepto}</div>
                                 <div className="description" id="desOb" style={{
                                     width: '60%',
                                     top: '10px',
@@ -791,13 +891,13 @@ class listImportante extends React.Component {
 
 
                                 </div>
-                                <div style={{ position: 'relative', top:  topAvance, left: '28%' }}>
+                                <div style={{ position: 'relative', top: topAvance, left: '28%' }}>
                                     <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ width: '62%' }} />
                                 </div>
 
 
                                 {avancePadre}
-                            
+
                             </Segment>
                             {flujoActivo}
 

@@ -27,10 +27,12 @@ class CrearGraficaGestor extends React.Component {
         datos.push({ label: "Trabajo Realizado", data: this.props.datosAvance,  });
         datos.push({ label: "Planificación de la semana", data: datosPlanificados, hidden: true });
 
+    
         return (
 
             <CrearGrafica labelsX={labelsDias}
                 datos={datos}
+                equipoGrafica={this.props.equipoGra}
                 titleGrafica={"Trabajo (Actividades) vs Dias"}
                 numeroGrafica={'2'}
                 maxLen={'140'}

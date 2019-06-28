@@ -6,15 +6,15 @@
 
 
 .swiper-container {
-  width: 600px;
-  height: 600px;
+  width: 280px;
+  height: 410px;
   padding: 50px;
 }
 .swiper-slide {
   background-position: center;
   background-size: cover;
-  width: 600px;
-  height: 600px;
+  width: 280px;
+  height: 410px;
 }
 
 

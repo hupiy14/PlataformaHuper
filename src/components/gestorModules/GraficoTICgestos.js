@@ -57,32 +57,28 @@ class GraficaGestorTIC extends React.Component {
                 style = 1;
         }
 
-        let largo = 60;
-        let ancho = 100;
-        if (window.screen.width < 500) {
-
-            largo = 250;
-            ancho = 160;
-        }
+     
 
 
-
+        let box = 'rgb(189, 93, 26)  6px 11px 12px 0px';
+        let t = <h3 style={{ left: '40%', position: 'relative', color: '#d05600' }}>{this.props.TituloGrafica}</h3>
+        if (this.props.equipoGra) {
+             box = '#ab778e -13px 17px 12px 0px';
+             t = <h2 style={{ left: '35%', position: 'relative', color: '#d05600' }}>{this.props.TituloGrafica}</h2>
+         
+        } 
 
 
         return (
-            <Segment.Group>
-                <Responsive as={Segment}>
-
-                    <React.Fragment>
-                        <h3 className="center">{this.props.TituloGrafica}</h3>
-                        <div >
-                            <Radar data={data} width={ancho}
-                                height={largo} options={options} />
-                        </div>
-                    </React.Fragment>
-
-                </Responsive>
-            </Segment.Group>
+           <div >
+              <h3 className="center">{t}</h3>
+                     <div style={{ 'box-shadow': box }}>
+                            <Radar data={data} 
+                                options={options} />
+                    </div>
+              </div>
+                      
+                 
 
         )
     };

@@ -26,10 +26,11 @@ class CrearGraficaHistorico extends React.Component {
 
             <CrearGrafica labelsX={this.props.labelsMonths}
                 datos={datos}
-                titleGrafica={"Trabajo vs Meses"}
+                equipoGrafica={this.props.equipoGra}
+                titleGrafica={"Trabajo (WU) vs Meses"}
                 numeroGrafica={'2'}
                 maxLen={'140'}
-                TituloGrafica={"Historico"}
+                TituloGrafica={"Historico de trabajo "}
 
             />
         );

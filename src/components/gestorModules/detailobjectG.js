@@ -24,6 +24,7 @@ class ListaObjetivosEquipo extends React.Component {
 
 
     componentDidUpdate() {
+
         if (!this.state.factores && this.props.equipoConsulta.factorProgreso) {
             this.setState({ factores: this.props.equipoConsulta.factorProgreso });
         }
@@ -345,7 +346,6 @@ class ListaObjetivosEquipo extends React.Component {
     renderAdjuntos(objetivo, equipo) {
         let imprimir = [];
         if (!equipo) {
-            console.log('tres');
             const carpeta = objetivo.carpeta;
             window.gapi.client.drive.files.list({
                 // 'corpus': 'domain',
@@ -709,6 +709,9 @@ class ListaObjetivosEquipo extends React.Component {
         }, timeoutLength)
     }
 
+
+   
+
     handleOpen = () => {
         this.setState({ modalOpen: true });
     }
@@ -807,6 +810,7 @@ class ListaObjetivosEquipo extends React.Component {
                     //factor de progreso por horas 
                     let factorSemana = 0;
                     let factorObjetivo = 0;
+                  
                     if (this.state.factores !== null) {
                         Object.keys(this.state.factores).map((keyfac, index) => {
                             if (cconsulta[key2].idUsuario === this.state.factores[keyfac].usuario)
@@ -865,7 +869,7 @@ class ListaObjetivosEquipo extends React.Component {
 
                     let style = {
                         borderRadius: '35px',
-                        background: 'linear-gradient(to top, rgb(255, 255, 255) 80%, rgb(255, 157, 29) 105%)',
+                        background: 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 144, 4) 80%)',
                         height: '40em',
                         top: '12em',
 
@@ -879,7 +883,7 @@ class ListaObjetivosEquipo extends React.Component {
                         if (fec < new Date()) {
                             style = {
                                 borderRadius: '35px',
-                                background: 'linear-gradient(to top, rgb(255, 255, 255) 80%, #e85e4e 105%)',
+                                background: 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 80, 0) 80%)',
                                 height: '40em',
                                 top: '12em',
 
@@ -953,7 +957,7 @@ class ListaObjetivosEquipo extends React.Component {
                                         'box-shadow': '#fbbd0894 0.8px 0.8px 5px 1.5px',
 
                                     }} src={this.props.equipoConsulta.Isell} />
-                                    <h3 style={{ top: '-170px', left: '160px', font: 'bolder', position: 'relative', width: '70%' }}>{cconsulta[key2].concepto}</h3>
+                                    <h3 style={{ top: '-170px', left: '140px', font: 'bolder', position: 'relative', width: '55%' }}>{cconsulta[key2].concepto}</h3>
                                     <h3 style={{ top: '-180px', position: 'relative' }}>Avance del objetivo:</h3>
                                     <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ top: '-190px' }} />
 
@@ -1000,7 +1004,7 @@ class ListaObjetivosEquipo extends React.Component {
 
 
 
-                                    <Form error={this.state.error} style={{ height: '31em', top: '-220px', overflow: 'auto' }}>
+                                    <Form error={this.state.error} style={{ height: '28em', top: '-220px', overflow: 'auto' }}>
                                         <div style={{ height: '55em' }}>
                                             <h5 style={{ top: '6px', position: 'relative' }}>Tipo de objetivo:  <b style={{ color: '#d06327' }}>{iconoObjetivo}</b></h5>
                                             <h5 style={{ top: '-12px', position: 'relative' }}>Fase del objetivo:   <b style={{ color: '#d06327' }}>{fase}</b></h5>

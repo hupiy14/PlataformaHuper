@@ -26,7 +26,7 @@ let Tic_T = require('../tic_trabajo').default;
 const { SlackOAuthClient } = require('messaging-api-slack')
 
 
-let timeoutLength = 2500;
+let timeoutLength = 8000;
 let timeoutLength3 = 10500;
 let timeoutLength4 = 1000;
 let timeoutLength2 = 300;
@@ -71,7 +71,7 @@ class Home extends React.Component {
       this.setState({ mensajeEnviado: false });
       if (Array.isArray(valorInput))
         this.props.submitMessage(
-           _.replace(valorInput, /@nombre/g, this.props.nombreUser),
+          _.replace(valorInput, /@nombre/g, this.props.nombreUser),
           chatID,
           userID
         );
@@ -285,7 +285,7 @@ class Home extends React.Component {
       <div>
         <Image src={image} circular style={{ top: '20px', position: 'relative', transform: 'scale(0.18)' }}>
         </Image>
-        <div style={{ height: "3em", width: "20em", top: '-150px', left: this.props.estadochat === "dimmer Plan"? '120px' :  '220px' , position: 'relative' }}>
+        <div style={{ height: "3em", width: "20em", top: '-150px', left: this.props.estadochat === "dimmer Plan" ? '120px' : '220px', position: 'relative' }}>
 
           <h2 >
             {nombre}
@@ -494,6 +494,8 @@ class Home extends React.Component {
     Object.keys(arrayT).map((key, index) => {
       if (arrayT[key].dateStart === moment(new Date()).format('YYYY-MM-DD')) {
         const h = parseInt(arrayT[key].tiempoEstimado.substring(0, 2));
+        console.log(h)
+        fechaTrabajo = arrayT[key].horaPlanificada;
         arrayT[key].horaPlanificada = fechaTrabajo;
         arrayT[key].horaEstimada = moment(fechaTrabajo, 'HH:mm').add('hours', h).format('HH:mm');
         fechaTrabajo = arrayT[key].horaEstimada;
@@ -605,17 +607,15 @@ class Home extends React.Component {
                 Object.keys(objs).map((key3, index) => {
                   if (key3 === key2 && objs[key3].compartidoEquipo) {
 
-                    let avanceObjGlobal = Math.round(parseInt(objs[key3].porcentajeResp) * ((100 / Object.keys(cconsulta[key2]).length) * 0.01));
+                    let avanceObjGlobal = Math.round(parseInt(objs[key3].porcentajeResp) * objs[key3].avanceObjetivo);
                     let objetivoPadre = null;
                     //busca el objetivo padre
                     const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`);
                     starCountRef.on('value', (snapshot) => {
                       objetivoPadre = snapshot.val();
                       let devolver = objetivoPadre.avance;
-                      if (objs[key3].avancePadre) {
-                        devolver = devolver - ((objs[key3].avancePadre) * (objs[key3].nTareas));
-                      }
-
+                      let devAnt = objs[key3].avancePadre;
+                      devolver = devolver - devAnt;
                       objetivoPadre.avance = devolver + avanceObjGlobal;
 
                     })
@@ -647,17 +647,23 @@ class Home extends React.Component {
 
         this.props.estadochats('seguimienT');// Seguimiento por terminar la Actividad
       }
-      else if (valor === 'Que esta haciendo mi huper') {
+      else if (valor === 'Consultar el trabajo de mi colaborador') {
 
         valorNPregunta = 0;
         this.props.tipoPreguntas('Consultar Equipo Gestor');
         vacio = ' ';
         const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_NqMTxrwo-Ap7UTR');
         starCountRef.on('value', (snapshot) => {
+
+
           this.props.consultaChats(snapshot.val());
           consultaBD = snapshot.val();
-          const mensaje = consultaBD[1].concepto;
-          this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
+          console.log(consultaBD);
+          if (!this.props.primeraV) {
+            const mensaje = consultaBD[1].concepto;
+            this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
+            this.props.primeraVs(true);
+          }
         });
 
 
@@ -672,8 +678,11 @@ class Home extends React.Component {
         starCountRef.on('value', (snapshot) => {
           this.props.consultaChats(snapshot.val());
           consultaBD = snapshot.val();
-          const mensaje = consultaBD[1].concepto;
-          this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
+          if (!this.props.primeraV) {
+            const mensaje = consultaBD[1].concepto;
+            this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
+            this.props.primeraVs(true);
+          }
         });
 
       }
@@ -687,8 +696,11 @@ class Home extends React.Component {
         starCountRef.on('value', (snapshot) => {
           this.props.consultaChats(snapshot.val());
           consultaBD = snapshot.val();
-          const mensaje = consultaBD[1].concepto;
-          this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
+          if (!this.props.primeraV) {
+            const mensaje = consultaBD[1].concepto;
+            this.handleOpen(mensaje, activeChat.chatID, this.props.idChatUser);
+            this.props.primeraVs(true);
+          }
         });
 
       }
@@ -808,6 +820,8 @@ class Home extends React.Component {
         const diamaximo = this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana : 5;
         let diaS = moment(hoy).add('days', hoy.getDay() > diamaximo ? hoy.getDay() - (diamaximo - 1) : !this.props.MensajeIvily.inicio ? 0 : this.props.MensajeIvily.nActIVi < 6 ? 0 : 1);
 
+        if (moment(moment(diaS).format('YYYY-MM-DD')) < moment())
+          diaS = moment();
 
         firebase.database().ref(`Usuario-Activiades/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
           horaInicio: hoy.getTime(),
@@ -838,12 +852,18 @@ class Home extends React.Component {
         }
 
         //planificacion dia siguiente
+        let cantidadActividades = this.props.MensajeIvily.nActIVi ? + 1 + this.props.MensajeIvily.nActIVi : 1;
         if (this.props.estadochat === 'Despedida') {
+
+
           if (moment(diaS).day() > diamaximo) {
             diaS = diaS.add('days', new Date(diaS.format('YYYY,MM,DD')).getDay() - (this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana - 1 : 4));
           }
+          if (moment(moment(diaS).format('YYYY-MM-DD')) < moment())
+            diaS = moment();
+
           firebase.database().ref(`Usuario-Activiades/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
-            cantidad: this.props.MensajeIvily.nActIVi ? + 1 + this.props.MensajeIvily.nActIVi : 1
+            cantidad: cantidadActividades
           });
 
           if (this.props.MensajeIvily.nActIVi + 1 > 5)
@@ -917,13 +937,19 @@ class Home extends React.Component {
 
 
         const diat = new Date();
+        let inicioTarea = cantidadActividades === 1 ? moment().format('HH:mm') : this.state.ultimaTarea.horaEstimada;
+        if (this.props.estadochat === 'Despedida')
+          inicioTarea = cantidadActividades === 1 ? moment('8:00', 'HH:mm').format('HH:mm') : this.state.ultimaTarea.horaEstimada;
+
+
         if (!this.state.ultimaTarea) {
           firebase.database().ref(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`).set({
             tarea: newPostKey3,
-            horaPlanificada: moment().format('HH:mm'),
-            horaEstimada: moment().add('hours', hora).format('HH:mm'),
+            horaPlanificada: inicioTarea,
+            horaEstimada: moment(inicioTarea, 'HH:mm').add('hours', hora).format('HH:mm'),
           });
         }
+
         firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${newPostKey2}/${newPostKey3}`).set({
           concepto: chatTrazo[2].text,
           estado: 'activo',
@@ -931,15 +957,15 @@ class Home extends React.Component {
           prioridad: postData.prioridad,
           tiempoEstimado: chatTrazo[6].text,
           dificultad: flagOb === true ? '3' : Number.isInteger(parseInt(this.props.valorInput.value)) ? parseInt(this.props.valorInput.value) : '3',
-          horaPlanificada: this.state.ultimaTarea ? this.state.ultimaTarea.horaEstimada : moment('09:00', 'HH:mm').format('HH:mm'),
-          horaEstimada: this.state.ultimaTarea ? moment(this.state.ultimaTarea.horaEstimada, 'HH:mm').add('hours', hora).format('HH:mm') : moment().add('hours', hora).format('HH:mm'),
+          horaPlanificada: inicioTarea,
+          horaEstimada: moment(inicioTarea, 'HH:mm').add('hours', hora).format('HH:mm')
         });
 
         firebase.database().ref(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`).set({
           tarea: newPostKey3,
           dateStart: moment().format('YYYY-MM-DD'),
-          horaPlanificada: this.state.ultimaTarea ? this.state.ultimaTarea.horaEstimada : moment().format('HH:mm'),
-          horaEstimada: this.state.ultimaTarea ? moment(this.state.ultimaTarea.horaEstimada, 'HH:mm').add('hours', hora).format('HH:mm') : moment().add('hours', hora).format('HH:mm'),
+          horaPlanificada: inicioTarea,
+          horaEstimada: moment(inicioTarea, 'HH:mm').add('hours', hora).format('HH:mm'),
         });
 
 
@@ -1055,13 +1081,15 @@ class Home extends React.Component {
           if (moment(diaS).day() > maxdia) {
             diaS = diaS.add('days', new Date(diaS.format('YYYY,MM,DD')).getDay() - (this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana - 1 : 4));
           }
+          if (moment(moment(diaS).format('YYYY-MM-DD')) < moment())
+            diaS = moment();
 
           firebase.database().ref(`Usuario-Inicio/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
             ...this.props.MensajeIvily,
             horaActivacion: tiempo,
             estado: 'activo'
           });
-         
+
           this.props.estadochats('activo');
         }
 
@@ -1157,6 +1185,8 @@ class Home extends React.Component {
         if (moment(diaS).day() > diamaximo) {
           diaS = diaS.add('days', new Date(diaS.format('YYYY,MM,DD')).getDay() - (this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana - 1 : 4));
         }
+        if (moment(moment(diaS).format('YYYY-MM-DD')) < moment())
+          diaS = moment();
 
         const usuario = this.props.userId;
         const starCountRef = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
@@ -1210,7 +1240,8 @@ class Home extends React.Component {
         if (moment(diaS).day() > maxdia) {
           diaS = diaS.add('days', new Date(diaS.format('YYYY,MM,DD')).getDay() - (this.props.usuarioDetail.usuario.diaSemana ? this.props.usuarioDetail.usuario.diaSemana - 1 : 4));
         }
-
+        if (moment(moment(diaS).format('YYYY-MM-DD')) < moment())
+          diaS = moment();
 
         if (!this.props.MensajeIvily.inicio) {
           firebase.database().ref(`Usuario-Inicio/${this.props.userId}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`).set({
@@ -1249,17 +1280,15 @@ class Home extends React.Component {
                 Object.keys(objs).map((key3, index) => {
                   if (key3 === key2 && objs[key3].compartidoEquipo) {
 
-                    let avanceObjGlobal = Math.round(parseInt(objs[key3].porcentajeResp) * ((100 / Object.keys(cconsulta[key2]).length) * 0.01));
+                    let avanceObjGlobal = Math.round(parseInt(objs[key3].porcentajeResp) * objs[key3].avanceObjetivo);
                     let objetivoPadre = null;
                     //busca el objetivo padre
                     const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`);
                     starCountRef.on('value', (snapshot) => {
                       objetivoPadre = snapshot.val();
                       let devolver = objetivoPadre.avance;
-                      if (objs[key3].avancePadre) {
-                        devolver = devolver - ((objs[key3].avancePadre) * (objs[key3].nTareas));
-                      }
-
+                      let devAnt = objs[key3].avancePadre;
+                      devolver = devolver - devAnt;
                       objetivoPadre.avance = devolver + avanceObjGlobal;
 
                     })
@@ -1295,8 +1324,8 @@ class Home extends React.Component {
       else if (tipPrgutna === 'Crear Objetivo Gestor') {
 
         let x = 0;
-        const equipo = this.props.equipoConsulta;
-        const usuario = chatTrazo[10].text;
+        const equipo = this.props.equipoConsulta.listaPersonas;
+        const usuario = chatTrazo[10].text.split(',');
         let usuarioGT;
         let keyUsuarioGT;
         let personaEquipo = 0;
@@ -1304,24 +1333,22 @@ class Home extends React.Component {
 
         //Crea objetivo centralizado
 
+        console.log(equipo);
+        console.log(usuario);
 
         this.setState({ personasInv: [] });
         Object.keys(usuario).map((key3, index) => {
-          x = 0;
+          console.log(usuario[key3])
           Object.keys(equipo).map((key2, index) => {
-            if (x === 0) {
-              x = x + 1;
-              const cconsulta2 = equipo[key2];
-              Object.keys(cconsulta2).map((key, index) => {
-                if (usuario[key3] === cconsulta2[key].usuario) {
-                  personaEquipo++;
-                  usuarioGT = cconsulta2[key];
-                  keyUsuarioGT = key;
-                  //              console.log(keyUsuarioGT);
-                  this.GuardarObjetivoGestor(usuarioGT, keyUsuarioGT, chatTrazo, personaEquipo, usuario.length, newPostKey, usuario[key3]);
-                }
-              });
+            if (usuario[key3] === equipo[key2].usuario) {
+              personaEquipo++;
+              usuarioGT = equipo[key2];
+              keyUsuarioGT = key2;
+              console.log(keyUsuarioGT);
+              this.GuardarObjetivoGestor(usuarioGT, keyUsuarioGT, chatTrazo, personaEquipo, usuario.length, newPostKey, usuario[key3]);
             }
+
+
           });
         });
 
@@ -1351,22 +1378,13 @@ class Home extends React.Component {
       else if (tipPrgutna === 'Crear Feedback Gestor') {
 
         const chatTrazo = this.props.user.userChats[0].thread;
-        let x = 0;
-        const cconsulta = this.props.equipoConsulta;
-        let cconsulta2;
+        const cconsulta = this.props.equipoConsulta.listaPersonas;
         const usuario = valor;
         let usuarioGT;
-        let keyUsuarioGT;
-        const opciones2 = Object.keys(cconsulta).map(function (key2, index) {
-          if (x === 0) {
-            x = x + 1;
-            const cconsulta2 = cconsulta[key2];
-            const opciones = Object.keys(cconsulta2).map(function (key, index) {
-              if (usuario === cconsulta2[key].usuario) {
-                usuarioGT = cconsulta2[key];
-                keyUsuarioGT = key;
-              }
-            });
+        Object.keys(cconsulta).map(function (key, index) {
+          if (usuario === cconsulta[key].usuario) {
+            usuarioGT = cconsulta[key];
+
           }
         });
         this.renderEnvioSlackGestor(chatTrazo, usuarioGT.canalSlack);
@@ -1380,26 +1398,18 @@ class Home extends React.Component {
         const activeChat = this.props.user.activeChat;
         const userID = this.props.user.userID;
         let x = 0;
-        const cconsulta = this.props.equipoConsulta;
-        let cconsulta2;
+        const cconsulta = this.props.equipoConsulta.listaPersonas;
         const usuario = valor;
         let usuarioGT;
         let keyUsuarioGT;
-        const opciones2 = Object.keys(cconsulta).map(function (key2, index) {
-          if (x === 0) {
-            x = x + 1;
-            const cconsulta2 = cconsulta[key2];
-            const opciones = Object.keys(cconsulta2).map(function (key, index) {
-              if (usuario === cconsulta2[key].usuario) {
-                usuarioGT = cconsulta2[key];
-                keyUsuarioGT = key;
-              }
-
-            });
+        const opciones2 = Object.keys(cconsulta).map((key, index) => {
+          if (usuario === cconsulta[key].usuario) {
+            usuarioGT = cconsulta[key];
+            keyUsuarioGT = key;
           }
         });
 
-
+        console.log(keyUsuarioGT);
         const fecha = new Date();
 
         const starCountRef = firebase.database().ref().child(`Usuario-Historico/${keyUsuarioGT}/${fecha.getFullYear()}/${fecha.getMonth()}/${fecha.getDate()}`);
@@ -1613,7 +1623,7 @@ class Home extends React.Component {
     );
   }
 
-  
+
 
   render() {
     const {
@@ -1683,9 +1693,8 @@ class Home extends React.Component {
     }
 
     let actLabel = null;
-    let pausabt = null;
 
-    
+
 
     return (
       <div>
@@ -1712,7 +1721,7 @@ class Home extends React.Component {
               ))}
           </ul>
         </div>
-       
+
         <div className="active-chat-ch" key="12345" id="chatHup" >
 
 
@@ -1725,7 +1734,7 @@ class Home extends React.Component {
 
 
               <div className="thread-thumbnail-ch  background-color: black;">
-                {message.from === '6' ? null :this.renderUsuario(contacts, message)}
+                {message.from === '6' ? null : this.renderUsuario(contacts, message)}
               </div>
               <li
 

@@ -7,6 +7,7 @@ import { signOut, usuarioDetails } from '../../actions';
 import history from '../../history';
 import firebase from 'firebase';
 import axios from 'axios';
+import moment from 'moment';
 import { Link } from 'react-router-dom';
 const timeoutLength = 3000;
 
@@ -257,7 +258,7 @@ class FomrularioGlobal extends React.Component {
 
         firebase.database().ref(`Codigo-Acceso/${this.props.detailUsNew.codigo}`).set({
             ...cod,
-            fechaUso: new Date().toString(),
+            fechaUso: moment().format('YYYY-MM-DD'),
 
         })
 

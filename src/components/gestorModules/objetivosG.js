@@ -6,7 +6,7 @@ import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoCon
 import unsplash from '../../apis/unsplash';
 import MaskedInput from 'react-text-mask';
 
-const timeoutLength = 2000;
+const timeoutLength = 1000;
 
 class ListaObjetivosEquipo extends React.Component {
 
@@ -353,7 +353,7 @@ class ListaObjetivosEquipo extends React.Component {
 
                     let style = {
                         borderRadius: '10px',
-                        background: this.props.equipoConsulta.sell === key2 ? 'linear-gradient(to top, rgb(255, 255, 255) 35%, rgb(196, 24, 214) 120%)' : 'linear-gradient(to top, rgb(255, 255, 255) 40%, rgb(253, 216, 183) 120%)',
+                        background: this.props.equipoConsulta.sell === key2 ? 'linear-gradient(to top, rgb(255, 255, 255) 35%, rgb(196, 24, 214) 120%)' : 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 144, 4) 80%)',
                         left: '25px',
                         height: '6em',
                         width: '234px',
@@ -368,7 +368,7 @@ class ListaObjetivosEquipo extends React.Component {
                                 borderRadius: 0.5,
                                 background: '#f9e63340',
                                 borderRadius: '10px',
-                                background: this.props.equipoConsulta.sell === key2 ? 'linear-gradient(to top, rgb(255, 255, 255) 35%, rgb(196, 24, 214) 120%)' : 'linear-gradient(to top, rgb(255, 255, 255) 80%, rgb(232, 94, 78) 105%)',
+                                background: this.props.equipoConsulta.sell === key2 ? 'linear-gradient(to top, rgb(255, 255, 255) 35%, rgb(196, 24, 214) 120%)' : 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 80, 0) 80%)',
                                 left: '25px',
                                 height: '6em',
                                 top: '25px',

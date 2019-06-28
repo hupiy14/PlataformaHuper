@@ -2,7 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { createStream } from '../../actions';//from '   ../actions';
 import ListFormacion from './listaFormacionesEquipo';
-import '../styles/ingresoHupity.css';
 import randomScalingFactor from '../../lib/randomScalingFactor'
 import ListaObjetivosE from '../../components/gestorModules/listaObjetivosEquipo';
 import ListaPersonasEquipo from '../utilidades/listaPersonasEquipo';
@@ -30,6 +29,10 @@ import GraficaG4 from '../gestorModules/CrearGraficaProductividad';
 import firebase from 'firebase';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, verEquipos } from '../modules/chatBot/actions';
 import moment from 'moment';
+
+import '../modules/chatBot/chatHupApp.css';
+import Swiper from 'swiper';
+
 
 const timeoutLength = 1000;
 const timeoutLength2 = 300;
@@ -62,6 +65,20 @@ class DashBoard extends React.Component {
         grafica: null, numeroO: 0, UtilFactors: null, selEq: null,
         semanasP: [], facSemana: null, nivelEquipo: null, productividadobj: [],
         valorSlide: 0, actDif: [], calidadSubjetiva: null, factorCalidad: null,
+
+        slides: (() => {
+            let slides = [];
+            for (let i = 0; i < 600; i += 1) {
+                slides.push('Slide ' + (i + 1));
+            }
+            return slides;
+        }),
+        virtualData: {
+            slides: [],
+        },
+
+
+
     };
 
     handleVariables = (x) => {
@@ -96,6 +113,8 @@ class DashBoard extends React.Component {
 
         }, timeoutLength2)
     }
+
+
 
     handleOpen = () => {
         this.timeout = setTimeout(() => {
@@ -415,7 +434,7 @@ class DashBoard extends React.Component {
         this.setState({ ObjsFactors: [] });
         Object.keys(objs).map((key, index) => {
 
-
+            if (!objs[key]) return;
             if (this.props.userId === objs[key].idUsuario)
                 return;
             if (!objs[key].concepto)
@@ -539,6 +558,19 @@ class DashBoard extends React.Component {
     }
 
     componentDidMount() {
+
+        const swiper = new Swiper('.swiper-container', {
+            effect: 'flip',
+            grabCursor: true,
+            pagination: {
+                el: '.swiper-pagination',
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+        });
+
 
         window.gapi.client.load("https://www.googleapis.com/discovery/v1/apis/drive/v3/rest")
             .then(function () { console.log("GAPI client loaded for API"); },
@@ -1070,10 +1102,20 @@ class DashBoard extends React.Component {
                                     ></Button>
                                 </div>
 
+
+                            
+
+
+
+
+
+
+
                             </div>
 
                         </div>
                     </div >
+                   
                 </div >
             );
         }

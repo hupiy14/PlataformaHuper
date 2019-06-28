@@ -35,8 +35,8 @@ class Headers extends React.Component {
         let opcion = null;
 
         if (this.props.userRol === "2")
-            opcion = <Link to="/hupps" className="item" style={{left:'70%', position: 'absolute'}}>
-                <h3>Entregas</h3>
+            opcion = <Link to="/equipoData" className="item" style={{left:'70%', position: 'absolute'}}>
+                <h3 style={{color: ' rgb(208, 99, 39)'}}>Equipo</h3>
             </Link>
 
 

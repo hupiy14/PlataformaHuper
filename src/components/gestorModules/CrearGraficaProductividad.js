@@ -67,6 +67,7 @@ class CrearGraficaProd extends React.Component {
 
             <CrearGrafica labelsX={labelsDias}
                 datos={datos}
+                equipoGrafica={this.props.equipoGra}
                 titleGrafica={"Valoración en las ultimas 5 semnanas"}
                 numeroGrafica={'2'}
                 maxLen={'140'}

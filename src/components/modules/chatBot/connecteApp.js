@@ -195,14 +195,14 @@ class App extends React.Component {
                 const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_TDJQilcvBxWh955');
                 starCountRef.on('value', (snapshot) => {
                     this.props.consultaChats(snapshot.val());
-
                     this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                    // this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                  //  this.props.numeroPreguntas(this.props.numeroPregunta + 1);
                 });
             }
             if (!this.state.mensajeInicio)
                 this.props.submitMessage('@<Hola Huper@<', chatID, '6');
-            this.setState({ mensajeInicio: null });
+           
+        this.setState({ mensajeInicio: null });
         }, timeoutLength)
     }
 

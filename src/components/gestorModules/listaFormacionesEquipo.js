@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
 import { listaFormaciones } from '../modules/chatBot/actions';
-import { Progress, Segment, Modal, Header, Button, Image, Popup, Grid, List } from 'semantic-ui-react';
+import { Progress, Segment, Modal, Header, Button, Image, Popup, Grid, List, Icon } from 'semantic-ui-react';
 
 class ListaFormacionEquipo extends React.Component {
     state = { modalOpen: false, videoSrc0: 'r9SI6-yKCpA', videoSrc: '', listaFormacionesEquipo: {}, listaFormaciones: {}, seleccion: null, formacion: null, typeform: null }
@@ -14,29 +14,30 @@ class ListaFormacionEquipo extends React.Component {
 
     cargarInicio() {
         let variable = [];
-        Object.keys(this.props.equipox).map((key, index) => {
-            const us = key;
-            const starCountRef = firebase.database().ref().child(`Usuario-Formcion/${key}`);
-            starCountRef.on('value', (snapshot) => {
+            Object.keys(this.props.equipox).map((key, index) => {
+                const us = key;
+                const starCountRef = firebase.database().ref().child(`Usuario-Formcion/${key}`);
+                starCountRef.on('value', (snapshot) => {
+
+                    const valor = snapshot.val();
+                    if (!valor)
+                        return
+                    variable[us] = valor
+                    this.setState({ listaFormacionesEquipo: { ...this.state.listaFormacionesEquipo, ...variable } });
+                });
+            });
+
+
+
+            const starCountRef2 = firebase.database().ref().child(`Formacion`);
+            starCountRef2.on('value', (snapshot) => {
 
                 const valor = snapshot.val();
-                if (!valor)
-                    return
-                variable[us] = valor
-                this.setState({ listaFormacionesEquipo: { ...this.state.listaFormacionesEquipo, ...variable } });
+
+                this.setState({ listaFormaciones: valor });
+
             });
-        });
-
-
-
-        const starCountRef2 = firebase.database().ref().child(`Formacion`);
-        starCountRef2.on('value', (snapshot) => {
-
-            const valor = snapshot.val();
-
-            this.setState({ listaFormaciones: valor });
-
-        });
+        
     }
 
     componentDidMount() {
@@ -60,57 +61,42 @@ class ListaFormacionEquipo extends React.Component {
     }
 
 
-    renderFormularioType(the) {
-        if (the.state.typeform)
+    renderFormularioType() {
+        if (this.state.typeform)
             return (
                 <div className="sixteen wide column  ">
                     <div className="ui segment  videoFormacion2">
                         <div className="ui embed ">
-                            <iframe className="videoFormacion" title="video player" src={the.state.typeform} />
+                            <iframe className="videoFormacion" title="video player" src={this.state.typeform} />
                         </div>
                     </div>
                 </div>
             );
     }
 
-    renderFormacionesEquipoUsuario(the, iconos, cconsulta) {
+    renderFormacionesEquipoUsuario(iconos, cconsulta) {
         if (!cconsulta) return;
-        const opciones = Object.keys(cconsulta).map(function (key2, index) {
+        const opciones = Object.keys(cconsulta).map( (key2, index)=> {
             if (cconsulta[key2].estado === 'activo')
                 return (
 
                     <Modal key={key2}
                         trigger={
                             <div className="item" key={key2} onClick={() => {
-                                the.handleOpen()
-                                the.renderbuttton(cconsulta[key2]);
+                                this.handleOpen()
+                                this.renderbuttton(cconsulta[key2]);
 
                             }} >
-                                <br className="tiny"></br>
                                 <div className="content">
-
-
-                                    <Segment >
-                                        <Progress percent={50} color='yellow' attached='top' />
-                                        <i className={`large middle ${iconos} aligned icon`}></i>
-                                        <div className="header">{cconsulta[key2].concepto}</div>
-                                        <div className="description">{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
-
-
-                                        <Button className='alinVerFomacion' icon='eye' color='teal' />
-
-
-
-
-                                        <Progress percent={50} color='yellow' attached='bottom' />
-                                    </Segment >
+                                        <i style={{top: '18px', position: 'relative', 'left': '143px'}} className={`large middle ${iconos} aligned icon`}></i>
+                                        <div style={{ width: '65%','font-size': 'xx-small', 'left': '23px','top': '4px', position: 'relative'}} className="header">{cconsulta[key2].concepto}</div>  
                                 </div>
                             </div>
 
 
                         }
-                        open={the.state.modalOpen}
-                        onClose={the.handleClose}
+                        open={this.state.modalOpen}
+                        onClose={this.handleClose}
                         basic
                         size='small'
                     >
@@ -120,11 +106,11 @@ class ListaFormacionEquipo extends React.Component {
                                 <div className="sixteen wide column Black videoFormacion ">
 
                                     <div className="ui embed ">
-                                        <iframe className="videoFormacion" title="video player" src={the.state.videoSrc} />
+                                        <iframe className="videoFormacion" title="video player" src={this.state.videoSrc} />
                                     </div>
 
                                 </div>
-                                {the.renderFormularioType(the)}
+                                {this.renderFormularioType(this)}
 
 
                             </div>
@@ -138,18 +124,18 @@ class ListaFormacionEquipo extends React.Component {
         return opciones;
     }
 
-    renderFormacionesCompletas(the, iconos) {
-        const cconsulta = the.state.listaFormaciones;
-       // console.log(cconsulta);
-        const opciones = Object.keys(cconsulta).map(function (key2, index) {
+    renderFormacionesCompletas(iconos) {
+        const cconsulta = this.state.listaFormaciones;
+        // console.log(cconsulta);
+        const opciones = Object.keys(cconsulta).map((key2, index)=> {
             if (cconsulta[key2].estado === 'activo')
                 return (
 
                     <Modal key={key2}
                         trigger={
                             <div className="item" key={key2} onClick={() => {
-                                the.handleOpen()
-                                the.renderbuttton(cconsulta[key2]);
+                                this.handleOpen()
+                                this.renderbuttton(cconsulta[key2]);
 
                             }} >
 
@@ -161,7 +147,7 @@ class ListaFormacionEquipo extends React.Component {
 
                                         <div className="header">{cconsulta[key2].concepto}</div>
                                         <div className="description">{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
-                                        <Button className='alinVerFomacion' icon='eye' color='teal' />
+                                        <Button style={{left: '80%', position: 'relative',background: '#f9d9c2db'}} icon='eye' circular />
                                         <Progress percent={65} color='yellow' attached='bottom' />
                                     </Segment >
                                 </div>
@@ -169,8 +155,8 @@ class ListaFormacionEquipo extends React.Component {
 
 
                         }
-                        open={the.state.modalOpen}
-                        onClose={the.handleClose}
+                        open={this.state.modalOpen}
+                        onClose={this.handleClose}
                         basic
                         size='small'
                     >
@@ -180,11 +166,11 @@ class ListaFormacionEquipo extends React.Component {
                                 <div className="sixteen wide column Black videoFormacion ">
 
                                     <div className="ui embed ">
-                                        <iframe className="videoFormacion" title="video player" src={the.state.videoSrc} />
+                                        <iframe className="videoFormacion" title="video player" src={this.state.videoSrc} />
                                     </div>
 
                                 </div>
-                                {the.renderFormularioType(the)}
+                                {this.renderFormularioType()}
 
                             </div>
                         </Modal.Content>
@@ -200,7 +186,7 @@ class ListaFormacionEquipo extends React.Component {
     AgregarFormacionHuper() {
         if (this.state.seleccion) {
             let updates = {};
-            updates[`Usuario-Formcion/${this.props.equipoConsulta.sell}/${this.state.seleccion}`] = this.state.formacion;
+            updates[`Usuario-Formcion/${this.props.keytrabajo}/${this.state.seleccion}`] = this.state.formacion;
             // console.log(updates);
             firebase.database().ref().update(updates);
             this.cargarInicio();
@@ -208,17 +194,17 @@ class ListaFormacionEquipo extends React.Component {
         }
     }
 
-    ListaOpcionesFormacionA(the, iconos, cconsulta2) {
-     //   console.log('opcioens');
-        const cconsulta = the.state.listaFormaciones;
+    ListaOpcionesFormacionA( iconos, cconsulta2) {
+        //   console.log('opcioens');
+        const cconsulta = this.state.listaFormaciones;
         let x = 0;
         let agregar = true;
-        const opciones = Object.keys(cconsulta).map(function (key2, index) {
+        const opciones = Object.keys(cconsulta).map( (key2, index)=> {
             if (cconsulta[key2].estado === 'activo') {
                 let encontro = false;
 
                 if (cconsulta2) {
-                    Object.keys(cconsulta2).find(function (element) {
+                    Object.keys(cconsulta2).find( (element)=> {
 
                         if (element === key2) {
                             encontro = true;
@@ -235,40 +221,80 @@ class ListaFormacionEquipo extends React.Component {
                 agregar = false;
 
                 let colorRR;
-                if (the.state.seleccion === key2)
-                    colorRR = 'yellow2';
+                if (this.state.seleccion === key2)
+                    colorRR = 'linear-gradient(to right, rgba(251, 227, 239, 0), rgb(240, 100, 0))';
 
-                const className = `item ${colorRR}`;
+                   
+                 
                 return (
-                    <div className={className} key={key2} onClick={() => {
-                        if (the.state.seleccion === key2)
-                            the.setState({ seleccion: null })
+                    <div style={{ background: colorRR,  'border-radius': '100px 500px 66px 88px' }} key={key2} onClick={() => {
+                        if (this.state.seleccion === key2)
+                            this.setState({ seleccion: null })
                         else
-                            the.setState({ seleccion: key2, formacion: cconsulta[key2] })
+                            this.setState({ seleccion: key2, formacion: cconsulta[key2] })
                     }} >
-                        <br className="tiny"></br>
-                        <div className="content">
+                       
 
-                            <Segment >
-                                <i className={`large middle ${iconos} aligned icon`} key={key2}></i>
-                                <div className="header">{cconsulta[key2].concepto}</div>
-                                <div className="description">{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
 
-                            </Segment >
-                        </div>
+                       <Modal key={key2} 
+                        trigger={
+                            <div className="item" key={key2} onClick={() => {
+                                this.handleOpen()
+                                this.renderbuttton(cconsulta[key2]);
+
+                            }} >
+
+                                <i className={`large middle ${iconos} aligned icon`}></i>
+                                <div className="content">
+                                    <Segment >
+
+                                        <Progress percent={65} color='yellow' attached='top' />
+
+                                        <div className="header">{cconsulta[key2].concepto}</div>
+                                        <div className="description">{cconsulta[key2].detalle ? cconsulta[key2].detalle : ''}</div>
+                                        <Button style={{left: '90%', position: 'relative',background: 'rgba(247, 221, 202, 0.33)'}} icon='eye' circular />
+                                        <Progress percent={65} color='yellow' attached='bottom' />
+                                    </Segment >
+                                </div>
+                            </div>
+
+
+                        }
+                        open={this.state.modalOpen}
+                        onClose={this.handleClose}
+                        basic
+                        size='small'
+                    >
+                        <Header icon='browser' content='Tips de formación Huper' />
+                        <Modal.Content scrolling>
+                            <div className="ui grid ">
+                                <div className="sixteen wide column Black videoFormacion ">
+
+                                    <div className="ui embed ">
+                                        <iframe className="videoFormacion" title="video player" src={this.state.videoSrc} />
+                                    </div>
+
+                                </div>
+                                {this.renderFormularioType()}
+
+                            </div>
+                        </Modal.Content>
+                    </Modal >
+
                     </div>
 
                 );
             }
         });
         return (
-            <div >
+            <div  >
+                <h3>Selecciona una de las formaciones para tu Huper</h3>
                 {opciones}
                 <br></br>
-                <Button color='teal' disabled={agregar} content='Agregar' fluid
+                <Button  style={{background: 'linear-gradient(to right, #efa31a 10%, #f38226 80%)'}} disabled={agregar} content='Agregar' fluid
                     onClick={() => {
-                        the.AgregarFormacionHuper();
-                        the.handleClose();
+                        this.AgregarFormacionHuper();
+                        this.handleClose();
                         // the.guardarDetalle(the, usuarioIF, true);
                     }}
 
@@ -277,79 +303,78 @@ class ListaFormacionEquipo extends React.Component {
             </div >);
 
     }
-    renderAgregarFormacion(the, iconos, cconsulta) {
+    renderAgregarFormacion(iconos, cconsulta) {
         return (
 
-            <Popup wide trigger={<Button circular className=' foot-Informacion' icon='book' color='purple' size='large' />} on='click'>
-                <Grid>
-                    <Grid.Column>
-                        <Popup
+            <Popup wide   trigger={<Button circular style={{ top: '90px', position: 'relative', left: '66px' , transform: 'scale(0.7)'}} className=' foot-Informacion' icon='book' color='purple' size='large' />} on='click'>
+                        <Popup 
                             trigger={
 
-                                <List>
-                                    {this.ListaOpcionesFormacionA(the, iconos, cconsulta)}
+                                <List >
+                                    {this.ListaOpcionesFormacionA(this, iconos, cconsulta)}
 
                                 </List>
 
                             }
-                            open={the.state.modalOpen}
-                            onClose={the.handleClose}
-
-
-                            content='Selecciona una de las formaciones para tu Huper'
+                            open={this.state.modalOpen}
+                            onClose={this.handleClose}
                             position='top center'
                             size='tiny'
                             inverted
                         />
-                    </Grid.Column>
-                </Grid>
+                  
             </Popup>
 
         );
     }
 
 
-    renderConstruirObj(iconos, the) {
+    renderConstruirObj(iconos) {
 
         //  console.log(the.state.listaFormacionesEquipo);
 
-        if (the.state.listaFormaciones) {
+        if (this.state.listaFormaciones) {
 
-            const equipoConssulta = the.state.listaFormacionesEquipo
+            const equipoConssulta = this.state.listaFormacionesEquipo
             let pasoVacio = false;
             let especial = true;
 
-            let opciones = Object.keys(equipoConssulta).map(function (key3, index) {
+            let opciones = Object.keys(equipoConssulta).map( (key3, index)=> {
                 const cconsulta = equipoConssulta[key3]
-
-
-
-                Object.keys(equipoConssulta).find(function (element) {
-                    if (element === the.props.equipoConsulta.sell) {
+                
+                Object.keys(equipoConssulta).find( (element)=> {
+                    if (element === this.props.keytrabajo) {
                         especial = false;
                         return;
                     }
                 });
 
+                if(this.props.keytrabajo === 0)
+                return;
 
-                if (!the.props.equipoConsulta.sell || the.props.equipoConsulta.sell === 0) {
+                if (!this.props.keytrabajo ) {
                     if (pasoVacio) return;
                     pasoVacio = true;
-                    return the.renderFormacionesCompletas(the, iconos);
+                    return this.renderFormacionesCompletas(iconos);
 
                 }
-                else if (the.props.equipoConsulta.sell === key3) {
+                else if (this.props.keytrabajo=== key3) {
 
-                    return (<div key={key3}>
-                        {the.renderFormacionesEquipoUsuario(the, iconos, cconsulta)}
-                        {the.renderAgregarFormacion(the, iconos, cconsulta)}
+                    return (<div key={key3} >
+                          <div style={{height: '6em', overflow: 'auto',  position: 'relative',top: '7em'}}>
+                          {this.renderFormacionesEquipoUsuario(iconos, cconsulta)}   
+                          </div>
+                        {this.renderAgregarFormacion(iconos, cconsulta)}
                     </div>
                     );
                 }
                 if (especial) {
                     return (<div key={key3}>
-                        {the.renderFormacionesEquipoUsuario(the, iconos, {})}
-                        {the.renderAgregarFormacion(the, iconos, {})}
+                           <div style={{height: '6em', overflow: 'auto',  position: 'relative',top: '7em'}}>
+                           {this.renderFormacionesEquipoUsuario(iconos, {})}
+                           </div>
+                    
+                        {this.renderAgregarFormacion(iconos, {})}
                     </div>
                     );
                 }
@@ -359,16 +384,18 @@ class ListaFormacionEquipo extends React.Component {
             });
             //  console.log(the.props.equipoConsulta);
 
-            if (Object.keys(the.state.listaFormacionesEquipo).length === 0 && the.props.equipoConsulta && !the.props.equipoConsulta.sell) {
-            //    console.log('entro');
-                opciones = the.renderFormacionesCompletas(the, iconos);
+            if (Object.keys(this.state.listaFormacionesEquipo).length === 0 && ! this.props.keytrabajo) {
+                //    console.log('entro');
+                opciones = this.renderFormacionesCompletas(iconos);
 
             }
-            else if (Object.keys(the.state.listaFormacionesEquipo).length === 0 && the.props.equipoConsulta && the.props.equipoConsulta.sell) {
+            else if (Object.keys(this.state.listaFormacionesEquipo).length === 0  && this.props.keytrabajo) {
 
                 opciones = (<div key={1254}>
-                    {the.renderFormacionesEquipoUsuario(the, iconos, null)}
-                    {the.renderAgregarFormacion(the, iconos, null)}
+                    <div style={{height: '6em', overflow: 'auto',  position: 'relative',top: '7em'}}>
+                    {this.renderFormacionesEquipoUsuario( iconos, null)}
+                    </div>
+                    {this.renderAgregarFormacion(iconos, null)}
                 </div>
                 );
             }
@@ -394,12 +421,12 @@ class ListaFormacionEquipo extends React.Component {
     render() {
         return (
             <div>
-                <h3>{this.props.titulo}</h3>
-                <div className="maximo-listEObj">
+                <h5 style={{top: '120px', left: '100px', position: 'relative', color: 'white'}}>{this.props.titulo}.</h5>
+                <div >
 
                     <div className="ui relaxed divided animated list">
 
-                        {this.renderConstruirObj(this.props.iconos, this)}
+                        {this.renderConstruirObj(this.props.iconos)}
                     </div>
                 </div>
             </div>

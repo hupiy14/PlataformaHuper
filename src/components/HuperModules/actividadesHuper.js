@@ -8,6 +8,7 @@ import moment from 'moment';
 
 
 
+
 const timeoutLength = 900000; //900000
 
 class listActividades extends React.Component {
@@ -79,7 +80,7 @@ class listActividades extends React.Component {
                 const actividadesU = ObjetivosU[key];
                 Object.keys(actividadesU).map((key2, index) => {
                     if (arrayT[key3].key !== key2) return;
-                    if (moment().format('YYYY-MM-DD') !== actividadesU[key2].dateStart) {
+                    if (moment(moment().format('YYYY-MM-DD'),'YYYY-MM-DD') >  moment(actividadesU[key2].dateStart, 'YYYY-MM-DD')) {
                         if (actividadesU[key2].estado === 'activo')
                             actividadesU[key2].estado = 'anulado';
                         return;
@@ -143,6 +144,29 @@ class listActividades extends React.Component {
 
         arrayT.sort((obj1, obj2) => { return parseInt(obj1.dificultad) - parseInt(obj2.dificultad); });
 
+
+        let tiempoMin = '24:00';
+        Object.keys(arrayT).map((key3, index) => {
+          Object.keys(ObjetivosU).map((key, index) => {
+                const actividadesU = ObjetivosU[key];
+                    Object.keys(actividadesU).map((key2, index) => {
+                        if (arrayT[key3].key !== key2) return;          
+                        if ( moment(moment().format('YYYY-MM-DD'),'YYYY-MM-DD') >  moment(actividadesU[key2].dateStart, 'YYYY-MM-DD')) {
+                            if (actividadesU[key2].estado === 'activo') {
+                                actividadesU[key2].estado = 'anulado';
+                                flag = true;
+                            } 
+                            return;
+                        }
+
+                        if( moment(tiempoMin, 'HH:mm') >  moment(actividadesU[key2].horaPlanificada , 'HH:mm') )
+                        tiempoMin =  moment(actividadesU[key2].horaPlanificada , 'HH:mm');
+                    });
+                
+            });
+        });
+
+     
         let fechaTrabajo = null;
         const opcionesX = Object.keys(arrayT).map((key3, index) => {
 
@@ -154,20 +178,23 @@ class listActividades extends React.Component {
 
                         if (arrayT[key3].key !== key2) return;
 
-                        const h = parseInt(actividadesU[key2].tiempoEstimado.substring(0, 2));
-                        actividadesU[key2].horaPlanificada = fechaTrabajo === null ? actividadesU[key2].horaEstimada : fechaTrabajo;
-                        actividadesU[key2].horaEstimada = moment(actividadesU[key2].horaPlanificada, 'HH:mm').add('hours', h).format('HH:mm');
-                        fechaTrabajo = actividadesU[key2].horaEstimada;
-
-                        if (moment().format('YYYY-MM-DD') !== actividadesU[key2].dateStart) {
+                       
+                    
+                        if ( moment(moment().format('YYYY-MM-DD'),'YYYY-MM-DD') >  moment(actividadesU[key2].dateStart, 'YYYY-MM-DD')) {
                             if (actividadesU[key2].estado === 'activo') {
                                 actividadesU[key2].estado = 'anulado';
                                 flag = true;
-                            }
+                            } 
                             return;
 
                         }
+                        const h = parseInt(actividadesU[key2].tiempoEstimado.substring(0, 2));
+                     
+                        actividadesU[key2].horaPlanificada = fechaTrabajo === null ? tiempoMin.format('HH:mm') : fechaTrabajo;
+                        actividadesU[key2].horaEstimada = moment(actividadesU[key2].horaPlanificada, 'HH:mm').add('hours', h).format('HH:mm');
+                        fechaTrabajo = actividadesU[key2].horaEstimada;
 
+            
                         const tiempo = actividadesU[key2].horaPlanificada + '  a  ' + actividadesU[key2].horaEstimada;
                         const tiempo2 = 'Hora a terminar: ' + actividadesU[key2].horaEstimada;
                         let icono = 'id badge';
