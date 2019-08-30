@@ -21,13 +21,6 @@ class GoogleAuth extends React.Component {
     componentDidMount() {
         window.gapi.load('client:auth2', () => {
             window.gapi.client.init({
-                clientId: '874067485777-l5ineqqp5u8s7ifseal94u2ip61q0f94.apps.googleusercontent.com',
-                //scope: 'email'
-                apiKey: 'AIzaSyANPTZ84JMI__LONtkOVL5ku9zUOUE-RJc',
-                discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-                //discoveryDocs: ["https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
-                // scope: 'https://www.googleapis.com/auth/drive',
-                scope: "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/drive"
             }).then(() => {
 
                 this.auth = window.gapi.auth2.getAuthInstance();
