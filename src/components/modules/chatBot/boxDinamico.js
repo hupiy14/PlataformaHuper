@@ -309,11 +309,8 @@ class boxDinaminco extends React.Component {
 
 
         else if (this.props.consultax) {
-            console.log(this.props.consultax);
             const cconsulta = this.props.consultax;
-
             const input = this.props.user.userChats[0].thread[2] ? this.props.user.userChats[0].thread[2].text : '';
-
             const opciones = Object.keys(cconsulta).map(function (key, index) {
                 //   console.log(cconsulta[key]);
                 if (!cconsulta[key].estado) {

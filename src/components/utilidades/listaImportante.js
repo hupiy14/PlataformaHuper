@@ -202,6 +202,7 @@ class listImportante extends React.Component {
     }
     TIMOBJ = () => {
         this.timeout = setTimeout(() => {
+         
             this.props.chatOn();
 
         }, timeoutLength3)
@@ -467,7 +468,7 @@ class listImportante extends React.Component {
                         top: '-170px',
                         width: '95%',
                         'box-shadow': this.props.selObjetivo === key2 ? 'rgba(23, 22, 20, 0.58) 1.5px 1.5px 5px 1.5px' : '#fbbd0894 0.5px 0.5px 5px 0.5px',
-                        background: this.props.selObjetivo === key2 ? 'linear-gradient(to right, rgb(255, 255, 255) 85%, rgb(240, 166, 253) 110%)' : backgroundTar,
+                        background: this.props.selObjetivo === key2 ? 'linear-gradient(to right, rgb(255, 255, 255) 75%, rgb(255, 244, 211) 80%, rgb(240, 166, 253) 110%)' : backgroundTar,
                     };
 
 
@@ -478,7 +479,7 @@ class listImportante extends React.Component {
 
                         if (fec < new Date()) {
                             style = {
-                                background: this.props.selObjetivo === key2 ? 'linear-gradient(to right, rgb(255, 255, 255) 85%, rgb(240, 166, 253) 110%)' : 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 80, 0) 100%)',
+                                background: this.props.selObjetivo === key2 ? 'linear-gradient(to right, rgb(255, 255, 255) 85%, rgb(240, 166, 253) 110%)' : 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(255, 244, 211) 80%, rgb(250, 80, 0) 100%)',
                                 borderRadius: '250px 300px 300px 900px',
                                 height: '160px',
                                 position: 'relative',
@@ -822,6 +823,8 @@ class listImportante extends React.Component {
                                                                 </Modal.Actions>
                                                             </Modal>
 
+  
+  
                                                             <br></br>
 
                                                             <br></br>

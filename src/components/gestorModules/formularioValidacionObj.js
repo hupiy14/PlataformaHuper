@@ -121,7 +121,7 @@ class modalFormValidacion extends React.Component {
                         </Modal.Description>
                     </Modal.Content>
                     <Modal.Actions style={{ background: '#f4a45617' }}>
-                        <Button color='grey' style={{ background: '#0000001f' }} onClick={() => { this.setState({ open: false }); history.push('/equipoData') }}>
+                        <Button color='grey' style={{ background: '#0000001f' }} onClick={() => { this.setState({ open: false }); history.push('/dashboard') }}>
                             Cancelar
                      </Button>
                         <Button
@@ -130,7 +130,7 @@ class modalFormValidacion extends React.Component {
                             icon='arrow right'
                             labelPosition='right'
                             content="Completar Validación"
-                            onClick={() => { this.guardar(); history.push('/equipoData'); }}
+                            onClick={() => { this.guardar(); history.push('/dashboard'); }}
                         />
 
 

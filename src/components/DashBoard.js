@@ -23,8 +23,9 @@ import { signOut } from '../actions';
 import { Grid, Modal, Menu, Segment, Button, Dimmer, Header, Icon, Image, Portal, Step, Label, Checkbox } from 'semantic-ui-react';
 import MenuChat from './MenuChat';
 import { pasoOnboardings, listaFormaciones, estadochats } from './modules/chatBot/actions';
-import { object } from 'prop-types';
 
+
+var ReactRotatingText = require('react-rotating-text');
 const timeoutLength = 1800;
 const timeoutLength2 = 2000;
 const timeoutLength3 = 100000;
@@ -123,7 +124,8 @@ class DashBoard extends React.Component {
 
 
         if (!this.props.isSignedIn)
-            history.push('/login');
+            history.push('/');
+        //    history.push('/login');
 
         const starCountRef3 = firebase.database().ref().child(`Utilidades-Valoraciones`);
         starCountRef3.on('value', (snapshot) => {
@@ -131,7 +133,7 @@ class DashBoard extends React.Component {
         });
 
 
-     
+
 
         //carga el limite que las empresas definan
         datosPlanificados = [];
@@ -172,8 +174,8 @@ class DashBoard extends React.Component {
         }, timeoutLength3)
     }
 
-   
-    
+
+
 
     arregloFechaSemana() {
         var fecahMinima = new Date();
@@ -689,448 +691,10 @@ class DashBoard extends React.Component {
 
         }, timeoutLength5)
     }
-    renderPasosCEL(style, paso) {
 
-        return (<Step.Group vertical style={style} >
-            <Step active={true} style={paso.style}    >
 
-                <Step.Content >
-                    <Step.Title>{paso.title}</Step.Title>
-                    <Step.Description>{paso.active}</Step.Description>
-                    <Label color='purple' horizontal>
-                        Empezar
-                   </Label>
-                </Step.Content>
-            </Step>
 
 
-        </Step.Group>);
-    }
-
-
-    renderPasos(style, paso1, paso2, paso3, paso4, paso5) {
-
-        return (<Step.Group vertical style={style} >
-            <Step completed={paso1.completed} active={paso1.active} style={paso1.style} className={paso1.class}  >
-                <Icon name='pencil alternate' />
-                <Step.Content >
-                    <Step.Title>Crea tu Actividad</Step.Title>
-                    <Step.Description>Crea tu actividad y describe lo que debes hacer el día de hoy. ¡Tu asistente de ayudara!.</Step.Description>
-                </Step.Content>
-            </Step>
-
-            <Step completed={paso2.completed} active={paso2.active} style={paso2.style} className={paso2.class} >
-                <Icon name='chart line' />
-                <Step.Content>
-                    <Step.Title>Tu rendimiento</Step.Title>
-                    <Step.Description>Tus objetivos y su prioridad para realizar en la semana, junto al seguimiento de tu trabajo comparado con el planificado</Step.Description>
-                </Step.Content>
-            </Step>
-
-            <Step completed={paso3.completed} active={paso3.active} style={paso3.style} className={paso3.class} >
-                <Icon name='chart pie' />
-                <Step.Content>
-                    <Step.Title>Se consciente de ti</Step.Title>
-                    <Step.Description>Observa el progreso y comportamiento que haz tenido, mide tu MIT con el Huper y valora tus habilidades</Step.Description>
-                </Step.Content>
-            </Step>
-
-            <Step completed={paso4.completed} active={paso4.active} style={paso4.style} className={paso4.class} >
-                <Icon name='paper plane outline' />
-                <Step.Content>
-                    <Step.Title>Formate</Step.Title>
-                    <Step.Description>Mira los nuevos contenidos diseñados para ti, dale clic en la formación y prepárate para crear nuevos hábitos</Step.Description>
-                </Step.Content>
-            </Step>
-
-
-            <Step completed={paso5.completed} active={paso5.active} style={paso5.style} className={paso5.class} >
-                <Icon name='desktop' size='tiny' />
-                <Step.Content>
-                    <Step.Title>Tus trabajos</Step.Title>
-                    <Step.Description>Centralizamos el detalle de cada objetivo y sus adjuntos en cada tarjeta, mira las opciones</Step.Description>
-                </Step.Content>
-            </Step>
-
-        </Step.Group>);
-    }
-
-
-    renderOnboardingCEL() {
-
-        let style = {
-            width: '100%',
-        }
-        let stylePadre = {
-            position: 'fixed',
-            top: '-8.5em',
-            'border-radius': '1.5em',
-            'z-index': '100000',
-            // height: '20.5em',
-            overflow: 'auto',
-            width: '90%',
-            left: '5%',
-        }
-
-        let styleP = {
-            position: 'relative',
-            bottom: '-20%',
-            height: '25em',
-            width: '24em',
-            overflow: 'scroll',
-
-
-        }
-
-        const styleAnt = { background: ' rgba(237, 237, 34, 0.24)' };
-        const styleUso = { background: ' #fbbd08' };
-        const styleDep = { background: ' rgba(255, 245, 192, 0.99)' };
-
-        let paso = { title: null, active: null, icono: null, style: styleAnt };
-
-
-        switch (this.props.pasoOnboarding) {
-            case 0:
-                if (this.state.avatares) {
-
-                    return (
-                        <div>
-                            <Image src={this.state.avatares[1]} size="medium"></Image>
-                            <Header as='h2' icon inverted>
-                                Bienvenido a Hupity!
-                        <Header.Subheader>Vamos a comenzar</Header.Subheader>
-                            </Header>
-
-
-                        </div>
-                    );
-                }
-                break;
-            case 1:
-
-                if (this.state.comenzo === false)
-                    this.setState({ comenzo: true });
-
-                if (this.state.pasoActivof === 1) {
-                    this.setState({ pasoActivof: this.state.pasoActivof + 1 });
-                    this.setState({ pasoActivo: 'onboardingApp' });
-                    this.setState({ estadoCel: true });
-
-                }
-
-                paso = { title: 'Crea tu Actividad', active: 'Crea tu actividad y describe lo que debes hacer el día de hoy. ¡Tu asistente de ayudara!.', icono: 'pencil alternate', style: styleAnt };
-
-                return (
-                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({ estadoCel: false }); this.setState({ pasoActivo: 'onboardingApp2' }); }} >
-                        {this.renderPasosCEL(style, paso)}
-
-                    </div>
-                );
-            case 2:
-
-                this.handleClose();
-                paso = { title: 'Tu rendimiento', active: 'Tus objetivos y su prioridad para realizar en la semana, junto al seguimiento de tu trabajo comparado con el planificado', icono: 'chart pie', style: styleAnt };
-                this.handlePaso2();
-
-                let modulo = null;
-                if (this.state.activo) {
-
-                    modulo =
-                        <div style={styleP}>
-                            <div className="ui segment " >
-                                {this.renderProgresoTrabajo()}
-                            </div>
-                            <div>
-                                {this.renderListaObjetivos(true)}
-                            </div>
-                        </div>
-
-
-                    if (this.state.pasoActivof === 2) {
-                        this.setState({ pasoActivof: this.state.pasoActivof + 1 });
-                        this.setState({ pasoActivo: 'onboardingApp' });
-                        this.setState({ estadoCel: true });
-                    }
-                }
-
-
-                return (<div>
-                    <div style={stylePadre} className={this.state.activo ? this.state.pasoActivo : null} onClick={() => { this.setState({ estadoCel: false }); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
-                        {this.renderPasosCEL(style, paso)}
-                    </div>
-                    {modulo}
-
-                </div>
-
-
-                );
-                return;
-
-            case 3:
-                if (this.state.pasoActivof === 3) {
-                    this.setState({ pasoActivof: this.state.pasoActivof + 1 });
-                    this.setState({ pasoActivo: 'onboardingApp' });
-                    this.setState({ estadoCel: true });
-                }
-
-
-                if (this.state.activo2 === true) {
-                    this.handlePaso3();
-                    this.setState({ activo2: false });
-                }
-                paso = { title: 'Se consciente de ti', active: 'Observa el progreso y comportamiento que haz tenido, mide tu MIT con el Huper y valora tus habilidades', icono: 'chart line', style: styleAnt };
-
-                return (<div>
-                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({ estadoCel: false }); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
-                        {this.renderPasosCEL(style, paso)}
-                    </div>
-                    <div style={styleP}>
-                        {this.renderGraficaTIC()}
-                    </div>
-                </div>);
-
-            case 4:
-
-
-                if (this.state.pasoActivof === 4) {
-                    this.setState({ pasoActivof: this.state.pasoActivof + 1 });
-                    this.setState({ pasoActivo: 'onboardingApp' });
-                    this.setState({ estadoCel: true });
-                }
-
-                if (this.state.activo2 === true) {
-                    this.props.chatOff();
-                    this.setState({ activo2: false });
-                    this.handlePaso5();
-                }
-                if (this.state.pasoActivof === 4) {
-                    this.setState({ pasoActivof: this.state.pasoActivof + 1 });
-                    this.setState({ pasoActivo: 'onboardingApp' });
-                }
-                paso = { title: 'Formate', active: 'Mira los nuevos contenidos diseñados para ti, dale clic en la formación y prepárate para crear nuevos hábitos', icono: 'paper plane outline', style: styleAnt };
-                styleP.width = "100%";
-                styleP.left = "0";
-                // styleP.bottom = '-7em';
-
-                return (<div>
-                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({ estadoCel: false }); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
-                        {this.renderPasosCEL(style, paso)}
-                    </div>
-                    <div style={styleP}>
-                        {this.renderformaciones()}
-                    </div>
-                </div>
-                );
-
-            case 5:
-                if (this.state.pasoActivof === 5) {
-                    this.setState({ pasoActivof: this.state.pasoActivof + 1 });
-                    this.setState({ pasoActivo: 'onboardingApp' });
-                    this.setState({ estadoCel: true });
-                }
-                stylePadre.top = '0em';
-                paso = { title: 'Tus trabajos', active: 'Centralizamos el detalle de cada objetivo y sus adjuntos en cada tarjeta, mira las opciones', icono: 'desktop', style: styleAnt };
-                return (<div>
-                    <div style={stylePadre} className={this.state.pasoActivo} onClick={() => { this.setState({ estadoCel: false }); this.setState({ pasoActivo: 'onboardingApp2' }); }}>
-                        {this.renderPasosCEL(style, paso)}
-                    </div>
-                    <div style={styleP}>
-                        <Hupps />
-                    </div>
-
-                </div>
-                );
-            case 6:
-                this.handleFinal();
-                return (<div>
-                    <Image src={this.state.avatares[1]} size="medium"></Image>
-                    <Header as='h2' icon inverted>
-                        ¡Comencemos...!
-                        <Header.Subheader>El gestor agile de productividad personal</Header.Subheader>
-                    </Header>
-                </div>
-                );
-            default:
-                return;
-
-        }
-
-    }
-
-
-    renderOnboarding() {
-
-        let style = {
-            position: 'relative',
-            bottom: '0em',
-            left: '-75%',
-            width: '40%',
-
-        }
-
-        let styleP = {
-            position: 'fixed',
-            left: '35%',
-            width: '40%',
-            height: '60%',
-            top: '10%',
-            overflow: 'auto',
-
-        }
-
-        const styleAnt = { background: ' rgba(237, 237, 34, 0.24)' };
-        const styleUso = { background: ' #fbbd08' };
-        const styleDep = { background: ' rgba(255, 245, 192, 0.99)' };
-
-        let paso1 = { completed: false, active: false, style: styleAnt, class: '' };
-        let paso2 = { completed: false, active: false, style: styleAnt, class: '' };
-        let paso3 = { completed: false, active: false, style: styleAnt, class: '' };
-        let paso4 = { completed: false, active: false, style: styleAnt, class: '' };
-        let paso5 = { completed: false, active: false, style: styleAnt, class: '' };
-
-        switch (this.props.pasoOnboarding) {
-            case 0:
-                if (this.state.avatares) {
-
-                    return (
-                        <div>
-                            <Image src={this.state.avatares[1]} size="medium"></Image>
-                            <Header as='h2' icon inverted>
-                                Bienvenido a Hupity!
-                        <Header.Subheader>Vamos a comenzar</Header.Subheader>
-                            </Header>
-
-
-                        </div>
-                    );
-                }
-                break;
-            case 1:
-                if (this.state.comenzo === false)
-                    this.setState({ comenzo: true });
-                paso1 = { completed: false, active: true, style: styleAnt, class: 'onboardingAppG1' };
-                paso2 = { completed: false, active: false, style: styleAnt, class: '' };
-                paso3 = { completed: false, active: false, style: styleAnt, class: '' };
-                paso4 = { completed: false, active: false, style: styleAnt, class: '' };
-                paso5 = { completed: false, active: false, style: styleAnt, class: '' };
-                return (
-                    <div>
-                        {this.renderPasos(style, paso1, paso2, paso3, paso4, paso5)}
-
-                    </div>
-                );
-            case 2:
-
-                this.handleClose();
-                paso1 = { completed: true, active: false, style: styleDep, class: '' };
-                paso2 = { completed: false, active: true, style: styleAnt, class: 'onboardingAppG2' };
-                paso3 = { completed: false, active: false, style: styleAnt, class: '' };
-                paso4 = { completed: false, active: false, style: styleAnt, class: '' };
-                paso5 = { completed: false, active: false, style: styleAnt, class: '' };
-                this.handlePaso2();
-
-                let modulo = null;
-                if (this.state.activo) {
-
-                    styleP.height = "52";
-                    const styleO = {
-                        position: 'fixed',
-                        left: '78%',
-                        width: '15%',
-                    }
-                    modulo = <div>
-                        <div className="ui segment " style={styleP}>
-                            {this.renderProgresoTrabajo()}
-                        </div>
-                        <div style={styleO}>
-                            {this.renderListaObjetivos(true)}
-                        </div>
-
-                    </div>
-                }
-                return (<div>
-                    {modulo}
-                    {this.renderPasos(style, paso1, paso2, paso3, paso4, paso5)}
-                </div>
-
-                );
-                return;
-
-            case 3:
-                if (this.state.activo2 === true) {
-                    this.handlePaso3();
-                    this.setState({ activo2: false });
-                }
-                paso1 = { completed: true, active: false, style: styleDep, class: '' };
-                paso2 = { completed: true, active: false, style: styleDep, class: '' };
-                paso3 = { completed: false, active: true, style: styleAnt, class: 'onboardingAppG3' };
-                paso4 = { completed: false, active: false, style: styleAnt, class: '' };
-                paso5 = { completed: false, active: false, style: styleAnt, class: '' };
-
-                //    styleP.width = '50%';
-                return (<div>
-                    <div style={styleP}>
-                        {this.renderGraficaTIC()}
-                    </div>
-                    {this.renderPasos(style, paso1, paso2, paso3, paso4, paso5)}
-                </div>);
-
-            case 4:
-                if (this.state.activo2 === true) {
-                    this.props.chatOff();
-                    this.setState({ activo2: false });
-                    this.handlePaso5();
-
-                }
-                paso1 = { completed: true, active: false, style: styleDep, class: '' };
-                paso2 = { completed: true, active: false, style: styleDep, class: '' };
-                paso3 = { completed: true, active: false, style: styleDep, class: '' };
-                paso4 = { completed: false, active: true, style: styleAnt, class: 'onboardingAppG4' };
-                paso5 = { completed: false, active: false, style: styleAnt, class: '' };
-                styleP.width = "19%";
-                styleP.left = "45%";
-
-                return (<div>
-                    <div style={styleP}>
-                        {this.renderformaciones()}
-                    </div>
-                    {this.renderPasos(style, paso1, paso2, paso3, paso4, paso5)}
-                </div>
-                );
-
-            case 5:
-                paso1 = { completed: true, active: false, style: styleDep, class: '' };
-                paso2 = { completed: true, active: false, style: styleDep, class: '' };
-                paso3 = { completed: true, active: false, style: styleDep, class: '' };
-                paso4 = { completed: true, active: false, style: styleDep, class: '' };
-                paso5 = { completed: false, active: true, style: styleAnt, class: 'onboardingAppG5' };
-                styleP.width = "50%";
-                return (<div>
-                    <div style={styleP}>
-                        <Hupps />
-                    </div>
-                    {this.renderPasos(style, paso1, paso2, paso3, paso4, paso5)}
-                </div>
-                );
-            case 6:
-                this.handleFinal();
-                return (<div>
-                    <Image src={this.state.avatares[1]} size="medium"></Image>
-                    <Header as='h2' icon inverted>
-                        ¡Comencemos...!
-                        <Header.Subheader>El gestor agile de productividad personal</Header.Subheader>
-
-                    </Header>
-                </div>
-                );
-            default:
-                return;
-
-        }
-
-
-
-    }
 
 
     render() {
@@ -1145,24 +709,143 @@ class DashBoard extends React.Component {
         }
 
         let bt;
-        if (window.screen.width < 450) {
-            styleS.right = '35%';
-            styleS.bottom = '2.5%';
-        }
 
-        if (this.state.comenzo)
-            bt = <button className="ui button purple huge" style={styleS} onClick={() => {
-                if (this.props.pasoOnboarding === 5) this.setState({ comenzo: false });
-                if (!this.state.estadoCel)
-                    this.props.pasoOnboardings(this.props.pasoOnboarding + 1);
-            }} >Continuar</button>;
+
+
 
 
         if (this.props.userRol === '3') {
 
 
-            let pageActivi = null
-            if (!this.props.MensajeIvily && !this.props.listaObjetivo) {
+
+            let pageActivi = null;
+            let pageAux0 = null;
+            let pageAux = null;
+
+            if (this.props.usuarioDetail.usuario.onboarding === false) {
+
+                const tOn = "Hola " + this.props.usuarioDetail.usuario.usuario + " soy tu huperbot, ";
+                const tOn2 = "te apoyare en el trabajo que debas realizar ";
+                const tOn3 = "para comenzar... ";
+
+                const tOn4 = "Nuestra metodología es basada en Ivy lee ";
+                const tOn5 = "Empecemos...";
+                const tOn6 = "'Muéstrame el camino para hacer más cosas' -- Ivy lee";
+                const tOn7 = "Cada día antes de terminar, Planifica";
+                const tOn8 = "Las actividades más importantes del día siguiente. ";
+                const tOn9 = "...Recuerda solo 6 ";
+                const tOn10 = "Prioriza las actividades de acuerdo con su importancia real. ";
+                const tOn11 = "Te quedan 6 actividades por planificar, Animo...!";
+                const tOn12 = "Así de fácil es crear una actividad.";
+                const tOn13 = "Quisiéramos conocerte más...";
+                const tOn14 = "Por ultimo.";
+                const tOn15 = "En el menú lateral, tendrás todos los recursos para ti";
+                const tOn16 = "Queremos que siempre te sigas actualizando.";
+                const tOn17 = "Eso es todo " + this.props.usuarioDetail.usuario.usuario;
+                const tOn18 = "a trabajar...";
+
+
+
+                if (!this.props.pasoOnboarding || this.props.pasoOnboarding < 5) {
+                    pageAux0 = <div style={{ transform: 'scale(3)' }}>
+                        <ReactRotatingText onTypingEnd={() => {
+                            const paso = this.props.pasoOnboarding ? this.props.pasoOnboarding : 0;
+                            this.props.pasoOnboardings(paso + 1)
+
+                        }} pause={2000} items={[tOn, tOn2, tOn3, tOn4, tOn5]} />
+                    </div>
+
+
+                    if (this.props.pasoOnboarding === 4) {
+
+                        pageAux = <div style={{ transform: 'scale(1.2)', 'font-style': 'italic', top: '100px', position: 'relative' }}>
+                            <ReactRotatingText onTypingEnd={() => {
+                            }} items={[tOn6]} />
+                        </div>
+                    }
+
+                }
+
+
+                else if (this.props.pasoOnboarding >= 5 && this.props.pasoOnboarding < 10) {
+
+                    let pausa = 4000;
+                    pageAux0 = <div style={{ transform: 'scale(3)' }}>
+                        <ReactRotatingText onTypingEnd={() => {
+                            const paso = this.props.pasoOnboarding ? this.props.pasoOnboarding : 0;
+                            this.props.pasoOnboardings(paso + 1)
+
+                        }}
+                            pause={pausa} items={[tOn7, tOn8, tOn9, tOn11, "   "]} />
+
+                    </div>
+
+                    if (this.props.pasoOnboarding === 8) {
+                        pageAux = <div style={{ transform: 'scale(1.2)', 'font-style': 'italic', top: '100px', position: 'relative' }}>
+                            <ReactRotatingText items={[tOn10]} />
+                        </div>
+                    }
+
+                }
+
+
+
+                if (this.props.pasoOnboarding === 10) {
+                  
+                     pageAux = <div style={{ transform: 'scale(1.3)', height: '700px', width: '1000px' }}>
+                        <MenuChat />
+                    </div>
+                }
+
+
+
+                else if (this.props.pasoOnboarding >= 11 && this.props.pasoOnboarding < 14) {
+                    let pausa = 5000;
+                    pageAux0 = <div style={{ transform: 'scale(3)' }}>
+                        <ReactRotatingText onTypingEnd={() => {
+                            const paso = this.props.pasoOnboarding ? this.props.pasoOnboarding : 0;
+                            this.props.pasoOnboardings(paso + 1)
+
+                        }}
+                            pause={pausa} items={[tOn12, tOn13, "   "]} />
+                    </div>
+                }
+
+                if (this.props.pasoOnboarding === 14) {
+                    pageAux = <div style={{ transform: 'scale(1.3)', height: '700px', width: '1000px' }}>
+                        <MenuChat />
+                    </div>
+                }
+
+
+                else if (this.props.pasoOnboarding >= 15 && this.props.pasoOnboarding < 21) {
+
+                    let pausa = 5000;
+                    pageAux0 = <div style={{ transform: 'scale(3)' }}>
+                        <ReactRotatingText onTypingEnd={() => {
+                            const paso = this.props.pasoOnboarding ? this.props.pasoOnboarding : 0;
+                            this.props.pasoOnboardings(paso + 1)
+
+                        }}
+                            pause={pausa} items={[tOn14, tOn15, tOn16, tOn17, tOn18, "   "]} />
+                    </div>
+                }
+
+                if (this.props.pasoOnboarding === 21) {
+                    firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).set({
+                        ...this.props.usuarioDetail.usuario, onboarding: true
+                    })
+                }
+
+                pageActivi = <Dimmer active={true} page>
+
+                    {pageAux0}
+                    {pageAux}
+
+                </Dimmer >
+
+            }
+            else if (!this.props.MensajeIvily && !this.props.listaObjetivo) {
                 pageActivi = <Dimmer active={true} page>
                     <h1>Bienvenido</h1>
 
@@ -1193,8 +876,124 @@ class DashBoard extends React.Component {
 
         }
         else if (this.props.userRol === '2') {
-            varriable = this.renderGestor();
-            //    console.log('Teletrabajador');
+
+
+            let pageActivi = null;
+            let pageAux0 = null;
+            let pageAux = null;
+
+            if (this.props.usuarioDetail.usuario.onboarding === false) {
+
+                const tOn = "Hola " + this.props.usuarioDetail.usuario.usuario + " soy tu huperbot, ";
+                const tOn2 = "te apoyare en gestionar a tu equipo ";
+                const tOn3 = "para comenzar... ";
+                const tOn4 = "Nuestra metodología es basada en Ivy lee ";
+                const tOn5 = "Empecemos...";
+                const tOn6 = "'Muéstrame el camino para hacer más cosas' -- Ivy lee";
+                const tOn7 = "Conmigo podrás, crear objetivos para tu equipo en menos 30 segundos,";
+                const tOn8 = "Dar feedback a tus colaboradores";
+                const tOn9 = "y seguir su trabajo de una forma mas cercana";
+                const tOn10 = "Empecemos creando un objetivo...";
+                const tOn11 = "Así de fácil es crear un objetivo para tu equipo,";
+                const tOn12 = "podrás visualizar el avance y detalle del trabajo,";
+                const tOn13 = "O mirar y validar el progreso de tu equipo";
+                const tOn14 = "Por ultimo.";
+                const tOn15 = "No solo podrás ver los indicadores,";
+                const tOn16 = "Tendrás a la mano formaciones personalizadas para tus colaboradores";
+                const tOn17 = "Eso es todo " + this.props.usuarioDetail.usuario.usuario;
+                const tOn18 = "a trabajar...";
+
+
+
+                if (!this.props.pasoOnboarding || this.props.pasoOnboarding < 5) {
+                    pageAux0 = <div style={{ transform: 'scale(3)' }}>
+                        <ReactRotatingText onTypingEnd={() => {
+                            const paso = this.props.pasoOnboarding ? this.props.pasoOnboarding : 0;
+                            this.props.pasoOnboardings(paso + 1)
+
+                        }} pause={2000} items={[tOn, tOn2, tOn3, tOn4, tOn5]} />
+                    </div>
+
+
+                    if (this.props.pasoOnboarding === 4) {
+
+                        pageAux = <div style={{ transform: 'scale(1.2)', 'font-style': 'italic', top: '100px', position: 'relative' }}>
+                            <ReactRotatingText onTypingEnd={() => {
+                            }} items={[tOn6]} />
+                        </div>
+                    }
+
+                }
+
+
+                else if (this.props.pasoOnboarding >= 5 && this.props.pasoOnboarding < 10) {
+
+                    let pausa = 4000;
+                    pageAux0 = <div style={{ transform: 'scale(3)' }}>
+                        <ReactRotatingText onTypingEnd={() => {
+                            const paso = this.props.pasoOnboarding ? this.props.pasoOnboarding : 0;
+                            this.props.pasoOnboardings(paso + 1)
+
+                        }}
+                            pause={pausa} items={[tOn7, tOn8, tOn9, tOn10, "   "]} />
+
+                    </div>
+
+                }
+
+
+
+                if (this.props.pasoOnboarding === 10) {
+                    pageAux = <div style={{ transform: 'scale(1.3)', height: '700px', width: '1000px' }}>
+                        <MenuChat />
+                    </div>
+                }
+
+
+
+                else if (this.props.pasoOnboarding >= 11 && this.props.pasoOnboarding < 20) {
+                    let pausa = 5000;
+                    pageAux0 = <div style={{ transform: 'scale(3)' }}>
+                        <ReactRotatingText onTypingEnd={() => {
+                            const paso = this.props.pasoOnboarding ? this.props.pasoOnboarding : 0;
+                            this.props.pasoOnboardings(paso + 1)
+
+                        }}
+                            pause={pausa} items={[tOn11, tOn12, tOn13, tOn14, tOn15, tOn16, tOn17, tOn18, "   "]} />
+                    </div>
+                }
+
+
+
+                if (this.props.pasoOnboarding === 20) {
+                    firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).set({
+                        ...this.props.usuarioDetail.usuario, onboarding: true
+                    })
+                }
+
+                pageActivi = <Dimmer active={true} page>
+
+                    {pageAux0}
+                    {pageAux}
+
+                </Dimmer >
+
+            }
+
+
+            varriable = <div>
+                {pageActivi}
+                {this.renderGestor()}
+            </div>
+
+
+
+
+
+
+
+
+
         }
 
 
@@ -1204,7 +1003,7 @@ class DashBoard extends React.Component {
 
         return (
             <div> {varriable}
-                {onboarding}
+
             </div >
 
         );

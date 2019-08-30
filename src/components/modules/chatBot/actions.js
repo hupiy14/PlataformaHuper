@@ -39,11 +39,25 @@ import {
   MENSAJEVIELY,
   ESTADO_CHAT,
   OBJ_TIM,
-  
+  DATO_CLOSE,
   CEL_CHAT,
   CEL_PERF,
+  DATOS_EDIT_CEL,
 
 } from './types';
+
+export const datosEditCels = (datosEditCel) => {
+  return {
+    type: DATOS_EDIT_CEL,
+    payload: datosEditCel
+  };
+};
+export const datoCloses = (datoClose) => {
+  return {
+    type: DATO_CLOSE,
+    payload: datoClose
+  };
+};
 export const celPerfs = (celPerf) => {
   return {
     type: CEL_PERF,

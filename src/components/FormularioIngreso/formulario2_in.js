@@ -25,12 +25,10 @@ class FomrularioGlobal extends React.Component {
     state = {
         listaEmpresas: {}, listaEquipos: {},
         errorTipo: null, tipo: null, formError: null, momento: null, nombreUsuario: null, errorNombreUsuario: null, open: true,
-        cargo: null, error: null, errorCargo: null, area: null, errorArea: null, empresa: null, errorEmpresa: null
+        cargo: null, error: null, errorEquipo: null, errorCargo: null, area: null, errorArea: null, empresa: null, errorEmpresa: null, errorSector: null
     }
 
     componentDidMount() {
-
-        //   console.log(window.location.href); 
         //se consulta todas las empresas
         const starCountRef = firebase.database().ref().child('empresa');
         starCountRef.on('value', (snapshot) => {
@@ -74,6 +72,14 @@ class FomrularioGlobal extends React.Component {
             this.setState({ errorCargo: false });
         }
 
+        if (this.props.detailUsNew.equipo.trim() === '') {
+            this.setState({ errorEquipo: true });
+            error = true;
+        }
+        else {
+            this.setState({ errorEquipo: false });
+        }
+
         if (!this.props.detailUsNew.empresa) {
             this.setState({ errorEmpresa: true });
             error = true;
@@ -82,27 +88,20 @@ class FomrularioGlobal extends React.Component {
             this.setState({ errorEmpresa: false });
         }
 
+        if (!this.props.detailUsNew.sector) {
+            this.setState({ errorSector: true });
+            error = true;
+        }
+        else {
+            this.setState({ errorSector: false });
+        }
 
         this.setState({ formError: error });
 
-
-        if (this.props.detailUsNew.empresa) {
-            let keyEquipo;
-            const Empresas = this.state.listaEmpresas;
-            const sel = this.props.detailUsNew.empresa;
-            Object.keys(Empresas).map(function (key, index) {
-                if (Empresas[key].industria === sel)
-                    keyEquipo = key;
-            });
-            console.log(keyEquipo);
-            const starCountRef = firebase.database().ref().child(`Empresa-Equipo/${keyEquipo}`);
-            starCountRef.on('value', (snapshot) => {
-                this.props.detailUsNews({ ...this.props.detailUsNew, listaEquipos: snapshot.val() });
-                this.setState({ listaEquipos: snapshot.val() })
-            });
+        if (!error) {
+            this.props.detailUsNews({ ...this.props.detailUsNew, tipo: 'Gestor' })
+            history.push('/formulario/herramientas');
         }
-        if (!error)
-            history.push('/formulario/equipo');
 
     }
     close = () => this.setState({ open: false })
@@ -110,7 +109,6 @@ class FomrularioGlobal extends React.Component {
     renderOpcionesEmpresa() {
         const listaX = this.state.listaEmpresas;
         let lista = {};
-
         const opciones = Object.keys(listaX).map(function (key, index) {
             lista = { ...lista, key: key, text: listaX[key].industria, value: listaX[key].industria };
             return lista;
@@ -123,7 +121,6 @@ class FomrularioGlobal extends React.Component {
         this.props.signOut();
         this.props.nuevoUsuarios(false);
         history.push('/');
-       // history.push('/login');
     }
 
     render() {
@@ -136,32 +133,40 @@ class FomrularioGlobal extends React.Component {
                 <Modal.Content image>
                     <div className="ui form" >
                         <div className="ui grid">
-                            <Modal.Description style={{width: '38em'}} >
+                            <Modal.Description style={{ width: '38em' }} >
                                 <Form error={this.state.formError} >
 
-                                    <Form.Input label='Nombre Usuario' placeholder='Cual es tu nombre?'
+                                    <Form.Input label='Cual es tu empresa u organización:' placeholder='Cual es la razon social de la empresa'
+                                        value={this.props.detailUsNew ? this.props.detailUsNew.empresa : null}
+                                        onChange={e => this.props.detailUsNews({ ...this.props.detailUsNew, empresa: e.target.value })}
+                                        error={this.state.errorEmpresa}
+                                    />
+                                    <Form.Input label='En que sector se desarrolla tu organización:' placeholder='Telecomunicaciones, Gestoria, Publicidad'
+                                        value={this.props.detailUsNew ? this.props.detailUsNew.sector : null}
+                                        onChange={e => this.props.detailUsNews({ ...this.props.detailUsNew, sector: e.target.value })}
+                                        error={this.state.errorSector}
+                                    />
+                                    <Form.Input label='Nombra a tu equipo de trabajo:' placeholder='Escribe el nombre que los representara'
+                                        value={this.props.detailUsNew ? this.props.detailUsNew.equipo : null}
+                                        onChange={e => this.props.detailUsNews({ ...this.props.detailUsNew, equipo: e.target.value })}
+                                        error={this.state.errorEquipo}
+                                    />
+                                    <Form.Select label='A que departamento de tu empresa pertenece tu equipo:' options={AreasT} placeholder='Escoge una opción'
+                                        value={this.props.detailUsNew ? this.props.detailUsNew.area : null}
+                                        onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, area: value })}
+                                        error={this.state.errorArea}
+                                    />
+
+                                    <Form.Input label='¿Quien liderara tu equipo?:' placeholder='Escribe el nombre'
                                         value={this.props.detailUsNew ? this.props.detailUsNew.nombreUsuario : null}
                                         onChange={e => this.props.detailUsNews({ ...this.props.detailUsNew, nombreUsuario: e.target.value })}
                                         error={this.state.errorNombreUsuario}
                                     />
-                                    <Form.Select label='Empresa' options={this.renderOpcionesEmpresa()} placeholder='Cual es tu Empresa?'
-                                        search
-                                        onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, empresa: value })}
-                                        value={this.props.detailUsNew ? this.props.detailUsNew.empresa : null}
 
-                                        error={this.state.errorEmpresa}
-                                    />
-                                    <Form.Input label='Cargo' placeholder='Que cargo tienes?'
-
+                                    <Form.Input label='¿Que cargo tiene?:' placeholder='Escribe el cargo'
                                         value={this.props.detailUsNew ? this.props.detailUsNew.cargo : null}
                                         onChange={e => this.props.detailUsNews({ ...this.props.detailUsNew, cargo: e.target.value })}
                                         error={this.state.errorCargo}
-                                    />
-
-                                    <Form.Select label='Area' options={AreasT} placeholder='¿En qué departamento de la empresa laboras?'
-                                        value={this.props.detailUsNew ? this.props.detailUsNew.area : null}
-                                        onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, area: value })}
-                                        error={this.state.errorArea}
                                     />
 
                                     <Message
@@ -182,17 +187,19 @@ class FomrularioGlobal extends React.Component {
           </Button>
 
                     <Button
-                        color="purple"
                         icon='arrow right'
                         labelPosition='right'
                         content="Un paso Mas"
+                        style={{ background: 'linear-gradient(to right, #fce64d -30%, rgb(255, 106, 0)100%)' }}
                         onClick={this.continuar2}
                         disabled=
                         {
                             this.props.usuarioDetail && (
                                 !this.props.detailUsNew.nombreUsuario ||
                                 !this.props.detailUsNew.empresa ||
+                                !this.props.detailUsNew.sector ||
                                 !this.props.detailUsNew.cargo ||
+                                !this.props.detailUsNew.equipo ||
                                 !this.props.detailUsNew.area)
                         }
                     />

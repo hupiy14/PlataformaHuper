@@ -6,9 +6,6 @@ import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboa
 import moment from 'moment';
 
 
-
-
-
 const timeoutLength = 900000; //900000
 
 class listActividades extends React.Component {
@@ -40,6 +37,7 @@ class listActividades extends React.Component {
         if (this.props.MensajeIvily.horaActivacion) {
             hora = moment(this.props.MensajeIvily.tiempoTrabajado, 'HH:mm').add('hours', parseInt(moment(hora).format('HH'))).add('minutes', parseInt(moment(hora).format('mm')));
         }
+        console.log(hora);
         let tt = parseFloat(hora.format('HH')) + parseFloat(hora.format('mm')) / 60;
         tt = Math.round(tt * 10) / 10;
         if (tt > this.state.tiempos) {

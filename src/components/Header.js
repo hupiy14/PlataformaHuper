@@ -54,7 +54,7 @@ class Headers extends React.Component {
 
                     <Popup trigger={
 
-                        <Image src={this.props.usuarioDetail ? this.props.usuarioDetail.usuario?  this.props.usuarioDetail.usuario.imagenPerfil? this.props.usuarioDetail.usuario.imagenPerfil: perfil: perfil: perfil} circular
+                        <Image src={this.props.usuarioDetail ? this.props.usuarioDetail.usuario && this.props.isSignedIn?  this.props.usuarioDetail.usuario.imagenPerfil? this.props.usuarioDetail.usuario.imagenPerfil: perfil: perfil: perfil} circular
 
                             style={{
                                 width: '100px', position: 'absolute', top: '-2%', height: '100px', left: '75%',
@@ -70,14 +70,14 @@ class Headers extends React.Component {
 
                             <div style={{ height: '6em' }}>
                                 <div style={{ height: '3.5em' }}>
-                                    <Image src={this.props.usuarioDetail ? this.props.usuarioDetail.usuario? this.props.usuarioDetail.usuario.imagenPerfil? this.props.usuarioDetail.usuario.imagenPerfil: perfil: perfil : perfil} circular
+                                    <Image src={this.props.usuarioDetail ? this.props.usuarioDetail.usuario && this.props.isSignedIn? this.props.usuarioDetail.usuario.imagenPerfil? this.props.usuarioDetail.usuario.imagenPerfil: perfil: perfil : perfil} circular
                                         style={{
                                             width: '100px', height: '100px', position: 'relative', top: '-1.5em', left: '-1em',
                                             transform: 'scale(0.5)'
                                         }}></Image>
 
-                                    <h2 style={{ top: '-5em', left: this.props.usuarioDetail ? '3.5em' : '3em', position: 'relative' }} >{this.props.usuarioDetail &&  this.props.usuarioDetail.usuario? this.props.usuarioDetail.usuario.usuario : 'loading...'}</h2>
-                                    <h4 style={{ top: '-9.5em', left: '5em', position: 'relative' }} >{this.props.usuarioDetail &&  this.props.usuarioDetail.usuario?  this.props.usuarioDetail.usuario.cargo : null}</h4>
+                                    <h2 style={{ top: '-5em', left: this.props.usuarioDetail ? '3.5em' : '3em', position: 'relative' }} >{this.props.usuarioDetail &&  this.props.usuarioDetail.usuario && this.props.isSignedIn? this.props.usuarioDetail.usuario.usuario : 'loading...'}</h2>
+                                    <h4 style={{ top: '-9.5em', left: '5em', position: 'relative' }} >{this.props.usuarioDetail &&  this.props.usuarioDetail.usuario && this.props.isSignedIn?  this.props.usuarioDetail.usuario.cargo : null}</h4>
 
                                 </div>
                                 <Divider horizontal style={{ top: '-9em', color: '#fbbd08' }}> - </Divider>
@@ -86,7 +86,7 @@ class Headers extends React.Component {
                             <List.Item >
                                 <Icon style={{ position: 'relative' }} name="user circle outline"></Icon>
                                 <List.Content>
-                                    <Link to="/profile" className="item">
+                                    <Link to={this.props.isSignedIn? "/profile": '/'} className="item">
                                         <List.Header>Detalle del perfil</List.Header>
                                     </Link>
 
@@ -120,7 +120,8 @@ const mapStateToProps = (state) => {
     return {
         usuarioDetail: state.chatReducer.usuarioDetail,
         userRol: state.chatReducer.userRol,
-        pasoOnboarding: state.chatReducer.pasoOnboarding
+        pasoOnboarding: state.chatReducer.pasoOnboarding,
+        isSignedIn: state.auth.isSignedIn,
     };
 };
 

@@ -63,6 +63,7 @@ class DashBoard extends React.Component {
         grafica: null, numeroO: 0, UtilFactors: null, selEq: null,
         semanasP: [], facSemana: null, nivelEquipo: null, productividadobj: [],
         valorSlide: 0, actDif: [], calidadSubjetiva: null, factorCalidad: null,
+        
     };
 
     handleVariables = (x) => {
@@ -414,6 +415,7 @@ class DashBoard extends React.Component {
         let factorSemana = 0;
         let factorEqHup = [];
         //Encontrar factor
+        if(!objs) return;
         this.setState({ ObjsFactors: [] });
 
         Object.keys(objs).map((key, index) => {
@@ -841,6 +843,8 @@ class DashBoard extends React.Component {
                     this.consultaProductivad(factorPlanS[key].year, factorPlanS[key].semana, fT, fP, fT / fP, fE, factorPlanS[key].nsemanMes, factorPlanS[key].mes, this.props.usuarioDetail.usuario.equipo);
                     //algortimo de productividad equipo
                     const valor = (fT / fP) * 0.6 + fE * 0.4;
+                    console.log(valor)
+                  
                     productividadSemana['sem.' + factorPlanS[key].nsemanMes + ' ' + factorPlanS[key].mes] = { valor, fecha: factorPlanS[key].fecha };
                     afT[factorPlanS[key].year] = { ...afT[factorPlanS[key].year], [factorPlanS[key].semana]: { valor: fT, valorEsperado: fTE } }
                 }

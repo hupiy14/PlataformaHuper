@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import {
   setActiveChat, submitMessage, numeroPreguntas, valorInputs, consultaPreguntaControls, pregFantasmas, primeraVs, estadochats, MensajeIvilys,
-  tipoPreguntas, mensajeEntradas, Mslacks, borrarChats, consultaChats, consultaCanales, pasoOnboardings, avatares, inputSlacks, objTIMs,
+  tipoPreguntas, mensajeEntradas, Mslacks, borrarChats, consultaChats, consultaCanales, pasoOnboardings, avatares, inputSlacks, objTIMs, datoCloses,
 } from './actions';
 import { chatOff, chatOn } from '../../../actions';
 import BoxDianmico from './boxDinamico';
@@ -26,7 +26,7 @@ let Tic_T = require('../tic_trabajo').default;
 const { SlackOAuthClient } = require('messaging-api-slack')
 
 
-let timeoutLength = 8000;
+let timeoutLength = 4000;
 let timeoutLength3 = 10500;
 let timeoutLength4 = 1000;
 let timeoutLength2 = 300;
@@ -150,7 +150,11 @@ class Home extends React.Component {
 
   cerrarChat = () => {
     this.timeout = setTimeout(() => {
-      this.props.chatOff();
+      console.log(this.props.datoClose);
+      if (this.props.datoClose === false)
+        this.props.chatOff();
+      else
+        this.props.datoCloses(false);
     }, timeoutLength)
   }
 
@@ -285,7 +289,7 @@ class Home extends React.Component {
       <div>
         <Image src={image} circular style={{ top: '20px', position: 'relative', transform: 'scale(0.18)' }}>
         </Image>
-        <div style={{ height: "3em", width: "20em", top: '-150px', left: this.props.estadochat === "dimmer Plan" ? '120px' : '220px', position: 'relative' }}>
+        <div style={{ height: "3em", width: "20em", top: '-150px', left: this.props.estadochat === "dimmer Plan" ? '120px' : '60%', position: 'relative' }}>
 
           <h2 >
             {nombre}
@@ -650,6 +654,7 @@ class Home extends React.Component {
       else if (valor === 'Consultar el trabajo de mi colaborador') {
 
         valorNPregunta = 0;
+        consultaBD = null;
         this.props.tipoPreguntas('Consultar Equipo Gestor');
         vacio = ' ';
         const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_NqMTxrwo-Ap7UTR');
@@ -672,6 +677,7 @@ class Home extends React.Component {
       else if (valor === 'Crear un Objetivo') {
 
         valorNPregunta = 0;
+        consultaBD = null;
         this.props.tipoPreguntas('Crear Objetivo Gestor');
         vacio = 'x';
         const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXtZVCN7-52d44THkXP');
@@ -690,6 +696,7 @@ class Home extends React.Component {
       else if (valor === 'Dar un Feedback') {
 
         valorNPregunta = 0;
+        consultaBD = null;
         this.props.tipoPreguntas('Crear Feedback Gestor');
         vacio = 'x';
         const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_CrEJFXvUlEN_tp5');
@@ -790,7 +797,7 @@ class Home extends React.Component {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///valida para reescribir la pregunta.
-
+    if (consultaBD === null) return;
     if (valorNPregunta < consultaBD.length - 1) {
 
       if (saltar === false) {
@@ -814,6 +821,8 @@ class Home extends React.Component {
       const consultaObj = this.props.consultax;
 
       if (tipPrgutna === 'Diaria') {
+
+
         //registro de horas Entrada
         const hoy = new Date();
         //si la fecha es el viernes
@@ -935,6 +944,7 @@ class Home extends React.Component {
         // moment.duration(lunch - breakfast).humanize()
         //recupera la ultima tarea
 
+        //
 
         const diat = new Date();
         let inicioTarea = cantidadActividades === 1 ? moment().format('HH:mm') : this.state.ultimaTarea.horaEstimada;
@@ -950,6 +960,7 @@ class Home extends React.Component {
           });
         }
 
+
         firebase.database().ref(`Usuario-Tareas/${this.props.userId}/${newPostKey2}/${newPostKey3}`).set({
           concepto: chatTrazo[2].text,
           estado: 'activo',
@@ -961,6 +972,68 @@ class Home extends React.Component {
           horaEstimada: moment(inicioTarea, 'HH:mm').add('hours', hora).format('HH:mm')
         });
 
+
+
+
+        //
+        //Crear actividad en calendar
+
+
+
+
+
+        var event = {
+          'summary': chatTrazo[2].text,
+          // 'location': '800 Howard St., San Francisco, CA 94103',
+          'description': chatTrazo[4].text,
+          'start': {
+            'dateTime': moment(inicioTarea, 'HH:mm'),
+            'timeZone': 'America/Los_Angeles'
+          },
+          'end': {
+            'dateTime': moment(inicioTarea, 'HH:mm').add('hours', hora),
+            'timeZone': 'America/Los_Angeles'
+          },
+          //   'recurrence': [
+          //     'RRULE:FREQ=DAILY;COUNT=2'
+          // ],
+          'attendees': [
+            //  { 'email': 'lpage@example.com' },
+            //  { 'email': 'sbrin@example.com' }
+          ],
+          'reminders': {
+            'useDefault': false,
+            'overrides': [
+              { 'method': 'email', 'minutes': 24 * 60 },
+              { 'method': 'popup', 'minutes': 10 }
+            ]
+          }
+
+        };
+
+        const calendarZ = this.props.usuarioDetail.calendar;
+        window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
+          .then(function () {
+            //  console.log("GAPI client loaded for API");
+            //Crear un evento
+            window.gapi.client.calendar.events.insert({
+              'calendarId': calendarZ,
+              'resource': event
+            })
+              .then(function (response) {
+                // Handle the results here (response.result has the parsed body).
+                console.log("Response /:" + response);
+              },
+                function (err) { console.error("Execute error", err); });
+          },
+            function (err) { console.error("Error loading GAPI client for API", err); });
+
+
+
+
+
+
+
         firebase.database().ref(`Usuario-UltimaTarea/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}/${diat.getDate()}`).set({
           tarea: newPostKey3,
           dateStart: moment().format('YYYY-MM-DD'),
@@ -970,9 +1043,10 @@ class Home extends React.Component {
 
 
 
-        //aumenta el paso del onboarding al completar la primera actividad
-        if (!this.props.usuarioDetail.usuario.onboarding)
-          this.props.pasoOnboardings(2);
+        /// onboarding 
+
+        if (this.props.pasoOnboarding === 10)
+          this.props.pasoOnboardings(this.props.pasoOnboarding + 1);
 
         this.renderHistoricoHuper(this.props.userId, `Creo Tarea : ${chatTrazo[2].text} `, 'trabajo');
 
@@ -1056,6 +1130,8 @@ class Home extends React.Component {
         }
         this.props.estadochats(null);
         this.props.objTIMs(null);
+        if (this.props.pasoOnboarding === 14)
+          this.props.pasoOnboardings(this.props.pasoOnboarding + 1);
 
       }
       else if (tipPrgutna === 'ContinuarTrabajo') {
@@ -1373,6 +1449,8 @@ class Home extends React.Component {
           });
         }
 
+        if (this.props.pasoOnboarding === 10)
+          this.props.pasoOnboardings(this.props.pasoOnboarding + 1);
       }
 
       else if (tipPrgutna === 'Crear Feedback Gestor') {
@@ -1802,11 +1880,13 @@ const mapHomeStateToProps = (state) => ({
   Mslack: state.chatReducer.Mslack,
   MensajeIvily: state.chatReducer.MensajeIvily,
   estadochat: state.chatReducer.estadochat,
+  pasoOnboarding: state.chatReducer.pasoOnboarding,
   objTIM: state.chatReducer.objTIM,
+  datoClose: state.chatReducer.datoClose,
 
   user: state.user,
 });
 export default connect(mapHomeStateToProps, {
   submitMessage, setActiveChat, numeroPreguntas, Mslacks, mensajeEntradas, consultaCanales, chatOff, avatares, pregFantasmas, inputSlacks, objTIMs,
-  consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats, pasoOnboardings, primeraVs, estadochats, MensajeIvilys,
+  consultaPreguntaControls, valorInputs, borrarChats, tipoPreguntas, consultaChats, pasoOnboardings, primeraVs, estadochats, MensajeIvilys, datoCloses
 })(Home);

@@ -120,6 +120,7 @@ class hupData extends React.Component {
           TituloGrafica={"Motivacion, Impacto, Talento (MIT)"}
         />;
         trab = this.ticArregloEquipo(keyTrabajo);
+        console.log(trab);
         datos = trab.datos;
         graficaG2 = <GraficaG3 labelsX={trab.arrL}
           datos={datos}
@@ -130,8 +131,8 @@ class hupData extends React.Component {
       case 2:
         graficaG = <GraficaG4 equipoGra={true} prod={dat.productividadobj} cal={dat.factorCalidad} />;
         factorsObj = this.calculoDeAvance(keyTrabajo);
+        console.log(factorsObj)
         dat = this.calcularAvancePorMes(factorsObj, keyTrabajo);
-        console.log(dat);
         graficaG2 = <GraficaG4 prod={dat.productividadobj} cal={dat.factorCalidad} />;
 
         break;
@@ -202,6 +203,7 @@ class hupData extends React.Component {
       });
     }
 
+
     if (valido === false) {
       firebase.database().ref(`Equipo-Puntospro/${tipo}/${year}/${Nsemana}`).set({
         fechaCreado: moment(new Date).format('YYYY-MM-DD'),
@@ -269,6 +271,16 @@ class hupData extends React.Component {
       const mm = (moment(an, "YYYY-MM-DD").add('days', index * 7).week() - (moment(an, "YYYY-MM-DD").add('days', index * 7).month() * 4));
       Object.keys(ticUsuarios).map((key2, index2) => {
         let ticUsuario = [];
+        let ticEquipoEsta = false
+
+        Object.keys(this.state.equipo).map((keyEq, index2) => {
+          if (key2 === keyEq)
+            ticEquipoEsta = true;
+        });
+
+        if (ticEquipoEsta === false)
+          return;
+
         if (ticUsuarios[key2].rol === '2')
           return;
         if (keyTrabajo && key2 !== keyTrabajo) {
@@ -277,11 +289,15 @@ class hupData extends React.Component {
 
 
         ticUsuario = ticUsuarios[key2].tic ? ticUsuarios[key2].tic : [];
+
+
+
         Object.keys(ticUsuario).map((key, index2) => {
           const valores = [];
 
+
           if (parseInt(key) === index) {
-            const lab = 'Sen ' + (mm - 2) + '. ' + moment(an, "YYYY-MM-DD").add('days', index * 7).format('MMMM');
+            const lab = 'Sen ' + (moment(an, "YYYY-MM-DD").add('days', index * 7).month() * 4) + 'del Año ';
             const dat = datosA[lab] ? datosA[lab] : 0;
             valores['te'] = ticUsuario[key].talentoE ? ticUsuario[key].talentoE.valorC * 20 : 10 + dat.te ? dat.te : dat;
             valores['tt'] = ticUsuario[key].talentoT ? ticUsuario[key].talentoT.valorC * 20 : 10 + dat.tt ? dat.tt : dat;
@@ -346,9 +362,18 @@ class hupData extends React.Component {
         const consulta = snapshot2.val();
         let variable = [];
 
+
+
         ///Recupera el rol del usuario
         Object.keys(consulta).map((key, index) => {
 
+          let flagEQ = false;
+          Object.keys(equipo).map((keyEQ, index) => {
+            if (keyEQ === key)
+              flagEQ = true;
+          });
+          if (flagEQ === false)
+            return;
 
           //tareas de cada persona
           const starCountRef2 = firebase.database().ref().child(`Usuario-Tareas/${key}`);
@@ -553,6 +578,9 @@ class hupData extends React.Component {
     if (keyTrabajo === 0) return fact;
     Object.keys(objs).map((key, index) => {
 
+
+
+
       if (!objs[key]) return;
       if (this.props.userId === objs[key].idUsuario)
         return;
@@ -564,6 +592,15 @@ class hupData extends React.Component {
         return;
       }
 
+
+      let ticEquipoEsta = false
+      Object.keys(this.state.equipo).map((keyEq, index2) => {
+        if (objs[key].idUsuario === keyEq)
+          ticEquipoEsta = true;
+      });
+
+      if (ticEquipoEsta === false)
+        return;
 
       let facPrioridad = 1;
       let facDificultad = 1;
@@ -694,66 +731,9 @@ class hupData extends React.Component {
     return Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
   };
 
-  handleDimmedChange = (e, { checked }) => {
-
-    this.setState({ valueH: checked });
-
-    if (checked) {
-      let datos = [];
-      let dat = this.calcularAvancePorMes(this.state.ObjsFactors);
-      console.log(dat);
-      this.setState({
-        grafica: <div>
-          <Checkbox checked={checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-          <GraficaG2 datoPlanificar={dat.factorPlan} datoTrabajo={dat.factorTrab} labelsMonths={labelsMonths} />
-        </div>
-      })
-    }
-    else {
-      this.setState({
-        grafica: <div>
-          <Checkbox checked={checked} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-          <GraficaG1 tope={100} datosAvance={this.calcularAvancePorDia(this.state.ObjsFactors, this.state.factorSemana)} />
-        </div>
-      })
-    }
-  }
 
 
 
-  handleItemClick = (e, { name }) => {
-    this.setState({ activeItem: name })
-    console.log('primero');
-    if (name === 'semana') {
-      const graficaG =
-        <div>
-          <Checkbox checked={this.state.valueH} className="historico-padding" label='Consultar Histórico' onChange={this.handleDimmedChange} toggle />
-          <GraficaG1 tope={100} datosAvance={this.calcularAvancePorDia(this.state.ObjsFactors, this.state.factorSemana)} />
-        </div>
-      this.setState({ grafica: graficaG })
-
-    }
-    else if (name === 'MIT') {
-      let datos = [];
-      const trab = this.ticArregloEquipo();
-      datos = trab.datos;
-
-      const graficaG = <GraficaG3 labelsX={trab.arrL}
-        datos={datos}
-        titleGrafica={"Medida MIT (Progreso)"}
-        TituloGrafica={"Motivacion, Impacto, Talento (MIT)"}
-      />;
-
-      this.setState({ grafica: graficaG })
-
-    }
-    else if (name === 'Productividad vs Calidad') {
-      const graficaG = <GraficaG4 prod={this.state.productividadobj} cal={this.state.factorCalidad} />;
-      this.setState({ grafica: graficaG })
-
-    }
-
-  }
 
   renderTituloObjetivo() {
     if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0) {
@@ -953,7 +933,15 @@ class hupData extends React.Component {
     let numeroPersonas = 0;
     //numero de personas de equipo
     Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
-      if (this.props.equipoConsulta.listaPersonas[key].Rol === '3')
+
+      let ticEquipoEsta = false
+
+      Object.keys(this.state.equipo).map((keyEq, index2) => {
+        if (key === keyEq)
+          ticEquipoEsta = true;
+      });
+
+      if (this.props.equipoConsulta.listaPersonas[key].Rol === '3' && ticEquipoEsta === true)
         numeroPersonas++;
     });
 
@@ -973,7 +961,8 @@ class hupData extends React.Component {
         let fE = fT === 0 ? 1 : fT / (fTE === 0 ? 1 : fTE);
         maxfT = fT > maxfT ? fT : maxfT;
 
-
+       
+        console.log(keyTrabajo);
         if (this.props.equipoConsulta && keyTrabajo) {
 
           let fEq = 0;
@@ -990,7 +979,9 @@ class hupData extends React.Component {
             }
           });
           //algortimo de productividad personas
-          const valor = (fT / fP) * 0.5 + (fT / fE) * 0.2 + (fEq === 0 ? 1 : fT / fEq) * 0.3;
+          const FEq = fEq === 0 ? 1 : fT / fEq;
+          const valor = (fT / fP) * 0.5 + (fT / fE) * 0.2 + FEq * 0.3;
+   
           productividadSemana['sem.' + factorPlanS[key].nsemanMes + ' ' + factorPlanS[key].mes] = { valor, fecha: factorPlanS[key].fecha };
           this.consultaProductivadPersonal(factorPlanS[key].year, factorPlanS[key].semana, fT, fP, fT / fP, fE, fEq, factorPlanS[key].nsemanMes, factorPlanS[key].mes, keyTrabajo);
         }
@@ -1147,6 +1138,9 @@ class hupData extends React.Component {
     }
 
     let forma = null;
+    if (!equipoF[this.state.activeEquipo])
+      return;
+
     if (this.state.equipo)    //console.log(equipoF)
       forma = <ListFormacion
         equipox={this.state.equipo}

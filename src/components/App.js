@@ -4,8 +4,15 @@ import history from '../history';
 
 import MenuChat from './MenuChat';
 import Header from './Header';
-//formulario de ingreso
-import FomularioGlobal from './FormularioIngreso/formularioGlobal';
+
+
+// formulario 
+import FomularioGlobal from './FormularioIngreso/formulario1_in';
+import FomularioInicio from './FormularioIngreso/formulario2_in';
+import FomularioTrabajador from './FormularioIngreso/formulario3_in';
+import FomularioHerramientas from './FormularioIngreso/formulario4_in';
+import FomularioTerm from './FormularioIngreso/formulario5_in';
+
 import FomularioEmp from './FormularioIngreso/formularioEmp';
 import FormularioEquipo from './FormularioIngreso/formularioEquipo';
 import FormularioCodigo from './FormularioIngreso/formularioCodigo';
@@ -27,17 +34,23 @@ import ModalFormValidacion from './gestorModules/formularioValidacionObj';
 //configuracion de flujo
 
 import FLujoCreate from './modules/newFlowWork';
-
 import { celChats } from '../components/modules/chatBot/actions';
-
-
 import equipoDash from './gestorModules/equipoData';
 
 //celular
 
 import HeaderC from './celphone/HeaderC';
 import DashBoardC from './celphone/DashboardC';
+import MenuEditObj from './celphone/menuEditO';
+import FormacionesObjC from './celphone/formacionesC';
+import CalendarioC from './utilidades/calendar2';
+import ProfileC from './celphone/profileC';
+import NewFlujoC from './celphone/Nflow';
+import ProgresoC from './celphone/progreso';
 
+import { hotjar } from 'react-hotjar';
+
+hotjar.initialize(1412405, 6);
 
 
 
@@ -52,15 +65,19 @@ class App extends React.Component {
 
 
         if (this.props.userRol !== '2') {
-            if ((this.props.MensajeIvily && this.props.MensajeIvily.nActIVi && this.props.MensajeIvily.nActIVi < 6) || !this.props.listaObjetivo || !this.props.listaObjetivo.objetivos) {
-
+            if ((this.props.MensajeIvily && this.props.MensajeIvily.nActIVi && this.props.MensajeIvily.nActIVi < 6) || !this.props.listaObjetivo || !this.props.listaObjetivo.objetivos || this.props.usuarioDetail && !this.props.usuarioDetail.usuario.onboarding) {
 
             }
             else
                 return <MenuChat />;
         }
-        else
-            return <MenuChat />;
+        else {
+            if (!this.props.usuarioDetail.usuario.onboarding) {
+
+            }
+            else
+                return <MenuChat />;
+        }
 
 
 
@@ -74,21 +91,21 @@ class App extends React.Component {
 
             }
             else {
-                
-                if (this.props.celPerf !== "menu")
-                    return <MenuChat />;
+
+                if (this.props.celPerf !== "menu") { }
+                return <MenuChat />;
             }
 
         }
-        else
-            return <MenuChat />;
+        else { }
+        return <MenuChat />;
     }
 
 
     render() {
 
         let apps = null;
-        if (window.screen.width <= 500) {
+        if (window.screen.width <= 500 || (window.screen.height <= 500 && window.screen.width <= 800)) {
 
             apps =
                 <div onTouchMove={() => {
@@ -109,11 +126,10 @@ class App extends React.Component {
                                         <div>
                                             <HeaderC />
 
-
                                             <Switch>
                                                 <Route path="/" exact component={hupityIngreso} />
                                                 <Route path="/login" exact component={ingreso} />
-                                                <Route path="/profile" exact component={Profile} />
+                                                <Route path="/profile" exact component={ProfileC} />
                                                 <Route path="/proceso/exito" exact component={Exito} />
                                                 <Route path="/formulario/validacion" exact component={ModalFormValidacion} />
                                                 <Route path="/formulario" exact component={FomularioGlobal} />
@@ -121,10 +137,12 @@ class App extends React.Component {
                                                 <Route path="/formulario/equipo" exact component={FormularioEquipo} />
                                                 <Route path="/formulario/codigo" exact component={FormularioCodigo} />
                                                 <Route path="/dashboard" component={DashBoardC} />
-
-                                                <Route path="/newworkflow" exact component={FLujoCreate} />
+                                                <Route path="/editObj" component={MenuEditObj} />                                             
+                                                <Route path="/newworkflow" exact component={NewFlujoC} />
                                                 <Route path="/menucel" exact component={MenuCel} />
-
+                                                <Route path="/formacionesC" exact component={FormacionesObjC} />
+                                                <Route path="/calendarioC" exact component={CalendarioC} />
+                                                <Route path="/progreso" exact component={ProgresoC} />
 
 
                                             </Switch>
@@ -168,15 +186,14 @@ class App extends React.Component {
                                                 <Route path="/onboarding" exact component={Onboard} />
                                                 <Route path="/profile" exact component={Profile} />
                                                 <Route path="/equipoData" exact component={equipoDash} />
-                                                
-                                           
-
                                                 <Route path="/proceso/exito" exact component={Exito} />
                                                 <Route path="/formulario/validacion" exact component={ModalFormValidacion} />
+                                               
                                                 <Route path="/formulario" exact component={FomularioGlobal} />
-                                                <Route path="/formulario/empresa" exact component={FomularioEmp} />
-                                                <Route path="/formulario/equipo" exact component={FormularioEquipo} />
-                                                <Route path="/formulario/codigo" exact component={FormularioCodigo} />
+                                                <Route path="/formulario/trabajador" exact component={FomularioTrabajador} />
+                                                <Route path="/formulario/inicio" exact component={FomularioInicio} />
+                                                <Route path="/formulario/herramientas" exact component={FomularioHerramientas} />
+                                                <Route path="/formulario/termcond" exact component={FomularioTerm} />
 
                                                 <Route path="/newworkflow" exact component={FLujoCreate} />
 

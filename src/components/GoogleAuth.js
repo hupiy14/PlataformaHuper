@@ -6,9 +6,7 @@ import { nuevoUsuarios, detailUsNews, MensajeIvilys } from '../components/module
 import '../components/styles/ingresoHupity.css';
 import firebase from 'firebase';
 import moment from 'moment';
-import { Link } from 'react-router-dom';
 import { List, Icon } from 'semantic-ui-react'
-import SlackA from '../apis/slackApi';
 
 const timeoutLength = 3000;
 
@@ -21,26 +19,21 @@ class GoogleAuth extends React.Component {
 
 
     componentDidMount() {
-
-
-        //Conectar a google  con el drive --- auth,
         window.gapi.load('client:auth2', () => {
             window.gapi.client.init({
-                clientId: '114346141609-03hh8319khfkq8o3fc6m2o02vr4v14m3.apps.googleusercontent.com',
+                clientId: '874067485777-l5ineqqp5u8s7ifseal94u2ip61q0f94.apps.googleusercontent.com',
                 //scope: 'email'
-                apiKey: 'AIzaSyBc8xwjAd9W_52aa26QpuztTx3BXjHFKsM',
+                apiKey: 'AIzaSyANPTZ84JMI__LONtkOVL5ku9zUOUE-RJc',
                 discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
                 //discoveryDocs: ["https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
-
                 // scope: 'https://www.googleapis.com/auth/drive',
                 scope: "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/drive"
             }).then(() => {
+
                 this.auth = window.gapi.auth2.getAuthInstance();
-
                 this.onAuthChange(this.auth.isSignedIn.get());
-
                 this.auth.isSignedIn.listen(this.onAuthChange);
-                //   console.log(this.auth.currentUser.get().getId());
+
             });
         });
 
@@ -49,19 +42,16 @@ class GoogleAuth extends React.Component {
 
     handleOpen2 = (Usuario) => {
         this.timeout = setTimeout(() => {
-
-
-
             const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${Usuario.codigo}`);
             starCountRef.on('value', (snapshot) => {
                 const cod = snapshot.val();
-
                 if (cod) {
                     if (cod.estado === 'usado') {
                         if (moment().diff(moment(cod.fechaUso, 'YYYY-MM-DD'), 'days') > 15) {
                             cod.estado = 'usado';
                             const us = Usuario;
                             us.estado = 'inactivo';
+                            us.onboarding = true;
 
                             firebase.database().ref(`Codigo-Acceso/${Usuario.codigo}`).set({
                                 ...cod,
@@ -84,15 +74,15 @@ class GoogleAuth extends React.Component {
 
 
     onAuthChange = isSignedIn => {
-        console.log(this.auth.currentUser.get());
+
         if (this.auth.currentUser.get().w3)
             this.props.nombreUsuario(this.auth.currentUser.get().w3.ofa);
-        //console.log(this.auth.currentUser.get().w3.ig);
-
-        //let x;
 
         if (isSignedIn) {
 
+            //     if (isSignedIn && this.props.isSignedIn === false)
+            //       return;
+            // this.auth.signOut();
 
             //recupera codigo de acceso de slack
             let dir = window.location.search;
@@ -102,18 +92,14 @@ class GoogleAuth extends React.Component {
             dir = window.location.href;
             this.recuperarDatos2(dir);
 
-
             this.props.nuevoUsuarios(true);
             //Encuentra el Rol,
             const nameRef = firebase.database().ref().child('Usuario').child(this.auth.currentUser.get().getId());
             nameRef.on('value', (snapshot) => {
 
-
-
-
                 if (snapshot.val()) {
 
-                    //invalida codifo de acceso
+                    //invalida codigo de acceso
                     const Usuario = snapshot.val();
                     if (Usuario.codigo) {
 
@@ -136,33 +122,25 @@ class GoogleAuth extends React.Component {
                             slack = snapshot3.val();
                     });
 
-                    const nameRef3 = firebase.database().ref().child(`Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${this.auth.currentUser.get().getId()}`)
-                    nameRef3.on('value', (snapshot3) => {
-                        //           console.log(snapshot3.val());
-                        if (snapshot3.val())
-                            this.props.usuarioDetails({ usuario: Usuario, idUsuario: this.auth.currentUser.get().getId(), linkws: snapshot3.val().linkWs, slack });
+                    let calendar = null;
+                    const nameRef5 = firebase.database().ref().child(`Usuario-CalendarGoogle/${this.auth.currentUser.get().getId()}`);
+                    nameRef5.on('value', (snapshot) => {
+                        if (snapshot.val()) {
+                            calendar = snapshot.val().idCalendar;
+                        }
                     });
 
-
-
+                    const nameRef3 = firebase.database().ref().child(`Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${this.auth.currentUser.get().getId()}`)
+                    nameRef3.on('value', (snapshot3) => {
+                        if (snapshot3.val())
+                            this.props.usuarioDetails({ usuario: Usuario, calendar, idUsuario: this.auth.currentUser.get().getId(), linkws: snapshot3.val().linkWs, slack });
+                    });
 
 
                     const nameRef2 = firebase.database().ref().child('Usuario-Rol').child(this.auth.currentUser.get().getId());
                     nameRef2.on('value', (snapshot2) => {
-                        //      console.log(snapshot2.val());
                         this.props.userRolIn(snapshot2.val().Rol);
                     });
-
-                    /// onboarding de la plataforma
-                    if (!Usuario.onboarding) {
-                        firebase.database().ref(`Usuario/${this.auth.currentUser.get().getId()}`).set({
-                            ...Usuario,
-                            onboarding: true,
-                        })
-                        history.push('/onboarding');
-                    }
-
-
 
                 }
                 else {
@@ -173,58 +151,37 @@ class GoogleAuth extends React.Component {
                     this.props.usuarioDetails({ usuarioNuevo });
 
                     let code = null;
-
                     if (this.props.detailUsNew && this.props.detailUsNew.slackCode) {
                         code = this.props.detailUsNew.slackCode;
-                        console.log(this.props.detailUsNew.slackCode);
                     }
-
 
                     const starCountRef = firebase.database().ref().child(`Usuario-Temporal/${this.auth.currentUser.get().w3.Eea}`);
                     starCountRef.on('value', (snapshot) => {
                         if (snapshot.val()) {
-
                             const starCountRef2 = firebase.database().ref().child(`Usuario-CodeTemporal/${this.auth.currentUser.get().w3.Eea}`);
                             starCountRef2.on('value', (snapshot2) => {
+
                                 if (snapshot2.val()) {
                                     this.props.detailUsNews({ ...snapshot.val(), recupero: true, codeSlack: snapshot2.val().code });
-                                    direccion = '/formulario/equipo';
+                                    direccion = '/formulario/herramientas';
                                     history.push(direccion);
                                 }
                             });
                         }
                         history.push(direccion);
                     });
-
-
-
-
                 }
-
             })
-
-
             this.props.signIn(this.auth.currentUser.get().getId());
         } else {
-
-
             this.props.signOut();
         }
-
-
-        //  if (x)
-        //    this.props.signOut();
-
-
-
-
 
 
     };
 
 
     recuperarDatos(direccion) {
-
         if (!direccion.includes('code'))
             return null;
         const vars = direccion.split("?")[1].split("&");
@@ -260,28 +217,22 @@ class GoogleAuth extends React.Component {
 
                 });
                 this.setState({ tokenTrello: true })
-
             }
         }
         return token;
     }
 
-
-
     componentDidUpdate() {
-
         if (this.props.nuevoUsuario === false)
             this.auth.signOut();
-
     }
-
-
 
     onSignInClick = () => {
         this.auth.signIn();
     };
     onSignOutClick = () => {
         this.auth.signOut();
+
     };
 
     renderAuthButton() {
@@ -289,16 +240,13 @@ class GoogleAuth extends React.Component {
         if (this.props.isSignedIn === null) {
             return null;
         } else if (this.props.isSignedIn) {
-
             if (this.state.tokenTrello === true)
                 history.push('/proceso/exito');
 
             else if (!this.props.equipoConsulta || !this.props.equipoConsulta.trabajo) {
                 history.push('/dashboard');
-
-
             }
-            
+
             return (
                 <div style={{ height: '1.2em' }}>
                     <Icon style={{ position: 'relative' }} name="google icon"></Icon>
@@ -309,8 +257,9 @@ class GoogleAuth extends React.Component {
 
             );
         } else {
-            history.push('/login');
+            // history.push('/login');
 
+            history.push('/');
 
             if (this.props.googleIn) {
                 return (<div style={{ height: '1.2em' }}>
@@ -323,42 +272,39 @@ class GoogleAuth extends React.Component {
             }
             else {
 
-
                 return (
                     <button style={{
                         position: 'relative',
                         left: '30%'
-                    }} onClick={this.onSignInClick} className="ui red google button">
-                        <i className="google icon" />
-                        Tu cuenta Google
-                   </button>
+                    }} onClick={() => { this.onSignInClick() }} className="ui  google button" style={{
+                        background: 'linear-gradient(to right, #fce64d -30%, rgb(255, 106, 0)100%)', position: 'relative',
+                        left: '31%', 'border-radius': '20px',
+                        width: '220px', display: 'grid', height: '52px'
+                    }} >
+                        <img style={{
+                            left: '-14px', position: 'relative', top: '-5px', 'border-radius': '20px',
 
+                        }} width="40" height="40" alt="Google logo" src="https://cdn.goconqr.com/assets/social/google/btn_google_light_normal_ios_160-9ef927f3fdc8ade894b35a0eb01225e8602967d799a831565f9327840aaaf44c.png"></img>
+
+                        <b style={{ top: '-32px', left: '20px', position: 'relative', 'font-size': 'larger', color: 'white' }}> Ingresar con Google</b>
+                    </button>
                 );
             }
         }
     }
 
-
-
     render() {
-        return <div>
-
-            {this.renderAuthButton()}</div>
+        return <div>{this.renderAuthButton()}</div>
     }
 };
 
 const mapStateToProps = (state) => {
     return {
-        //   usuarioDetail: state.chatReducer.usuarioDetail,
-
         isSignedIn: state.auth.isSignedIn,
         nuevoUsuario: state.chatReducer.nuevoUsuario,
         equipoConsulta: state.chatReducer.equipoConsulta,
         usuarioDetail: state.chatReducer.usuarioDetail,
         MensajeIvily: state.chatReducer.MensajeIvily,
-
-
-
     };
 };
 

@@ -42,28 +42,45 @@ class HeadersC extends React.Component {
 
 
         if (this.props.celPerf === "perfil")
+            perfilCel =
+                <div>
+                    <Image src={this.props.usuarioDetail ? this.props.usuarioDetail.usuario ? this.props.usuarioDetail.usuario.imagenPerfil ? this.props.usuarioDetail.usuario.imagenPerfil : perfil : perfil : perfil} circular
+
+                        style={{
+                            width: '100px', position: 'absolute', top: '8em', height: '100px', left: '40%',
+                            transform: 'scale(0.6)',
+                            'box-shadow': 'rgba(251, 189, 8, 0.51) 5px 2px 5px 5px'
+                        }}></Image>
+
+
+                    <h2 style={{ top: '120%', left: '-30%', position: 'relative' }} >{this.props.usuarioDetail && this.props.usuarioDetail.usuario ? this.props.usuarioDetail.usuario.usuario : 'loading...'}</h2>
+                    <h5 style={{ top: '80%', left: '-46%', position: 'relative' }} >{this.props.usuarioDetail && this.props.usuarioDetail.usuario ? this.props.usuarioDetail.usuario.cargo : null}</h5>
+
+
+
+
+                    <div className="right menu">
+                        {opcion}
+                        {this.state.menu}
+
+                        <Link to="/menucel" >
+                            < Icon name='th large' circular
+
+                                style={{
+                                    position: 'absolute',
+                                    left: '84%',
+                                    top: '45px',
+                                    color: '#f3cc00',
+                                    transform: 'scale(1.1)',
+                                }
+                                }></Icon >
+                        </Link>
+
+
+                    </div>
+                </div>
+        if (this.props.datosEditCel)
             perfilCel = <div>
-                <Image src={this.props.usuarioDetail ? this.props.usuarioDetail.usuario ? this.props.usuarioDetail.usuario.imagenPerfil ? this.props.usuarioDetail.usuario.imagenPerfil : perfil : perfil : perfil} circular
-
-                    style={{
-                        width: '100px', position: 'absolute', top: '18%', height: '100px', left: '10%',
-                        transform: 'scale(0.6)',
-                        'box-shadow': 'rgba(251, 189, 8, 0.51) 5px 2px 5px 5px'
-                    }}></Image>
-
-
-                <h2 style={{ top: '120%', left: '-180%', position: 'relative' }} >{this.props.usuarioDetail && this.props.usuarioDetail.usuario ? this.props.usuarioDetail.usuario.usuario : 'loading...'}</h2>
-                <h5 style={{ top: '80%', left: '-180%', position: 'relative' }} >{this.props.usuarioDetail && this.props.usuarioDetail.usuario ? this.props.usuarioDetail.usuario.cargo : null}</h5>
-
-            </div>
-
-
-
-        return (
-            <div className="ui secondary pointing menu" style={{ 'box-shadow': '0px 1.5px 0px 0px #fbbd08', height: '5em' }}>
-                <Link to="/dashboard" className="item">
-                    <img className="ui tiny rounded image" src={image} id='1' />
-                </Link>
 
                 <div className="right menu">
                     {opcion}
@@ -81,20 +98,18 @@ class HeadersC extends React.Component {
                             }
                             }></Icon >
                     </Link>
-                    {perfilCel}
-
-
-
-
-
-
-
-
-
-
 
 
                 </div>
+            </div>
+
+
+        return (
+            <div className="ui secondary pointing menu" style={{ 'box-shadow': '0px 1.5px 0px 0px #fbbd08', height: '5em' }}>
+                <Link to="/dashboard" className="item">
+                    <img className="ui tiny rounded image" src={image} id='1' />
+                </Link>
+                {perfilCel}
             </div>
         );
     }
@@ -108,6 +123,7 @@ const mapStateToProps = (state) => {
         userRol: state.chatReducer.userRol,
         pasoOnboarding: state.chatReducer.pasoOnboarding,
         celPerf: state.chatReducer.celPerf,
+        datosEditCel: state.chatReducer.datosEditCel,
     };
 };
 

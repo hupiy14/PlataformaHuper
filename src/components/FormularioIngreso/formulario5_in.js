@@ -8,25 +8,21 @@ import history from '../../history';
 import firebase from 'firebase';
 import axios from 'axios';
 import moment from 'moment';
-import { Link } from 'react-router-dom';
-const timeoutLength = 3000;
-
 
 class FomrularioGlobal extends React.Component {
 
-    state = { errorTipo: null, tipo: null, formError: null, momento: null, errorCodigo: null, codigo: null, errorAcepto: null, acepto: null, open: true, calendar: null }
+    state = { errorTipo: null, tipo: null, formError: null, momento: null, errorCodigo: null, codigo: null, errorAcepto: null, acepto: null, open: true, calendar: null, id: null }
 
     componentDidMount() {
         this.renderDriveCarpeta();
-
         const client = "482555533539.532672221010";
         const clientSecret = "18c94d458dbe66c7f7fc0d3f2684e63f";
         const code = this.props.detailUsNew.codeSlack;
+        this.setState({ id: this.props.usuarioDetail.usuarioNuevo.id })
         axios.get(`https://slack.com/api/oauth.access?client_id=${client}&redirect_uri=https://app.hupity.com&client_secret=${clientSecret}&code=${code}`)
             .then((res, tres) => {
                 if (res.data.bot)
                     this.props.detailUsNews({ ...this.props.detailUsNew, tokenSlack: res.data.access_token, tokenBot: res.data.bot.bot_access_token, userSlack: res.data.user_id });
-
             });
     }
 
@@ -45,20 +41,8 @@ class FomrularioGlobal extends React.Component {
         }
     }
 
-
     ingreso = () => {
-
-
-        console.log(this.props.detailUsNew);
         let error = false;
-        if (this.props.detailUsNew.codigo.trim() === '') {
-            this.setState({ errorCodigo: true });
-            error = true;
-        }
-        else {
-            this.setState({ errorCodigo: false });
-        }
-
         if (this.props.detailUsNew.acepto === false) {
             this.setState({ errorAcepto: true });
             error = true;
@@ -67,118 +51,71 @@ class FomrularioGlobal extends React.Component {
             this.setState({ errorAcepto: false });
         }
 
-
         this.setState({ formError: error });
-        if (!error) {
 
+        if (!error) {
             const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${this.props.detailUsNew.codigo}`);
             starCountRef.on('value', (snapshot) => {
                 const cod = snapshot.val();
                 if (cod) {
-                    if (cod.estado !== 'activo') {
-                        //codigo usado
-                        this.setState({ errorCodigo: true });
-                        this.setState({ formError: true });
-                        this.setState({ mensajeCodigo: { titulo: 'Codigo incorrecto', detalle: 'El codigo ya ha sido utilizado' } });
-
-                    }
-                    else {
-
-                        this.close();
-                        //this.props.signOut();
-                        // this.props.nuevoUsuarios(false);
-                        this.renderCrearUsuario(cod);
-                        history.push('/dashboard');
-                    }
-
-                }
-                else {
-                    //codigo que no existe
-                    this.setState({ errorCodigo: true });
-                    this.setState({ formError: true });
-                    this.setState({ mensajeCodigo: { titulo: 'Codigo incorrecto', detalle: 'No se tiene ninguna concidencia con el codigo escrito' } });
-
+                    this.close();
+                    this.renderCrearUsuario(cod);
+                    return;
                 }
             });
         }
+
     }
 
-    handleOpen = () => {
-        this.timeout = setTimeout(() => {
-
-            //Carga la otra configurcion de gmail
-            if (window.gapi.client.calendar) {
-                window.gapi.client.calendar.calendars.insert({
-                    "resource": {
-                        "summary": "hupity"
-                    }
-                })
-                    .then((response) => {
-                        // alert(response.result.id);
-                        // Handle the results here (response.result has the parsed body).
-                        this.setState({ calendar: response.result.id })
-                        //calendario google
-
-                        //  console.log(response.result);
-                        firebase.database().ref(`Usuario-CalendarGoogle/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
-                            idCalendar: response.result.id,
-                            estado: 'activo',
-                        });
-                    },
-                        function (err) { console.error("Execute error", err); });
-            }
-        }, timeoutLength)
+    crearCalendario = () => {
+        //Carga la otra configurcion de gmail
+        if (window.gapi.client.calendar) {
+            window.gapi.client.calendar.calendars.insert({
+                "resource": {
+                    "summary": "hupity"
+                }
+            })
+                .then((response) => {
+                    // alert(response.result.id);
+                    // Handle the results here (response.result has the parsed body).
+                    this.setState({ calendar: response.result.id })
+                    //calendario google
+                    //  console.log(response.result);
+                    firebase.database().ref(`Usuario-CalendarGoogle/${this.state.id}`).set({
+                        idCalendar: response.result.id,
+                        estado: 'activo',
+                    });
+                },
+                    function (err) { console.error("Execute error", err); });
+        }
     }
 
     renderCrearUsuario(cod) {
-
-        let keyEquipo;
-
         window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
             .then(() => {
-
-                console.log("GAPI client loaded for API");
+                this.crearCalendario();
             },
                 function (err) { console.error("Error loading GAPI client for API", err); });
 
-        this.handleOpen();
-        const Empresas = this.props.detailUsNew.listaEmpresas;
-        const sel = this.props.detailUsNew.empresa;
-
-        Object.keys(Empresas).map(function (key, index) {
-            if (Empresas[key].industria === sel)
-                keyEquipo = key;
+        const keyEquipoEmp = firebase.database().ref().child('Empresa-Equipo').push().key;
+        const keyEmpresa = firebase.database().ref().child('empresa').push().key;
+        //Crea una nueva empresa
+        firebase.database().ref(`empresa/${keyEmpresa}`).set({
+            empresa: this.props.detailUsNew.empresa,
+            industria: this.props.detailUsNew.sector,
+            nEquipos: 1
         });
-        console.log(this.props.usuarioDetail);
-        //Crea un nuevo equipo
-        var newPostKey1 = firebase.database().ref().child('Empresa-Equipo').push().key;
-        if (this.props.detailUsNew.listaEquipos.equipoNuevo && this.props.detailUsNew.listaEquipos.equipoNuevo.nombreTeam === this.props.detailUsNew.equipo) {
 
-            firebase.database().ref(`Empresa-Equipo/${keyEquipo}/${newPostKey1}`).set({
-                cargo: this.props.detailUsNew.cargo,
-                fechaCreado: new Date().toString(),
-                nombreTeam: this.props.detailUsNew.equipo,
-                responsable: this.props.detailUsNew.nombreUsuario,
-                idUsuario: this.props.usuarioDetail.usuarioNuevo.id,
-                estado: 'activo',
-
-            });
-        }
-        else {
-            //Encuentra el identificador del equipo
-            const Equipos = this.props.detailUsNew.listaEquipos;
-            const sel = this.props.detailUsNew.equipo;
-            Object.keys(Equipos).map(function (key, index) {
-                if (Equipos[key].nombreTeam === sel)
-                    newPostKey1 = key;
-            });
-
-        }
+        //Crea una nueva empresa
+        firebase.database().ref(`Empresa-Equipo/${keyEmpresa}/${keyEquipoEmp}`).set({
+            empresa: this.props.detailUsNew.empresa,
+            cargo: this.props.detailUsNew.cargo,
+            nombreTeam: this.props.detailUsNew.equipo,
+        });
 
         //crea el espacio de trabajo
-        console.log(this.props.detailUsNew);
         if (this.props.detailUsNew.codigoWSdrive) {
-            firebase.database().ref(`Usuario-WS/${keyEquipo}/${newPostKey1}/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+            firebase.database().ref(`Usuario-WS/${keyEmpresa}/${keyEquipoEmp}/${this.state.id}`).set({
                 fechaCreado: new Date().toString(),
                 linkWs: this.props.detailUsNew.codigoWSdrive,
                 usuarioSlack: this.props.detailUsNew.userSlack,
@@ -186,67 +123,56 @@ class FomrularioGlobal extends React.Component {
             });
         }
         //crea el usuario slack
-        //console.log(response);
-
-
-        firebase.database().ref(`Usuario-Slack/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+        firebase.database().ref(`Usuario-Slack/${this.state.id}`).set({
             tokenP: this.props.detailUsNew.tokenSlack,
             tokenB: this.props.detailUsNew.tokenBot,
             usuarioSlack: this.props.detailUsNew.userSlack,
             fechaCreado: new Date().toString(),
         });
 
-
-
         //crear usuario perfil
         if (this.props.detailUsNew.tipo === 'Huper') {
-            firebase.database().ref(`Usuario-Perfil/1/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+            firebase.database().ref(`Usuario-Perfil/1/${this.state.id}`).set({
                 estado: 'activo',
             });
             //crear usuario rol
-            firebase.database().ref(`Usuario-Rol/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+            firebase.database().ref(`Usuario-Rol/${this.state.id}`).set({
                 Rol: '3',
             });
         }
         else if (this.props.detailUsNew.tipo === 'Gestor') {
-            firebase.database().ref(`Usuario-Perfil/3/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+            firebase.database().ref(`Usuario-Perfil/3/${this.state.id}`).set({
                 estado: 'activo',
             });
             //crear usuario rol
-            firebase.database().ref(`Usuario-Rol/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+            firebase.database().ref(`Usuario-Rol/${this.state.id}`).set({
                 Rol: '2',
             });
         }
 
-
-
-
-
         //crear empresa- usuario
-
-        firebase.database().ref(`empresa-Usuario/${keyEquipo}/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+        firebase.database().ref(`empresa-Usuario/${keyEmpresa}/${this.state.id}`).set({
             estado: 'activo',
         });
 
-
         //crea usuario
-        firebase.database().ref(`Usuario/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+        firebase.database().ref(`Usuario/${this.state.id}`).set({
             area: this.props.detailUsNew.area,
             cargo: this.props.detailUsNew.cargo,
             canalSlack: this.props.detailUsNew.userSlack,
             email: this.props.usuarioDetail.usuarioNuevo.correo,
-            empresa: keyEquipo,
-            equipo: newPostKey1,
+            empresa: keyEmpresa,
+            equipo: keyEquipoEmp,
             usuario: this.props.detailUsNew.nombreUsuario,
             wsCompartida: this.props.detailUsNew.codigoWSdrive ? this.props.detailUsNew.codigoWSdrive : null,
             fechaCreado: new Date().toString(),
             codigo: this.props.detailUsNew.codigo,
             estado: 'activo',
-
+            onboarding: false,
         });
 
         // gener  la primera formacion 
-        firebase.database().ref(`Usuario-Formcion/${this.props.usuarioDetail.usuarioNuevo.id}/-LYWrWd_8M174-vlIkwv`).set({
+        firebase.database().ref(`Usuario-Formcion/${this.state.id}/-LYWrWd_8M174-vlIkwv`).set({
             fecha: new Date().toString(),
             concepto: "El método de la Caja de Eisenhower para impulsar tu productividad",
             detalle: "Aprende a diferencias tus actividades urgentes de las importantes",
@@ -255,30 +181,24 @@ class FomrularioGlobal extends React.Component {
         });
 
         cod.estado = 'usado';
+        cod.usuarios = cod.usuarios + 1;
 
         firebase.database().ref(`Codigo-Acceso/${this.props.detailUsNew.codigo}`).set({
             ...cod,
             fechaUso: moment().format('YYYY-MM-DD'),
-
         })
 
+        firebase.database().ref(`Usuario-CodeTemporal/${this.state.id}`).remove();
+        firebase.database().ref(`Usuario-Temporal/${this.state.id}`).remove();
+        history.push('/');
 
-        firebase.database().ref(`Usuario-CodeTemporal/${this.props.usuarioDetail.usuarioNuevo.id}`).remove();
-        firebase.database().ref(`Usuario-Temporal/${this.props.usuarioDetail.usuarioNuevo.id}`).remove();
     }
-
-
-
-
-
-
 
     cancelar = () => {
         this.close();
         this.props.signOut();
         this.props.nuevoUsuarios(false);
         history.push('/');
-     //   history.push('/login');
     }
 
     close = () => this.setState({ open: false })
@@ -294,21 +214,13 @@ class FomrularioGlobal extends React.Component {
         }
 
         return (
-
-
-
             <Modal size='tiny' open={this.state.open} >
                 <Modal.Header>Bienvenido a hupity</Modal.Header>
                 <Modal.Content image>
                     <div className="ui form" >
                         <div className="ui grid">
-                            <Modal.Description style={{width: '38em'}}>
+                            <Modal.Description style={{ width: '38em' }}>
                                 <Form error={this.state.formError}>
-
-                                    <Form.Input label='Codigo de acceso' fluid placeholder='Escribe el codigo de acceso dado por Hupity' error={this.state.errorCodigo}
-                                        value={this.props.detailUsNew ? this.props.detailUsNew.codigo : null}
-                                        onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, codigo: value })}
-                                    />
 
                                     <Form.Checkbox label='Esta de acuedo con los terminos y condiciones'
                                         error={this.state.errorAcepto}
@@ -330,33 +242,24 @@ class FomrularioGlobal extends React.Component {
                         Cancelar
                      </Button>
                     <Button
-
-                        color="purple"
+                        style={{ background: 'linear-gradient(to right, #fce64d -30%, rgb(255, 106, 0)100%)' }}
                         icon='arrow right'
                         labelPosition='right'
                         content="Comenzar"
                         onClick={this.ingreso}
                         disabled=
                         {
-                            this.props.usuarioDetail && (
-                                !this.props.detailUsNew.codigo ||
-                                !this.props.detailUsNew.acepto)
+                            this.props.usuarioDetail && !this.props.detailUsNew.acepto
                         }
-                    //  disabled={this.props.detailUsNew ? this.props.detailUsNew.tipo ? false : true : true}
                     />
-
-
                 </Modal.Actions>
             </Modal>
-
         );
     }
-
 }
 
 const mapStateToProps = (state) => {
     return {
-        //   usuarioDetail: state.chatReducer.usuarioDetail,
         usuarioDetail: state.chatReducer.usuarioDetail,
         isSignedIn: state.auth.isSignedIn,
         detailUsNew: state.chatReducer.detailUsNew,

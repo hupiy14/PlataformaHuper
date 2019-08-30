@@ -44,7 +44,8 @@ class FomrularioGlobal extends React.Component {
         this.close();
         this.props.signOut();
         this.props.nuevoUsuarios(false);
-        history.push('/login');
+        history.push('/');
+        //history.push('/login');
     }
     continuar() {
         let error = false;
@@ -135,7 +136,7 @@ class FomrularioGlobal extends React.Component {
                                     {equipo}
 
                                     <h3>Sincronizate con las herramientas</h3>
-                                    <a onClick={this.clickGuardarTemporal} href={`https://slack.com/oauth/authorize?scope=bot&redirect_uri=https://hupity-9b190.firebaseapp.com&client_id=482555533539.532672221010`}><img src="https://api.slack.com/img/sign_in_with_slack.png" /></a>
+                                    <a onClick={this.clickGuardarTemporal} href={`https://slack.com/oauth/authorize?scope=bot&redirect_uri=https://app.hupity.com&client_id=482555533539.532672221010`}><img src="https://api.slack.com/img/sign_in_with_slack.png" /></a>
                                     <Message
                                         error
                                         header={this.state.mensajeCodigo ? this.state.mensajeCodigo.titulo : 'Falta campos por llenar'}
@@ -149,10 +150,7 @@ class FomrularioGlobal extends React.Component {
                 <Modal.Actions>
                     <Button color='grey' onClick={this.cancelar}>
                         Cancelar
-                        </Button>
-
-
-
+                    </Button>
                 </Modal.Actions>
             </Modal>
 

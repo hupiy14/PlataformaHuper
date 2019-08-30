@@ -363,7 +363,7 @@ class ListaObjetivosEquipo extends React.Component {
                             top: '-170px',
                             left: '50px',
                             position: 'relative',
-                        }} ><p> <i key={i} className="share icon" /> "  {file.name} "  <a onClick={() => { this.renderEliminarArchivo(`${filesID}`) }} style={{ background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 80%)' }} className="ui  tiny tag label">Eliminar</a>  </p><br /></div>);
+                        }} ><p> <i key={i} className="share icon" /> "  {file.name} "  <a onClick={() => { this.renderEliminarArchivo(`${filesID}`) }} style={{ background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 100%)' }} className="ui  tiny tag label">Eliminar</a>  </p><br /></div>);
                         //  console.log(imprimir);
                     }
                     this.setState({ files: imprimir });
@@ -407,7 +407,7 @@ class ListaObjetivosEquipo extends React.Component {
                                         top: '-170px',
                                         left: '50px',
                                         position: 'relative',
-                                    }} ><p> <i key={i} className="share icon" /> "  {file.name} "  <a onClick={() => { this.renderEliminarArchivo(`${filesID}`) }} style={{ background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 80%)' }} className="ui  tiny tag label">Eliminar</a>  </p><br /></div>);
+                                    }} ><p> <i key={i} className="share icon" /> "  {file.name} "  <a onClick={() => { this.renderEliminarArchivo(`${filesID}`) }} style={{ background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 100%)' }} className="ui  tiny tag label">Eliminar</a>  </p><br /></div>);
                                     //  console.log(imprimir);
                                 }
                                 this.setState({ files: imprimir });
@@ -481,7 +481,7 @@ class ListaObjetivosEquipo extends React.Component {
             const equipoC = this.props.equipoConsulta;
             let comEquipo = [];
 
-
+            if (!tareas.comentarios) return;
             Object.keys(tareas.comentarios).map((key3, index) => {
                 let color = 'linear-gradient(to top, #ffffff00 14%, #fda12a 105%)';
                 let pos = '30px 30px 30px 0px ';
@@ -710,7 +710,7 @@ class ListaObjetivosEquipo extends React.Component {
     }
 
 
-   
+
 
     handleOpen = () => {
         this.setState({ modalOpen: true });
@@ -810,7 +810,7 @@ class ListaObjetivosEquipo extends React.Component {
                     //factor de progreso por horas 
                     let factorSemana = 0;
                     let factorObjetivo = 0;
-                  
+
                     if (this.state.factores !== null) {
                         Object.keys(this.state.factores).map((keyfac, index) => {
                             if (cconsulta[key2].idUsuario === this.state.factores[keyfac].usuario)
@@ -869,7 +869,7 @@ class ListaObjetivosEquipo extends React.Component {
 
                     let style = {
                         borderRadius: '35px',
-                        background: 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 144, 4) 80%)',
+                        background: 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 144, 4) 100%)',
                         height: '40em',
                         top: '12em',
 
@@ -883,7 +883,7 @@ class ListaObjetivosEquipo extends React.Component {
                         if (fec < new Date()) {
                             style = {
                                 borderRadius: '35px',
-                                background: 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 80, 0) 80%)',
+                                background: 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 80, 0) 100%)',
                                 height: '40em',
                                 top: '12em',
 

@@ -37,9 +37,10 @@ import {
     ESTADO_CHAT,
     MENSAJEVIELY,
     OBJ_TIM,
-
+    DATO_CLOSE,
     CEL_CHAT,
     CEL_PERF,
+    DATOS_EDIT_CEL,
 
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -83,9 +84,10 @@ const INITIAL_STATE = {
     estadochat: null,
     MensajeIvily: null,
     objTIM: null,
-
+    datoClose: false,
     celChat: null,
     celPerf: null,
+    datosEditCel: null,
 
 };
 
@@ -174,6 +176,10 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, primeraV: action.payload };
         case CEL_PERF:
             return { ...state, celPerf: action.payload };
+        case DATOS_EDIT_CEL:
+            return { ...state, datosEditCel: action.payload };
+        case DATO_CLOSE:
+            return { ...state, datoClose: action.payload };
         default:
             return state;
 

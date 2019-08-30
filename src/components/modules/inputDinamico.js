@@ -43,11 +43,11 @@ class InputDinamico extends React.Component {
     render() {
         return (
 
-            <div class="ui labeled input" style={{ 'margin-left': '26%' }}>
+            <div class="ui labeled input" >
                 <div class="ui label" style={{ background: 'linear-gradient(to right, rgb(255, 241, 217) 40%, rgba(243, 130, 38, 0.97) 150%)', 'border-radius': '5px' }}>
                     {this.props.labelDinamico + " ..."}
                 </div>
-                <input type="text" style={{ 'border-radius': '15px', width: '100%' }} placeholder="Contacto, Diseño o Investigación" key={this.props.keyDinamico}
+                <input type="text"  style={{ 'border-radius': '5px', width: '40%' }} placeholder="Contacto, Diseño o Investigación" key={this.props.keyDinamico}
 
                     value={this.state.inputDinamicoState}
                     onChange={e => { this.renderInput(this.props.keyDinamico.toString(), e.target.value, this.props.labelDinamico); this.setState({ inputDinamicoState: e.target.value }) }} />

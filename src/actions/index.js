@@ -95,14 +95,14 @@ const escribirUsuario = (userId) => {
     var newPostKey2 = firebase.database().ref().child('Preguntas-Chat').push().key;
     
 
-    const starCountRef = firebase.database().ref().child(`Preguntas-Chat/-LWk8_7EYCjLe-twidsN`);
+    const starCountRef = firebase.database().ref().child(`Preguntas-Chat/-LXt_TDJQilcvBxWh955`);
     starCountRef.on('value', (snapshot) => {
     
     
-   //firebase.database().ref(`Preguntas-Chat/${newPostKey2}`).set({
+   /*firebase.database().ref(`Preguntas-Chat/${newPostKey2}`).set({
       //  opciones:  "1.Emocionante>newspaper$#08d83c, 2.Intrigante>newspaper$#80d808, 3. Normal>newspaper$#d8d008,  4. Rutinario>newspaper$#d87908, 5. Aburrido>newspaper$#d81008",
        
-     // ...snapshot.val()
+       ...snapshot.val()
        // tipoPregunta: '8'
         //tipo: 2
 
@@ -125,7 +125,7 @@ const escribirUsuario = (userId) => {
         //   opciones: 'Unico,Empieza en tu flujo de trabajo',
         // opciones: 'Que esta haciendo mi huper,Crear un Objetivo,Dar un Feedback',
         //  tipoPregunta: '1',
-    //});
+      });*/
     });
 
 

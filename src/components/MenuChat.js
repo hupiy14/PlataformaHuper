@@ -6,11 +6,12 @@ import firebase from 'firebase';
 import moment from 'moment';
 import { Image } from 'semantic-ui-react'
 import chat from '../images/chat2.png';
-import { MensajeIvilys, estadochats } from './modules/chatBot/actions';
+import { MensajeIvilys, estadochats, datoCloses } from './modules/chatBot/actions';
 import { chatOn, chatOff, } from '../actions';
 
 
 const timeoutLength = 500;
+
 
 class MenuChat extends React.Component {
 
@@ -67,17 +68,21 @@ class MenuChat extends React.Component {
             );
         }
     }
-
+  
 
     handlePasoR = () => {
         this.timeout = setTimeout(() => {
-
+         
             this.props.chatOn();
+       
         }, timeoutLength)
     }
     onChat = () => {
         if (this.props.isChat) {
+           
+            this.props.datoCloses(true);     
             this.props.chatOff();
+           
 
             if (this.state.inicio === "chatGestorAni" || this.state.inicio === "chatGestorAniCel")
                 this.setState({ inicio: window.screen.width <= 500 ? 'chatGestorAni2Cel' : 'chatGestorAni2' })
@@ -112,7 +117,7 @@ class MenuChat extends React.Component {
 
             if (moment(moment(diaS).format('YYYY-MM-DD')) < moment())
                 diaS = moment();
-            console.log(diaS.format('YYYY-MM-DD'));
+          //  console.log(diaS.format('YYYY-MM-DD'));
 
             const ConsultaAct = firebase.database().ref().child(`Usuario-Activiades/${this.props.usuarioDetail.idUsuario}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`);
             ConsultaAct.on('value', (snapshot) => {
@@ -126,18 +131,19 @@ class MenuChat extends React.Component {
                     this.props.MensajeIvilys({ ...this.props.MensajeIvily, ...snapshot.val() })
             });
 
+           
             this.handlePasoR();
         }
 
     };
 
     renderMenu() {
-        if (this.props.isSignedIn) {
+        if (this.props.isSignedIn && this.props.celPerf != 'menu') {
 
 
             let btChat =
                 <div className={"foot-chat"} >
-                    <button onClick={this.onChat} style={{ background: this.state.colorC, transform: 'scale(0.25)' }} className={"massive ui  tiny circular lightbulb outline icon button " + this.state.inicio}>
+                    <button onClick={()=>{this.onChat()}} style={{ background: this.state.colorC, transform: 'scale(0.25)' }} className={"massive ui  tiny circular lightbulb outline icon button " + this.state.inicio}>
                         <Image size="medium" style={{ transform: 'scale(1.5)', position: 'relative', top: '19px' }}
                             src={chat} id='2' />
                     </button>
@@ -154,7 +160,7 @@ class MenuChat extends React.Component {
 
                         position: 'fixed', left: '82%', width: '8em', bottom: '-8%', transform: 'scale(1.5)', 'z-index': '6'
                     }}>
-                        <button onClick={this.onChat} con style={{ background: this.state.colorC, transform: 'scale(0.5)', left: ' -1.1em', top: '-1em', position: 'relative' }} className={"massive ui  tiny circular lightbulb outline icon button " + this.state.inicio}>
+                        <button onClick={()=>{this.onChat()}}  style={{ background: this.state.colorC, transform: 'scale(0.5)', left: ' -1.1em', top: '-1em', position: 'relative' }} className={"massive ui  tiny circular lightbulb outline icon button " + this.state.inicio}>
 
                             <Image size="medium" style={{ transform: 'scale(1.8)', position: 'relative' }}
                                 src={chat} id='2' />
@@ -203,6 +209,7 @@ class MenuChat extends React.Component {
     handleCloseChat = () => {
         this.timeout = setTimeout(() => {
             this.props.chatOff();
+         
         }, timeoutLength)
     }
 
@@ -242,9 +249,10 @@ const mapStateToProps = (state) => {
         MensajeIvily: state.chatReducer.MensajeIvily,
         estadochat: state.chatReducer.estadochat,
         tipoPregunta: state.chatReducer.tipoPregunta,
+        celPerf: state.chatReducer.celPerf,
 
     };
 };
 
 
-export default connect(mapStateToProps, { chatOn, chatOff, MensajeIvilys, estadochats })(MenuChat);
+export default connect(mapStateToProps, { chatOn, chatOff, datoCloses, MensajeIvilys, estadochats })(MenuChat);

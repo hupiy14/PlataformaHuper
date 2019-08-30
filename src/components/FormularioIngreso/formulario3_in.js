@@ -18,14 +18,12 @@ const AreasT = [
 ]
 
 
-
-
 class FomrularioGlobal extends React.Component {
 
     state = {
         listaEmpresas: {}, listaEquipos: {},
         errorTipo: null, tipo: null, formError: null, momento: null, nombreUsuario: null, errorNombreUsuario: null, open: true,
-        cargo: null, error: null, errorCargo: null, area: null, errorArea: null, empresa: null, errorEmpresa: null
+        cargo: null, error: null, errorEquipo: null, errorCargo: null, area: null, errorArea: null, empresa: null, errorEmpresa: null
     }
 
     componentDidMount() {
@@ -41,9 +39,7 @@ class FomrularioGlobal extends React.Component {
     handleAddition = (e, { value }) => {
         //se agrega un nuevo equipo
         const equipoNuevo = { nombreTeam: value };
-
         this.setState({
-
             listaEquipos: { equipoNuevo, ...this.state.listaEquipos }
         })
         this.props.detailUsNews({ ...this.props.detailUsNew, listaEquipos: this.state.listaEquipos });
@@ -58,14 +54,7 @@ class FomrularioGlobal extends React.Component {
         else {
             this.setState({ errorNombreUsuario: false });
         }
-        if (this.props.detailUsNew.area.trim() === '') {
-            this.setState({ errorArea: true });
-            error = true;
-        }
-        else {
-            this.setState({ errorArea: false });
-        }
-
+       
         if (this.props.detailUsNew.cargo.trim() === '') {
             this.setState({ errorCargo: true });
             error = true;
@@ -74,35 +63,12 @@ class FomrularioGlobal extends React.Component {
             this.setState({ errorCargo: false });
         }
 
-        if (!this.props.detailUsNew.empresa) {
-            this.setState({ errorEmpresa: true });
-            error = true;
-        }
-        else {
-            this.setState({ errorEmpresa: false });
-        }
-
-
         this.setState({ formError: error });
 
-
-        if (this.props.detailUsNew.empresa) {
-            let keyEquipo;
-            const Empresas = this.state.listaEmpresas;
-            const sel = this.props.detailUsNew.empresa;
-            Object.keys(Empresas).map(function (key, index) {
-                if (Empresas[key].industria === sel)
-                    keyEquipo = key;
-            });
-            console.log(keyEquipo);
-            const starCountRef = firebase.database().ref().child(`Empresa-Equipo/${keyEquipo}`);
-            starCountRef.on('value', (snapshot) => {
-                this.props.detailUsNews({ ...this.props.detailUsNew, listaEquipos: snapshot.val() });
-                this.setState({ listaEquipos: snapshot.val() })
-            });
-        }
-        if (!error)
-            history.push('/formulario/equipo');
+            if (!error) {
+                this.props.detailUsNews({ ...this.props.detailUsNew, tipo: 'Huper' })
+                history.push('/formulario/herramientas');
+            }
 
     }
     close = () => this.setState({ open: false })
@@ -123,47 +89,31 @@ class FomrularioGlobal extends React.Component {
         this.props.signOut();
         this.props.nuevoUsuarios(false);
         history.push('/');
-       // history.push('/login');
+        // history.push('/login');
     }
 
     render() {
         return (
-
-
 
             <Modal size='tiny' open={this.state.open} >
                 <Modal.Header>Bienvenido a hupity</Modal.Header>
                 <Modal.Content image>
                     <div className="ui form" >
                         <div className="ui grid">
-                            <Modal.Description style={{width: '38em'}} >
+                            <Modal.Description style={{ width: '38em' }} >
                                 <Form error={this.state.formError} >
 
-                                    <Form.Input label='Nombre Usuario' placeholder='Cual es tu nombre?'
+                                    <Form.Input label='¿Como te llamas?' placeholder='Como te gustaría que te llamaran'
                                         value={this.props.detailUsNew ? this.props.detailUsNew.nombreUsuario : null}
                                         onChange={e => this.props.detailUsNews({ ...this.props.detailUsNew, nombreUsuario: e.target.value })}
                                         error={this.state.errorNombreUsuario}
                                     />
-                                    <Form.Select label='Empresa' options={this.renderOpcionesEmpresa()} placeholder='Cual es tu Empresa?'
-                                        search
-                                        onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, empresa: value })}
-                                        value={this.props.detailUsNew ? this.props.detailUsNew.empresa : null}
 
-                                        error={this.state.errorEmpresa}
-                                    />
-                                    <Form.Input label='Cargo' placeholder='Que cargo tienes?'
-
+                                    <Form.Input label='¿Que cargo tienes?' placeholder='Escribe el cargo'
                                         value={this.props.detailUsNew ? this.props.detailUsNew.cargo : null}
                                         onChange={e => this.props.detailUsNews({ ...this.props.detailUsNew, cargo: e.target.value })}
                                         error={this.state.errorCargo}
                                     />
-
-                                    <Form.Select label='Area' options={AreasT} placeholder='¿En qué departamento de la empresa laboras?'
-                                        value={this.props.detailUsNew ? this.props.detailUsNew.area : null}
-                                        onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, area: value })}
-                                        error={this.state.errorArea}
-                                    />
-
                                     <Message
                                         error
                                         header='Falta campos por llenar'
@@ -182,7 +132,7 @@ class FomrularioGlobal extends React.Component {
           </Button>
 
                     <Button
-                        color="purple"
+                        style={{ background: 'linear-gradient(to right, #fce64d -30%, rgb(255, 106, 0)100%)' }} 
                         icon='arrow right'
                         labelPosition='right'
                         content="Un paso Mas"

@@ -353,7 +353,7 @@ class ListaObjetivosEquipo extends React.Component {
 
                     let style = {
                         borderRadius: '10px',
-                        background: this.props.equipoConsulta.sell === key2 ? 'linear-gradient(to top, rgb(255, 255, 255) 35%, rgb(196, 24, 214) 120%)' : 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 144, 4) 80%)',
+                        background: this.props.equipoConsulta.sell === key2 ? 'linear-gradient(to top, rgb(255, 255, 255) 35%, rgb(196, 24, 214) 120%)' : 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 144, 4) 180%)',
                         left: '25px',
                         height: '6em',
                         width: '234px',
@@ -368,7 +368,7 @@ class ListaObjetivosEquipo extends React.Component {
                                 borderRadius: 0.5,
                                 background: '#f9e63340',
                                 borderRadius: '10px',
-                                background: this.props.equipoConsulta.sell === key2 ? 'linear-gradient(to top, rgb(255, 255, 255) 35%, rgb(196, 24, 214) 120%)' : 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 80, 0) 80%)',
+                                background: this.props.equipoConsulta.sell === key2 ? 'linear-gradient(to top, rgb(255, 255, 255) 35%, rgb(196, 24, 214) 120%)' : 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 80, 0) 180%)',
                                 left: '25px',
                                 height: '6em',
                                 top: '25px',
@@ -396,8 +396,8 @@ class ListaObjetivosEquipo extends React.Component {
 
 
                     let topA = -(Math.round((cconsulta[key2].concepto.length + 6) / 15) * 15) - 20;
-
-                    let imagenT = images[y] ? images[y].urls.regular : null;
+                   if(!images[y]) return;
+                    let imagenT = images[y] ? images[y].urls.regular : null ;
 
                     if (nObj === 0 && !this.props.equipoConsulta.sell && !this.state.est )
                         {

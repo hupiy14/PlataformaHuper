@@ -1,20 +1,15 @@
 import React from 'react';
 import { Button, Form, Icon, Modal, Segment, Input, Dimmer, Loader, Message } from 'semantic-ui-react';
 import { connect } from 'react-redux';
-import { inputDinamicos } from './chatBot/actions';
-import { slackApis } from '../../actions/index';
+import { inputDinamicos } from '../modules/chatBot/actions';
+import { slackApis } from '../../apis/slackApi';
 import { signOut, usuarioDetails } from '../../actions';
 import history from '../../history';
 import firebase from 'firebase';
 
 //input dinamico
-import InputDinamico from './inputDinamico';
+import InputDinamico from '../modules/inputDinamico';
 import { object } from 'prop-types';
-
-
-
-
-
 
 
 class newFlowWork extends React.Component {
@@ -98,8 +93,8 @@ class newFlowWork extends React.Component {
             let bt = null;
             if (key > 0)
                 bt = <Button icon="trash alternate outline" circular  size="medium" style={{
-                    background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)',
                     left: '2%',
+                    background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)',
                     position: 'relative'
                 }} onClick={() => { the.renderBorrarDato(listaX[key].id) }}></Button>
 
@@ -156,17 +151,16 @@ class newFlowWork extends React.Component {
 
             <Form style={{
                 'text-align': 'center',
-                'margin-left': '10%',
                 background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)',
-                width: '80%', 'border-radius': '20px',
+                'border-radius': '20px',
             }} >
                 <br />
                 <div className=" center menu">
-                    <h3 style={{  }}>Describe el flujo de trabajo de tus actividades</h3>
+                    <h3 style={{'text-align': 'center' }}>Describe el flujo de trabajo de tus actividades</h3>
                     {this.renderInputs(this)}
                     <Button icon="plus" circular  size="medium" style={{
-                        top: '-30px',
-                        left: '30%',
+                        top: '-5px',
+                        left: '40%',
                         background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 70.6%, rgb(236, 206, 31) 200%)',
                         transform: 'scale(1.3)',
                         position: 'relative'
@@ -176,7 +170,6 @@ class newFlowWork extends React.Component {
                 <br />
                 <Button content="Guardar" icon="save"  style={{
                     top: '-40px',
-                   
                     position: 'relative',
                     background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 80%)'
                 }} onClick={() => { this.renderGuardarFlujo(); }}></Button>

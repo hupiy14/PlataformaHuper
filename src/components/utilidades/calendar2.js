@@ -2,7 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import Calendar from 'react-calendar';
 import firebase from 'firebase';
-import { Popup } from 'semantic-ui-react';
+import { Popup, Button } from 'semantic-ui-react';
+import { Link } from 'react-router-dom';
 
 class CalendarApp extends React.Component {
     state = {
@@ -29,7 +30,7 @@ class CalendarApp extends React.Component {
         const nameRef2 = firebase.database().ref().child(`Usuario-DiaTeletrabajo/${this.props.userId}/${fecha.getFullYear()}/${this.getWeekNumber(fecha)}`)
         nameRef2.on('value', (snapshot2) => {
             if (snapshot2.val()) {
-                this.setState({ date: new Date(snapshot2.val().year, snapshot2.val().mes, snapshot2.val().dia )} );
+                this.setState({ date: new Date(snapshot2.val().year, snapshot2.val().mes, snapshot2.val().dia) });
 
             }
 
@@ -70,8 +71,12 @@ class CalendarApp extends React.Component {
 
     render() {
         this.validarFechaSemana();
-
-
+        let btAtras = null;
+        if (window.screen.width <= 500 || (window.screen.height <= 500 && window.screen.width <= 800)) {
+            btAtras = <Link to="/menucel"  >
+                <Button content="Atras" style={{ position: 'relative', left: '20%' }} color="grey"></Button>
+            </Link>
+        }
         return (
             <div className="ui column">
                 <h3>Seleccciona tu dia Importante</h3>
@@ -82,15 +87,17 @@ class CalendarApp extends React.Component {
                     value={this.state.date}
                 />
                 <br></br>
+                {btAtras}
+                <Popup trigger={
 
-                <Popup trigger={<button className="ui button center yellow  calendarioF" onClick={this.SelecionarDiaTeletrabajo}>
-                    <i className="calendar check outline icon"></i>
-                    Seleccionar </button>}
+                        <button className="ui button center yellow  calendarioF" onClick={this.SelecionarDiaTeletrabajo}>
+                            <i className="calendar check outline icon"></i>
+                            Seleccionar </button>
+                    }
 
                     on='click'
                     hideOnScroll
                     content={`Haz selecionado el dia ${this.state.date.getDate()}/${this.state.date.getMonth() + 1}/${this.state.date.getFullYear()} `} />
-
 
 
 

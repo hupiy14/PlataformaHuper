@@ -3,34 +3,40 @@ import { connect } from 'react-redux';
 import { createStream, chatOff, chatOn } from '../../actions';
 import ListImportan from '../utilidades/listaImportante';
 import ListEjemplo from '../utilidades/ListaEjemplo';
-import Calendario2 from '../utilidades/calendar2';
 import CrearGrafica from '../utilidades/CrearGrafica';
 import CrearGrafica2 from '../utilidades/CrearGrafica2';
 import '../styles/ingresoHupity.css';
 import randomScalingFactor from '../../lib/randomScalingFactor';
-import { Line } from 'react-chartjs-2';
+
 import ListaActividades from './actividades';
-import DashGestor from '../gestorModules/dashGestor';
-import Hupps from '../modules/Hupps';
+import DashGestor from '../gestorModules/dashboardG';
 import firebase from 'firebase';
 import moment from 'moment';
 import history from '../../history';
+import construccion from '../../images/construccion.JPG'
 
 
 
-
-import { Grid, Modal, Menu, Segment, Button, Dimmer, Header, Icon, Image, Portal, Step, Label, Checkbox } from 'semantic-ui-react';
+import { Popup, Modal, Menu, Segment, Button, Dimmer, Header, Icon, Image, Input, Step, Label, Checkbox, List } from 'semantic-ui-react';
 import MenuChat from '../MenuChat';
-import { pasoOnboardings, listaFormaciones, estadochats, listaObjetivos } from '../modules/chatBot/actions';
-import { object } from 'prop-types';
+import { pasoOnboardings, listaFormaciones, prioridadObjs, estadochats, listaObjetivos, objTIMs, datosEditCels } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
 
-const timeoutLength = 1800;
-const timeoutLength2 = 2000;
+
+import Slider from 'react-animated-slider';
+import 'react-animated-slider/build/horizontal.css';
+import { Link } from 'react-router-dom';
+
+import { CircularProgressbar, buildStyles, CircularProgressbarWithChildren } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
+import AnimatedProgressProvider from "./AnimatedProgressProvider";
+import MenuEditObjeto from './menuEditO';
+
+import { easeQuadInOut } from "d3-ease";
+
 const timeoutLength3 = 100000;
-const timeoutLength4 = 500;
-const timeoutLength5 = 5000;
-const timeoutLength6 = 200;
+const timeoutLength1 = 1000;
+const timeoutLength6 = 3000;
 
 const labelsDias = [
     "Lunes",
@@ -101,6 +107,14 @@ class DashBoard extends React.Component {
         WorkFlow: null,
         images: null,
         buscar: ['company', 'business', 'worker', 'formal',],
+        ubicacionT: 20,
+        ubicacionTT: '12em',
+        ver: null,
+        titulo: null,
+        detalleO: null,
+        objetivoS: null,
+        cambio: 0,
+        factores: null,
     }
 
 
@@ -110,7 +124,6 @@ class DashBoard extends React.Component {
         this.setState({ open2: false })
         this.setState({ open3: false })
     }
-
 
     onSearchSubmit = async () => {
         const response = await unsplash.get('/search/photos', {
@@ -122,12 +135,17 @@ class DashBoard extends React.Component {
     }
 
     componentDidMount() {
+        if (!this.props.isSignedIn) {
+            history.push('/');
+            return;
+        }
+
         this.onSearchSubmit()
         // console.log(this.example2);
         let variable = {};
 
-        if (!this.props.isSignedIn)
-            history.push('/login');
+
+        //    history.push('/login');
 
         const starCountRef4 = firebase.database().ref().child(`Utilidades-Valoraciones`);
         starCountRef4.on('value', (snapshot) => {
@@ -173,16 +191,14 @@ class DashBoard extends React.Component {
             this.setState({ WorkFlow: snapshot.val() });
         });
 
-
-
-
-
         //carga el limite que las empresas definan
         datosPlanificados = [];
         const factorInicial = 100;
         const avanceInicial = 20;
         for (var i = 0; i < 6; i++)
             datosPlanificados.push(factorInicial - (i * avanceInicial));
+
+        this.handleActualizar();
     }
 
 
@@ -201,8 +217,8 @@ class DashBoard extends React.Component {
                 this.setState({ ticUsuario: snapshot2.val() ? snapshot2.val() : [] })
             });
 
-
             this.calculoDeAvance();
+
             this.renderGraficaSemana();
             this.setState({ open: true });
         }, timeoutLength6)
@@ -272,6 +288,57 @@ class DashBoard extends React.Component {
                 datos.push(acumulado);
         });
         return datos;
+    }
+
+
+    calculoDeAvance2() {
+        if (!this.props.listaObjetivo) return;
+        const objs = this.props.listaObjetivo.objetivos;
+        let factorEqHup = [];
+        //Encontrar factor
+        this.setState({ ObjsFactors: [] });
+        if (objs)
+            Object.keys(objs).map((key, index) => {
+
+                if (!objs[key] || !objs[key].concepto)
+                    return;
+
+                let facPrioridad = 1;
+                let facDificultad = 1;
+                let facRepeticiones = 1;
+                let facTipo = 1;
+                let facCompartido = objs[key].compartidoEquipo ? objs[key].porcentajeResp * 0.01 : 1;
+                let facCalidad = 1;
+                let facValidacion = 1;
+                let facProductividad = 1;
+                let nTareasFinalizados = 0;
+                let nTareas = 0;
+
+                //Object.keys(this.state.UtilFactors.Calidad).map((key2, index) =>{});
+                Object.keys(this.state.UtilFactors.Dificultad).map((key2, index) => {
+                    if (objs[key].dificultad === this.state.UtilFactors.Dificultad[key2].concepto)
+                        facDificultad = this.state.UtilFactors.Dificultad[key2].valor;
+                });
+                Object.keys(this.state.UtilFactors.Prioridad).map((key2, index) => {
+                    if (objs[key].prioridad === key2)
+                        facPrioridad = this.state.UtilFactors.Prioridad[key2];
+                });
+                Object.keys(this.state.UtilFactors.Tipo).map((key2, index) => {
+                    if (objs[key].tipo === this.state.UtilFactors.Tipo[key2].concepto)
+                        facTipo = this.state.UtilFactors.Tipo[key2].valor;
+                });
+                Object.keys(this.state.UtilFactors.ValidacionGestor).map((key2, index) => {
+                    if (objs[key].estado === this.state.UtilFactors.ValidacionGestor[key2].concepto)
+                        facValidacion = this.state.UtilFactors.ValidacionGestor[key2].valor;
+                });
+                //algoritmo de medicion del trabajo
+                const puntos = ((1 + facPrioridad + facTipo) * facRepeticiones * facDificultad) * facCompartido * facCalidad * facValidacion * facProductividad;
+                factorEqHup.push({ key, puntos, usuario: objs[key].idUsuario })
+
+            });
+
+
+        this.setState({ factores: factorEqHup })
     }
 
     calculoDeAvance() {
@@ -414,7 +481,7 @@ class DashBoard extends React.Component {
 
 
     renderGestor() {
-        return (<DashGestor />);
+        return (<Image src={construccion}></Image>);
     }
 
     handleDimmedChange(checked) {
@@ -572,20 +639,30 @@ class DashBoard extends React.Component {
             />
         );
     }
+
+
+
     handleItemClick2 = (e, { name }) => this.setState({ activeItem: name })
+    consultarMenus() {
+        const messages = document.getElementById('formScrol');
+        //  messages.scrollTop = messages.scrollHeight;
+        this.setState({ ubicacionTT: messages.scrollTop > 100 ? '30em' : '12em' })
+        this.setState({ ubicacionT: messages.scrollTop > 100 ? -280 : 20 })
+    }
     renderTeletrabajador() {
         //   <iframe className="yellow4" title="Ultimos archivos subidos" src={this.props.usuarioDetail ? `https://drive.google.com/embeddedfolderview?id=${this.props.usuarioDetail.linkws}#grid` : null}
+
+
 
         return (
 
             <div>
-
-                <div className="ui form">
+                <div className="ui form" onScrollCapture={() => { this.consultarMenus() }}>
                     <div className="two column stackable ui grid">
                         <div className="column five wide">
-                            <div className="ui segment" style={{
-                                position: 'relative', width: '80%', overflow: 'auto',
-                                left: '10%', top: '100px', height: '30em', 'background': 'linear-gradient(to top, rgb(247, 203, 122) 1%, rgb(255, 255, 255) 5%, rgb(245, 242, 224) 2000%)'
+                            <div className="ui segment" id="formScrol" style={{
+                                position: 'relative', width: '100%', overflow: 'auto',
+                                top: this.state.ubicacionT, height: this.state.ubicacionTT, 'background': 'linear-gradient(to top, rgb(247, 203, 122) 1%, rgb(255, 255, 255) 5%, rgb(245, 242, 224) 2000%)'
                             }}  >
                                 {this.renderListaActividades()}
                             </div>
@@ -599,6 +676,18 @@ class DashBoard extends React.Component {
 
 
 
+
+    TIMOBJ = () => {
+        this.timeout = setTimeout(() => {
+            this.props.chatOn();
+        }, timeoutLength1)
+    }
+    // habilita el tercer paso
+    handleActualizar = () => {
+        this.timeout = setTimeout(() => {
+            this.calculoDeAvance2();
+        }, timeoutLength1)
+    }
 
 
 
@@ -650,30 +739,214 @@ class DashBoard extends React.Component {
                 </Dimmer>
             }
 
+
+
             varriable = <div>
                 {pageActivi}
                 {this.renderTeletrabajador()}
             </div>
 
-
-
-
-
-
-
         }
         else if (this.props.userRol === '2') {
             varriable = this.renderGestor();
+            varriable = <Image src={construccion}></Image>
             //    console.log('Teletrabajador');
         }
 
 
 
+        //   <button>{item.button}</button>
+        if (!this.state.images || !this.props.listaObjetivo || !this.props.listaObjetivo.objetivos || !this.props.listaObjetivo.tareas)
+            return <div></div>;
 
+        let content2 = this.props.listaObjetivo.objetivos;
+        let indice = -1;
+        let factor = {};
+        //  const detalleOO =  cconsulta[key2].estado ? cconsulta[key2].estado : '';
+        let tareasCompleta = 0;
+        let resultado = 0;
+
+
+
+
+        let percentage = 15;
 
 
         return (
-            <div> {varriable}
+            <div>
+                <div style={{ width: '80%', left: '10%', position: 'relative', visibility: this.state.ubicacionT === -280 ? 'hidden' : 'visible' }}>
+                    <Slider direction="horizontal" >
+
+                        {
+
+                            Object.keys(content2).map((key, index) => {
+
+                                indice++;
+                                if (indice > 7) indice = 0;
+
+                                //Impacto de las activiadades
+                                let iconoImpacto;
+                                let colorImpacto;
+                                let flagObjetivosTerminados;
+                                if (content2[key].impacto === "Negocío") { iconoImpacto = "money bill alternate"; colorImpacto = "green"; }
+                                else if (content2[key].impacto === "Proceso") { iconoImpacto = "cogs"; colorImpacto = "blue"; }
+                                else if (content2[key].impacto === "Organización") { iconoImpacto = "boxes"; colorImpacto = "purple"; }
+                                else if (content2[key].impacto === "Ventas") { iconoImpacto = "hospital outline"; colorImpacto = "yellow"; }
+
+
+                                //factor de progreso por horas 
+                                let factorSemana = 0;
+                                let factorObjetivo = 0;
+
+                                if (this.state.factores !== null) {
+                                    Object.keys(this.state.factores).map((keyfac, index) => {
+                                        if (content2[key].idUsuario === this.state.factores[keyfac].usuario)
+                                            factorSemana = factorSemana + this.state.factores[keyfac].puntos;
+
+                                        if (key === this.state.factores[keyfac].key)
+                                            factorObjetivo = this.state.factores[keyfac].puntos;
+
+                                    });
+
+                                }
+
+
+                                if (this.props.listaObjetivo.tareas) {
+
+                                    Object.keys(this.props.listaObjetivo.tareas).map((key3, index) => {
+
+                                        const consultaTareaTT = this.props.listaObjetivo.tareas[key3];
+                                        Object.keys(consultaTareaTT).map((key33, index) => {
+                                            if (key3 === key) {
+                                                if (consultaTareaTT[key33].estado === 'finalizado') {
+                                                    tareasCompleta = tareasCompleta + 1;
+                                                }
+                                            }
+                                        });
+                                        const horasAtrabajar = 40;
+                                        const horasObj = horasAtrabajar * (factorObjetivo / factorSemana);
+                                        const atrabajo = Math.round(horasObj) / 3;
+                                        const atrabajo2 = ((Math.round(horasObj) * 0.35) / 2) + 1;
+                                        let resul = 15;
+
+
+                                        if (atrabajo < tareasCompleta) {
+                                            const ob = (tareasCompleta - atrabajo) / atrabajo2 > 1 ? 1 : (tareasCompleta - atrabajo) / atrabajo2;
+                                            resul = 65 + Math.round(ob * 35);
+                                        }
+
+                                        else
+                                            resul = Math.round((tareasCompleta / atrabajo) * 65);
+
+                                        factor = { factor: factorObjetivo, numero: tareasCompleta };
+                                        resultado = content2[key].avance ? resultado : resul;
+
+                                        if (resultado === 100 && !content2[key].estadoTIM && this.props.estadochat !== 'TIM objetivo') {
+                                            this.props.estadochats('TIM objetivo');
+                                            this.props.objTIMs({ obj: content2[key], key });
+                                            //  this.TIMOBJ();
+                                        }
+
+                                        percentage = resultado;
+
+
+                                    });
+                                    if (resultado < 100)
+                                        flagObjetivosTerminados = false;
+                                    else if (resultado >= 100) {
+                                        flagObjetivosTerminados = true;
+                                    }
+
+                                }
+
+                                if (flagObjetivosTerminados === true)
+                                    this.props.estadochats('Objetivos Terminados');
+
+                                let verTres = null;
+
+                                if (!isNaN(percentage)) {
+                                    percentage = percentage < 10 ? 15 : percentage;
+                                    verTres = <div>
+                                        <div style={{ color: colorImpacto, left: '30%', position: 'absolute', transform: 'scale(1.1)', top: '44%' }}>
+                                            {content2[key].impacto}
+                                            <Icon name={iconoImpacto} style={{ left: '10px', position: 'relative' }} />
+                                        </div>
+                                        <div style={{
+                                            transform: 'scale(0.3)', position: 'relative', left: '46%', top: !content2[key].detalle || Object.keys(content2[key].detalle).length < 40 ? Object.keys(content2[key].concepto).length < 20 ? '7em' : '5em' : '1em'
+                                        }}>
+                                            <AnimatedProgressProvider
+                                                valueStart={0}
+                                                valueEnd={percentage}
+                                                duration={3.4}
+                                                easingFunction={easeQuadInOut}
+
+                                            >
+
+                                                {value => {
+                                                    const roundedValue = Math.round(value);
+                                                    return (
+                                                        <CircularProgressbar
+                                                            value={value}
+                                                            text={`${roundedValue}%`}
+                                                            strokeWidth={15}
+                                                            styles={buildStyles({
+                                                                textColor: "#fdfded",
+                                                                pathColor: colorImpacto,
+                                                                trailColor: "#fdfded"
+                                                            })}
+                                                        /* This is important to include, because if you're fully managing the
+                                                  animation yourself, you'll want to disable the CSS animation. */
+
+                                                        />
+                                                    );
+                                                }}
+                                            </AnimatedProgressProvider>
+
+
+                                        </div>
+
+                                        <Link to="/editObj"  >
+                                            < Button content="Editar" fluid style={{
+                                                position: 'relative', background: 'linear-gradient(to right, rgba(255, 255, 255, 0.63) 35%, rgba(243, 234, 221, 0) 110%)', transform: 'scale(1.2)', 'border-radius': '10px',
+                                                color: '#080807', width: '60%', left: '20%', top: !content2[key].detalle || Object.keys(content2[key].detalle).length < 40 ? Object.keys(content2[key].concepto).length < 20 ? '-90px' : '-115px' : '-155px'
+                                            }}
+                                                icon='edit outline'
+                                                onClick={() => {
+                                                    this.props.datosEditCels({
+                                                        imageEdit: this.state.images, indexImage: index > 7 ? 0 : index, detalleObjetivo: content2[key].detalle,
+                                                        keyFirsth: key, objetivoK: content2[key]
+                                                    })
+                                                }}
+                                            >
+                                            </Button>
+                                        </Link>
+                                    </div>
+
+                                }
+                                return <div>
+                                    <div
+                                        key={index}
+                                        style={{ height: '28em', filter: 'contrast(40%)', background: `url('${this.state.images[indice].urls.regular}') no-repeat center center` }}
+                                    >
+                                        <h3 style={{ 'text-align': 'center', color: 'black', top: '1em', position: 'relative' }}> Tus Objetivos Semanales</h3>
+
+                                    </div>
+                                    <div style={{ top: '-24em', position: 'relative', left: '14%', width: '75%' }}>
+                                        <h2 style={{ color: "#fdfded", 'text-align': 'center' }}>{content2[key].concepto}</h2>
+                                        <p style={{ color: "#fdfded", 'text-align': 'center' }}>{content2[key].detalle ? content2[key].detalle : 'no tiene ningun detalle relacionado'}</p>
+                                        {verTres}
+
+
+                                    </div>
+                                </div>
+
+                            })
+                        }
+                    </Slider>
+
+                </div>
+
+                {varriable}
                 {onboarding}
             </div >
 
@@ -693,10 +966,11 @@ const mapStateToProps = (state) => {
         usuarioDetail: state.chatReducer.usuarioDetail,
         MensajeIvily: state.chatReducer.MensajeIvily,
         prioridadObj: state.chatReducer.prioridadObj,
+        nombreUser: state.chatReducer.nombreUser,
         isSignedIn: state.auth.isSignedIn,
 
     };
 };
-export default connect(mapStateToProps, { createStream, listaObjetivos,pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats })(DashBoard);
+export default connect(mapStateToProps, { createStream, listaObjetivos, objTIMs, datosEditCels, estadochats, prioridadObjs, pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats })(DashBoard);
 
 ///<ListAdjuntos />

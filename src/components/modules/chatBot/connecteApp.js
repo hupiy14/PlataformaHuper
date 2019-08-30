@@ -24,7 +24,7 @@ const TIM_Obj = ['-LekL3NOrjyYW8PsT-Vq', '-LekISO8phY6r4v3EYRD', '-LeknuHNolKbHg
 
 class App extends React.Component {
 
-    state = { avatares: null, horaMax: 8, mensajeInicio: null }
+    state = { avatares: null, horaMax: 8, mensajeInicio: null, primera : null }
 
 
     // habilita el primer paso
@@ -47,7 +47,13 @@ class App extends React.Component {
 
 
             if (this.props.userRol === '3') {
-                if (this.props.usuarioDetail.usuario.fechaPlan === moment(new Date()).format('YYYY/MM/DD')) {
+
+                if (this.props.pasoOnboarding === 14) {
+                    this.rendeTalentoImpCom(chatID, 2)
+
+                }
+
+                else if (this.props.usuarioDetail.usuario.fechaPlan === moment(new Date()).format('YYYY/MM/DD')) {
 
                     if (this.props.MensajeIvily.inicio) { ///comienza el dia 
 
@@ -191,18 +197,31 @@ class App extends React.Component {
                 }
             }
             else if (this.props.userRol === '2') {
+
+              
+               
                 this.props.tipoPreguntas('Consulta Gestor');
-                const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_TDJQilcvBxWh955');
-                starCountRef.on('value', (snapshot) => {
-                    this.props.consultaChats(snapshot.val());
-                    this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
-                  //  this.props.numeroPreguntas(this.props.numeroPregunta + 1);
-                });
+                if (this.props.pasoOnboarding === 10) {
+                    const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LiU8G7eOoO8V6ny-Loa');
+                    starCountRef.on('value', (snapshot) => {
+                        this.props.consultaChats(snapshot.val());
+                        this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                        //  this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                    });
+                }
+                else {
+                    const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LXt_TDJQilcvBxWh955');
+                    starCountRef.on('value', (snapshot) => {
+                        this.props.consultaChats(snapshot.val());
+                        this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                        //  this.props.numeroPreguntas(this.props.numeroPregunta + 1);
+                    });
+                }
             }
             if (!this.state.mensajeInicio)
                 this.props.submitMessage('@<Hola Huper@<', chatID, '6');
-           
-        this.setState({ mensajeInicio: null });
+
+            this.setState({ mensajeInicio: null });
         }, timeoutLength)
     }
 
@@ -628,7 +647,7 @@ class App extends React.Component {
             wrapper.bottom = "-3%";
             wrapper.height = window.screen.height - 30;
             if (this.props.celChat === true) {
-                wrapper.height = window.screen.height + 25 ;
+                wrapper.height = window.screen.height + 25;
                 wrapper.bottom = "-4%";
             }
 

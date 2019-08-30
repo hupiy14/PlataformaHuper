@@ -7,91 +7,120 @@ import { signOut, usuarioDetails } from '../../actions';
 import history from '../../history';
 import firebase from 'firebase';
 import { Link } from 'react-router-dom';
+import { relativeTimeRounding } from 'moment';
 
 const opciones = [
     { key: 'H', text: 'Huper', value: 'Huper' },
     { key: 'G', text: 'Gestor', value: 'Gestor' },
-    //  { key: 'O', text: 'Observador', value: 'Observador' },
+    { key: 'O', text: 'Observador', value: 'Observador' },
 ];
 
 
 class FomrularioGlobal extends React.Component {
 
-    state = { errorTipo: null, tipo: null, formError: null, momento: null, open: true }
+    state = { errorTipo: null, tipo: null, formError: null, momento: null, errorCodigo: null, codigo: null, errorAcepto: null, acepto: null, errorEquipo: null, open: true, errorSlack: null }
+
+
+
+
+
+
 
     componentDidMount() {
-        this.props.detailUsNews({ ...this.props.detailUsNew, tipo: '' })
+        if (this.props.detailUsNew && this.props.detailUsNew.recupero) {
+            this.continuar();
+        }
     }
-    close = () => this.setState({ open: false })
+
+    // recupera los datos del navegador despues de la autorizacion del slack
+
+
+
 
     cancelar = () => {
-     
         this.close();
         this.props.signOut();
         this.props.nuevoUsuarios(false);
         history.push('/');
-       // history.push('/login');
+        //history.push('/login');
     }
-    continuar = (e) => {
-        e.preventDefault();
+    continuar() {
         let error = false;
-        if (!this.state.tipo) {
-            this.setState({ errorTipo: true });
+
+
+       
+        if (!this.props.detailUsNew.codeSlack) {
+            this.setState({ errorSlack: true });
             error = true;
+            console.log(this.props.detailUsNew);
         }
         else {
-            this.setState({ errorTipo: false });
+            this.setState({ errorSlack: false });
         }
+
         this.setState({ formError: error });
-        console.log(this.state.tipo);
-        history.push('/formulario/empresa');
+
+        if (!error)
+            history.push('/formulario/termcond');
+        //   console.log(this.state.tipo);
+        // this.setState({ momento: 1 });
     }
+    
+
+    clickGuardarTemporal = () => {
+        const variale = this.props.detailUsNew;
+        firebase.database().ref(`Usuario-Temporal/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+            ...variale
+        });
+
+    }
+    close = () => this.setState({ open: false })
     render() {
+        //  console.log(this.props.detailUsNew);
+        const { open2, open3, open4 } = this.state
+        if (this.props.slackApi)
+            console.log(this.props.slackApi);
+        let propiedad;
+        let activado = false;
+        if (this.state.tipo === 'Gestor') {
+            propiedad = this.handleAddition;
+            activado = true;
+        }
+
+
         return (
+
+
 
             <Modal size='tiny' open={this.state.open} >
                 <Modal.Header>Bienvenido a hupity</Modal.Header>
-                <Modal.Content image >
+                <Modal.Content image>
                     <div className="ui form" >
                         <div className="ui grid">
                             <Modal.Description style={{width: '38em'}}>
                                 <Form error={this.state.formError}>
-
-                                    <Form.Select label='Que rol tienes' fluid options={opciones} placeholder='Selecciona un rol'
-                                        value={this.props.detailUsNew ? this.props.detailUsNew.tipo : null}
-                                        onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, tipo: value })}
-                                        error={this.state.errorTipo}
-                                    />
+                                   
+                                    <h3>Sincronizate con las herramientas</h3>
+                                    <a onClick={this.clickGuardarTemporal} href={`https://slack.com/oauth/authorize?scope=bot&redirect_uri=https://app.hupity.com&client_id=482555533539.532672221010`}><img src="https://api.slack.com/img/sign_in_with_slack.png" /></a>
                                     <Message
                                         error
-                                        header='Error al seleccionar el rol del usuario'
-                                        content='Debes seleccionar un rol para continuar'
+                                        header={this.state.mensajeCodigo ? this.state.mensajeCodigo.titulo : 'Falta campos por llenar'}
+                                        content={this.state.mensajeCodigo ? this.state.mensajeCodigo.detalle : 'Debes diligenciar todos los campos'}
                                     />
-
                                 </Form>
                             </Modal.Description>
                         </div>
                     </div>
                 </Modal.Content>
                 <Modal.Actions>
-
                     <Button color='grey' onClick={this.cancelar}>
-                        Cancelar</Button>
+                        Cancelar
+                        </Button>
 
-                    <Button
-
-                        color="purple"
-                        icon='arrow right'
-                        labelPosition='right'
-                        content="Comenzar"
-                        onClick={this.continuar}
-                        disabled={this.props.detailUsNew ? this.props.detailUsNew.tipo ? false : true : true}
-                    />
 
 
                 </Modal.Actions>
             </Modal>
-
 
         );
     }

@@ -14,7 +14,6 @@ class legenExample extends React.Component {
 
 
     render() {
-
         const data = {
             labels: this.props.labelsX,
             datasets: this.props.datos,
