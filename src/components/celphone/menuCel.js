@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import GoogleAuth from '../GoogleAuth';
+import GoogleAuth from '../loginGoogle/GoogleAuth';
 import image from '../../images/logo.png';
 import { Image, Header, Button, Popup, Divider, List, Icon } from 'semantic-ui-react'
 import '../styles/ingresoHupity.css';
@@ -46,7 +46,7 @@ class MenuCel extends React.Component {
         */
         let opcion = null;
 
-        if (this.props.userRol === "2")
+        if (this.props.usuarioDetail.rol === "2")
             opcion = <Link to="/hupps" className="item" style={{ left: '70%', position: 'absolute' }}>
                 <h3>Entregas</h3>
             </Link>
@@ -102,7 +102,6 @@ class MenuCel extends React.Component {
 const mapStateToProps = (state) => {
     return {
         usuarioDetail: state.chatReducer.usuarioDetail,
-        userRol: state.chatReducer.userRol,
         pasoOnboarding: state.chatReducer.pasoOnboarding
     };
 };

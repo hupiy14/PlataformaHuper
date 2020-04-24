@@ -43,14 +43,17 @@ import {
     DATOS_EDIT_CEL,
 
 } from '../components/modules/chatBot/types';
+import {
+    END_CHAT
+
+} from '../actions/types';
 import firebase from 'firebase';
 import { config } from '../apis/huperDB';
 
 const INITIAL_STATE = {
-    isChat: null,
+    isChat: false,
     isChatUbi: null,
     isColorTheme: null,
-    userRol: null,
     nombreUser: null,
     numeroPregunta: 1,
     idChatUser: null,
@@ -88,6 +91,7 @@ const INITIAL_STATE = {
     celChat: null,
     celPerf: null,
     datosEditCel: null,
+    endChatMessage: null,
 
 };
 
@@ -104,8 +108,6 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, isChatUbi: action.payload };
         case COLOR_THEME:
             return { ...state, isColorTheme: action.payload };
-        case USER_ROL:
-            return { ...state, userRol: action.payload };
         case NOMBRE_USER:
             return { ...state, nombreUser: action.payload };
         case NUMERO_PREGUNTA:
@@ -180,6 +182,8 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, datosEditCel: action.payload };
         case DATO_CLOSE:
             return { ...state, datoClose: action.payload };
+        case END_CHAT:
+            return { ...state, endChatMessage: action.payload };
         default:
             return state;
 

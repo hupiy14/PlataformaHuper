@@ -3,10 +3,6 @@ import { connect } from 'react-redux';
 import firebase from 'firebase';
 import { Image, Progress, Segment } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas } from '../modules/chatBot/actions';
-import Avatar from '../../apis/xpress';
-
-
-
 
 class listPersonasEquipo extends React.Component {
     state = {
@@ -218,9 +214,7 @@ class listPersonasEquipo extends React.Component {
             <div className="loaderTEAM">
                 <h3>{titulo}</h3>
                 <div className=" maximo-listE  ">
-
                     <div className="ui relaxed divided animated list  ">
-
                         {this.renderConstruirObj(this.props)}
 
                     </div>

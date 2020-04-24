@@ -40,13 +40,13 @@ class Menus extends React.Component {
 
         let seguimientoUsuario = null;
         let styleUsers = null;
-        if (this.props.userRol === '2') {
+        if (this.props.usuarioDetail.rol === '2') {
             seguimientoUsuario = <Dropdown.Item onClick={this.onEye} >
                 <Icon name="eye icon"></Icon>
                 Seguimiento</Dropdown.Item>
 
         }
-        else if (this.props.userRol === '3') {
+        else if (this.props.usuarioDetail.rol === '3') {
             styleUsers = { left: '-50px', position: 'relative' };
         }
         return (
@@ -123,7 +123,7 @@ class Menus extends React.Component {
 const mapStateToProps = (state) => {
     return {
         isChatUbi: state.chatReducer.isChatUbi,
-        userRol: state.chatReducer.userRol,
+        usuarioDetail: state.chatReducer.usuarioDetail,
     };
 };
 

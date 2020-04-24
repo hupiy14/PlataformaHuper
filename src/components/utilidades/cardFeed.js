@@ -45,8 +45,8 @@ class ListEjemplo extends React.Component {
             const tipologia = this.props.responsableX ? 'feedback' : 'responder';
             comentariosEnvio = { usuario, tipo: tipologia, concepto: this.state.comentario }
             const usuarioD = this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.props.userId;
-            //  let updates = {};
-            //  updates[`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${key}/comentarios/${newPostKey2}`] = comentariosEnvio;
+            let updates = {};
+            updates[`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${key}/comentarios/${newPostKey2}`] = comentariosEnvio;
 
 
             firebase.database().ref(`Usuario-Objetivos/${usuarioD}/${key}/comentarios/${newPostKey2}`).set({
@@ -57,7 +57,7 @@ class ListEjemplo extends React.Component {
 
 
             // console.log(updates);
-            //   firebase.database().ref().update(updates);
+            firebase.database().ref().update(updates);
             this.setState({ guardar: false })
             if (this.props.usuarioGesto) {
                 let variableF = {};

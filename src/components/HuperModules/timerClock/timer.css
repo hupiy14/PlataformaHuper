@@ -1,0 +1,108 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/flipclock/0.7.8/flipclock.css');
+
+
+.clock-title {
+    font-size: 20px;
+    font-family: 'Covered By Your Grace', cursive;
+    color: #e8f5e8;
+}
+
+
+
+.flip-clock-divider .flip-clock-label {
+    font-size: 16px;
+    font-family: 'Covered By Your Grace', cursive;
+    color: #e8f5e8;
+}
+
+.flip-clock-wrapper ul {
+    background: #DF36C7;
+}
+
+.flip-clock-wrapper ul li a div.up:after {
+    background-color: #DF36C7;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.flip-clock-wrapper ul li a div div.inn {
+    text-shadow: 0 1px 1px #555;
+    color: #DF36C7;
+    background: white;
+}
+
+.session-clock, .break-clock {
+    display: inline-block;
+    height: 150px;
+    width: auto;
+    animation: session-clock-s 3s cubic-bezier(0.680, 0, 0.265, 1);
+    animation-delay: 0s;
+    animation-iteration-count: 3;
+    animation-direction: alternate;
+ 
+   
+}
+
+  @keyframes session-clock-s {
+    from {
+      opacity: 0.15;
+    }
+    to {
+        opacity: 1;
+    }
+  }
+  
+  
+
+
+.session-clock:hover {
+    opacity: 1;
+
+}
+.session-clock {
+    transition: opacity 0.8s linear 0.2s;
+}
+
+
+
+
+
+.btn-edit {
+    width: 64px;
+    font-size: 36px;
+    color: rgb(195, 54, 223);
+    background: white;
+}
+
+
+.btn-main {
+    width: 225px;
+    font-size: 36px;
+    color: #DF36C7;
+    background: white;
+    font-family: 'Covered By Your Grace', cursive;
+    margin: 10px 0;
+}
+
+.btn-main:hover {
+    color: white;
+}
+
+.btn-main:focus {
+    color:  rgb(189, 54, 223);
+    outline: none;
+}
+
+.btn-edit:hover{
+    color:  rgb(189, 54, 223);
+}
+
+.btn-edit:focus{
+    color:  rgb(189, 54, 223);
+    outline: none;
+}
+
+#credit{
+    font-size: 32px;
+    color: #DF36C7;
+    font-family: 'Covered By Your Grace', cursive;
+}

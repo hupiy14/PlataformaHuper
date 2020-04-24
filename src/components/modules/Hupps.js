@@ -231,7 +231,6 @@ const mapAppStateToProps = (state) => (
         equipoConsulta: state.chatReducer.equipoConsulta,
         listaObjetivo: state.chatReducer.listaObjetivo,
         prioridadObj: state.chatReducer.prioridadObj,
-        userRol: state.chatReducer.userRol,
         userId: state.auth.userId,
 
     });

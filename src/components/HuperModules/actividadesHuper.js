@@ -1,24 +1,38 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
-import { Button, Popup, Grid, Input, Header, Modal, Image, Form, Progress, Segment, Label, Divider, Icon, Step } from 'semantic-ui-react';
+import { Image, Icon, Step } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, estadochats, MensajeIvilys } from '../modules/chatBot/actions';
 import moment from 'moment';
-
-
-const timeoutLength = 900000; //900000
+import task from '../../images/task.svg';
+const timeoutLength = 900000;
 
 class listActividades extends React.Component {
-    state = { actividades: null, tiempos: 0, horamaxima: 8 }
+
+    state = { actividades: null, tiempos: 0, horamaxima: 8, primero: null, aux: null }
 
     componentDidMount() {
+
         if (this.props.usuarioDetail) {
             const starCountRef = firebase.database().ref().child(`Usuario-Tareas/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot2) => {
                 this.setState({ actividades: snapshot2.val() });
-
             });
         }
+
+        this.setState({
+            primero: <div style={{ height: '7.5em' }}>
+                <Step active={true} style={{ height: '8.5em', borderRadius: '10px' }}>
+                    <Image src={task} size="mini" style={{ left: '-10px', top: '60px' }}></Image>
+                    <Step.Content style={{ left: '8%', width: '90%', top: '-60px', position: 'relative' }}>
+                        <Step.Title style={{ width: '60%', color: '#947d0e', top: '100px', position: 'relative', transform: `scale(2.5)`, left: '50%' }}>Planifica tu actividad</Step.Title>
+                    </Step.Content>
+                </Step>
+            </div>
+        });
+
+
+
         this.consultaTiempo();
     }
 
@@ -29,15 +43,17 @@ class listActividades extends React.Component {
         }, timeoutLength)
     }
 
+    //validar logica
     renderConsultarTiempoTrabajado() {
+
         this.renderTiempo();
-        if(!this.props.MensajeIvily) return;
+        if (!this.props.MensajeIvily) return;
         let ant = moment(new Date(this.props.MensajeIvily.horaActivacion ? this.props.MensajeIvily.horaActivacion : this.props.MensajeIvily.inicio));
         let hora = moment().add('minutes', -ant.minutes()).add('hours', -ant.hours());
         if (this.props.MensajeIvily.horaActivacion) {
             hora = moment(this.props.MensajeIvily.tiempoTrabajado, 'HH:mm').add('hours', parseInt(moment(hora).format('HH'))).add('minutes', parseInt(moment(hora).format('mm')));
         }
-        console.log(hora);
+
         let tt = parseFloat(hora.format('HH')) + parseFloat(hora.format('mm')) / 60;
         tt = Math.round(tt * 10) / 10;
         if (tt > this.state.tiempos) {
@@ -50,9 +66,7 @@ class listActividades extends React.Component {
         if (tt > 4 && !this.props.MensajeIvily.estadoTIMS && (new Date().getDay() === 3 || new Date().getDay() === 5)) {
             this.props.estadochats('TIM Semana');
         }
-
         if (tt > this.state.horamaxima && this.props.estadochat !== "Despedida") { this.props.estadochats('Termino dia') }
-
     }
 
 
@@ -71,29 +85,27 @@ class listActividades extends React.Component {
             });
         });
 
-        arrayT.sort((obj1, obj2) => { return parseInt(obj1.dificultad) - parseInt(obj2.dificultad); });
+        arrayT.sort((obj1, obj2) => { return obj1.dificultad.localeCompare(obj2.dificultad); });
         let tiempos = 0;
         Object.keys(arrayT).map((key3, index) => {
             Object.keys(ObjetivosU).map((key, index) => {
                 const actividadesU = ObjetivosU[key];
                 Object.keys(actividadesU).map((key2, index) => {
                     if (arrayT[key3].key !== key2) return;
-                    if (moment(moment().format('YYYY-MM-DD'),'YYYY-MM-DD') >  moment(actividadesU[key2].dateStart, 'YYYY-MM-DD')) {
+                    if (moment(moment().format('YYYY-MM-DD'), 'YYYY-MM-DD') > moment(actividadesU[key2].dateStart, 'YYYY-MM-DD')) {
                         if (actividadesU[key2].estado === 'activo')
                             actividadesU[key2].estado = 'anulado';
                         return;
                     }
                     if (actividadesU[key2].estado === "activo") {
-                        if (x === 0) {
+                        if (x === 0)
                             tiempos = parseInt(actividadesU[key2].tiempoEstimado.substring(0, 2)) + tiempos;
-                        }
                         x++;
                     }
                     else if (actividadesU[key2].estado === "trabajando") {
                         if (x === 0)
                             tiempos = parseInt(actividadesU[key2].tiempoEstimado.substring(0, 2)) + tiempos;
                         x++;
-
                         enProceso++;
                     }
                     else if (actividadesU[key2].estado === "finalizado") {
@@ -119,19 +131,15 @@ class listActividades extends React.Component {
         this.setState({ tiempos })
     }
 
-
-
-
-
-
     renderActividadXactividad() {
+
         const ObjetivosU = this.state.actividades;
         let flag = false;
         let x = 0;
         let actNum = 0;
         let actividadProceso = 0;
-
         let arrayT = [];
+
         Object.keys(ObjetivosU).map((key, index) => {
             const actividadesU = ObjetivosU[key];
             Object.keys(actividadesU).map((key, index) => {
@@ -140,32 +148,31 @@ class listActividades extends React.Component {
             });
         });
 
-        arrayT.sort((obj1, obj2) => { return parseInt(obj1.dificultad) - parseInt(obj2.dificultad); });
-
+        arrayT.sort((obj1, obj2) => { return obj1.dificultad.localeCompare(obj2.dificultad); });
 
         let tiempoMin = '24:00';
         Object.keys(arrayT).map((key3, index) => {
-          Object.keys(ObjetivosU).map((key, index) => {
+            Object.keys(ObjetivosU).map((key, index) => {
                 const actividadesU = ObjetivosU[key];
-                    Object.keys(actividadesU).map((key2, index) => {
-                        if (arrayT[key3].key !== key2) return;          
-                        if ( moment(moment().format('YYYY-MM-DD'),'YYYY-MM-DD') >  moment(actividadesU[key2].dateStart, 'YYYY-MM-DD')) {
-                            if (actividadesU[key2].estado === 'activo') {
-                                actividadesU[key2].estado = 'anulado';
-                                flag = true;
-                            } 
-                            return;
+                Object.keys(actividadesU).map((key2, index) => {
+                    if (arrayT[key3].key !== key2) return;
+                    if (moment(moment().format('YYYY-MM-DD'), 'YYYY-MM-DD') > moment(actividadesU[key2].dateStart, 'YYYY-MM-DD')) {
+                        if (actividadesU[key2].estado === 'activo') {
+                            actividadesU[key2].estado = 'anulado';
+                            flag = true;
                         }
+                        return;
+                    }
+                    if (moment(tiempoMin, 'HH:mm') > moment(actividadesU[key2].horaPlanificada, 'HH:mm'))
+                        tiempoMin = moment(actividadesU[key2].horaPlanificada, 'HH:mm');
+                });
 
-                        if( moment(tiempoMin, 'HH:mm') >  moment(actividadesU[key2].horaPlanificada , 'HH:mm') )
-                        tiempoMin =  moment(actividadesU[key2].horaPlanificada , 'HH:mm');
-                    });
-                
             });
         });
 
-     
+
         let fechaTrabajo = null;
+        let f = null;
         const opcionesX = Object.keys(arrayT).map((key3, index) => {
 
             const opciones = Object.keys(ObjetivosU).map((key, index) => {
@@ -175,107 +182,108 @@ class listActividades extends React.Component {
                     const opciones2 = Object.keys(actividadesU).map((key2, index) => {
 
                         if (arrayT[key3].key !== key2) return;
-
-                       
-                    
-                        if ( moment(moment().format('YYYY-MM-DD'),'YYYY-MM-DD') >  moment(actividadesU[key2].dateStart, 'YYYY-MM-DD')) {
+                        if (moment(moment().format('YYYY-MM-DD'), 'YYYY-MM-DD') > moment(actividadesU[key2].dateStart, 'YYYY-MM-DD')) {
                             if (actividadesU[key2].estado === 'activo') {
                                 actividadesU[key2].estado = 'anulado';
                                 flag = true;
-                            } 
+                            }
                             return;
 
                         }
                         const h = parseInt(actividadesU[key2].tiempoEstimado.substring(0, 2));
-                     
                         actividadesU[key2].horaPlanificada = fechaTrabajo === null ? tiempoMin.format('HH:mm') : fechaTrabajo;
                         actividadesU[key2].horaEstimada = moment(actividadesU[key2].horaPlanificada, 'HH:mm').add('hours', h).format('HH:mm');
                         fechaTrabajo = actividadesU[key2].horaEstimada;
-
-            
                         const tiempo = actividadesU[key2].horaPlanificada + '  a  ' + actividadesU[key2].horaEstimada;
-                        const tiempo2 = 'Hora a terminar: ' + actividadesU[key2].horaEstimada;
-                        let icono = 'id badge';
                         let actividadT = { completed: true, active: false, colorf: null, backgroundf: null }
                         let anima = null;
 
                         if (actividadesU[key2].estado === "activo") {
                             actividadT = { completed: false, active: true, color: "#cf6d10", background: "linear-gradient(to right, #fff7e6 10%, rgb(255, 255, 255) 15%, rgb(253, 245, 2)600%)" }
-                            if (x === 0) {
+                            if (x === 0)
                                 anima = 'actividadInmediata';
-                            }
                             x++;
                         }
                         else if (actividadesU[key2].estado === "trabajando") {
                             actividadT = { completed: false, active: true, color: "#820bea", background: "linear-gradient(to right, rgb(220, 169, 247) 10%, rgb(255, 255, 255) 15%, rgb(184, 0, 245) 500%)" }
                             anima = 'actividadInmediata';
-                            icono = 'cog';
                             actividadProceso++;
                             x++;
                         }
                         actNum++;
-                        return (
-                            <div style={{ height: '7.5em' }}>
-                                <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{
-                                    height: '6.5em',  'box-shadow':actividadT.background ? '#fbbd0894 0.5px 0.5px 5px 0.5px': 'rgba(43, 41, 34, 0.58) 0.5px 0.5px 5px 0.5px', 'border-radius': '10px',
-                                    background: actividadT.background ? actividadT.background: 'linear-gradient(to right, rgb(218, 215, 215) 10%, rgb(255, 255, 255) 15%, rgb(243, 236, 226) 200%)'
-                                }}>
-                                    <h1 style={{ position: 'relative', top: '5%', left: '-20px', }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
-                                    <Icon name='star outline' style={{ transform: 'scale(0.5)', position: 'relative', left: '85%', top: '-25px', color: '#d39d00' }}> <div style={{ position: 'relative', top: '-35px', left: '-40px' }} > {actividadesU[key2].dificultad} </div>
-                                    </Icon>
-                                    <Step.Content style={{ left: '8%', width: '90%', top: '-60px', position: 'relative' }}>
-                                        <Step.Description style={{
-                                            position: 'relative',
-                                            top: '5px',
-                                            left: '10%',
-                                            'font-size': 'smaller'
-                                        }}>
-                                            <Icon name="clock outline"></Icon>
-                                            {tiempo}</Step.Description>
-                                        <Step.Title style={{ color: actividadT.color, top: '15px', position: 'relative' }}>{actividadesU[key2].concepto}</Step.Title>
 
-                                    </Step.Content>
-                                </Step>
+                        if (this.state.aux == null && f == null) {
+                            f = '1';
+                            let titlelengt = actividadesU[key2].concepto.len > 50 ? '25%' : '55%';
+                            let scalet = actividadesU[key2].concepto.len > 50 ? '1.5' : '2.5';
+                            this.setState({ aux: 'primera' });
+                            this.setState({
+                                primero: <div style={{ height: '7.5em' }}>
+                                    <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '8.5em', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '10px' }}>
+                                        <h1 style={{ position: 'relative', top: '5%', left: '99%', transform: 'scale(3)' }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
+                                        <Image src={task} size="mini" style={{ left: '18px', top: '20px' }}></Image>
+                                        <div style={{ position: 'relative', top: '5px', left: '30px', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].dificultad} </div>
+                                        <Step.Content style={{ left: '8%', width: '90%', top: '-60px', position: 'relative' }}>
+                                            <Step.Description style={{ position: 'relative', top: '4em', left: '75%', fontSize: 'smaller' }}>
+                                                <Icon name="clock outline"></Icon>{tiempo}
+                                            </Step.Description>
+                                            <Step.Title style={{ width: '60%', color: '#947d0e', top: '-50px', position: 'relative', transform: `scale(${scalet})`, left: titlelengt }}>{actividadesU[key2].concepto}</Step.Title>
+                                        </Step.Content>
+                                    </Step>
+                                </div>
+                            });
 
-                            </div>
-
-                        );
+                        }
+                        else {
+                            if (x != 1)
+                                return (<div style={{ height: '7.5em', width: '80%', position: 'relative', left: '20%' }}>
+                                    <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '6.5em', background: '#fff6fb', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '10px' }}>
+                                        <h1 style={{ position: 'relative', top: '5%', left: '-5%', transform: 'scale(1.4)' }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
+                                        <Image src={task} size="mini" style={{ left: '-24px', top: '30px', transform: 'scale(0.75)' }}></Image>
+                                        <div style={{ position: 'relative', top: '40px', left: '-45px', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].dificultad} </div>
+                                        <Step.Content style={{ left: '8%', width: '90%', top: '-70px', position: 'relative' }}>
+                                            <Step.Description style={{ position: 'relative', top: '6em', left: '75%', fontSize: 'smaller' }}>
+                                                <Icon name="clock outline"></Icon>{tiempo}
+                                            </Step.Description>
+                                            <Step.Title style={{ color: '#947d0e', top: '10px', position: 'relative', left: '2%' }}>{actividadesU[key2].concepto}</Step.Title>
+                                        </Step.Content>
+                                    </Step>
+                                </div>);
+                        }
                     });
-
                     return opciones2;
                 }
             });
-            if (flag === true)
-                firebase.database().ref(`Usuario-Tareas/${this.props.usuarioDetail.idUsuario}`).set({
-                    ...ObjetivosU,
-                });
+            /* if (flag === true)
+                 firebase.database().ref(`Usuario-Tareas/${this.props.usuarioDetail.idUsuario}`).set({
+                     ...ObjetivosU,
+                 });*/
             return opciones;
         });
 
         for (let index = actNum; index < 6; index++) {
-            const element =
-                <Step completed={false} style={{ background: '#f3f2ee17', height: '6em' }}>
-                    <Icon name={'book'} style={{ color: '#b5b4ab4a', transform: 'scale(0.6)', top: '-20px', left: '-30px', position: 'relative' }} />
-                    <Icon name='star outline' style={{ transform: 'scale(0.5)', position: 'relative', left: '65%', top: '-25px', color: '#b5b4ab4a' }}> <div style={{ position: 'relative', top: '-35px', left: '-40px' }} > {'3'} </div>
-                    </Icon>
-                    <Step.Content style={{ left: '10%', top: '-40px', position: 'relative' }}>
-                        <Step.Title style={{ color: '#b5b4ab4a' }}>{'Por Completar'}</Step.Title>
-                        <Step.Description style={{ color: '#b5b4ab4a' }}>>{'Hoara de Inicio : 2022-01-01'}</Step.Description>
-                        <Step.Description style={{ color: '#b5b4ab4a' }}>>{'Hora de Fin: 2022-01-01'}</Step.Description>
+            x++;
+            const element = <div key={index} style={{ height: '7.5em', width: '80%', position: 'relative', left: '20%', filter: 'grayscale(1)' }}>
+                <Step completed={false} style={{ background: '#efefef', height: '6.5em', borderRadius: '20px' }}>
+                    <h1 style={{ position: 'relative', top: '5%', left: '-5%', transform: 'scale(1.4)' }}>{x}</h1>
+                    <Image src={task} size="mini" style={{ left: '-24px', top: '30px', transform: 'scale(0.75)' }}></Image>
+                    <Step.Content style={{ left: '8%', width: '90%', top: '-70px', position: 'relative' }}>
+                        <Step.Description style={{ position: 'relative', top: '6em', left: '65%', fontSize: 'smaller' }}>
+                            <Icon name="clock outline"></Icon>00:00 a 00:00
+                        </Step.Description>
+                        <Step.Title style={{ color: '#947d0e', top: '20px', position: 'relative', left: '2%' }}>Programa tu nueva actividad</Step.Title>
                     </Step.Content>
                 </Step>
+            </div>
             opcionesX.push(element);
-
         }
-
-
         return opcionesX;
     }
 
     renderActividades() {
         return (<Step.Group vertical style={{
-            width: '100%', 'border-radius': '10px',
-            'border-color': 'cornsilk',
+            width: '100%', borderRadius: '10px',
+            borderColor: 'cornsilk'
         }}>
             {this.renderActividadXactividad()}
         </Step.Group>);
@@ -283,14 +291,15 @@ class listActividades extends React.Component {
 
     render() {
 
-
-        // console.log( moment().add('hours', 2).format('HH:mm')); // 13:23:41
         let contenido;
         if (this.state.actividades)
             contenido = this.renderActividades();
 
 
         return (<div >
+            <div style={{ position: 'relative', top: '-60px' }}>
+                {this.state.primero}
+            </div>
             <h3>{this.props.titulo}</h3>
             <div className=" maximo-list">
                 <div className="ui relaxed divided animated list ">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { createStream, chatOff, chatOn } from '../../actions';
+import { chatOff, chatOn } from '../../actions';
 import ListImportan from '../utilidades/listaImportante';
 import ListEjemplo from '../utilidades/ListaEjemplo';
 import CrearGrafica from '../utilidades/CrearGrafica';
@@ -135,7 +135,7 @@ class DashBoard extends React.Component {
     }
 
     componentDidMount() {
-        if (!this.props.isSignedIn) {
+        if (!this.props.isSignedIn && !this.props.usuarioDetail) {
             history.push('/');
             return;
         }
@@ -717,7 +717,7 @@ class DashBoard extends React.Component {
             }} >Continuar</button>;
 
 
-        if (this.props.userRol === '3') {
+        if (this.props.usuarioDetail && this.props.usuarioDetail.rol === '3') {
 
 
             let pageActivi = null
@@ -747,7 +747,7 @@ class DashBoard extends React.Component {
             </div>
 
         }
-        else if (this.props.userRol === '2') {
+        else if (this.props.usuarioDetail && this.props.usuarioDetail.rol === '2') {
             varriable = this.renderGestor();
             varriable = <Image src={construccion}></Image>
             //    console.log('Teletrabajador');
@@ -957,8 +957,6 @@ class DashBoard extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        usuarioDetail: state.chatReducer.usuarioDetail,
-        userRol: state.chatReducer.userRol,
         userId: state.auth.userId,
         pasoOnboarding: state.chatReducer.pasoOnboarding,
         listaFormacion: state.chatReducer.listaFormacion,
@@ -971,6 +969,6 @@ const mapStateToProps = (state) => {
 
     };
 };
-export default connect(mapStateToProps, { createStream, listaObjetivos, objTIMs, datosEditCels, estadochats, prioridadObjs, pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats })(DashBoard);
+export default connect(mapStateToProps, {  listaObjetivos, objTIMs, datosEditCels, estadochats, prioridadObjs, pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats })(DashBoard);
 
 ///<ListAdjuntos />

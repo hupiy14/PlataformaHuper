@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import GoogleAuth from '../GoogleAuth';
+import GoogleAuth from '../loginGoogle/GoogleAuth';
 import image from '../../images/logo.png';
 import { connect } from 'react-redux';
 import { nuevoUsuarios } from '../modules/chatBot/actions';

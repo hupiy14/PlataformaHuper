@@ -631,8 +631,6 @@ class Home extends React.Component {
                     firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${key3}`).set({
                       ...objs[key3], avancePadre: avanceObjGlobal, nTareas: Object.keys(cconsulta[key2]).length
                     });
-
-
                   }
                 });
               }
@@ -1368,7 +1366,7 @@ class Home extends React.Component {
                       objetivoPadre.avance = devolver + avanceObjGlobal;
 
                     })
-                    if (objetivoPadre)
+                   if (objetivoPadre)
                       firebase.database().ref(`Usuario-Objetivos/${objs[key3].idUsuarioGestor}/${objs[key3].objetivoPadre}`).set({
                         ...objetivoPadre
                       });
@@ -1376,8 +1374,6 @@ class Home extends React.Component {
                     firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${key3}`).set({
                       ...objs[key3], avancePadre: avanceObjGlobal, nTareas: Object.keys(cconsulta[key2]).length
                     });
-
-
                   }
                 });
               }
@@ -1396,6 +1392,11 @@ class Home extends React.Component {
 
       }
 
+      else if (tipPrgutna === 'Onboarding Gestor')
+      {
+        if (this.props.pasoOnboarding === 10)
+          this.props.pasoOnboardings(this.props.pasoOnboarding + 1);
+      }
       /////Preguntas Gestor ......
       else if (tipPrgutna === 'Crear Objetivo Gestor') {
 

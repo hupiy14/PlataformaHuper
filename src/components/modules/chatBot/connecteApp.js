@@ -13,7 +13,7 @@ import {
 import firebase from 'firebase';
 import _ from 'lodash';
 import moment from 'moment';
-import Avatar from '../../../apis/xpress';
+import { string } from 'prop-types';
 
 
 
@@ -46,7 +46,7 @@ class App extends React.Component {
             }
 
 
-            if (this.props.userRol === '3') {
+            if (this.props.usuarioDetail.rol === '3') {
 
                 if (this.props.pasoOnboarding === 14) {
                     this.rendeTalentoImpCom(chatID, 2)
@@ -196,16 +196,17 @@ class App extends React.Component {
                     }
                 }
             }
-            else if (this.props.userRol === '2') {
-
-              
-               
+            else if (this.props.usuarioDetail.rol === '2') {
+      
                 this.props.tipoPreguntas('Consulta Gestor');
                 if (this.props.pasoOnboarding === 10) {
-                    const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LiU8G7eOoO8V6ny-Loa');
+                    this.props.tipoPreguntas('Onboarding Gestor');
+                    const starCountRef = firebase.database().ref().child('Preguntas-Chat/-LoVzlymQibTduvisLRb');
                     starCountRef.on('value', (snapshot) => {
                         this.props.consultaChats(snapshot.val());
-                        this.props.submitMessage(snapshot.val()[this.props.numeroPregunta].concepto, chatID, this.props.idChatUser);
+                        const mensaje = snapshot.val()[this.props.numeroPregunta].concepto;
+                        const result = _.replace(mensaje, /@nombre/g, this.props.nombreUser);
+                        this.props.submitMessage(result, chatID, this.props.idChatUser);
                         //  this.props.numeroPreguntas(this.props.numeroPregunta + 1);
                     });
                 }
@@ -245,7 +246,6 @@ class App extends React.Component {
             nameRef2.on('value', (snapshot2) => {
                 const mensaje = snapshot2.val().concepto;
                 const result = _.replace(mensaje, /@nombre/g, this.props.nombreUser);
-                //    const imf = <Image src='https://xpresso2.mobigraph.co/xpresso/v2/media/1bfaLcimzkhPQ2w9jwolG3qxXUqmdjw-1/7d140000.gif' size='small' />;
                 this.props.submitMessage(result, chatID, '6');
                 this.props.mensajeEntradas(false);
             });
@@ -335,7 +335,7 @@ class App extends React.Component {
                   
         */
         //Pregunta Diaria (Listo)
-        if (this.props.userRol === '3') {
+        if (this.props.usuarioDetail.rol === '3') {
 
             /*
                               //Mensaje de Salida
@@ -424,7 +424,7 @@ class App extends React.Component {
         */
 
         //Consulta opciones fase 1 Gestor
-        else if (this.props.userRol === '2') {
+        else if (this.props.usuarioDetail.rol === '2') {
 
         }
 
@@ -684,7 +684,6 @@ const mapAppStateToProps = (state) => (
         nombreUser: state.chatReducer.nombreUser,
         user: state.user,
         theme: state.settings.theme,
-        userRol: state.chatReducer.userRol,
         isChatUbi: state.chatReducer.isChatUbi,
         usuarioDetail: state.chatReducer.usuarioDetail,
         pasoOnboarding: state.chatReducer.pasoOnboarding,

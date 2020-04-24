@@ -1,11 +1,8 @@
 import React from 'react';
 import image from '../images/hupityNewlogo.png';
-import { Link } from 'react-router-dom';
-import GoogleAuth from './GoogleAuth';
+import GoogleAuth from '../components/loginGoogle/GoogleAuth';
 import { connect } from 'react-redux';
-
-
-// 'border-radius': '50px 15px'
+import history from '../history';
 class ingresoPlataforma extends React.Component {
     /*
       <Link to="" style={{
@@ -23,30 +20,26 @@ class ingresoPlataforma extends React.Component {
                             </Link>
     */
 
-    componentDidMount() {
-        console.log(this.props.userId);
-    }
+   componentDidUpdate()
+   {
+       if (this.props.isSignedIn) {
+           history.push('/dashboard');
+           return;
+       }
+   }
     render() {
         return (
-
-            <div className="ui placeholder segment icon-right" style={{ 'border-color': '#fcd45e', 'height': '100%' }}>
+            <div className="ui placeholder segment icon-right" style={{ borderColor: '#e03997', 'height': '100%', "background": "#fffffF" }}>
                 <br></br>
                 <br></br>
                 <div className="inline center">
                     <img className="ui medium rounded image" src={image} />
-
                 </div>
                 <div className="inline center" >
                     <br></br>
-                    <div style={{ position: 'relative', left: '-70px' }}>
                         <GoogleAuth />
-                    </div>
-
                 </div>
-
             </div>
-
-
         );
     }
 };
@@ -55,7 +48,6 @@ class ingresoPlataforma extends React.Component {
 const mapStateToProps = (state) => {
     return {
         usuarioDetail: state.chatReducer.usuarioDetail,
-        userRol: state.chatReducer.userRol,
         pasoOnboarding: state.chatReducer.pasoOnboarding,
         isSignedIn: state.auth.isSignedIn,
         userId: state.auth.userId,

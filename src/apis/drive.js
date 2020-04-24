@@ -1,24 +1,15 @@
+/**Api google dirve */
 import axios from 'axios';
-
-
-//const KEY ='AIzaSyBc8xwjAd9W_52aa26QpuztTx3BXjHFKsM';
-const KEY ='AIzaSyANPTZ84JMI__LONtkOVL5ku9zUOUE-RJc';
+import { apiKeyGoogle } from './stringConnection'
+const KEY = apiKeyGoogle;
 var SCOPES = 'https://www.googleapis.com/auth/drive';
 var CLIENT_ID = '874067485777-l5ineqqp5u8s7ifseal94u2ip61q0f94.apps.googleusercontent.com';
-//var CLIENT_ID = '114346141609-03hh8319khfkq8o3fc6m2o02vr4v14m3.apps.googleusercontent.com';
 
-export default axios.create ({
+export default axios.create({
     baseURL: 'https://www.googleapis.com/drive/v3',
     params: {
-       // part: 'snippet',
-        //maxResults: 5,
-        scope:SCOPES,
+        scope: SCOPES,
         clientId: CLIENT_ID,
         apiKey: KEY,
-       // q: 'surfboards'
-
     }
-
 });
-
-;

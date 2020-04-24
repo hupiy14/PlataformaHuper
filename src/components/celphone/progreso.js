@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { createStream, chatOff, chatOn, signOut } from '../../actions';
+import { chatOff, chatOn, signOut } from '../../actions';
 import ListImportan from '../utilidades/listaImportante';
 import ListEjemplo from '../utilidades/ListaEjemplo';
 import CrearGrafica from '../celphone/grafica';
@@ -420,4 +420,4 @@ const mapStateToProps = (state) => {
 
     };
 };
-export default connect(mapStateToProps, { signOut, createStream, pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats })(DashBoard);
+export default connect(mapStateToProps, { signOut, pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats })(DashBoard);

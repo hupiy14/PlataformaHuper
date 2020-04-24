@@ -47,17 +47,26 @@ class Profile extends React.Component {
         trelloApi: null, tokenTrello: null, listaObjetivostoDO: null, listaOBjetivosDone: null, listaObjetivosTheEnd: null, imagenMostrar: null, imagenFondo: null, imagenPerfil: null,
     }
 
+   
+    componentWillMount(){
+        if(!this.props.isSignedIn || !this.props.usuarioDetail)
+        {
+            history.push('/dashboard');
+            return;
+        } 
+    }
     componentDidMount() {
 
         //se consulta todas las empresas
+        
         const starCountRef = firebase.database().ref().child('empresa');
         starCountRef.on('value', (snapshot) => {
             this.setState({ listaEmpresas: snapshot.val() })
         });
-
     }
 
     renderOpcionesEmpresa() {
+       
         const listaX = this.state.listaEmpresas;
         let lista = {};
         const opciones = Object.keys(listaX).map(function (key, index) {
@@ -65,7 +74,6 @@ class Profile extends React.Component {
             return lista;
         });
         return opciones;
-
     }
 
 
@@ -146,29 +154,29 @@ class Profile extends React.Component {
 
 
         let visible = false;
-        if (this.props.userRol === '3')
+        if (this.props.usuarioDetail.rol === '3')
             visible = true;
         return (
             <div>
                 <Form >
-                    <Form.Select label='Canal del Equipo' options={this.renderCanaleSlack()} placeholder='Selecciona el canal'
+                    <Form.Select label='Canal del Equipo' options={this.renderCanaleSlack()} 
                         search
                         onChange={(e, { value }) => { this.setState({ canalEquipoSlack: value }) }}
                         value={this.state.canalEquipoSlack}
                     />
-                    <Form.Select label='Canal del Reportes' options={this.renderCanaleSlack()} placeholder='Selecciona el canal'
+                    <Form.Select label='Canal del Reportes' options={this.renderCanaleSlack()} 
                         search
                         onChange={(e, { value }) => { this.setState({ canalReportesSlack: value }) }}
                         value={this.state.canalReportesSlack}
                     />
-                    <Form.Select label='Canal del Notificaciones' options={this.renderCanaleSlack()} placeholder='Selecciona el canal'
+                    <Form.Select label='Canal del Notificaciones' options={this.renderCanaleSlack()} 
                         search
                         onChange={(e, { value }) => { this.setState({ canalNotifiacionesSlack: value }) }}
                         value={this.state.canalNotifiacionesSlack}
                     />
                 </Form>
                 <br />
-                <Button color="yellow" icon='save' disabled={this.state.activo} style={{ left: '45%' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+                <Button icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
             </div>
 
         );
@@ -201,7 +209,7 @@ class Profile extends React.Component {
 
                 </Form>
                 <br />
-                <Button color="yellow" icon='save' disabled={this.state.activo} style={{ left: '45%' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+                <Button  icon='save' disabled={this.state.activo} style={{ left: '52%', background:'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
             </div>
 
         );
@@ -281,7 +289,7 @@ class Profile extends React.Component {
                     />
                 </Form >
                 <br />
-                <Button color="yellow" icon='save' disabled={this.state.activo} style={{ left: '45%' }} labelPosition='right' content='Guardar'
+                <Button  icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar'
 
                     onClick={() => { this.renderGuardar() }}
                 />
@@ -364,7 +372,7 @@ class Profile extends React.Component {
         onChange={e => this.setState({ tokenTrello: e.target.value })}
     />*/
         let visible = true;
-        if (this.props.userRol === '3')
+        if (this.props.usuarioDetail.rol === '3')
             visible = false;
 
 
@@ -374,8 +382,8 @@ class Profile extends React.Component {
                 value={this.state.trelloApi}
                 onChange={e => { this.setState({ trelloApi: e.target.value }); this.renderConsultaApiKeyTrello(e.target.value); }}
             />
-            <div className="inline right">
-                <Button color="blue" icon='trello' labelPosition='right' content='Generar' onClick={() => { window.open('https://trello.com/app-key/'); }} />
+            <div className="inline">
+                <Button color="blue"  style={{height: '37px'}} icon='trello' labelPosition='center' content='Generar' onClick={() => { window.open('https://trello.com/app-key/'); }} />
             </div>
         </Form>
 
@@ -416,7 +424,7 @@ class Profile extends React.Component {
                         />
                     </Form>
                     <br />
-                    <Button color="yellow" icon='save' disabled={this.state.activo} style={{ left: '45%' }} labelPosition='right' content='Guardar'
+                    <Button  icon='save' disabled={this.state.activo} style={{ left: '52%' , background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar'
                         disabled={this.state.trelloDashboard && (this.state.listaObjetivostoDO && this.state.listaObjetivostoDO !== '' ||
                             this.state.listaOBjetivosDone && this.state.listaOBjetivosDone !== '' ||
                             this.state.listaObjetivosTheEnd && this.state.listaObjetivosTheEnd !== '') ? false : true}
@@ -438,7 +446,7 @@ class Profile extends React.Component {
 
     renderUsuario() {
         let nnivel = null;
-        if (this.props.userRol === '2') {
+        if (this.props.usuarioDetail.rol === '2') {
             nnivel = <Form.Select label='Define el nivel de competitividad de tu equipo' options={nivel} placeholder='Selecciona uno'
                 search
                 onChange={(e, { value }) => this.setState({ nivelEquipo: { ...this.state.nivelEquipo, nivel: value } })}
@@ -478,14 +486,14 @@ class Profile extends React.Component {
                         error={this.state.errorArea}
                     />
 
-                    <Form.Select label='En que dia termina tu semana' options={Semana} placeholder='Selecciona uno'
+                    <Form.Select label='En que dia termina tu semana' options={Semana} 
                         search
                         onChange={(e, { value }) => this.setState({ diaSemana: value })}
                         value={this.state.diaSemana}
 
                     />
 
-                    <Form.Select label='Lugar de residencia' options={this.renderOpcionesZona()} placeholder='En que lugar vives?'
+                    <Form.Select label='Lugar de residencia' options={this.renderOpcionesZona()} 
                         search
                         onChange={(e, { value }) => this.setState({ lugar: value })}
                         value={this.state.lugar}
@@ -507,7 +515,7 @@ class Profile extends React.Component {
                     />
                 </Form>
 
-                <Button color="yellow" icon='save' disabled={this.state.activo} style={{ left: '45%' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+                <Button  icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
             </div>
         );
     }
@@ -605,7 +613,7 @@ class Profile extends React.Component {
                 wsCompartida: this.state.codigoWSdrive ? this.state.codigoWSdrive : this.props.usuarioDetail.usuario.wsCompartida ? this.props.usuarioDetail.usuario.wsCompartida : null,
                 diaSemana: this.state.diaSemana ? this.state.diaSemana : 0,
             });
-            if (this.props.userRol === '2')
+            if (this.props.usuarioDetail.rol === '2')
                 firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`).set({
                     ...this.state.nivelEquipo,
                     nivel: this.state.nivelEquipo.nivel,
@@ -743,7 +751,7 @@ class Profile extends React.Component {
                 this.setState({ empresa: snapshot.val().industria })
             });
 
-            if (this.props.userRol === '2') {
+            if (this.props.usuarioDetail.rol === '2') {
                 const starCountRef2 = firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`);
                 starCountRef2.on('value', (snapshot) => {
                     if (snapshot.val())
@@ -755,12 +763,13 @@ class Profile extends React.Component {
 
     render() {
 
-
+    if(!this.props.usuarioDetail)
+    return <div></div>;
 
         if (this.props.usuarioDetail && this.props.usuarioDetail.usuario && !this.state.entro)
             this.renderCargar();
         let tamano = '42em';
-        if (this.props.userRol === '2')
+        if (this.props.usuarioDetail.rol === '2')
             tamano = '46em';
         if (this.state.open === 'slack') {
             tamano = '22em';
@@ -779,37 +788,29 @@ class Profile extends React.Component {
 
         return (
             <div className="ui form">
-                <div className="two column stackable ui grid">
-                    <div className="column five wide">
-                        <Card style={{ background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)', 'box-shadow': 'rgba(251, 189, 8, 0.51) 2px 2px 5px 1px' }}>
+                        <Card style={{ left: '10%', width: '80%' }}>
                             <Image src={this.state.imagenFondo ? this.state.imagenFondo : 'https://cdn.pixabay.com/photo/2016/08/09/21/54/yellowstone-national-park-1581879_960_720.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} style={{ height: '250px' }} />
                             <Card.Content style={{ height: '250px' }}>
-                                <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '21%', height: '140px', position: 'relative', top: '-80px' }} />
-                                <Card.Header style={{ top: '-65px', position: 'relative', 'text-align': 'center' }}>{this.state.nombreUsuario}</Card.Header>
-                                <Card.Meta style={{ top: '-65px', position: 'relative', 'text-align': 'center' }}>
-                                    <span className='date'>{this.state.cargo}</span>
-                                </Card.Meta>
-                                <Card.Description style={{ top: '-65px', position: 'relative', 'text-align': 'center' }}>{this.state.area}.</Card.Description>
-                                <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.renderCargar('slack'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.slackIn + ')', background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '5%', position: 'relative', top: '-50px' }} />
-                                <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.driveIn + ')', background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '15%', position: 'relative', top: '-50px' }} />
-                                <Image src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.calendarIn + ')', background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '25%', position: 'relative', top: '-50px' }} />
-                                <Image src={trelloImg} onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.trelloIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '35%', position: 'relative', top: '-50px' }} />
+                                <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '4%', height: '190px', position: 'relative', top: '-160px' }} />
+                                <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.renderCargar('slack'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.slackIn + ')', background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-14%', position: 'relative', top: '-55px' }} />
+                                <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.driveIn + ')', background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-12%', position: 'relative', top: '-55px' }} />
+                                <Image src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.calendarIn + ')', background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-10%', position: 'relative', top: '-55px' }} />
+                                <Image src={trelloImg} onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.trelloIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-8%', position: 'relative', top: '-55px' }} />
 
-                                <Button circular color="grey" style={{ position: 'relative', top: '-13em', left: '10%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
-                                <Button circular color="grey" style={{ position: 'relative', top: '-19.2em', left: '20%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
+                                <Button circular color="pink" style={{ position: 'relative', top: '-8em', left: '-15%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
+                                <Button circular color="pink" style={{ position: 'relative', top: '-24.2em', left: '62%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
 
                             </Card.Content>
 
                         </Card>
-                        <Button content="Crea tu propio flujo de trabajo" onClick={() => { history.push('/newworkflow'); }} style={{ width: '290px', background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 80%)' }} icon="object group outline"></Button>
+                        <Button content="Crea tu propio flujo de trabajo" onClick={() => { history.push('/newworkflow'); }} style={{ width: '200px',top: '225px', left: '22%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} icon="object group outline"></Button>
 
-                    </div>
-                    <div className="column eleven wide">
-                        <div className="ui segment" style={{ height: tamano, top: '1.5em', background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)' }}>
+                         <div className="ui segment" style={{ height: tamano, top: '-1.8em',left: '34%', width: '56%',  background: 'linear-gradient(to top, #e0399738 0.5%, rgb(255, 255, 255) 0.6%, rgba(245, 242, 224, 0) 200%)' }}>
                             <Modal open={this.state.openImagen}
                                 closeOnEscape={false}
                                 closeOnDimmerClick={true}
                                 onClose={this.state.close}
+                                style = {{height: '350px', top: '150px'}}
                             >
                                 <Modal.Header>Tu imagén</Modal.Header>
                                 <Modal.Content image>
@@ -831,13 +832,13 @@ class Profile extends React.Component {
                                         </Input>
                                     </Modal.Description>
                                 </Modal.Content>
-                                <Modal.Actions>
-                                    <Button onClick={this.close} negative>
+                                <Modal.Actions style= {{ top: '340px', position: 'relative'}}>
+                                    <Button onClick={this.close} style = {{background: "grey", left: "-20px"}}>
                                         Cancelar
                                       </Button>
                                     <Button
                                         onClick={() => { this.close(); this.renderGuardar(); }}
-                                        positive
+                                        style= {{background: "linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)", left: "-10px"}}
                                         labelPosition='right'
                                         icon='checkmark'
                                         content='Guardar'
@@ -848,8 +849,7 @@ class Profile extends React.Component {
                             {this.renderForm()}
                         </div>
                     </div>
-                </div>
-            </div >
+
         );
     }
 }
@@ -858,7 +858,6 @@ const mapStateToProps = (state) => {
         usuarioDetail: state.chatReducer.usuarioDetail,
         isSignedIn: state.auth.isSignedIn,
         isChat: state.chatReducer.isChat,
-        userRol: state.chatReducer.userRol,
     };
 };
 

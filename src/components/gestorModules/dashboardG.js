@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { createStream } from '../../actions';//from '   ../actions';
 import ListFormacion from './listaFormacionesEquipo';
 import '../styles/ingresoHupity.css';
 import randomScalingFactor from '../../lib/randomScalingFactor'
@@ -1006,10 +1005,9 @@ const mapStateToProps = (state) => {
         usuarioDetail: state.chatReducer.usuarioDetail,
         listaObjetivo: state.chatReducer.listaObjetivo,
         verEquipo: state.chatReducer.verEquipo,
-        userRol: state.chatReducer.userRol,
         userId: state.auth.userId,
     };
 };
-export default connect(mapStateToProps, { createStream, equipoConsultas, listaObjetivos, verEquipos })(DashBoard);
+export default connect(mapStateToProps, {  equipoConsultas, listaObjetivos, verEquipos })(DashBoard);
 
 ///<ListAdjuntos />

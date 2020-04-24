@@ -8,7 +8,6 @@ import history from '../../history';
 
 
 import perfil from '../../images/perfil.png';
-import { createStream } from '../../actions';//from '   ../actions';
 import ListFormacion from './listaFormacionesEquipo';
 import randomScalingFactor from '../../lib/randomScalingFactor'
 import ListaObjetivosE from '../../components/gestorModules/listaObjetivosEquipo';
@@ -961,7 +960,7 @@ class hupData extends React.Component {
         let fE = fT === 0 ? 1 : fT / (fTE === 0 ? 1 : fTE);
         maxfT = fT > maxfT ? fT : maxfT;
 
-       
+
         console.log(keyTrabajo);
         if (this.props.equipoConsulta && keyTrabajo) {
 
@@ -981,7 +980,7 @@ class hupData extends React.Component {
           //algortimo de productividad personas
           const FEq = fEq === 0 ? 1 : fT / fEq;
           const valor = (fT / fP) * 0.5 + (fT / fE) * 0.2 + FEq * 0.3;
-   
+
           productividadSemana['sem.' + factorPlanS[key].nsemanMes + ' ' + factorPlanS[key].mes] = { valor, fecha: factorPlanS[key].fecha };
           this.consultaProductivadPersonal(factorPlanS[key].year, factorPlanS[key].semana, fT, fP, fT / fP, fE, fEq, factorPlanS[key].nsemanMes, factorPlanS[key].mes, keyTrabajo);
         }
@@ -1309,9 +1308,8 @@ const mapStateToProps = (state) => {
     listaObjetivo: state.chatReducer.listaObjetivo,
     verEquipo: state.chatReducer.verEquipo,
     equipoConsulta: state.chatReducer.equipoConsulta,
-    userRol: state.chatReducer.userRol,
     userId: state.auth.userId,
   };
 };
-export default connect(mapStateToProps, { createStream, equipoConsultas, listaObjetivos, verEquipos })(hupData);
+export default connect(mapStateToProps, { equipoConsultas, listaObjetivos, verEquipos })(hupData);
 

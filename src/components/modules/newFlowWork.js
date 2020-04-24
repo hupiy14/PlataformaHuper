@@ -6,20 +6,19 @@ import { slackApis } from '../../actions/index';
 import { signOut, usuarioDetails } from '../../actions';
 import history from '../../history';
 import firebase from 'firebase';
-
 //input dinamico
 import InputDinamico from './inputDinamico';
 import { object } from 'prop-types';
 
-
-
-
-
+import { VerticalTimeline, VerticalTimelineElement } from 'react-vertical-timeline-component';
+import 'react-vertical-timeline-component/style.min.css';
+import pointW from '../HuperModules/pointWork';
 
 
 class newFlowWork extends React.Component {
 
-    state = { inputs: [], idInput: 0 }
+
+    state = { inputs: [], idInput: 0, objetosF: null }
 
     componentDidMount() {
 
@@ -27,6 +26,16 @@ class newFlowWork extends React.Component {
             history.push('/dashboard');
             return;
         }
+
+
+        this.setState({
+            objetosF: <VerticalTimeline>
+                <pointW nombreFase="primera etapa" tipofase="0" tituloFase=" trabajo con clientes" detalleFase="primer contacto con los clientes en sus trabajos" />
+                <pointW nombreFase="segunda etapa" tipofase="1" tituloFase=" trabajo con clientes" detalleFase="primer contacto con los clientes en sus trabajos" />
+                <pointW nombreFase="tercera etapa" tipofase="1" tituloFase=" trabajo con clientes" detalleFase="primer contacto con los clientes en sus trabajos" />
+            
+            </VerticalTimeline>
+        })
 
         this.props.inputDinamicos([]);
         this.setState({ inputs: [...this.state.inputs, { label: 'Empieza en', id: this.state.idInput }] });
@@ -97,7 +106,7 @@ class newFlowWork extends React.Component {
         const opciones = Object.keys(listaX).map(function (key, index) {
             let bt = null;
             if (key > 0)
-                bt = <Button icon="trash alternate outline" circular  size="medium" style={{
+                bt = <Button icon="trash alternate outline" circular size="medium" style={{
                     background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)',
                     left: '2%',
                     position: 'relative'
@@ -153,34 +162,8 @@ class newFlowWork extends React.Component {
     render() {
 
         return (
+            this.state.objetosF
 
-            <Form style={{
-                'text-align': 'center',
-                'margin-left': '10%',
-                background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)',
-                width: '80%', 'border-radius': '20px',
-            }} >
-                <br />
-                <div className=" center menu">
-                    <h3 style={{  }}>Describe el flujo de trabajo de tus actividades</h3>
-                    {this.renderInputs(this)}
-                    <Button icon="plus" circular  size="medium" style={{
-                        top: '-30px',
-                        left: '30%',
-                        background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 70.6%, rgb(236, 206, 31) 200%)',
-                        transform: 'scale(1.3)',
-                        position: 'relative'
-                    }} onClick={() => { this.renderAgregarNuevoInput() }}></Button>
-                </div>
-
-                <br />
-                <Button content="Guardar" icon="save"  style={{
-                    top: '-40px',
-                   
-                    position: 'relative',
-                    background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 80%)'
-                }} onClick={() => { this.renderGuardarFlujo(); }}></Button>
-            </Form>
         );
     }
 

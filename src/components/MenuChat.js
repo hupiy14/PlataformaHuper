@@ -1,13 +1,21 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import '../components/styles/ingresoHupity.css';
-import ChatHup from './modules/chatBot/paginaInicio';
+import ChatHup from './HuperModules/efectText/efecto1';
+import ChatHup2 from './HuperModules/efectText/efecto2';
+//import ChatHup3 from './HuperModules/efectText/efecto3';
+import ChatHup3 from './HuperModules/efectText/efecto4';
+import ChatHup4 from './HuperModules/efectText/efecto5';
+
+
+//import ChatHup from './modules/chatBot/paginaInicio';
 import firebase from 'firebase';
 import moment from 'moment';
 import { Image } from 'semantic-ui-react'
 import chat from '../images/chat2.png';
 import { MensajeIvilys, estadochats, datoCloses } from './modules/chatBot/actions';
 import { chatOn, chatOff, } from '../actions';
+import TimerClock from './HuperModules/timerClock/timerr';
 
 
 const timeoutLength = 500;
@@ -16,7 +24,8 @@ const timeoutLength = 500;
 class MenuChat extends React.Component {
 
 
-    state = { inicio: "chatGestorAni4", lat: null, errorMessage: '', long: null, inicio: false, colorC: '#ffac0000', efecto: null, estadoAnterior: null, colorPausa: '#f5deb3' }
+    state = { inicio: "chatGestorAni4", lat: null, errorMessage: '', efectos: 0, efectosAux: 0,
+    long: null, inicio: false, colorC: '#ffac0000', efecto: null, estadoAnterior: null, colorPausa: '#f5deb3' }
 
 
     componentDidMount() {
@@ -61,28 +70,56 @@ class MenuChat extends React.Component {
         }
     }
 
+    randomMax(min, max) {
+        return Math.round((Math.random() * (max - min)) + min);
+    }
+
+
     renderAuthButton() {
         if (this.props.isChat) {
+
+            let chat = null;
+         console.log(this.state.efectos);
+         chat = <ChatHup tipo = {this.state.efectosAux} />
+           /* switch (this.state.efectos) {
+                case 1:
+                    chat = <ChatHup tipo = {this.state.efectosAux} />
+                    break;
+                case 2:
+                    chat = <ChatHup2 />
+                    break;
+                case 3:
+                    chat = <ChatHup3 />
+                    break;
+                case 4:
+                    chat = <ChatHup4 />
+                    break;
+    
+                default:
+                    break;
+            }
+*/
             return (
-                <ChatHup />
+                 chat 
             );
         }
     }
-  
+
 
     handlePasoR = () => {
         this.timeout = setTimeout(() => {
-         
+
             this.props.chatOn();
-       
+
         }, timeoutLength)
     }
     onChat = () => {
+     
         if (this.props.isChat) {
-           
-            this.props.datoCloses(true);     
+            console.log('e1');
+            this.props.datoCloses(true);
             this.props.chatOff();
-           
+
 
             if (this.state.inicio === "chatGestorAni" || this.state.inicio === "chatGestorAniCel")
                 this.setState({ inicio: window.screen.width <= 500 ? 'chatGestorAni2Cel' : 'chatGestorAni2' })
@@ -91,6 +128,11 @@ class MenuChat extends React.Component {
 
         } else {
 
+            this.setState({efectos:  1});
+           
+           // this.setState({efectos:  Math.round(this.randomMax(1,0))});
+           // this.setState({efectosAux:  Math.round(this.randomMax(0,3))});
+          
             if (!this.props.usuarioDetail) return;
             this.setState({ efecto: null });
             let dateF = new Date();
@@ -117,7 +159,7 @@ class MenuChat extends React.Component {
 
             if (moment(moment(diaS).format('YYYY-MM-DD')) < moment())
                 diaS = moment();
-          //  console.log(diaS.format('YYYY-MM-DD'));
+            //  console.log(diaS.format('YYYY-MM-DD'));
 
             const ConsultaAct = firebase.database().ref().child(`Usuario-Activiades/${this.props.usuarioDetail.idUsuario}/${diaS.format('YYYY')}/${diaS.format('MM')}/${diaS.format('DD')}`);
             ConsultaAct.on('value', (snapshot) => {
@@ -131,7 +173,7 @@ class MenuChat extends React.Component {
                     this.props.MensajeIvilys({ ...this.props.MensajeIvily, ...snapshot.val() })
             });
 
-           
+
             this.handlePasoR();
         }
 
@@ -143,7 +185,7 @@ class MenuChat extends React.Component {
 
             let btChat =
                 <div className={"foot-chat"} >
-                    <button onClick={()=>{this.onChat()}} style={{ background: this.state.colorC, transform: 'scale(0.25)' }} className={"massive ui  tiny circular lightbulb outline icon button " + this.state.inicio}>
+                    <button onClick={() => { this.onChat() }} style={{ background: this.state.colorC, transform: 'scale(0.25)' }} className={"massive ui  tiny circular lightbulb outline icon button " + this.state.inicio}>
                         <Image size="medium" style={{ transform: 'scale(1.5)', position: 'relative', top: '19px' }}
                             src={chat} id='2' />
                     </button>
@@ -160,7 +202,7 @@ class MenuChat extends React.Component {
 
                         position: 'fixed', left: '82%', width: '8em', bottom: '-8%', transform: 'scale(1.5)', 'z-index': '6'
                     }}>
-                        <button onClick={()=>{this.onChat()}}  style={{ background: this.state.colorC, transform: 'scale(0.5)', left: ' -1.1em', top: '-1em', position: 'relative' }} className={"massive ui  tiny circular lightbulb outline icon button " + this.state.inicio}>
+                        <button onClick={() => { this.onChat() }} style={{ background: this.state.colorC, transform: 'scale(0.5)', left: ' -1.1em', top: '-1em', position: 'relative' }} className={"massive ui  tiny circular lightbulb outline icon button " + this.state.inicio}>
 
                             <Image size="medium" style={{ transform: 'scale(1.8)', position: 'relative' }}
                                 src={chat} id='2' />
@@ -174,6 +216,7 @@ class MenuChat extends React.Component {
 
             return (
                 <div>
+                    <TimerClock programa={false}></TimerClock>
                     {btChat}
                     {this.renderAuthButton()}
                 </div>
@@ -209,7 +252,7 @@ class MenuChat extends React.Component {
     handleCloseChat = () => {
         this.timeout = setTimeout(() => {
             this.props.chatOff();
-         
+
         }, timeoutLength)
     }
 

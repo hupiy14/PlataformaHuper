@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import GoogleAuth from '../GoogleAuth';
+import GoogleAuth from '../loginGoogle/GoogleAuth';
 import image from '../../images/logo.png';
 import { Image, Header, Button, Input, Label, Modal, Icon } from 'semantic-ui-react'
 import '../styles/ingresoHupity.css';
@@ -196,7 +196,6 @@ class HeadersC extends React.Component {
 const mapStateToProps = (state) => {
     return {
         usuarioDetail: state.chatReducer.usuarioDetail,
-        userRol: state.chatReducer.userRol,
         pasoOnboarding: state.chatReducer.pasoOnboarding,
         celPerf: state.chatReducer.celPerf,
         prioridadObj: state.chatReducer.prioridadObj,

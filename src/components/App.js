@@ -2,24 +2,22 @@ import React from 'react';
 import { Router, Route, Switch } from 'react-router-dom';
 import history from '../history';
 
-import MenuChat from './MenuChat';
+import MenuChat from './HuperModules/chat3X/chatZ';
+//import MenuChat from './MenuChat';
+
 import Header from './Header';
 
 
 // formulario 
-import FomularioGlobal from './FormularioIngreso/formulario1_in';
-import FomularioInicio from './FormularioIngreso/formulario2_in';
-import FomularioTrabajador from './FormularioIngreso/formulario3_in';
-import FomularioHerramientas from './FormularioIngreso/formulario4_in';
-import FomularioTerm from './FormularioIngreso/formulario5_in';
-
-import FomularioEmp from './FormularioIngreso/formularioEmp';
-import FormularioEquipo from './FormularioIngreso/formularioEquipo';
-import FormularioCodigo from './FormularioIngreso/formularioCodigo';
+import FomularioGlobal from './Login/formInicioCod';
+import FomularioInicio from './Login/formEmpEquip';
+import FomularioHerramientas from './Login/formUsaSlack';
+import FomularioTerm from './Login/formTermCond';
 
 import hupityIngreso from './ingresoApp';
 import ingreso from './modules/ingreso';
-import dashboard from './DashBoard';
+import dashboard from './Dashboard/Dash1';
+//import dashboard from './HuperModules/timerClock/timerr';
 import Hupps from './modules/Hupps';
 import { connect } from 'react-redux';
 import './modules/chatBot/chatHupApp.css';
@@ -33,7 +31,7 @@ import MenuCel from './celphone/menuCel';
 import ModalFormValidacion from './gestorModules/formularioValidacionObj';
 //configuracion de flujo
 
-import FLujoCreate from './modules/newFlowWork';
+import FLujoCreate from './HuperModules/pointWork';
 import { celChats } from '../components/modules/chatBot/actions';
 import equipoDash from './gestorModules/equipoData';
 
@@ -63,8 +61,7 @@ class App extends React.Component {
 
     renderMenuChat() {
 
-
-        if (this.props.userRol !== '2') {
+        if (this.props.usuarioDetail && this.props.usuarioDetail.rol !== '2') {
             if ((this.props.MensajeIvily && this.props.MensajeIvily.nActIVi && this.props.MensajeIvily.nActIVi < 6) || !this.props.listaObjetivo || !this.props.listaObjetivo.objetivos || this.props.usuarioDetail && !this.props.usuarioDetail.usuario.onboarding) {
 
             }
@@ -72,7 +69,7 @@ class App extends React.Component {
                 return <MenuChat />;
         }
         else {
-            if (!this.props.usuarioDetail.usuario.onboarding) {
+            if (this.props.usuarioDetail && !this.props.usuarioDetail.usuario.onboarding) {
 
             }
             else
@@ -85,10 +82,8 @@ class App extends React.Component {
 
     renderMenuChatC() {
 
-        if (this.props.userRol !== '2') {
-
+        if (this.props.usuarioDetail && this.props.usuarioDetail.rol !== '2') {
             if ((this.props.MensajeIvily && this.props.MensajeIvily.nActIVi && this.props.MensajeIvily.nActIVi < 6) || this.props.estadochat === "dimmer Plan") {
-
             }
             else {
 
@@ -103,7 +98,7 @@ class App extends React.Component {
 
 
     render() {
-
+     
         let apps = null;
         if (window.screen.width <= 500 || (window.screen.height <= 500 && window.screen.width <= 800)) {
 
@@ -133,9 +128,9 @@ class App extends React.Component {
                                                 <Route path="/proceso/exito" exact component={Exito} />
                                                 <Route path="/formulario/validacion" exact component={ModalFormValidacion} />
                                                 <Route path="/formulario" exact component={FomularioGlobal} />
-                                                <Route path="/formulario/empresa" exact component={FomularioEmp} />
-                                                <Route path="/formulario/equipo" exact component={FormularioEquipo} />
-                                                <Route path="/formulario/codigo" exact component={FormularioCodigo} />
+                                                <Route path="/formulario/inicio" exact component={FomularioInicio} />
+                                                <Route path="/formulario/herramientas" exact component={FomularioHerramientas} />
+                                                <Route path="/formulario/termcond" exact component={FomularioTerm} />
                                                 <Route path="/dashboard" component={DashBoardC} />
                                                 <Route path="/editObj" component={MenuEditObj} />                                             
                                                 <Route path="/newworkflow" exact component={NewFlujoC} />
@@ -165,9 +160,8 @@ class App extends React.Component {
 
         }
         else {
-            apps =
-                <div   >
-                    <div className="ui container "  >
+            apps = <div  style={{height: window.screen.height}} >
+                    <div className="ui container " style={{height:'100%'}}  >
                         <div className="ui items ">
                             <div className="item  ">
                                 <div className="content  ">
@@ -190,11 +184,9 @@ class App extends React.Component {
                                                 <Route path="/formulario/validacion" exact component={ModalFormValidacion} />
                                                
                                                 <Route path="/formulario" exact component={FomularioGlobal} />
-                                                <Route path="/formulario/trabajador" exact component={FomularioTrabajador} />
                                                 <Route path="/formulario/inicio" exact component={FomularioInicio} />
                                                 <Route path="/formulario/herramientas" exact component={FomularioHerramientas} />
                                                 <Route path="/formulario/termcond" exact component={FomularioTerm} />
-
                                                 <Route path="/newworkflow" exact component={FLujoCreate} />
 
 
@@ -211,31 +203,20 @@ class App extends React.Component {
                         </div>
                     </div>
                     <div className="pie-Pagina">
-
-
-                        {this.renderMenuChat()}
+                      <MenuChat></MenuChat>
                     </div>
 
                 </div >
         }
 
 
-        return (
-
-
-            apps
-
-
-
-
-        );
+        return apps;
     }
 };
 
 const mapStateToProps = (state) => {
     return {
         usuarioDetail: state.chatReducer.usuarioDetail,
-        userRol: state.chatReducer.userRol,
         pasoOnboarding: state.chatReducer.pasoOnboarding,
         MensajeIvily: state.chatReducer.MensajeIvily,
         listaObjetivo: state.chatReducer.listaObjetivo,

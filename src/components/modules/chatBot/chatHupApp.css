@@ -1,7 +1,21 @@
 @import url(https://fonts.googleapis.com/css?family=Quicksand:300,400,700);
-/*html {
-  min-height: 100%;
-}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -835,8 +849,6 @@ button.swiper-pagination-bullet {
     animation: back-to-docs 1.5s ease-in-out 0s infinite normal none running;
 }
 
-
-
 .maximo-listEObj {
   position: relative;
   overflow: auto;
@@ -851,7 +863,7 @@ button.swiper-pagination-bullet {
 .maximo-list {
   position: relative;
   overflow: auto;
-  height: 50.0em;
+  height: 22.0em;
 }
 .grid.container {
   margin-top: 5em;

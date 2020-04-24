@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { createStream, chatOff, chatOn } from '../actions';
+import { chatOff, chatOn } from '../actions';
 import ListImportan from './utilidades/listaImportante';
 import ListEjemplo from './utilidades/ListaEjemplo';
 import Calendario2 from './utilidades/calendar2';
@@ -632,7 +632,7 @@ class DashBoard extends React.Component {
                             </div>
                         </div>
                         <div className="column nine wide" style={{ left: '20px' }} >
-                            <div className="ui segment" style={{ 'background': 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)' }}>
+                            <div className="ui segment" style={{ position : 'relative', top: '150px' }}>
                                 {this.renderListaObjetivos()}
                             </div>
                         </div>
@@ -714,7 +714,7 @@ class DashBoard extends React.Component {
 
 
 
-        if (this.props.userRol === '3') {
+        if (this.props.usuarioDetail && this.props.usuarioDetail.rol === '3') {
 
 
 
@@ -724,7 +724,7 @@ class DashBoard extends React.Component {
 
             if (this.props.usuarioDetail.usuario.onboarding === false) {
 
-                const tOn = "Hola " + this.props.usuarioDetail.usuario.usuario + " soy tu huperbot, ";
+                const tOn = "Hola " + this.props.usuarioDetail.usuario.usuario + " soy huper, ";
                 const tOn2 = "te apoyare en el trabajo que debas realizar ";
                 const tOn3 = "para comenzar... ";
 
@@ -875,7 +875,7 @@ class DashBoard extends React.Component {
 
 
         }
-        else if (this.props.userRol === '2') {
+        else if (this.props.usuarioDetail && this.props.usuarioDetail.rol === '2') {
 
 
             let pageActivi = null;
@@ -884,7 +884,7 @@ class DashBoard extends React.Component {
 
             if (this.props.usuarioDetail.usuario.onboarding === false) {
 
-                const tOn = "Hola " + this.props.usuarioDetail.usuario.usuario + " soy tu huperbot, ";
+                const tOn = "Hola " + this.props.usuarioDetail.usuario.usuario + " soy huper, ";
                 const tOn2 = "te apoyare en gestionar a tu equipo ";
                 const tOn3 = "para comenzar... ";
                 const tOn4 = "Nuestra metodología es basada en Ivy lee ";
@@ -1013,7 +1013,6 @@ class DashBoard extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        userRol: state.chatReducer.userRol,
         userId: state.auth.userId,
         pasoOnboarding: state.chatReducer.pasoOnboarding,
         listaFormacion: state.chatReducer.listaFormacion,
@@ -1024,6 +1023,6 @@ const mapStateToProps = (state) => {
 
     };
 };
-export default connect(mapStateToProps, { signOut, createStream, pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats })(DashBoard);
+export default connect(mapStateToProps, { signOut, pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats })(DashBoard);
 
 ///<ListAdjuntos />

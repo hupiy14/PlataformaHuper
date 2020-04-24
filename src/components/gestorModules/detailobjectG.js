@@ -74,7 +74,7 @@ class ListaObjetivosEquipo extends React.Component {
 
 
         updates[`Usuario-Objetivos/${objetivo.idUsuario}/${key}`] = tarea;
-        firebase.database().ref().update(updates);
+      //  firebase.database().ref().update(updates);
         this.setState({ mensajeCodigo: null });
         this.setState({ error: null });
 
@@ -745,7 +745,6 @@ class ListaObjetivosEquipo extends React.Component {
                                 equipo: true,
                                 concepto: this.state.comentario
                             });
-
                         }
                     });
                 });

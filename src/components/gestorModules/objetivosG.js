@@ -68,7 +68,7 @@ class ListaObjetivosEquipo extends React.Component {
                 Object.keys(cconsulta).map((key3, index) => {
                     if (this.state.porInputs[key].key === key3) {
                         const data = { ...cconsulta[key3], porcentajeResp: this.state.porInputs[key].por }
-                        firebase.database().ref(`Usuario-Objetivos/${this.state.porInputs[key].idUsuario}/${this.state.porInputs[key].key}`).set({
+                       firebase.database().ref(`Usuario-Objetivos/${this.state.porInputs[key].idUsuario}/${this.state.porInputs[key].key}`).set({
                             ...data
                         });
                     }

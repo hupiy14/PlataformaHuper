@@ -144,7 +144,7 @@ class Profile extends React.Component {
 
 
         let visible = false;
-        if (this.props.userRol === '3')
+        if (this.props.usuarioDetail.rol === '3')
             visible = true;
         return (
             <div>
@@ -362,7 +362,7 @@ class Profile extends React.Component {
         onChange={e => this.setState({ tokenTrello: e.target.value })}
     />*/
         let visible = true;
-        if (this.props.userRol === '3')
+        if (this.props.usuarioDetail.rol === '3')
             visible = false;
 
 
@@ -436,7 +436,7 @@ class Profile extends React.Component {
 
     renderUsuario() {
         let nnivel = null;
-        if (this.props.userRol === '2') {
+        if (this.props.usuarioDetail.rol === '2') {
             nnivel = <Form.Select label='Define el nivel de competitividad de tu equipo' options={nivel} placeholder='Selecciona uno'
                 search
                 onChange={(e, { value }) => this.setState({ nivelEquipo: { ...this.state.nivelEquipo, nivel: value } })}
@@ -603,7 +603,7 @@ class Profile extends React.Component {
                 wsCompartida: this.state.codigoWSdrive ? this.state.codigoWSdrive : this.props.usuarioDetail.usuario.wsCompartida ? this.props.usuarioDetail.usuario.wsCompartida : null,
                 diaSemana: this.state.diaSemana ? this.state.diaSemana : 0,
             });
-            if (this.props.userRol === '2')
+            if (this.props.usuarioDetail.rol === '2')
                 firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`).set({
                     ...this.state.nivelEquipo,
                     nivel: this.state.nivelEquipo.nivel,
@@ -741,7 +741,7 @@ class Profile extends React.Component {
                 this.setState({ empresa: snapshot.val().industria })
             });
 
-            if (this.props.userRol === '2') {
+            if (this.props.usuarioDetail.rol === '2') {
                 const starCountRef2 = firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`);
                 starCountRef2.on('value', (snapshot) => {
                     if (snapshot.val())
@@ -758,7 +758,7 @@ class Profile extends React.Component {
         if (this.props.usuarioDetail && this.props.usuarioDetail.usuario && !this.state.entro)
             this.renderCargar();
         let tamano = '46em';
-        if (this.props.userRol === '2')
+        if (this.props.usuarioDetail.rol === '2')
             tamano = '50em';
         if (this.state.open === 'slack') {
             tamano = '26em';
@@ -857,7 +857,6 @@ const mapStateToProps = (state) => {
         usuarioDetail: state.chatReducer.usuarioDetail,
         isSignedIn: state.auth.isSignedIn,
         isChat: state.chatReducer.isChat,
-        userRol: state.chatReducer.userRol,
     };
 };
 
