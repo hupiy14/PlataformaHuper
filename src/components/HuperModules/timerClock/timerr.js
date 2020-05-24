@@ -3,19 +3,18 @@ import { connect } from 'react-redux';
 import './timer.css';
 import music from '../../../images/bensound-goinghigher.mp3';
 import { sendMessage } from '../../../actions';
+import moment from 'moment';
+import firebase from 'firebase';
+import { chatOn, chatOff, popupBot } from '../../../actions';
 
-
+let timeoutLength = 500000;
+let timeoutLength3 = 500000;
 
 class timerClock extends React.Component {
 
     state = {
         actividades: null, tiempos: 0, horamaxima: 8, primero: null, aux: null
-        , index: 0, delay: .02, mensaje: null,
-
-
-
-
-
+        , index: 0, delay: .02, mensaje: null, actualD: false,
 
     }
 
@@ -25,15 +24,17 @@ class timerClock extends React.Component {
         let stopMusicButton = window.$("#btn-stop-music");
         stopMusicButton.prop('disabled', true);
         this.sessionTime = 1500;
-        this.props.sendMessage(this.sessionTime);
-        this.sessionWasRunning = true;
-        
-        this.isSessionStop = true;
+        this.props.sendMessage(1500);
+        this.view = false;
+        this.sessionWasRunning = false;
+        this.isSessionStop = false;
         this.isBreakStop = true;
-
+        this.press = null;
+        this.actividad = 0;
+        this.envioMensa = 0;
         this.resetSession = 1500;
         this.resetBreak = 300;
-
+        this.timepoAnt = 0;
         //user choice of session and break time
 
 
@@ -56,38 +57,29 @@ class timerClock extends React.Component {
             });
             */
 
-        this.sessionClock = window.$('.session-clock').FlipClock(this.sessionTime, {
-            clockFace: 'MinuteCounter',
 
-            countdown: true,
-            autoStart: false,
 
-            callbacks: {
-                interval: () => {
-                    var sessionTime = this.sessionClock.getTime().time;
-                    if (sessionTime == 0) {
-                        //set time again to offset the one second difference
-                        this.breakClock.setTime(this.breakTime + 1);
-                        this.breakClock.start();
-                        this.isBreakStop = false;
+        this.actual();
+        this.actual2();
+        this.timerChangeTop();
+        this.timerChange();
+    }
 
-                        this.isSessionStop = true;
-                        this.sessionWasRunning = false;
-
-                        this.playSessionOverMusic();
-
-                    } else if (this.breakTime == 0 && this.isBreakStop) {
-
-                        //set time for display
-                        this.breakClock.setTime(this.breakTime);
-                    }
+    renderConsulta() {
+        this.queryConsulta = `Usuario-Task/${this.props.userId}/${moment().format("YYYYMMDD")}`;
+        const starCountRef3 = firebase.database().ref().child(this.queryConsulta);
+        this.press = true;
+        if (this.timepoTask === undefined)
+            starCountRef3.on('value', (snapshot) => {
+                if (snapshot.val() !== null && snapshot.val().estado === 'completo') {
+                    this.timepoTask = snapshot.val();
                 }
-            }
+            });
+
+    }
 
 
-        });
-
-
+    actual2() {
         this.breakClock = window.$('.break-clock').FlipClock(this.breakTime, {
             clockFace: 'MinuteCounter',
 
@@ -119,17 +111,41 @@ class timerClock extends React.Component {
             }
         });
 
-
     }
 
+    actual() {
+
+        this.sessionClock = window.$('.session-clock').FlipClock(this.sessionTime, {
+            clockFace: 'MinuteCounter',
+
+            countdown: true,
+            autoStart: false,
+
+            callbacks: {
+                interval: () => {
+                    var sessionTime = this.sessionClock.getTime().time;
+                    if (sessionTime == 0) {
+                        //set time again to offset the one second difference
+                        //  this.breakClock.setTime(this.breakTime + 1);
+                        //this.breakClock.start();
+                        this.isBreakStop = false;
+
+                        this.isSessionStop = true;
+                        this.sessionWasRunning = false;
+                        let men = this.actividad === '0' ? '' : this.actividad;
+                        // this.playSessionOverMusic();
+
+                    } else if (this.breakTime == 0 && this.isBreakStop) {
+
+                        //set time for display
+                        this.breakClock.setTime(this.breakTime);
+                    }
+                }
+            }
 
 
-
-
-
-
-
-
+        });
+    }
     changeSessionTime(time) {
         if ((this.sessionTime + time >= 0) && (this.sessionTime + time <= 5400)) {
             this.stopAllClocks();
@@ -140,7 +156,81 @@ class timerClock extends React.Component {
     }
 
 
+    updateTime() {
+        let task = this.timepoTask;
+        let acum = 0;
+        if (task !== undefined) {
+            Object.keys(task).map((key, index) => {
+                if (task[key].estado === 'activo') {
 
+                    task[key]["duracion"] = this.props.onMessage + acum;
+                    task[key]["h-inicio"] = moment().add('seconds', acum).format('h:mm:ss a');
+                    task[key]["h-fin"] = moment().add('seconds', this.props.onMessage + acum).format('h:mm:ss a');
+                    acum = this.props.onMessage + acum;
+
+                }
+            });
+            if (this.timepoAnt !== acum) {
+                firebase.database().ref(this.queryConsulta).update({
+                    ...this.task
+                });
+                this.timepoAnt = acum;
+            }
+        }
+
+    }
+
+    timerChangeTop = () => {
+        this.timeout = setTimeout(() => {
+            let timeU = this.sessionClock.getTime().time;
+            if (timeU <= 0) {
+
+                let men = this.actividad === 0 ? '' : this.actividad;
+                if (this.envioMensa < 3) {
+                    this.props.popupBot({ mensaje: 'hemos terminado nuestra ' + men + ' actividad', sleep: 35000 });
+                    this.envioMensa = this.envioMensa + 1;
+                    this.sessionClock.setTime(0);
+                }
+                else if (this.envioMensa === 3) {
+                    this.renderTiempoTrabajo()
+                }
+                else {
+                    this.envioMensa = 0;
+                }
+                this.timepoTask = undefined;
+                this.sessionClock.setTime(0);
+                this.timerChange();
+            }
+            else {
+
+                if (timeU < 30) {
+                    this.sessionClock.setTime(0);
+                    timeoutLength3 = 10000;
+                }
+
+                else
+                    timeoutLength3 = (timeU * 1000) / 2;
+            }
+            this.timerChangeTop();
+        }, timeoutLength3)
+    }
+
+    timerChange = () => {
+
+        this.timeout = setTimeout(() => {
+            if (this.timepoTask === undefined) {
+                if (this.press === null) {
+                    this.renderConsulta();
+                    this.view = true;
+                }
+            }
+            if (this.renderTiempoTrabajo() === false) {
+                this.timerChange();
+                this.updateTime();
+            }
+        }, timeoutLength)
+
+    }
 
     /* End Edit Time Section */
 
@@ -197,13 +287,6 @@ class timerClock extends React.Component {
 
 
 
-
-
-
-
-
-
-
     playBreakOverMusic() {
         // this.stopMusicButton.prop('disabled',false);
 
@@ -234,37 +317,74 @@ class timerClock extends React.Component {
 
 
 
+    renderTiempoTrabajo() {
+        let task = this.timepoTask;
+        if (task !== undefined) {
+
+            let tiempo = 0;
+            this.sessionTime = 0;
+            Object.keys(task).map((key, index) => {
+                if (task[key].estado === 'activo') {
+
+                    let tiempo = moment(task[key]['h-inicio'], 'h:mm:ss a').format('x');
+                    let tiempof = moment(task[key]['h-fin'], 'h:mm:ss a').format('x');
+                    let imTime = moment().format('x');
+                    if (imTime > tiempo && imTime <= tiempof) {
+                        this.sessionTime = (tiempof - imTime) / 1000;
+                        this.actividad = (index - 1) + 1;
+                    }
+                    else if (imTime > tiempof) {
+                        this.timepoTask[key].estado = 'finalizado';
+                    }
+
+                }
+            });
+
+            firebase.database().ref(this.queryConsulta).update({
+                ...this.timepoTask
+            });
+            this.sessionClock.setTime(this.sessionTime);
+            this.sessionClock.start();
+            return true;
+
+        }
+        else
+            return false;
+
+
+    }
+
 
 
     render() {
 
         let planCurrent = null;
         let titulo = null;
-      //  let style ={  top: '-30%', left: '-20%', position: 'fixed' };
-      let style ={  top: '82%', position: 'fixed', transform: 'scale(0.3)', left:  0.62 * window.innerWidth };
-        
-      if (this.props.programa) {
-            style ={ top: '100px', transform: 'scale(0.78)' };
+        //  let style ={  top: '-30%', left: '-20%', position: 'fixed' };
+        let style = { top: '82%', position: 'fixed', transform: 'scale(0.3)', left: 0.62 * window.innerWidth };
+
+        if (this.props.programa) {
+
+            style = { top: '100px', transform: 'scale(0.78)' };
             planCurrent = <div style={{ top: '-64px', position: 'relative', left: '-100px' }}>
                 <button type="button" onClick={() => { this.changeSessionTime(-900); }} className="btn btn-lg btn-edit" id="btn-reduce-session-minute">-</button>
                 <button type="button" onClick={() => { this.changeSessionTime(900); }} style={{ position: 'relative', left: '210px' }} className="btn btn-lg btn-edit" id="btn-increase-session-minute">+</button>
             </div>
             titulo = "¿Cuanto tiempo esperas demorarte?";
-        }   
-     
-        /*
-         top: '-30%', left: '-20%', position: 'fixed'
-      let btPrueba =  <div>
-            <button type="button" onClick={() => { this.startButton() }} className="btn btn-lg btn-edit" id="btn-reduce-session-minute">-</button>
+        }
+
+
+        // top: '-30%', left: '-20%', position: 'fixed'
+        /*let btPrueba = <div>
+            <button type="button" style={style} onClick={() => { this.startButton() }} className="btn btn-lg btn-edit" id="btn-reduce-session-minute">-</button>
         </div>
-        */
+*/
         return (
             <div className="ui container" style={style}>
                 <div className="col-md-5">
                     <h1 className="clock-title">{titulo}</h1>
                     <div className="clock session-clock"></div>
                     {planCurrent}
-
                 </div>
             </div>
 
@@ -277,9 +397,10 @@ const mapAppStateToProps = (state) => (
         numeroTareasTerminadas: state.chatReducer.numeroTareasTerminadas,
         usuarioDetail: state.chatReducer.usuarioDetail,
         selObjetivo: state.chatReducer.selObjetivo,
+        isChat: state.chatReducer.isChat,
         userId: state.auth.userId,
 
     });
 
 
-export default connect(mapAppStateToProps, {sendMessage})(timerClock);
+export default connect(mapAppStateToProps, { sendMessage, popupBot })(timerClock);

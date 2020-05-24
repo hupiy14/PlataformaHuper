@@ -6,6 +6,8 @@ import {
     SLACKAPI,
     ON_MESSAGE,
     END_CHAT,
+    POPUP_MENSAJE,
+    MENSAJE_CHAT
 } from './types';
 
 import {
@@ -55,6 +57,24 @@ export const usuarioDetails = (usuarioDetail) => {
         payload: usuarioDetail
     };
 };
+
+export const popupBot = (mensaje) => {
+
+    return {
+        type: POPUP_MENSAJE,
+        payload: mensaje
+    };
+};
+
+
+export const mensajeChat = (mensaje) => {
+
+    return {
+        type: MENSAJE_CHAT,
+        payload: mensaje
+    };
+};
+
 export const nombreUsuario = (nombreUser) => {
 
     return {

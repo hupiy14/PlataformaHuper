@@ -7,11 +7,10 @@ import ChatHup2 from './HuperModules/efectText/efecto2';
 import ChatHup3 from './HuperModules/efectText/efecto4';
 import ChatHup4 from './HuperModules/efectText/efecto5';
 
-
 //import ChatHup from './modules/chatBot/paginaInicio';
 import firebase from 'firebase';
 import moment from 'moment';
-import { Image } from 'semantic-ui-react'
+import { Image , Popup, Icon} from 'semantic-ui-react'
 import chat from '../images/chat2.png';
 import { MensajeIvilys, estadochats, datoCloses } from './modules/chatBot/actions';
 import { chatOn, chatOff, } from '../actions';
@@ -24,8 +23,10 @@ const timeoutLength = 500;
 class MenuChat extends React.Component {
 
 
-    state = { inicio: "chatGestorAni4", lat: null, errorMessage: '', efectos: 0, efectosAux: 0,
-    long: null, inicio: false, colorC: '#ffac0000', efecto: null, estadoAnterior: null, colorPausa: '#f5deb3' }
+    state = {
+        inicio: "chatGestorAni4", lat: null, errorMessage: '', efectos: 0, efectosAux: 0,
+        long: null, inicio: false, colorC: '#ffac0000', efecto: null, estadoAnterior: null, colorPausa: '#f5deb3'
+    }
 
 
     componentDidMount() {
@@ -79,28 +80,28 @@ class MenuChat extends React.Component {
         if (this.props.isChat) {
 
             let chat = null;
-         console.log(this.state.efectos);
-         chat = <ChatHup tipo = {this.state.efectosAux} />
-           /* switch (this.state.efectos) {
-                case 1:
-                    chat = <ChatHup tipo = {this.state.efectosAux} />
-                    break;
-                case 2:
-                    chat = <ChatHup2 />
-                    break;
-                case 3:
-                    chat = <ChatHup3 />
-                    break;
-                case 4:
-                    chat = <ChatHup4 />
-                    break;
-    
-                default:
-                    break;
-            }
-*/
+            console.log(this.state.efectos);
+            chat = <ChatHup tipo={this.state.efectosAux} />
+            /* switch (this.state.efectos) {
+                 case 1:
+                     chat = <ChatHup tipo = {this.state.efectosAux} />
+                     break;
+                 case 2:
+                     chat = <ChatHup2 />
+                     break;
+                 case 3:
+                     chat = <ChatHup3 />
+                     break;
+                 case 4:
+                     chat = <ChatHup4 />
+                     break;
+     
+                 default:
+                     break;
+             }
+ */
             return (
-                 chat 
+                chat
             );
         }
     }
@@ -114,7 +115,7 @@ class MenuChat extends React.Component {
         }, timeoutLength)
     }
     onChat = () => {
-     
+
         if (this.props.isChat) {
             console.log('e1');
             this.props.datoCloses(true);
@@ -128,11 +129,11 @@ class MenuChat extends React.Component {
 
         } else {
 
-            this.setState({efectos:  1});
-           
-           // this.setState({efectos:  Math.round(this.randomMax(1,0))});
-           // this.setState({efectosAux:  Math.round(this.randomMax(0,3))});
-          
+            this.setState({ efectos: 1 });
+
+            // this.setState({efectos:  Math.round(this.randomMax(1,0))});
+            // this.setState({efectosAux:  Math.round(this.randomMax(0,3))});
+
             if (!this.props.usuarioDetail) return;
             this.setState({ efecto: null });
             let dateF = new Date();
@@ -216,9 +217,16 @@ class MenuChat extends React.Component {
 
             return (
                 <div>
+                      <Popup
+                        trigger={<Icon circular name='heart' />}
+                        content='Hello. This is an inverted popup'
+                        inverted
+                    />
+                    
                     <TimerClock programa={false}></TimerClock>
                     {btChat}
                     {this.renderAuthButton()}
+                  
                 </div>
             );
         }

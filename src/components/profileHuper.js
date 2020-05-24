@@ -11,6 +11,10 @@ import drive from '../images/drive.png';
 import calendar from '../images/calendar.png';
 import slack from '../images/slack.png';
 import trelloImg from '../images/trello.png';
+import { red } from '@material-ui/core/colors';
+import Select from 'react-select';
+import chroma from 'chroma-js';
+import { relativeTimeThreshold } from 'moment';
 
 
 var Trello = require("trello");
@@ -47,18 +51,17 @@ class Profile extends React.Component {
         trelloApi: null, tokenTrello: null, listaObjetivostoDO: null, listaOBjetivosDone: null, listaObjetivosTheEnd: null, imagenMostrar: null, imagenFondo: null, imagenPerfil: null,
     }
 
-   
-    componentWillMount(){
-        if(!this.props.isSignedIn || !this.props.usuarioDetail)
-        {
+
+    componentWillMount() {
+        if (!this.props.isSignedIn || !this.props.usuarioDetail) {
             history.push('/dashboard');
             return;
-        } 
+        }
     }
     componentDidMount() {
 
         //se consulta todas las empresas
-        
+
         const starCountRef = firebase.database().ref().child('empresa');
         starCountRef.on('value', (snapshot) => {
             this.setState({ listaEmpresas: snapshot.val() })
@@ -66,7 +69,7 @@ class Profile extends React.Component {
     }
 
     renderOpcionesEmpresa() {
-       
+
         const listaX = this.state.listaEmpresas;
         let lista = {};
         const opciones = Object.keys(listaX).map(function (key, index) {
@@ -102,11 +105,17 @@ class Profile extends React.Component {
 
 
     renderCanaleSlack() {
-        const listaX = this.state.listaCanales_Slack;
+        let listaX = this.state.listaCanales_Slack;
+
         let lista = {};
         if (listaX) {
-            const opciones = Object.keys(listaX).map(function (key, index) {
-                lista = { ...lista, key: key, text: listaX[key].name, value: listaX[key].id };
+            const opciones = Object.keys(listaX).map((key, index) => {
+
+
+                lista = { ...lista, value: listaX[key].id, label: listaX[key].name };
+
+                // if(index === 1)
+                this.canal = lista[0];
                 return lista;
             });
 
@@ -117,7 +126,73 @@ class Profile extends React.Component {
     }
 
 
+    renderStyles() {
 
+        let dot = (color = '#ccc') => ({
+            alignItems: 'center',
+            display: 'flex',
+
+            ':before': {
+                backgroundColor: '#48f70f',
+                borderRadius: 10,
+                content: '" "',
+                display: 'block',
+                marginRight: 8,
+                height: 10,
+                width: 10,
+            },
+        });
+
+
+
+        let st = {
+            control: styles => ({ ...styles, backgroundColor: 'white' }),
+
+            option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+                const color = chroma('#48f70f');
+                return {
+                    ...styles,
+                    backgroundColor: isDisabled
+                        ? null
+                        : isSelected
+                            ? data.color
+                            : isFocused
+                                ? color.alpha(0.1).css()
+                                : null,
+                    color: isDisabled
+                        ? '#ccc'
+                        : isSelected
+                            ? chroma.contrast(color, 'white') > 2
+                                ? 'white'
+                                : 'black'
+                            : data.color,
+                    cursor: isDisabled ? 'not-allowed' : 'default',
+
+                    ':active': {
+                        ...styles[':active'],
+                        backgroundColor: !isDisabled && (isSelected ? data.color : color.alpha(0.3).css()),
+                    },
+                };
+            },
+            input: styles => ({ ...styles, ...dot }),
+            placeholder: styles => ({ ...styles, ...dot }),
+            singleValue: (styles, { data }) => ({ ...styles, ...dot('#48f70f') }),
+        };
+
+        return st;
+    }
+
+    renderValidateSlack() {
+
+        if (this.state.canalEquipoSlack === undefined && this.state.canalReportesSlack === undefined && this.state.canalNotifiacionesSlack === undefined) {
+            this.setState({ activo: true });
+        }
+
+        else {
+            this.setState({ activo: false });
+        }
+
+    }
     renderUsuarioSlack() {
 
         ///valores que por seguridad no se muestran 
@@ -156,27 +231,46 @@ class Profile extends React.Component {
         let visible = false;
         if (this.props.usuarioDetail.rol === '3')
             visible = true;
+
+
+
+        let st = this.renderStyles();
+        let op = this.renderCanaleSlack();
+
         return (
             <div>
-                <Form >
-                    <Form.Select label='Canal del Equipo' options={this.renderCanaleSlack()} 
+                <Form  >
+                    <h3>Cual es el canal de tu equipo?</h3>
+                    <Select options={op}
                         search
-                        onChange={(e, { value }) => { this.setState({ canalEquipoSlack: value }) }}
                         value={this.state.canalEquipoSlack}
+                        styles={st}
+                        onChange={(e, { value }) => { this.setState({ canalEquipoSlack: e }); this.renderValidateSlack(); }}
+
                     />
-                    <Form.Select label='Canal del Reportes' options={this.renderCanaleSlack()} 
+                    <h3>Cual es tu canal Importante?</h3>
+                    <Select options={op}
                         search
-                        onChange={(e, { value }) => { this.setState({ canalReportesSlack: value }) }}
+                        styles={st}
                         value={this.state.canalReportesSlack}
+                        onChange={(e, { value }) => { this.setState({ canalReportesSlack: e }); this.renderValidateSlack(); }}
+
                     />
-                    <Form.Select label='Canal del Notificaciones' options={this.renderCanaleSlack()} 
+                    <h3>Cual es tu canal Notificaciones?</h3>
+                    <Select options={op}
                         search
-                        onChange={(e, { value }) => { this.setState({ canalNotifiacionesSlack: value }) }}
-                        value={this.state.canalNotifiacionesSlack}
+                        styles={st}
+                        value={this.state.canalNotifiacionesSlack}      
+                        onChange={(e) => { console.log(e); this.setState({ canalNotifiacionesSlack: e }); this.renderValidateSlack(); }}
+
+
                     />
                 </Form>
                 <br />
-                <Button icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+
+                <Button icon='save' disabled={
+                    this.state.activo
+                } style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
             </div>
 
         );
@@ -192,8 +286,9 @@ class Profile extends React.Component {
             return (this.renderCalendar());
         else if (this.state.open === 'trello')
             return (this.renderTrello());
-        else
+        else {
             return (this.renderUsuario());
+        }
     }
 
 
@@ -209,7 +304,7 @@ class Profile extends React.Component {
 
                 </Form>
                 <br />
-                <Button  icon='save' disabled={this.state.activo} style={{ left: '52%', background:'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+                <Button icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
             </div>
 
         );
@@ -289,7 +384,7 @@ class Profile extends React.Component {
                     />
                 </Form >
                 <br />
-                <Button  icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar'
+                <Button icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar'
 
                     onClick={() => { this.renderGuardar() }}
                 />
@@ -383,7 +478,7 @@ class Profile extends React.Component {
                 onChange={e => { this.setState({ trelloApi: e.target.value }); this.renderConsultaApiKeyTrello(e.target.value); }}
             />
             <div className="inline">
-                <Button color="blue"  style={{height: '37px'}} icon='trello' labelPosition='center' content='Generar' onClick={() => { window.open('https://trello.com/app-key/'); }} />
+                <Button color="blue" style={{ height: '37px' }} icon='trello' labelPosition='center' content='Generar' onClick={() => { window.open('https://trello.com/app-key/'); }} />
             </div>
         </Form>
 
@@ -424,7 +519,7 @@ class Profile extends React.Component {
                         />
                     </Form>
                     <br />
-                    <Button  icon='save' disabled={this.state.activo} style={{ left: '52%' , background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar'
+                    <Button icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar'
                         disabled={this.state.trelloDashboard && (this.state.listaObjetivostoDO && this.state.listaObjetivostoDO !== '' ||
                             this.state.listaOBjetivosDone && this.state.listaOBjetivosDone !== '' ||
                             this.state.listaObjetivosTheEnd && this.state.listaObjetivosTheEnd !== '') ? false : true}
@@ -486,14 +581,14 @@ class Profile extends React.Component {
                         error={this.state.errorArea}
                     />
 
-                    <Form.Select label='En que dia termina tu semana' options={Semana} 
+                    <Form.Select label='En que dia termina tu semana' options={Semana}
                         search
                         onChange={(e, { value }) => this.setState({ diaSemana: value })}
                         value={this.state.diaSemana}
 
                     />
 
-                    <Form.Select label='Lugar de residencia' options={this.renderOpcionesZona()} 
+                    <Form.Select label='Lugar de residencia' options={this.renderOpcionesZona()}
                         search
                         onChange={(e, { value }) => this.setState({ lugar: value })}
                         value={this.state.lugar}
@@ -515,7 +610,7 @@ class Profile extends React.Component {
                     />
                 </Form>
 
-                <Button  icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+                <Button icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
             </div>
         );
     }
@@ -547,6 +642,8 @@ class Profile extends React.Component {
             this.setState({ slackIn: '0%' });
             if (!this.state.canalEquipoSlack || this.state.canalEquipoSlack === '')
                 this.setState({ slackIn: '100%' });
+
+
 
             firebase.database().ref(`Usuario-Slack/${this.props.usuarioDetail.idUsuario}`).set({
                 usuarioSlack: this.state.codigoUsSlack,
@@ -621,7 +718,7 @@ class Profile extends React.Component {
 
         }
 
-        this.setState({ activo: true });
+        //  this.setState({ activo: true });
     }
 
 
@@ -632,6 +729,7 @@ class Profile extends React.Component {
             const starCountRef = firebase.database().ref().child(`Usuario-Slack/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
+                    console.log(snapshot.val());
                     this.setState({ codigoUsSlack: snapshot.val().usuarioSlack ? snapshot.val().usuarioSlack : '' });
                     this.setState({ tokenUsSlack: snapshot.val().tokenP ? snapshot.val().tokenP : '' });
                     this.setState({ tokenBotUsSlack: snapshot.val().tokenB ? snapshot.val().tokenB : '' });
@@ -761,10 +859,14 @@ class Profile extends React.Component {
         }
     }
 
+    loadFormalario() {
+
+    }
+
     render() {
 
-    if(!this.props.usuarioDetail)
-    return <div></div>;
+        if (!this.props.usuarioDetail)
+            return <div></div>;
 
         if (this.props.usuarioDetail && this.props.usuarioDetail.usuario && !this.state.entro)
             this.renderCargar();
@@ -772,7 +874,7 @@ class Profile extends React.Component {
         if (this.props.usuarioDetail.rol === '2')
             tamano = '46em';
         if (this.state.open === 'slack') {
-            tamano = '22em';
+            tamano = '26em';
         }
         else if (this.state.open === 'drive')
             tamano = '10em';
@@ -788,67 +890,68 @@ class Profile extends React.Component {
 
         return (
             <div className="ui form">
-                        <Card style={{ left: '10%', width: '80%' }}>
-                            <Image src={this.state.imagenFondo ? this.state.imagenFondo : 'https://cdn.pixabay.com/photo/2016/08/09/21/54/yellowstone-national-park-1581879_960_720.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} style={{ height: '250px' }} />
-                            <Card.Content style={{ height: '250px' }}>
-                                <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '4%', height: '190px', position: 'relative', top: '-160px' }} />
-                                <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.renderCargar('slack'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.slackIn + ')', background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-14%', position: 'relative', top: '-55px' }} />
-                                <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.driveIn + ')', background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-12%', position: 'relative', top: '-55px' }} />
-                                <Image src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.calendarIn + ')', background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-10%', position: 'relative', top: '-55px' }} />
-                                <Image src={trelloImg} onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.trelloIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-8%', position: 'relative', top: '-55px' }} />
+                <Card style={{ left: '10%', width: '80%' }}>
+                    <Image src={this.state.imagenFondo ? this.state.imagenFondo : 'https://cdn.pixabay.com/photo/2016/08/09/21/54/yellowstone-national-park-1581879_960_720.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} style={{ height: '250px' }} />
+                    <Card.Content style={{ height: '250px' }}>
+                        <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '4%', height: '190px', position: 'relative', top: '-160px' }} />
+                        <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.setState({ activo: false }); this.renderCargar('slack'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.slackIn + ')', background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-14%', position: 'relative', top: '-55px' }} />
+                        <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.driveIn + ')', background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-12%', position: 'relative', top: '-55px' }} />
+                        <Image src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.calendarIn + ')', background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-10%', position: 'relative', top: '-55px' }} />
+                        <Image src={trelloImg} onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.trelloIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-8%', position: 'relative', top: '-55px' }} />
 
-                                <Button circular color="pink" style={{ position: 'relative', top: '-8em', left: '-15%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
-                                <Button circular color="pink" style={{ position: 'relative', top: '-24.2em', left: '62%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
+                        <Button circular color="pink" style={{ position: 'relative', top: '-8em', left: '-15%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
+                        <Button circular color="pink" style={{ position: 'relative', top: '-24.2em', left: '62%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
 
-                            </Card.Content>
+                    </Card.Content>
 
-                        </Card>
-                        <Button content="Crea tu propio flujo de trabajo" onClick={() => { history.push('/newworkflow'); }} style={{ width: '200px',top: '225px', left: '22%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} icon="object group outline"></Button>
+                </Card>
+                <Button content="Crea tu propio flujo de trabajo" onClick={() => { history.push('/newworkflow'); }} style={{ width: '200px', top: '225px', left: '22%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} icon="object group outline"></Button>
 
-                         <div className="ui segment" style={{ height: tamano, top: '-1.8em',left: '34%', width: '56%',  background: 'linear-gradient(to top, #e0399738 0.5%, rgb(255, 255, 255) 0.6%, rgba(245, 242, 224, 0) 200%)' }}>
-                            <Modal open={this.state.openImagen}
-                                closeOnEscape={false}
-                                closeOnDimmerClick={true}
-                                onClose={this.state.close}
-                                style = {{height: '350px', top: '150px'}}
-                            >
-                                <Modal.Header>Tu imagén</Modal.Header>
-                                <Modal.Content image>
-                                    <Image wrapped size='medium' src={
+                <div className="ui segment" style={{ height: tamano, top: '-1.8em', left: '34%', width: '56%', background: 'linear-gradient(to top, #e0399738 0.5%, rgb(255, 255, 255) 0.6%, rgba(245, 242, 224, 0) 200%)' }}>
+                    <Modal open={this.state.openImagen}
+                        closeOnEscape={false}
+                        closeOnDimmerClick={true}
+                        onClose={this.state.close}
+                        style={{ height: '350px', top: '150px' }}
+                    >
+                        <Modal.Header>Tu imagén</Modal.Header>
+                        <Modal.Content image>
+                            <Image wrapped size='medium' src={
 
-                                        this.state.imagenMostrar ? this.state.imagenMostrar : 'https://react.semantic-ui.com/images/avatar/large/rachel.png'} />
-                                    <Modal.Description fluid>
-                                        <Header>Selecciona tu fondo</Header>
-                                        <Input style={{ width: '300%' }} fluid label='Url de la imagen' placeholder='https://react.semantic-ui.com/images...'
-                                            onClick={() => { this.renderCargarImagen(this.state.imagenFondo); }}
-                                            value={this.state.imagenFondo}
-                                            onChange={(e) => { this.setState({ imagenFondo: e.target.value }); this.renderCargarImagen(e.target.value); }}>
-                                        </Input>
-                                        <Header>Selecciona tu perfil</Header>
-                                        <Input style={{ width: '300%' }} fluid label='Url de la imagen' placeholder='https://react.semantic-ui.com/images...'
-                                            onClick={() => { this.renderCargarImagen(this.state.imagenPerfil); }}
-                                            value={this.state.imagenPerfil}
-                                            onChange={(e) => { this.setState({ imagenPerfil: e.target.value }); this.renderCargarImagen(e.target.value); }}>
-                                        </Input>
-                                    </Modal.Description>
-                                </Modal.Content>
-                                <Modal.Actions style= {{ top: '340px', position: 'relative'}}>
-                                    <Button onClick={this.close} style = {{background: "grey", left: "-20px"}}>
-                                        Cancelar
+                                this.state.imagenMostrar ? this.state.imagenMostrar : 'https://react.semantic-ui.com/images/avatar/large/rachel.png'} />
+                            <Modal.Description fluid>
+                                <Header>Selecciona tu fondo</Header>
+                                <Input style={{ width: '300%' }} fluid label='Url de la imagen' placeholder='https://react.semantic-ui.com/images...'
+                                    onClick={() => { this.renderCargarImagen(this.state.imagenFondo); }}
+                                    value={this.state.imagenFondo}
+                                    onChange={(e) => { this.setState({ imagenFondo: e.target.value }); this.renderCargarImagen(e.target.value); }}>
+                                </Input>
+                                <Header>Selecciona tu perfil</Header>
+                                <Input style={{ width: '300%' }} fluid label='Url de la imagen' placeholder='https://react.semantic-ui.com/images...'
+                                    onClick={() => { this.renderCargarImagen(this.state.imagenPerfil); }}
+                                    value={this.state.imagenPerfil}
+                                    onChange={(e) => { this.setState({ imagenPerfil: e.target.value }); this.renderCargarImagen(e.target.value); }}>
+                                </Input>
+                            </Modal.Description>
+                        </Modal.Content>
+                        <Modal.Actions style={{ top: '340px', position: 'relative' }}>
+                            <Button onClick={this.close} style={{ background: "grey", left: "-20px" }}>
+                                Cancelar
                                       </Button>
-                                    <Button
-                                        onClick={() => { this.close(); this.renderGuardar(); }}
-                                        style= {{background: "linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)", left: "-10px"}}
-                                        labelPosition='right'
-                                        icon='checkmark'
-                                        content='Guardar'
-                                    />
-                                </Modal.Actions>
+                            <Button
+                                onClick={() => { this.close(); this.renderGuardar(); }}
+                                style={{ background: "linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)", left: "-10px" }}
+                                labelPosition='right'
+                                icon='checkmark'
+                                content='Guardar'
+                            />
+                        </Modal.Actions>
 
-                            </Modal>
-                            {this.renderForm()}
-                        </div>
-                    </div>
+                    </Modal>
+                    {this.renderForm()}
+
+                </div>
+            </div>
 
         );
     }

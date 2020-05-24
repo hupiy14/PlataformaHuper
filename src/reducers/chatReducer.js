@@ -44,7 +44,9 @@ import {
 
 } from '../components/modules/chatBot/types';
 import {
-    END_CHAT
+    END_CHAT,
+    POPUP_MENSAJE,
+    MENSAJE_CHAT
 
 } from '../actions/types';
 import firebase from 'firebase';
@@ -92,6 +94,8 @@ const INITIAL_STATE = {
     celPerf: null,
     datosEditCel: null,
     endChatMessage: null,
+    popupMensaje: null,
+    mensajeChatBot: null
 
 };
 
@@ -184,6 +188,10 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, datoClose: action.payload };
         case END_CHAT:
             return { ...state, endChatMessage: action.payload };
+        case POPUP_MENSAJE:
+            return { ...state, popupMensaje: action.payload };
+        case MENSAJE_CHAT:
+            return { ...state, mensajeChatBot: action.payload };
         default:
             return state;
 

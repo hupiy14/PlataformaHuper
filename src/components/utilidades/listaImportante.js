@@ -7,7 +7,9 @@ import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboa
 import unsplash from '../../apis/unsplash';
 import ImagenObj from '../HuperModules/objPrincipal';
 import '../HuperModules/objetivodet.css';
+import '../styles/styleLoader.css';
 import fondo from '../../images/fondo2.jpg';
+import perfil from '../../images/perfil.png';
 
 const timeoutLength2 = 1000;
 const timeoutLength3 = 60000;
@@ -19,9 +21,9 @@ class listImportante extends React.Component {
         titulo: null, selectedFile: null, loaded: 0, WorkFlow: null, files: null, keyF: null,
         prioridadx: [{ prio: 'inmediato', color: 'red' }, { prio: 'urgente', color: 'yellow' }, { prio: 'normal', color: 'olive' }], activiadesObj: null, comentariosObj: null, adjuntosObj: null,
         factores: null, UtilFactors: null, objStateObj: null, objInicial: null,
-        modalOpen: false, comentario: null, modalOpen2: null, 
+        modalOpen: false, comentario: null, modalOpen2: null,
 
-        resultRoot: null, resultCurrent: null, shResult: null, objSelResul: null
+        resultRoot: null, resultCurrent: null, shResult: null, objSelResul: null, impactoUtils: null
 
     };
 
@@ -39,15 +41,21 @@ class listImportante extends React.Component {
 
         this.onSearchSubmit()
         let variable = {};
-        const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}`);
+
+
+        let impactoFlujo = firebase.database().ref().child(`Utils/Impacto-Objetivo`);
+        impactoFlujo.on('value', (snapshot) => {
+            this.setState({ impactoUtils: snapshot.val() })
+        });
+        const starCountRef = firebase.database().ref().child(`Usuario-OKR/${this.props.userId}`);
         starCountRef.on('value', (snapshot) => {
 
             const ObjTrabajo = snapshot.val();
             let objetivos = [];
             if (!snapshot.val()) return;
             Object.keys(ObjTrabajo).map(function (key2, index) {
-                if (ObjTrabajo[key2].compartidoEquipo) {
-                    const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${ObjTrabajo[key2].idUsuarioGestor}/${ObjTrabajo[key2].objetivoPadre}`);
+                if (ObjTrabajo[key2].tipologia === '3') {
+                    const starCountRef = firebase.database().ref().child(`Usuario-OKR/${ObjTrabajo[key2].idUsuarioGestor}/${ObjTrabajo[key2].objetivoPadre}`);
                     starCountRef.on('value', (snapshot) => {
                         if (snapshot.val()) {
                             const resultado2 = { ...ObjTrabajo[key2], avancePadre: snapshot.val().avance }
@@ -68,7 +76,7 @@ class listImportante extends React.Component {
             this.setState({ UtilFactors: snapshot.val() });
         });
 
-        const starCountRef2 = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
+        const starCountRef2 = firebase.database().ref().child(`Usuario-OKR/${this.props.userId}`);
         starCountRef2.on('value', (snapshot) => {
             variable = { ...variable, tareas: snapshot.val() }
             this.props.listaObjetivos(variable);
@@ -97,7 +105,7 @@ class listImportante extends React.Component {
                 let facDificultad = 1;
                 let facRepeticiones = 1;
                 let facTipo = 1;
-                let facCompartido = objs[key].compartidoEquipo ? objs[key].porcentajeResp * 0.01 : 1;
+                let facCompartido = objs[key].tipologia === '3' ? objs[key].porcentajeResp ? objs[key].porcentajeResp * 0.01 : 1 : 1;
                 let facCalidad = 1;
                 let facValidacion = 1;
                 let facProductividad = 1;
@@ -130,22 +138,22 @@ class listImportante extends React.Component {
     guardarDetalle() {
 
         if (this.state.comentario) {
-            const usuario = this.props.nombreUser;
-            const newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.userId}/${this.state.keyF}`).push().key;
+            const newPostKey2 = firebase.database().ref().child(`Usuario-OKR/${this.props.userId}/${this.state.keyF}`).push().key;
             if (this.state.keyF != null)
-                firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${this.state.keyF}/comentarios/${newPostKey2}`).set({
-                    usuario,
+                firebase.database().ref(`Usuario-OKR/${this.props.userId}/${this.state.keyF}/comentarios/${newPostKey2}`).set({
+                    usuario: this.props.usuarioDetail.usuario.usuario,
                     tipo: 'responder',
-                    concepto: this.state.comentario
+                    concepto: this.state.comentario,
+                    imagen: this.props.usuarioDetail.usuario.imagenPerfil
                 });
             this.setState({ comentario: null });
             return;
         }
 
-        let objAux = this.state.resultRoot ? this.state.resultRoot :  this.state.objetivoS;
+        let objAux = this.state.resultRoot ? this.state.resultRoot : this.state.objetivoS;
         const tarea = { ...objAux, detalle: this.state.detalleO ? this.state.detalleO : null, prioridad: this.state.prioridadx[this.props.prioridadObj].prio };
         if (this.state.keyF != null)
-            firebase.database().ref(`Usuario-Objetivos/${this.props.userId}/${this.state.keyF}`).set({
+            firebase.database().ref(`Usuario-OKR/${this.props.userId}/${this.state.keyF}`).set({
                 ...tarea
             });
         this.setState({ detalleO: '' });  // this.setState({ prioridadO: true });
@@ -220,30 +228,45 @@ class listImportante extends React.Component {
             const opciones = Object.keys(this.state.objetivoS.comentarios).map((key3, index) => {
                 //    console.log(tareas[key3]);
                 numero = numero + 1;
-                let color = 'teal left';
+
                 let recbox = '15px 20px 15px 5px';
-                let leftObj = '135px';
+                let comentarioT = 'Propio';
+                let color = '#a1fff0';
                 if (this.state.objetivoS.comentarios[key3].tipo === 'feedback') {
-                    color = 'pink right';
+
                     recbox = '15px 20px 3px 20px';
-                    leftObj = '540px';
+                    comentarioT = 'Gestor';
+                    color = null;
                 }
 
                 let addsize = Math.round(this.state.objetivoS.comentarios[key3].concepto.length / 10);
                 let sizeTarget = 75 + addsize;
                 let sizeComent = 40 + addsize;
-
+                let imagenComen = this.state.objetivoS.comentarios[key3].imagen ? this.state.objetivoS.comentarios[key3].imagen : perfil;
                 const className = `ui ${color} ribbon  label`;
+                /*
+                <div key={key3} style={{ width: '120px' }}>
+                <div className={className} style={{ left: leftObj, height: sizeTarget, borderRadius: recbox }} key={key3}>
+                    <i className="quote right icon"> </i>  {this.state.objetivoS.comentarios[key3].usuario} :
+                    <Card color={color} style={{ height: sizeComent, left: '5px', position: 'relative', top: '-3px' }}
+                        description={this.state.objetivoS.comentarios[key3].concepto}
+                    />
+                </div>
+                <br></br>
+                <br></br>
+            </div>
+*/
                 return (
-                    <div key={key3} style={{ width: '120px' }}>
-                        <div className={className} style={{ left: leftObj, height: sizeTarget, borderRadius: recbox }} key={key3}>
-                            <i className="quote right icon"> </i>  {this.state.objetivoS.comentarios[key3].usuario} :
-                            <Card color={color} style={{ height: sizeComent, left: '5px', position: 'relative', top: '-3px' }}
-                                description={this.state.objetivoS.comentarios[key3].concepto}
-                            />
+                    <div className="ui cards" style={{ left: '60%', borderRadius: recbox, position: 'relative' }}>
+                        <div className="card" style={{ background: color }}>
+                            <div className="content">
+                                <img className="right floated circular mini ui image" src={imagenComen} />
+                                <div className="header">{this.state.objetivoS.comentarios[key3].usuario}</div>
+                                <div className="meta">{comentarioT}</div>
+                                <div className="description">{this.state.objetivoS.comentarios[key3].concepto}</div>
+
+                            </div>
                         </div>
-                        <br></br>
-                        <br></br>
                     </div>
                 );
             });
@@ -252,15 +275,14 @@ class listImportante extends React.Component {
     }
 
     changeObj(objetivo) {
-        if(!this.state.resultRoot)
-        {
-            this.setState({resultRoot: objetivo});
+        if (!this.state.resultRoot && objetivo.objetivos) {
+            this.setState({ resultRoot: objetivo });
             Object.keys(objetivo.objetivos).map((key, index) => {
-                if( Object.keys(objetivo.objetivos) - 1 === index)
-                this.setState({ objStateObj: objetivo.objetivos[key] });
-            }); 
+                if (Object.keys(objetivo.objetivos) - 1 === index)
+                    this.setState({ objStateObj: objetivo.objetivos[key] });
+            });
         }
-       this.setState({resultCurrent: objetivo});
+        this.setState({ resultCurrent: objetivo });
     }
 
     renderConstruirObj(images) {
@@ -376,10 +398,12 @@ class listImportante extends React.Component {
                     //Impacto de las activiadades
                     let iconoImpacto;
                     let colorImpacto;
-                    if (cconsulta[key2].impacto === "Negocío") { iconoImpacto = "money bill alternate"; colorImpacto = "green"; }
-                    else if (cconsulta[key2].impacto === "Proceso") { iconoImpacto = "cogs"; colorImpacto = "blue"; }
-                    else if (cconsulta[key2].impacto === "Organización") { iconoImpacto = "boxes"; colorImpacto = "purple"; }
-                    else if (cconsulta[key2].impacto === "Ventas") { iconoImpacto = "hospital outline"; colorImpacto = "yellow"; }
+
+
+                    if (cconsulta[key2].impacto === "1") { iconoImpacto = "money bill alternate"; colorImpacto = "green"; }
+                    else if (cconsulta[key2].impacto === "2") { iconoImpacto = "cogs"; colorImpacto = "blue"; }
+                    else if (cconsulta[key2].impacto === "4") { iconoImpacto = "boxes"; colorImpacto = "purple"; }
+                    else if (cconsulta[key2].impacto === "3") { iconoImpacto = "hospital outline"; colorImpacto = "yellow"; }
 
                     //Flujo de trabajo
                     let listaX = this.state.WorkFlow;
@@ -419,10 +443,11 @@ class listImportante extends React.Component {
                     const tAvanceTitulo = Math.round((cconsulta[key2].concepto.length + 9) / 40);
                     let imageComp = null;
                     let objPrincipal = cconsulta[key2];
-                    let topkeyResult = '-50px';  
+                    let topkeyResult = '-50px';
                     let topkeyResult2 = '-75px';
                     let topObjKey = '0px';
-                    if (objPrincipal.tipoObjetivo === 'equipo') {
+                    if (objPrincipal.tipologia === '3') {
+                        
                         iconoObjetivo = "users";
                         imageComp =
                             <div style={{
@@ -445,12 +470,12 @@ class listImportante extends React.Component {
                                     style={{ top: topProgress, width: '58%', position: 'relative' }} />
                             </div>
                     }
-                    else if (objPrincipal.tipoObjetivo === 'flujo') {
+                    else if (objPrincipal.tipologia === '2') {
 
-                        if(this.state.resultRoot && this.state.resultCurrent !== this.state.resultRoot)
-                        objPrincipal = this.state.resultRoot;
+                        if (this.state.resultRoot && this.state.resultCurrent !== this.state.resultRoot)
+                            objPrincipal = this.state.resultRoot;
                         else
-                        objPrincipal = this.state.objStateObj?this.state.objStateObj:objPrincipal;
+                            objPrincipal = this.state.objStateObj ? this.state.objStateObj : objPrincipal;
                         let imgyAux = this.state.objStateObj === objPrincipal ? y - 1 : y;
                         imageComp =
                             <div style={{
@@ -459,121 +484,123 @@ class listImportante extends React.Component {
                                 top: '45px',
                                 filter: 'opacity(0.4)',
                                 height: '1em'
-                            }} onClick={ () => {this.changeObj(objPrincipal) }}>
+                            }} onClick={() => { this.changeObj(objPrincipal) }}>
                                 <ImagenObj imageXV={this.state.images[imgyAux] ? this.state.images[imgyAux].urls.regular : ''} />
                             </div>;
-                             topkeyResult = '-55px';
-                            topkeyResult2 = '-80px';
-                            topObjKey = '-50px';
+                        topkeyResult = '-55px';
+                        topkeyResult2 = '-80px';
+                        topObjKey = '-50px';
                     }
                     const topAvance = 92 - ((Math.round((objPrincipal.detalle ? objPrincipal.detalle.length : 0 + 9) / 40) + tAvanceTitulo) * 15);
                     if (!objPrincipal.avanceObjetivo || resultado !== objPrincipal.avanceObjetivo) {
-                        let objaux1 = this.state.resultRoot? this.state.resultRoot: objPrincipal;
+                        let objaux1 = this.state.resultRoot ? this.state.resultRoot : objPrincipal;
                     }
 
-                    let imgy = this.state.objStateObj === objPrincipal ? y : y -1;
+                    let imgy = this.state.objStateObj === objPrincipal ? y : y - 1;
                     let kresultx = null;
                     let visiKresult = 'visible';
-                    if(this.state.objSelResul === key2)
-                    {
+                    if (this.state.objSelResul === key2) {
                         visiKresult = 'hidden';
-                        kresultx =<div>
-                             <h5 style={{ top: topkeyResult, position: 'relative', left: '15%' }}> ○ {objPrincipal.kresult}</h5>
-                             <h5 style={{ top: topkeyResult2, position: 'relative', left: '15%' }}> ○ {objPrincipal.kresult2}</h5>
+                        kresultx = <div>
+                            <h5 style={{ top: topkeyResult, position: 'relative', left: '15%' }}> ○ {objPrincipal.keyResult1}</h5>
+                            <h5 style={{ top: topkeyResult2, position: 'relative', left: '15%' }}> ○ {objPrincipal.keyResult2}</h5>
                         </div>
                     }
-                    return (
-                        <div className="item segment" key={key2} style={{ height: '14.2em', top: topObjKey, position: 'relative' }}  >
-                            <div>
-                                {imageComp}
-                                <div style={{ position: 'relative', top: '30px', left: '10%', zIndex: '5' }}>
-                                    <ImagenObj imageXV={this.state.images[imgy] ? this.state.images[imgy].urls.regular : ''} />
-                                </div>
-
-                                <figure className="snip1361" style={{ position: 'relative', top: '-90px' }} onMouseOver={(e, s) => {
-                                    this.setState({objSelResul: key2});
-                                }}
-                                    onMouseLeave={() => {
-                                        this.setState({ objSelResul: null });
-                                    }}>
-                                    <img src={fondo} alt="sample45" />
-                                    <figcaption>
-                                        <div className="header" style={{ left: '55%', width: '50%', fontStyle: 'arial', fontSize: 'x-large', top: '-120px', position: 'relative' }}  >{objPrincipal.concepto}</div>
-                                        <div style={{ color: colorImpacto, left: '50%', position: 'relative', transform: 'scale(0.9)', top: '-120px' }}>
-                                            <Icon name={iconoImpacto} style={{ left: '10px', position: 'relative' }} />
-                                        </div>
-                                        {kresultx}
-                                    </figcaption>
-                                    <a href="#"></a>
-                                </figure>
-                            </div>
-                            <Modal
-                                trigger={
-                                    <button className="ui basic button comment alternate outline icon" circular = "true"
-                                        style={{ top: '-285px', borderRadius: '30px', zIndex: 50, position: 'relative', left: '10%' }}
-
-                                        onClick={(e, s) => {
-                                            this.setState({ keyF: key2 });
-                                            this.setState({ objetivoS: cconsulta[key2] });
-                                            this.setState({ comentariosObj: this.renderComentarios() });
-                                            this.setState({ comentario: null });
-                                            this.handleOpen();
-                                        }}>
-
-                                        <i className="comment alternate outline icon "></i>
-                                    </button>
-                                }
-
-                                open={this.state.modalOpen}
-                                basic
-                                size='small'>
-                                <Modal.Content>
-
-                                    <h2 style={{ 'text-align': 'center' }} >Agrega un nuevo comentario a tu objetivo</h2>
-                                    <br />
-                                    <div style={{ 'text-align': 'center' }}>
-                                        <div style={{ height: '250px', overflow: 'auto' }}>
-                                            {this.renderComentarios()}
-                                        </div>
-                                        <br></br>
-                                        <Input style={{ width: '360px' }} value={this.state.comentario}
-                                            onChange={e => this.setState({ comentario: e.target.value })}>
-                                        </Input>
+                    let fontS = objPrincipal.concepto.length <= 20 ? 25 : 25 - (Math.round((objPrincipal.concepto.length - 20) / 3));
+                   
+                    if (objPrincipal.concepto)
+                        return (
+                            <div className="item segment" key={key2} style={{ height: '14.2em', top: topObjKey, position: 'relative', left: '10%' }}  >
+                                <div>
+                                    {imageComp}
+                                    <div style={{ position: 'relative', top: '30px', left: '10%', zIndex: '5' }}>
+                                        <ImagenObj imageXV={this.state.images[imgy] ? this.state.images[imgy].urls.regular : ''} />
                                     </div>
-                                    <h4 style={{ 'text-align': 'center' }}>"Los hombres sabios hablan porque tienen algo que decir;<br></br>los necios porque tienen que decir algo".</h4>
-                                    <h6 style={{ 'text-align': 'center' }}>-Platón</h6>
-                                </Modal.Content>
-                                <Modal.Actions>
-                                    <Button color='pink' onClick={() => { this.setState({ modalOpen: false }) }} inverted>
-                                        <Icon name='close' /> Cancelar</Button>
-                                    <Button color='teal' onClick={() => { this.setState({ modalOpen: false }); this.guardarDetalle(this); }} inverted>
-                                        <Icon name='checkmark' /> Agregar</Button>
-                                </Modal.Actions>
-                            </Modal>
-                            <div style={{ left: '2.5%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-260px' }} onClick={() => { this.renderConsultarEW(objPrincipal.carpeta) }}>
-                                <Popup
-                                    trigger={<Icon name="paperclip" style={{ left: '10px', position: 'relative', top: '-15px', transform: 'scale(1.2)' }} />}
-                                    content='Consulta tus archivos'
-                                    on='hover' />
-                            </div>
-                            <div style={{ left: '2.5%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-90px' }} onClick={() => { this.setState({ objetivoS: objPrincipal }); }}>
-                                <Popup
-                                    trigger={<Icon name="telegram" style={{ transform: 'scale(1.7)', left: '10px', position: 'relative', top: '-180px' }} />}
-                                    on='hover'>
-                                    <Popup.Content>
-                                        <h5>trabajando en ello</h5>
-                                        <div className="ui relaxed divided list">
-                                            {this.renderTareas(objPrincipal.tasks)}
+
+                                    <figure className="snip1361" style={{ position: 'relative', top: '-90px' }} onMouseOver={(e, s) => {
+                                        this.setState({ objSelResul: key2 });
+                                    }}
+                                        onMouseLeave={() => {
+                                            this.setState({ objSelResul: null });
+                                        }}>
+                                        <img src={fondo} alt="sample45" />
+                                        <figcaption>
+                                            <div className="header" style={{ left: '55%', width: '35%', fontStyle: 'arial', fontSize: fontS, top: '-120px', position: 'relative' }}  >{objPrincipal.concepto}</div>
+                                            <div style={{ color: colorImpacto, left: '50%', position: 'relative', transform: 'scale(0.9)', top: '-120px' }}>
+                                                <Icon name={iconoImpacto} style={{ left: '10px', position: 'relative' }} />
+                                            </div>
+                                            {kresultx}
+                                        </figcaption>
+                                        <a href="#"></a>
+                                    </figure>
+                                </div>
+                                <Modal
+                                    trigger={
+                                        <button className="ui basic button comment alternate outline icon" circular="true"
+                                            style={{ top: '-285px', borderRadius: '30px', zIndex: 50, position: 'relative', left: '-34%' }}
+
+                                            onClick={(e, s) => {
+                                                this.setState({ keyF: key2 });
+                                                this.setState({ objetivoS: cconsulta[key2] });
+                                                this.setState({ comentariosObj: this.renderComentarios() });
+                                                this.setState({ comentario: null });
+                                                this.handleOpen();
+                                            }}>
+
+                                            <i className="comment alternate outline icon "></i>
+                                        </button>
+                                    }
+
+                                    open={this.state.modalOpen}
+                                    basic
+                                    size='small'>
+                                    <Modal.Content>
+
+                                        <h2 style={{ 'text-align': 'center' }} >Agrega un nuevo comentario a tu objetivo</h2>
+                                        <br />
+                                        <div style={{ 'text-align': 'center' }}>
+                                            <div style={{ height: '340px', overflow: 'auto' }}>
+                                                {this.renderComentarios()}
+                                            </div>
+                                            <br></br>
+                                            <Input style={{ width: '360px' }} value={this.state.comentario}
+                                                onChange={e => this.setState({ comentario: e.target.value })}>
+                                            </Input>
                                         </div>
-                                    </Popup.Content>
-                                </Popup>
+                                        <h4 style={{ 'text-align': 'center' }}>"Los hombres sabios hablan porque tienen algo que decir;<br></br>los necios porque tienen que decir algo".</h4>
+                                        <h6 style={{ 'text-align': 'center' }}>-Platón</h6>
+                                    </Modal.Content>
+                                    <Modal.Actions>
+                                        <Button color='pink' onClick={() => { this.setState({ modalOpen: false }) }} inverted>
+                                            <Icon name='close' /> Cancelar</Button>
+                                        <Button color='teal' onClick={() => { this.setState({ modalOpen: false }); this.guardarDetalle(this); }} inverted>
+                                            <Icon name='checkmark' /> Agregar</Button>
+                                    </Modal.Actions>
+                                </Modal>
+                                <div style={{ left: '2.5%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-260px' }} onClick={() => { this.renderConsultarEW(objPrincipal.carpeta) }}>
+                                    <Popup
+                                        trigger={<Icon name="paperclip" style={{ left: '-43%', position: 'relative', top: '-15px', transform: 'scale(1.2)' }} />}
+                                        content='Consulta tus archivos'
+                                        on='hover' />
+                                </div>
+                                <div style={{ left: '2.5%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-90px' }} onClick={() => { this.setState({ objetivoS: objPrincipal }); }}>
+                                    <Popup
+                                        trigger={<Icon name="telegram" style={{ transform: 'scale(1.7)', left: '-43%', position: 'relative', top: '-180px' }} />}
+                                        on='hover'>
+                                        <Popup.Content>
+                                            <h5>trabajando en ello</h5>
+                                            <div className="ui relaxed divided list">
+                                                {this.renderTareas(objPrincipal.tasks)}
+                                            </div>
+                                        </Popup.Content>
+                                    </Popup>
+                                </div>
+                                <div style={{ position: 'relative', top: '-235px', left: '14%', zIndex: 20, visibility: visiKresult }}>
+                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ width: '32%' }} />
+                                </div>
+                                {avancePadre}
                             </div>
-                            <div style={{ position: 'relative', top: '-235px', left: '14%', zIndex: 20, visibility: visiKresult }}>
-                                <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ width: '32%' }} />
-                            </div>
-                            {avancePadre}
-                        </div>
-                    );
+                        );
                 }
             });
             if (flagObjetivosTerminados === true)
@@ -582,13 +609,13 @@ class listImportante extends React.Component {
 
         }
         return (
-            <div className="ui segment loaderOBJ">
-                <div className="ui active dimmer loaderOBJ">
-                    <div className="ui text loader">A la espera de tus Objetivos</div>
-                </div>
-                <br></br>
-                <br></br>
-            </div>
+            <div className="box">
+                <div className="loader9"></div>
+                <p style={{
+                    height: '60px',
+                    borderRadius: '60px'
+                }}>A la espera de tus Objetivos</p>
+            </div >
         );
     }
 
@@ -598,7 +625,7 @@ class listImportante extends React.Component {
         return (
             <div >
                 <div className=" maximo-list" style={{ transform: 'scale(1.3)' }}>
-                    <h1 style={{ color: '#947d0e', left: '20%', position: 'relative'}}>{titulo}</h1>
+                    <h1 style={{ color: '#947d0e', left: '1%', position: 'relative' }}>{titulo}</h1>
                     {this.renderConstruirObj(this.state.images)}
                 </div>
             </div>
@@ -612,6 +639,7 @@ const mapAppStateToProps = (state) => (
         listaObjetivo: state.chatReducer.listaObjetivo,
         prioridadObj: state.chatReducer.prioridadObj,
         selObjetivo: state.chatReducer.selObjetivo,
+        usuarioDetail: state.chatReducer.usuarioDetail,
         nombreUser: state.chatReducer.nombreUser,
         estadochat: state.chatReducer.estadochat,
         userId: state.auth.userId,

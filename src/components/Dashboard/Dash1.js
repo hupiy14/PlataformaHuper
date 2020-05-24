@@ -146,7 +146,7 @@ class DashBoard extends React.Component {
     handleTareas = () => {
         this.timeout = setTimeout(() => {
 
-            const starCountRef3 = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}`);
+            const starCountRef3 = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}/${moment().format("YYYYMMDD")}`);
             starCountRef3.on('value', (snapshot) => {
                 this.setState({ TareasObjs: snapshot.val() });
             });
@@ -763,7 +763,7 @@ class DashBoard extends React.Component {
 
                 </Dimmer>
             }
-            else if ((this.props.MensajeIvily && this.props.MensajeIvily.nActIVi && this.props.MensajeIvily.nActIVi < 6) || !this.props.listaObjetivo || !this.props.listaObjetivo.objetivos) {
+    /*        else if ((this.props.MensajeIvily && this.props.MensajeIvily.nActIVi && this.props.MensajeIvily.nActIVi < 6) || !this.props.listaObjetivo || !this.props.listaObjetivo.objetivos) {
                 let xAct = 6
                 this.props.estadochats('dimmer Plan');
                 if (this.props.MensajeIvily && this.props.MensajeIvily.nActIVi)
@@ -774,7 +774,7 @@ class DashBoard extends React.Component {
                     <MenuChat />
                 </Dimmer>
             }
-
+*/
             varriable = <div>
                 {pageActivi}
                 {this.renderTeletrabajador()}

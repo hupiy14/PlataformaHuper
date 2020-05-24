@@ -1,31 +1,51 @@
-import React, { Component } from 'react';
+import React from 'react';
 import texture1e from '../../../images/texture.jpg';
 import boule from '../../../images/boule.DAE';
 import eye from '../../../images/eye.png';
 import './chat.scss';
 import { connect } from 'react-redux';
-import { chatOn, chatOff, endChatMes } from '../../../actions';
+import { chatOn, chatOff, endChatMes, popupBot, mensajeChat } from '../../../actions';
 import ChatHup from '../efectText/efecto1';
 import ChatHup2 from '../efectText/efecto2';
 //import ChatHup3 from './HuperModules/efectText/efecto3';
 import ChatHup3 from '../efectText/efecto4';
 import ChatHup4 from '../efectText/efecto5';
-import  '../../../lib/colladaLoader2';
-import  TimerClock from '../timerClock/timerr';
-                   
+import '../../../lib/colladaLoader2';
+import TimerClock from '../timerClock/timerr';
+import firebase from 'firebase';
+import { Image, Popup, Icon, Modal, Button } from 'semantic-ui-react';
+import moment from 'moment';
+import music from '../../../images/bensound-goinghigher.mp3';
+import '../timerClock/./timer.css';
 var THREE = require('three');
-//var THREE = require('../../../lib/three');
 
 const getRandom = (min, max) => Math.random() * (max - min + 1) + min;
 const timeoutLength = 5000;
-class THREEScene extends Component {
+let timeoutLength2 = 8000;
+class THREEScene extends React.Component {
+    state = { push: false, open: null }
     componentDidMount() {
 
-        this.windowWidth =  window.innerWidth / 6;
-        this.windowHeight =  window.innerHeight;
+        let stopMusicButton = window.$("#btn-stop-music");
+        stopMusicButton.prop('disabled', true);
+        this.soundRep = 0;
+        this.isSessionStop = false;
+        this.sessionOverMusic = new window.Howl({
+            //edit this to the music you want to play
+            src: [music],
+            onend: function () {
+                stopMusicButton.prop('disabled', false);
+            }
+        });
+
+        this.windowWidth = window.innerWidth / 6;
+        this.windowHeight = window.innerHeight;
+        this.Registro = [];
+        this.sleepBot = 0;
 
         this.animation = {
             flyingHeight: 2,
+            flyingW: 0,
             flyingFreq: 0.015,
             eyeAmplitude: 2,
             eyelidAmplitude: 1,
@@ -65,22 +85,31 @@ class THREEScene extends Component {
         // const material = new window.THREE.MeshBasicMaterial({ color: '#433F81'     })
         // this.cube = new window.THREE.Mesh(geometry, material)
         //this.scene.add(this.cube)
+        //this.newGui();
+
         this.newRobot();
 
         this.start();
         this.handleChat();
+
     }
+
+    stopMusicButton() {
+        //this.sessionOverMusic.stop();
+        // this.breakOverMusic.stop();
+
+    };
     componentWillUnmount() {
         this.stop()
-      //  this.mount.removeChild(this.renderer.domElement)
+        //  this.mount.removeChild(this.renderer.domElement)
     }
-        // habilita el tercer paso  
-        handleChat = () => {
-            this.timeout = setTimeout(() => {
-                this.standbyAnimation(false);
-            }, timeoutLength)
-        }
-    
+    // habilita el tercer paso  
+    handleChat = () => {
+        this.timeout = setTimeout(() => {
+            this.standbyAnimation(false);
+        }, timeoutLength)
+    }
+
     start = () => {
         if (!this.frameId) {
             this.frameId = requestAnimationFrame(this.animate)
@@ -115,9 +144,9 @@ class THREEScene extends Component {
   */
     newGround() {
         const geometry = new THREE.PlaneGeometry(45, 45);
-       // const material = new window.THREE.MeshLambertMaterial({ color: 0xfafdfc });
+        // const material = new window.THREE.MeshLambertMaterial({ color: 0xfafdfc });
         const material = new THREE.MeshLambertMaterial({ color: 0xfafdfc, opacity: 0.0, transparent: true });
-       
+
         this.ground = new THREE.Mesh(geometry, material);
         this.ground.rotation.x = THREE.Math.degToRad(-90);
         this.ground.position.y = -7;
@@ -199,7 +228,7 @@ class THREEScene extends Component {
 * Update robot, only when textures and 3D models are loaded.
 */
     updateRobot() {
-        if (this.models !== undefined && this.textureLoader.loadedComplete === true && this.parameters !== undefined ) {
+        if (this.models !== undefined && this.textureLoader.loadedComplete === true && this.parameters !== undefined) {
             // Introduction
             if (this.parameters.lunchIntro) {
                 this.introAnimation();
@@ -263,6 +292,7 @@ class THREEScene extends Component {
         this.eye.position.y = this.animation.eyeAmplitude * c;
         this.models.position.y = c * this.animation.modelsAmplitude + this.parameters.height;
         this.eyelidTop.position.y = this.eyelidBottom.position.y = this.animation.eyelidAmplitude * c;
+
     }
 
     /**
@@ -291,7 +321,7 @@ class THREEScene extends Component {
                 if (this.loaded == this.total) {
                     this.loadedComplete = true;
                 }
-            //    console.log(`${this.loaded}/${this.total} texture(s) loaded`);
+                //    console.log(`${this.loaded}/${this.total} texture(s) loaded`);
             }
         };
     }
@@ -331,8 +361,8 @@ class THREEScene extends Component {
       * Mouse update.
       */
     mouseUpdate() {
-     
-        if ( this.parameters  !== undefined && this.parameters.introComplete  !== undefined) {
+
+        if (this.parameters !== undefined && this.parameters.introComplete !== undefined) {
             this.mouseAnimation();
         }
     }
@@ -350,7 +380,7 @@ class THREEScene extends Component {
        * EVENT: On window resize, update parameters.
        */
     onWindowResize() {
-        this.windowWidth = window.innerWidth /6;
+        this.windowWidth = window.innerWidth / 6;
         this.windowHeight = window.innerHeight;
         this.renderer.setSize(this.windowWidth, this.windowHeight);
         this.camera.aspect = this.windowWidth / this.windowHeight;
@@ -364,39 +394,41 @@ class THREEScene extends Component {
         this.renderer.render(this.scene, this.camera)
     }
 
-componentDidUpdate()
-{
-    if(this.props.endChatMessage === true)
-    {
-        this.cambioEstado();
-        this.props.endChatMes(false);
+    componentDidUpdate() {
+        if (this.props.endChatMessage === true) {
+            this.cambioEstado();
+            this.props.endChatMes(false);
+        }
+
     }
- 
-}
 
     cambioEstado() {
-         if (this.props.isChat) {
+        if (this.props.isChat) {
             this.props.chatOff();
             this.standbyAnimation(!this.props.isChat);
         }
         else {
-            this.setState({efectos:  Math.round(this.randomMax(1,1))});
-            this.setState({efectosAux:  Math.round(this.randomMax(0,3))});
-            this.props.chatOn(); 
+            this.setState({ efectos: Math.round(this.randomMax(1, 1)) });
+            this.setState({ efectosAux: Math.round(this.randomMax(0, 3)) });
+            this.props.popupBot(null)
+            this.setState({ push: false });
+            this.props.chatOn();
             this.standbyAnimation(!this.props.isChat);
-          
+
         }
-      
+
     }
 
     randomMax(min, max) {
         return Math.round((Math.random() * (max - min)) + min);
     }
+
+
+
     renderAuthButton() {
         if (this.props.isChat) {
-                
+
             let chat = null;
-            console.log(this.state.efectos);
 
             switch (this.state.efectos) {
                 case 1:
@@ -421,15 +453,199 @@ componentDidUpdate()
             );
         }
     }
+
+    //
+
+    componentDidUpdate() {
+        if (this.props.popupMensaje !== null && this.state.push === false) {
+            this.setState({ push: true });
+            this.pushnotificationBotClose();
+
+        }
+    }
+
+
+    renderAnimo = () => {
+        this.timeout = setTimeout(() => {
+
+
+            this.animation.flyingFreq = 0.035;
+            this.animation.modelsAmplitude = 0.3;
+            this.animation.eyelidsOpening = this.animation.eyelidsOpening * - 1;
+            window.TweenMax.to(this.mesh.rotation, 1.5, {
+                x: THREE.Math.degToRad(getRandom(-30, 20)),
+                y: THREE.Math.degToRad(getRandom(-50, 30)),
+                z: THREE.Math.degToRad(getRandom(-40, 20)),
+                ease: window.Power2.easeOut
+            });
+            this.soundRep++;
+            if (this.soundRep === 5) {
+                this.sessionOverMusic.play();
+                this.animation.eyelidsOpening = 6;
+            }
+            if (this.soundRep * 3000 <= this.sleepBot)
+                this.renderAnimo();
+            else {
+                this.sessionOverMusic.stop();
+                this.soundRep = 0;
+                this.animation.flyingFreq = 0.015;
+                this.animation.modelsAmplitude = 0.8;
+                this.animation.eyelidsOpening = 0;
+                this.sleepBot = 0;
+                timeoutLength2 = 3000;
+                this.props.popupBot({ mensaje: "Continuamos..." });
+            }
+            this.mouseAnimation();
+
+
+        }, 2000);
+    }
+
+    renderDescansaFiveminuts = () => {
+        this.timeout = setTimeout(() => {
+            this.soundRep++;
+
+            if (this.animation.eyelidsOpening >= -10 && this.soundRep * 1000 <= this.sleepBot) {
+                this.animation.eyelidsOpening = this.animation.eyelidsOpening - 0.35;
+                this.mouseAnimation();
+                this.renderDescansaFiveminuts();
+            }
+            else {
+                this.soundRep = 0;
+                this.sleepBot = 0;
+                this.animation.eyelidsOpening = 0;
+                this.props.popupBot({ mensaje: "Continuamos..." });
+            }
+
+        }, 1000);
+    }
+    pushnotificationBotClose = () => {
+        this.timeout = setTimeout(() => {
+            timeoutLength2 = 8000;
+            this.props.popupBot(null)
+            this.setState({ push: false });
+
+        }, timeoutLength2)
+    }
+    /*
+        newGui() {
+            const gui = new window.dat.GUI({ width: 270 });
+    
+            const f1 = gui.addFolder('Flying animation');
+            f1.add(this.animation, 'flyingFreq', .01, .05).name('frequency');
+            f1.add(this.animation, 'modelsAmplitude', 0, 1).name('robot amplitude');
+            f1.add(this.animation, 'eyelidAmplitude', 0, 5).name('eyelid amplitude');
+            f1.add(this.animation, 'eyeAmplitude', 0, 5).name('eye amplitude');
+            f1.add(this.animation, 'flying').onChange(e => {
+                this.standbyAnimation(e);
+            });
+    
+            const f2 = gui.addFolder('Mouse interaction');
+            f2.add(this.animation, 'reactionTime', 0, .5).name('reaction time');
+            f2.add(this.animation, 'speed', .1, 1).name('slowness');
+            f2.add(this.animation, 'eyelidsOpening', -10, 10).name('eyelids opening');
+        }*/
+
+    renderformaciones(video) {
+        let src = `https://www.youtube.com/embed/${video}`;
+        return (
+            <div className="ui grid " style={{ width: '100%' }}>
+                <div className="sixteen wide column Black videoFormacion ">
+
+                    <div className="ui embed "  >
+                        <iframe style={{ display: 'grid', height: '32em', width: '100%' }} title="video player" src={src} />
+                    </div>
+                </div>
+            </div >
+        );
+    }
+
+    renderControlVideo() {
+        if (this.props.popupMensaje && this.props.popupMensaje.video) {
+            return <Modal trigger={<div>
+            </div>
+            }
+                basic
+                size='small'
+                open={this.state.open}
+            >
+                <Modal.Content image style={{ height: '600px', width: '100%', position: 'relative', top: '-1em' }}>
+                    {this.renderformaciones(this.props.popupMensaje.link)}
+                </Modal.Content>
+                <Modal.Actions>
+                    <Button style={{ top: "-10em" }} onClick={() => {
+                        this.renderGuardar();
+                        this.setState({ open: false }); this.props.popupBot(null); this.setState({ push: false });
+                    }} negative>
+                        Salir
+             </Button>
+                </Modal.Actions>
+            </Modal>
+        }
+        else
+            return;
+    }
+    renderGuardar() {
+        this.Registro["tiempoVisto"] = moment().format('x') - this.Registro["ver"];
+        let query = `Usuario-Forma/${this.props.userId}/${moment().format("YYYYMM")}/${moment().format("DD")}/`;
+        this.Registro["lection"] = this.props.popupMensaje.lection;
+        let newPostKey2 = firebase.database().ref().child(query).push().key;
+        firebase.database().ref(query + newPostKey2).update(
+            { ...this.Registro });
+        this.Registro = [];
+
+    }
+    renderControlNotification() {
+        let styleBot = { top: '78%', color: '#ffffff', position: 'fixed', transform: 'scale(1)', left: 0.88 * window.innerWidth };
+        let link = this.props.popupMensaje && this.props.popupMensaje.link ? this.props.popupMensaje.link : null;
+        let color = 'green';
+        if (this.props.popupMensaje && this.props.popupMensaje.Priority) { timeoutLength2 = 30000; color = 'pink'; }
+        let numero = this.props.popupMensaje && this.props.popupMensaje.numero ? <div className={`ui ${color} floating label`} style={{ height: '30%' }}>{this.props.popupMensaje.numero}</div> : null;
+        let video = null;
+        if (this.props.popupMensaje && this.props.popupMensaje.video) {
+            video = 'video';
+            timeoutLength2 = this.props.popupMensaje.sleep ? this.props.popupMensaje.sleep : 300000;
+        }
+        if (this.props.popupMensaje && this.props.popupMensaje.chat) {
+            this.props.mensajeChat({ mensaje: this.props.popupMensaje.chat, agent: this.props.popupMensaje.agent });
+            timeoutLength2 = this.props.popupMensaje.sleep ? this.props.popupMensaje.sleep : 90000;
+        }
+        if (this.props.popupMensaje && this.props.popupMensaje.dormir) {
+            this.sleepBot = this.props.popupMensaje.sleep;
+            this.renderDescansaFiveminuts();
+        }
+        if (this.props.popupMensaje && this.props.popupMensaje.activate) {
+            this.sleepBot = this.props.popupMensaje.sleep;
+            this.renderAnimo();
+        }
+
+        return (<Popup
+            trigger={<Icon style={styleBot} name='superpowers' />}
+            position='top right'
+            size='large'
+            open={this.state.push}
+            inverted
+        >
+            <h3>
+                <a href={link} onClick={(e) => { e.preventDefault(); if (video !== null) { this.Registro["ver"] = moment().format('x'); this.setState({ open: true }); } if (link !== null && video === null) window.open(link, '', 'width=600,height=400,left=200,top=200'); }} >{this.props.popupMensaje ? this.props.popupMensaje.header : null}</a>
+            </h3>
+            {numero}
+            {this.props.popupMensaje ? this.props.popupMensaje.mensaje : null}
+
+        </Popup>);
+    }
+
     render() {
         let tiempo = null;
-        if (!this.props.isChat) 
-            tiempo =    <TimerClock programa={false}></TimerClock>;
+        if (!this.props.isChat)
+            tiempo = <TimerClock programa={false}></TimerClock>;
         return (
             <div>
-                 <div style={{ width: '400px', height: '400px', position: 'fixed', left: '80%', bottom: '40%', zIndex: '6' }} ref={(mount) => { this.mount = mount }} onClick={() => { this.cambioEstado() }}></div>
-                   {this.renderAuthButton()}
-                   {tiempo}
+                {this.renderControlNotification()}
+                <div style={{ width: '400px', height: '400px', position: 'fixed', left: '80%', bottom: '40%', zIndex: '6' }} ref={(mount) => { this.mount = mount }} onClick={() => { this.cambioEstado() }}></div>
+                {this.renderAuthButton()}
+                {this.renderControlVideo()}
+                {tiempo}
             </div>
         )
     }
@@ -440,6 +656,8 @@ const mapStateToProps = (state) => {
         isSignedIn: state.auth.isSignedIn,
         isChat: state.chatReducer.isChat,
         endChatMessage: state.chatReducer.endChatMessage,
+        popupMensaje: state.chatReducer.popupMensaje,
+        userId: state.auth.userId,
         usuarioDetail: state.chatReducer.usuarioDetail,
         MensajeIvily: state.chatReducer.MensajeIvily,
         estadochat: state.chatReducer.estadochat,
@@ -450,4 +668,4 @@ const mapStateToProps = (state) => {
 };
 
 
-export default connect(mapStateToProps, { chatOn, chatOff, endChatMes })(THREEScene);
+export default connect(mapStateToProps, { chatOn, chatOff, endChatMes, popupBot, mensajeChat })(THREEScene);
