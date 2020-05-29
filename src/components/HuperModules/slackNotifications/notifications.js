@@ -8,7 +8,7 @@ let timeoutLength = 30000;
 let timeoutLength2 = 30000;
 let timeoutLength3 = 30000;
 const slack = require('slack')
-const token = "xoxp-482555533539-486285033681-570078894214-3d540aabc08a362c1de2545fa174589c";
+const token = "xoxp-482555533539-486285033681-1135687828934-d3c03ee030f35b2669f717de68d31826";
 
 class notifiactions extends React.Component {
 

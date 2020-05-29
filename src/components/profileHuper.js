@@ -240,23 +240,23 @@ class Profile extends React.Component {
         return (
             <div>
                 <Form  >
-                    <h3>Cual es el canal de tu equipo?</h3>
+                    <h3>Cual es el canal mas importante?</h3>
                     <Select options={op}
                         search
-                        value={this.state.canalEquipoSlack}
-                        styles={st}
-                        onChange={(e, { value }) => { this.setState({ canalEquipoSlack: e }); this.renderValidateSlack(); }}
-
-                    />
-                    <h3>Cual es tu canal Importante?</h3>
-                    <Select options={op}
-                        search
-                        styles={st}
                         value={this.state.canalReportesSlack}
+                        styles={st}
                         onChange={(e, { value }) => { this.setState({ canalReportesSlack: e }); this.renderValidateSlack(); }}
 
                     />
-                    <h3>Cual es tu canal Notificaciones?</h3>
+                    <h3>Cual sera el canal de tu equipo?</h3>
+                    <Select options={op}
+                        search
+                        styles={st}
+                        value={this.state.canalEquipoSlack}
+                        onChange={(e, { value }) => { this.setState({ canalEquipoSlack: e }); this.renderValidateSlack(); }}
+
+                    />
+                    <h3>Menciona otro canal importante? </h3>
                     <Select options={op}
                         search
                         styles={st}
@@ -270,7 +270,7 @@ class Profile extends React.Component {
 
                 <Button icon='save' disabled={
                     this.state.activo
-                } style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+                } style={{ left: '12%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
             </div>
 
         );
@@ -304,7 +304,7 @@ class Profile extends React.Component {
 
                 </Form>
                 <br />
-                <Button icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+                <Button icon='save' disabled={this.state.activo} style={{ left: '12%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
             </div>
 
         );
@@ -384,7 +384,7 @@ class Profile extends React.Component {
                     />
                 </Form >
                 <br />
-                <Button icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar'
+                <Button icon='save' disabled={this.state.activo} style={{ left: '12%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar'
 
                     onClick={() => { this.renderGuardar() }}
                 />
@@ -519,7 +519,7 @@ class Profile extends React.Component {
                         />
                     </Form>
                     <br />
-                    <Button icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar'
+                    <Button icon='save' disabled={this.state.activo} style={{ left: '12%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar'
                         disabled={this.state.trelloDashboard && (this.state.listaObjetivostoDO && this.state.listaObjetivostoDO !== '' ||
                             this.state.listaOBjetivosDone && this.state.listaOBjetivosDone !== '' ||
                             this.state.listaObjetivosTheEnd && this.state.listaObjetivosTheEnd !== '') ? false : true}
@@ -610,7 +610,7 @@ class Profile extends React.Component {
                     />
                 </Form>
 
-                <Button icon='save' disabled={this.state.activo} style={{ left: '52%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+                <Button icon='save' disabled={this.state.activo} style={{ left: '12%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
             </div>
         );
     }
@@ -892,7 +892,7 @@ class Profile extends React.Component {
             <div className="ui form">
                 <Card style={{ left: '10%', width: '80%' }}>
                     <Image src={this.state.imagenFondo ? this.state.imagenFondo : 'https://cdn.pixabay.com/photo/2016/08/09/21/54/yellowstone-national-park-1581879_960_720.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} style={{ height: '250px' }} />
-                    <Card.Content style={{ height: '250px' }}>
+                    <Card.Content style={{ height: '250px', position: 'relative', left: '-30%' }}>
                         <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '4%', height: '190px', position: 'relative', top: '-160px' }} />
                         <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.setState({ activo: false }); this.renderCargar('slack'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.slackIn + ')', background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-14%', position: 'relative', top: '-55px' }} />
                         <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.driveIn + ')', background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-12%', position: 'relative', top: '-55px' }} />
@@ -905,7 +905,7 @@ class Profile extends React.Component {
                     </Card.Content>
 
                 </Card>
-                <Button content="Crea tu propio flujo de trabajo" onClick={() => { history.push('/newworkflow'); }} style={{ width: '200px', top: '225px', left: '22%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} icon="object group outline"></Button>
+                <Button content="Crea tu propio flujo de trabajo" onClick={() => { history.push('/newworkflow'); }} style={{ width: '200px', top: '225px', left: '-19%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} icon="object group outline"></Button>
 
                 <div className="ui segment" style={{ height: tamano, top: '-1.8em', left: '34%', width: '56%', background: 'linear-gradient(to top, #e0399738 0.5%, rgb(255, 255, 255) 0.6%, rgba(245, 242, 224, 0) 200%)' }}>
                     <Modal open={this.state.openImagen}
@@ -941,7 +941,7 @@ class Profile extends React.Component {
                             <Button
                                 onClick={() => { this.close(); this.renderGuardar(); }}
                                 style={{ background: "linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)", left: "-10px" }}
-                                labelPosition='right'
+                                labelPosition='center'
                                 icon='checkmark'
                                 content='Guardar'
                             />

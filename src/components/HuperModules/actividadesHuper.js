@@ -7,12 +7,14 @@ import moment from 'moment';
 import task from '../../images/task.svg';
 const timeoutLength = 900000;
 let timeoutLength2 = 1000;
+let timeoutLength3 = 5000;
 class listActividades extends React.Component {
 
-    state = { actividades: null, tiempos: 0, horamaxima: 8, primero: null, aux: null }
+    state = { actividades: null, tiempos: 0, horamaxima: 8, primero: null, aux: null, contenido: null }
 
     componentDidMount() {
-
+        console.log('componentDidMount');
+        this.flag = true;
         if (this.props.usuarioDetail) {
             const starCountRef = firebase.database().ref().child(`Usuario-Task/${this.props.usuarioDetail.idUsuario}/${moment().format("YYYYMMDD")}`);
             starCountRef.on('value', (snapshot2) => {
@@ -35,8 +37,10 @@ class listActividades extends React.Component {
 
         this.consultaTiempo();
     }
-    
+
     timerTrabajo = () => {
+
+        console.log('timerTrabajo');
         this.timeout = setTimeout(() => {
             this.setState({ aux: null });
         }, timeoutLength2)
@@ -44,6 +48,8 @@ class listActividades extends React.Component {
 
 
     consultaTiempo = () => {
+
+        console.log('consultaTiempo');
         this.timeout = setTimeout(() => {
             this.renderConsultarTiempoTrabajado();
             this.consultaTiempo();
@@ -52,7 +58,7 @@ class listActividades extends React.Component {
 
     //validar logica
     renderConsultarTiempoTrabajado() {
-
+        console.log('renderConsultarTiempoTrabajado');
         //this.renderTiempo();
         if (!this.props.MensajeIvily) return;
         let ant = moment(new Date(this.props.MensajeIvily.horaActivacion ? this.props.MensajeIvily.horaActivacion : this.props.MensajeIvily.inicio));
@@ -78,7 +84,7 @@ class listActividades extends React.Component {
 
 
     renderTiempo() {
-
+        console.log('renderTiempo');
         const actividadesU = this.state.actividades;
         let x = 0;
         let y = 0;
@@ -133,6 +139,7 @@ class listActividades extends React.Component {
 
     renderActividadXactividad() {
 
+        console.log('renderActividadXactividad');
         const actividadesU = this.state.actividades;
         let flag = false;
         let x = 0;
@@ -262,12 +269,16 @@ class listActividades extends React.Component {
 
     actividadesEmpty(limite, actNum, opcionesX) {
 
+        console.log('actividadesEmpty');
         let x = 0;
-        for (let index = actNum; index < limite; index++) {
+        let margin = '-40%';
+        if (actNum > 1)
+            margin = '-8%';
+        for (let index = actNum; index <= limite; index++) {
             x++;
             const element = <div key={index} style={{ height: '7.5em', width: '80%', position: 'relative', left: '20%', filter: 'grayscale(1)' }}>
                 <Step completed={false} style={{ background: '#efefef', height: '6.5em', borderRadius: '20px' }}>
-                    <h1 style={{ position: 'relative', top: '5%', left: '-40%', transform: 'scale(1.4)' }}>{x}</h1>
+                    <h1 style={{ position: 'relative', top: '5%', left:  margin , transform: 'scale(1.4)' }}>{x}</h1>
                     <Image src={task} size="mini" style={{ left: '1px', top: '-1px', transform: 'scale(0.75)' }}></Image>
                     <Step.Content style={{ left: '8%', width: '90%', top: '-70px', position: 'relative' }}>
                         <Step.Description style={{ position: 'relative', top: '50px', left: '25%', fontSize: 'smaller' }}>
@@ -283,21 +294,33 @@ class listActividades extends React.Component {
     }
 
     renderActividades() {
-        return (<Step.Group vertical style={{
-            width: '100%', borderRadius: '10px',
-            borderColor: 'cornsilk'
-        }}>
-            {this.renderActividadXactividad()}
-        </Step.Group>);
+
+
+        if (this.flag === true) {
+            this.timeout = setTimeout(() => {
+                timeoutLength3 = 60000;
+                this.flag = true;
+                this.timerTrabajo();
+
+
+                let stepG = <Step.Group vertical style={{
+                    width: '100%', borderRadius: '10px',
+                    borderColor: 'cornsilk'
+                }}>
+                    {this.renderActividadXactividad()}
+                </Step.Group>
+                this.setState({ contenido: stepG });
+            }, timeoutLength3);
+        }
+        this.flag = false;
     }
 
 
     render() {
 
-        let contenido;
+        let contenido = null;
         if (this.state.actividades) {
-            contenido = this.renderActividades();
-            this.timerTrabajo();
+            this.renderActividades();
         }
         else
             contenido = this.actividadesEmpty(6, 0, [])
@@ -309,7 +332,7 @@ class listActividades extends React.Component {
             <h3>{this.props.titulo}</h3>
             <div className=" maximo-list">
                 <div className="ui relaxed divided animated list ">
-                    {contenido}
+                    {contenido ? contenido : this.state.contenido}
                 </div>
             </div>
         </div>

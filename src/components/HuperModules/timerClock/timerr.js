@@ -7,8 +7,8 @@ import moment from 'moment';
 import firebase from 'firebase';
 import { chatOn, chatOff, popupBot } from '../../../actions';
 
-let timeoutLength = 500000;
-let timeoutLength3 = 500000;
+let timeoutLength = 5000;
+let timeoutLength3 = 5000;
 
 class timerClock extends React.Component {
 

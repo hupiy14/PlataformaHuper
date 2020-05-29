@@ -66,7 +66,7 @@ class pointWork extends React.Component {
                 contentArrowStyle={{ borderRight: '7px solid  rgb(33, 150, 243)' }}
                 date={nombre}
                 iconStyle={{ background: '#e03997', color: '#fff' }}
-                icon={<div style={{ left: '20%', position: 'relative', top: '25%' }}>
+                icon={<div style={{  position: 'relative', top: '25%' }}>
                     <Icon name="thumbtack" size="big" />
                 </div>
                 }
@@ -88,7 +88,7 @@ class pointWork extends React.Component {
                 date={nombre}
                 iconStyle={{ background: '#e03997', color: '#fff' }}
                 icon={
-                    <div style={{ left: '20%', position: 'relative', top: '25%' }}>
+                    <div style={{  position: 'relative', top: '25%' }}>
                         <Icon name="thumbtack" size="big" />
                     </div>}
             >
@@ -125,7 +125,7 @@ renderCrearFases(){
         return <div style={{ height: '12em' }}>
             <VerticalTimelineElement
                 iconStyle={{ background: '#b5cc18', color: '#fff' }}
-                icon={<div style={{ left: '20%', position: 'relative', top: '25%' }}>
+                icon={<div style={{  position: 'relative', top: '25%' }}>
                     <Icon name="trophy" size="big" />
                 </div>
                 }
@@ -138,7 +138,7 @@ renderCrearFases(){
 
         return (
             <div >
-                <h1 style={{ position: 'relative', left: '30%' }}>El flujo de trabajo para tus objetivos</h1>
+                <h1 style={{ position: 'relative', left: '2%' }}>El flujo de trabajo para tus objetivos</h1>
                 <VerticalTimeline>
                    {this.renderCrearFases()}
                 </VerticalTimeline>
@@ -155,7 +155,7 @@ renderCrearFases(){
 
                 </Form>
                 <br />
-                <Button icon='save' disabled={this.state.activo} style={{ color: 'white', left: '52%', top: '-100px', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Agregar un nuevo fase' onClick={() => { this.renderguardarFase() }} />
+                <Button icon='save' disabled={this.state.activo} style={{ color: 'white', left: '10%', top: '-100px', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Agregar un nuevo fase' onClick={() => { this.renderguardarFase() }} />
 
             </div>
         );

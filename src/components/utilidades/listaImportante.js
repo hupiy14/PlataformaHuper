@@ -10,6 +10,7 @@ import '../HuperModules/objetivodet.css';
 import '../styles/styleLoader.css';
 import fondo from '../../images/fondo2.jpg';
 import perfil from '../../images/perfil.png';
+import ButtonImport from '../HuperModules/importObjetic/importButton';
 
 const timeoutLength2 = 1000;
 const timeoutLength3 = 60000;
@@ -627,7 +628,9 @@ class listImportante extends React.Component {
                 <div className=" maximo-list" style={{ transform: 'scale(1.3)' }}>
                     <h1 style={{ color: '#947d0e', left: '1%', position: 'relative' }}>{titulo}</h1>
                     {this.renderConstruirObj(this.state.images)}
+                  
                 </div>
+                <ButtonImport style={{position: "relative", top: '150px'}}/>
             </div>
         )
     };

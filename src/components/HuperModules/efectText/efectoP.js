@@ -10,9 +10,9 @@ import firebase from 'firebase';
 import moment from 'moment';
 
 
-const timeoutLength = 1500;
+const timeoutLength = 2000;
 const timeoutLength2 = 2000;
-const timeoutLength3 = 3000;
+const timeoutLength3 = 5000;
 acAnimated.randomNumber = function (min, max) {
     var num = min + Math.floor(Math.random() * (max - (min - 1)));
     return num;
@@ -33,9 +33,7 @@ acAnimated.animateWord = function (word) {
     return timeline;
 }
 
-class listActividades extends React.Component {
-
-
+class efectText extends React.Component {
     state = {
         actividades: null, tiempos: 0, horamaxima: 8, primero: null, aux: null
         , index: 0, delay: .02, mensaje: null, messages: [], inputC: null, flag: false, response: null, tipoIn: 1, flagTiempo: false, textAux: null, opciones: null,
@@ -44,122 +42,85 @@ class listActividades extends React.Component {
         opcionesDB: null, keyNivel: '', flujoAux: null, pendingOk: null, pendingConsulta: null, onlyOptions: null, workFlow: null, passflow: 0, objTask: null, carpeta: null, etapa: null
     }
 
+
     componentWillMount() {
         this.secondsAcum = 0;
         this.stateAnt = null;
+        this.in = 0;
         this.pasoAnt = null;
         if (this.mensaje === undefined || this.props.mensajeChatBot === null || (this.props.mensajeChatBot && this.mensaje !== this.props.mensajeChatBot.mensaje))
             this.chatBotSfot();
     }
 
 
+
     chatBotSfot() {
         this.props.consultas({ ...this.props.consultax, currentId: this.props.userId, hoy: moment().format("YYYYMMDD"), util: 'prioridad' });
         this.state.registro["etapa"] = 0;
-        //this.props.mensajeChat({ mensaje: 'prueba', agent: 'task' });
-        let etapa = null;
-        //     console.log(this.props.mensajeChatBot)
-
-
-        ///tareas
-
+        this.borrarDatos();
+        this.etapa = null;
+        console.log(this.props.mensajeChatBot)
         if (this.props.mensajeChatBot && this.props.mensajeChatBot.agent === 'soft') {
-
             this.queryConsulta = `Usuario-Soft/${this.props.userId}/${moment().format("YYYYMM")}/${moment().format("DD")}`;
-            this.client = new ApiAiClient({
-                accessToken: '7ad0665ad3b64ec2b59721cb7fa53e07'
-            });
+            this.client = new ApiAiClient({ accessToken: '7ad0665ad3b64ec2b59721cb7fa53e07' });
         }
         else {
-            this.client = new ApiAiClient({
-                accessToken: 'dfd956d241004b8b87e1c293399dabf6'
-            });
+            this.client = new ApiAiClient({ accessToken: 'dfd956d241004b8b87e1c293399dabf6' });
+            if (this.props.mensajeChatBot && this.props.mensajeChatBot.agent === 'task') {
 
-            if (this.props.mensajeChatBot && this.props.mensajeChatBot.agent === 'OKR') {
-                this.queryConsulta = `Usuario-OKR/${this.props.userId}`;
+
+                this.queryConsulta = `Usuario-Task/${this.props.userId}/${moment().format("YYYYMMDD")}`;
+                const consultaTask = firebase.database().ref().child(this.queryConsulta);
+                this.consultaTareas(consultaTask);
             }
             else {
-                this.queryConsulta = `Usuario-Task/${this.props.userId}/${moment().format("YYYYMMDD")}`;
-                const starCountRef3 = firebase.database().ref().child(this.queryConsulta);
-                let ttiempo = 0;
-                starCountRef3.on('value', (snapshot) => {
-                    if (snapshot.val() !== null && snapshot.val().estado !== 'completo') {
-                        //etapa = snapshot.val().etapa ;
-                        this.setState({ etapa: snapshot.val().etapa  });
-                        Object.keys(snapshot.val()).map((key, index) => {
-                            if (snapshot.val()[key].duracion)
-                                ttiempo = snapshot.val()[key].duracion + ttiempo;
-                        });
-                    }
-                    else if (snapshot.val() !== null && snapshot.val().estado === 'completo') {
-                        this.setState({ objTask: snapshot.val() });
-                    }
-                });
-                this.secondsAcum = ttiempo;
+                this.queryConsulta = `Usuario-OKR/${this.props.userId}`;
             }
             //consulta pendientes
-            this.pendingC();
-
-
-        }
-
-        this.ActualizacionPaso(etapa);
-        /*
-                if (this.state.etapa) {
-                    this.state.registro["etapa"] = this.state.etapa;
-                    this.client.textRequest('Continuar planificando mi día', { sessionId: 'test' }).then(this.onResponse, this);
-                }
-                else {
-                    this.mensaje = this.props.mensajeChatBot && this.props.mensajeChatBot.mensaje ? this.props.mensajeChatBot.mensaje : 'hola';
-                    ///this.props.mensajeChatBot
-                    console.log('trabajo');
-                    console.log(this.mensaje);
-                    this.client.textRequest(this.mensaje, { sessionId: 'test' }).then(this.onResponse, this);
-        
-                }
-        
-                // this.client.eventRequest("hola").then(this.onResponse, this);
-                this.handlePaso();
-                this.text2();
-                this.setState({ response: null });
-        */
-
-    }
-   
-
-    pendingC = () => {
-        this.timeout = setTimeout(() => {
             this.pendingConsulta = `Usuario-Pendiente/${this.props.userId}`;
-            const starCountRef4 = firebase.database().ref().child(this.pendingConsulta);
+            const consultaPending = firebase.database().ref().child(this.pendingConsulta);
             let pending = null;
-            starCountRef4.on('value', (snapshot) => {
-                if (snapshot.val() !== null && this.state.etapa === null) {
-                    this.queryConsulta = `Usuario-OKR/${this.props.userId}`;
+            consultaPending.on('value', (snapshot) => {
+                if (snapshot.val() !== null) {
                     pending = snapshot.val();
-                    this.validarPending(pending);
                 }
             });
-        }, 500)
+            this.validarPending(pending);
+        }
+        this.ActualizacionPaso(this.etapa);
     }
 
-    ActualizacionPaso = etapa => {
+    consultaTareas(consultaTask) {
+        this.secondsAcum = 0;
+        consultaTask.on('value', (snapshot) => {
+            if (snapshot.val() !== null && snapshot.val().estado !== 'completo') {
+                this.etapa = snapshot.val().etapa;
+                this.setState({ etapa: this.etapa });
+                Object.keys(snapshot.val()).map((key, index) => {
+                    if (snapshot.val()[key].duracion)
+                        this.secondsAcum = snapshot.val()[key].duracion + this.secondsAcum;
+                });
+            }
+            else if (snapshot.val() !== null && snapshot.val().estado === 'completo') {
+                this.setState({ objTask: snapshot.val() });
+            }
+        });
+    }
+
+    ActualizacionPaso = () => {
         this.timeout = setTimeout(() => {
             this.props.mensajeChat(null);
-            if (this.state.etapa) {
-                this.state.registro["etapa"] = this.state.etapa;
+            if (this.etapa) {
+                this.state.registro["etapa"] = this.etapa;
                 this.client.textRequest('Continuar planificando mi día', { sessionId: 'test' }).then(this.onResponse, this);
             }
             else {
                 this.mensaje = this.props.mensajeChatBot && this.props.mensajeChatBot.mensaje ? this.props.mensajeChatBot.mensaje : 'hola';
-                ///this.props.mensajeChatBot
-                console.log('trabajo');
-                console.log(this.mensaje);
                 this.client.textRequest(this.mensaje, { sessionId: 'test' }).then(this.onResponse, this);
-
             }
 
             // this.client.eventRequest("hola").then(this.onResponse, this);
-            this.handlePaso();
+            this.handlePaso(this.flagT);
             this.text2();
             this.setState({ response: null });
         }, 500)
@@ -168,6 +129,7 @@ class listActividades extends React.Component {
     validarPending(pending) {
         if (pending !== null) {
             let flag = false;
+
             Object.keys(pending).map((key, index) => {
                 if (pending[key].estado === 'activo' && flag === false) {
                     flag = true;
@@ -198,7 +160,6 @@ class listActividades extends React.Component {
     adelantar(flujo) {
         let men = null;
         let etapa = 0;
-        console.log(flujo);
         for (const prop2 in flujo) {
             if (this.state.pasoFlujo === parseInt(prop2, 16)) {
                 men = flujo[prop2];
@@ -206,14 +167,10 @@ class listActividades extends React.Component {
             }
         }
         this.setState({ pasoFlujo: this.state.pasoFlujo + etapa });
-        if (men !== null)
-            this.client.textRequest(men, { sessionId: 'test' }).then(this.onResponse, this);
+        this.client.textRequest(men, { sessionId: 'test' }).then(this.onResponse, this);
     }
 
-
-
     validarNivel(nivel, cambio) {
-
         let keyN = this.state.keyNivel;
         if (cambio)
             keyN = null;
@@ -225,10 +182,7 @@ class listActividades extends React.Component {
             this.setState({ keyNivel: newPostKey2 });
             this.setState({ nivel: newPostKey2 });
         }
-
-
     }
-
 
     validateWork(workflow, parameter) {
         let men = "";
@@ -237,7 +191,6 @@ class listActividades extends React.Component {
                 men = workflow[prop2];
             }
         }
-        console.log(men)
         this.client.textRequest(men, { sessionId: 'test' }).then(this.onResponse, this);
     }
 
@@ -248,117 +201,103 @@ class listActividades extends React.Component {
         else if (tipo === 'OKR') {
             this.queryConsulta = `Usuario-OKR/${this.props.userId}`;
         }
-
     }
 
     onResponse = (activity) => {
-        let that = this;
-        let ind = 0;
-        activity.result.fulfillment.messages.forEach(function (element) {
-            console.log(element);
+        let index = 0;
+        activity.result.fulfillment.messages.forEach((element) => {
+            //            console.log(element);
 
-            if (ind === 0)
-                if (element.payload !== undefined) {
-                    ind++;
-                    let nuevo = element.payload;
-                
-                    if (that.state.pasoFlujo > 1 && that.state.pasoFlujo - 1 <= that.state.etapa && that.state.etapa != null) {
-                        that.borrarDatos();
-                        that.adelantar(that.state.flujo);
+            if (element.payload !== undefined && index === 0) {
+                let nuevo = element.payload;
+                index++;
+                //  console.log(that.state.pasoFlujo);
+                //console.log(nuevo);
+                if (this.state.pasoFlujo > 1 && this.state.pasoFlujo <= this.state.etapa && this.state.etapa != null) {
+                    this.borrarDatos();
+                    this.adelantar(this.state.flujo);
+
+                }
+                else {
+                    if (nuevo.tipo === "flujo") {
+                        this.setState({ flujo: nuevo.flujo });
+                        this.adelantar(nuevo.flujo);
+
+                    }
+                    else if (nuevo.tipo === "workFlow") {
+                        this.setState({ workflow: nuevo.workFlow });
+                        this.setState({ passflow: 2 });
+                        this.validateWork(nuevo.workFlow, "1");
+
+
+                    }
+                    else if (nuevo.tipo === "consulta") {
+                        this.setState({ pasoFlujo: null });
+                        this.setState({ consulta: nuevo.consulta });
+                        this.setState({ flujoAux: nuevo.flujoAux });
+                        this.validarNivel(nuevo.nivel, nuevo.ChangeLevel);
+                        this.setState({ addProperties: nuevo.add });
+                        this.setState({ criteria: nuevo.criteria });
+                        this.setState({ parametros: this.organizarConsulta(nuevo.parametros !== undefined ? nuevo.parametros.split(',') : '') });
+                        this.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", this.props.nombreUser) });
+                        this.setState({ propertieBD: nuevo.bd });
+                        this.setState({ property: nuevo.property });
+                        this.setState({ stay: nuevo.stay });
+                        this.setState({ paso: nuevo.paso });
+                        this.setState({ onlyOptions: nuevo.onlyOptions });
+                        this.setState({ consultParam: nuevo.consultParam });
+                        this.setState({ tipoIn: 3 });
+                        this.urlBsaseDatos(nuevo.structure);
+                        if (nuevo.carpeta)
+                            this.crearCarpeta();
+                    }
+
+                    else if (nuevo.tipo === "mensaje") {
+                        this.setState({ pasoFlujo: null });
+                        this.validarNivel(nuevo.nivel, nuevo.ChangeLevel);
+                        this.setState({ nivelAnt: nuevo.nivelAnt });
+                        this.setState({ property: nuevo.property });
+                        this.setState({ stay: nuevo.stay });
+                        this.setState({ addProperties: nuevo.add });
+                        this.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", this.props.nombreUser) });
+                        this.setState({ textAux: nuevo.labelAux });
+                        this.setState({ paso: nuevo.paso });
+                        this.setState({ flagTiempo: nuevo.tiempo });
+                        this.setState({ propertieBD: nuevo.bd });
+                        this.urlBsaseDatos(nuevo.structure);
+                        if (nuevo.carpeta)
+                            this.crearCarpeta();
+                    }
+                    else if (nuevo.tipo === "tiempo") {
+                        this.setState({ pasoFlujo: null });
+                        this.validarNivel(nuevo.nivel, nuevo.ChangeLevel);
+                        this.setState({ nivelAnt: nuevo.nivelAnt });
+                        this.setState({ property: nuevo.property });
+                        this.setState({ stay: nuevo.stay });
+                        this.setState({ addProperties: nuevo.add });
+                        this.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", this.props.nombreUser) });
+                        this.setState({ flagTiempo: nuevo.tiempo });
+                        this.setState({ propertieBD: nuevo.bd });
+                        this.setState({ paso: nuevo.paso });
+                        this.setState({ tipoIn: 4 });
+                    }
+                    else if (nuevo.tipo === "opciones") {
+
+                        this.setState({ consultParam: nuevo.consultParam });
+                        this.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", this.props.nombreUser) });
+                        this.setState({ tipoIn: 2 });
+                        this.setState({ paso: nuevo.paso });
+                        this.setState({ opciones: nuevo.opciones });
 
                     }
                     else {
-                        console.log(nuevo);
-                        if (nuevo.tipo === "flujo") {
-                            that.setState({ flujo: nuevo.flujo });
-                            that.adelantar(nuevo.flujo);
-
-                        }
-                        else if (nuevo.tipo === "workFlow") {
-                            that.setState({ workflow: nuevo.workFlow });
-                            that.setState({ passflow: 2 });
-                            that.validateWork(nuevo.workFlow, "1");
-
-
-                        }
-                        else if (nuevo.tipo === "consulta") {
-                            that.setState({ pasoFlujo: null });
-                            that.setState({ consulta: nuevo.consulta });
-                            that.setState({ flujoAux: nuevo.flujoAux });
-                            that.validarNivel(nuevo.nivel, nuevo.ChangeLevel);
-                            that.setState({ addProperties: nuevo.add });
-                            that.setState({ criteria: nuevo.criteria });
-                            that.setState({ parametros: that.organizarConsulta(nuevo.parametros !== undefined ? nuevo.parametros.split(',') : '') });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.nombreUser) });
-                            that.setState({ propertieBD: nuevo.bd });
-                            that.setState({ property: nuevo.property });
-                            that.setState({ stay: nuevo.stay });
-                            that.setState({ paso: nuevo.paso });
-                            that.setState({ onlyOptions: nuevo.onlyOptions });
-                            that.setState({ consultParam: nuevo.consultParam });
-                            that.setState({ tipoIn: 3 });
-                            that.urlBsaseDatos(nuevo.structure);
-                            if (nuevo.carpeta)
-                                that.crearCarpeta();
-                        }
-
-                        else if (nuevo.tipo === "mensaje") {
-                            that.setState({ pasoFlujo: null });
-                            that.validarNivel(nuevo.nivel, nuevo.ChangeLevel);
-                            that.setState({ nivelAnt: nuevo.nivelAnt });
-                            that.setState({ property: nuevo.property });
-                            that.setState({ stay: nuevo.stay });
-                            that.setState({ addProperties: nuevo.add });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.nombreUser) });
-                            that.setState({ textAux: nuevo.labelAux });
-                            that.setState({ paso: nuevo.paso });
-                            that.setState({ flagTiempo: nuevo.tiempo });
-                            that.setState({ propertieBD: nuevo.bd });
-                            that.urlBsaseDatos(nuevo.structure);
-                            if (nuevo.carpeta)
-                                that.crearCarpeta();
-                        }
-                        else if (nuevo.tipo === "tiempo") {
-                            that.setState({ pasoFlujo: null });
-                            that.validarNivel(nuevo.nivel, nuevo.ChangeLevel);
-                            that.setState({ nivelAnt: nuevo.nivelAnt });
-                            that.setState({ property: nuevo.property });
-                            that.setState({ stay: nuevo.stay });
-                            that.setState({ addProperties: nuevo.add });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.nombreUser) });
-                            that.setState({ flagTiempo: nuevo.tiempo });
-                            that.setState({ propertieBD: nuevo.bd });
-                            that.setState({ paso: nuevo.paso });
-                            that.setState({ tipoIn: 4 });
-                        }
-                        else if (nuevo.tipo === "opciones") {
-
-                            that.setState({ consultParam: nuevo.consultParam });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.nombreUser) });
-                            that.setState({ tipoIn: 2 });
-                            that.setState({ paso: nuevo.paso });
-                            that.setState({ opciones: nuevo.opciones });
-
-                        }
-                        else {
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.nombreUser) });
-                            that.Cerrar();
-                        }
+                        this.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", this.props.nombreUser) });
+                        this.Cerrar();
                     }
                 }
-
-            /*    newMessage = {
-                    text: messageN,
-                    author: that.bot,
-                    //  timestamp: new Date(activity.timestamp),
-                    //   suggestedActions: element.replies ? element.replies.map(x => { return { type: "reply", title: x, value: x };}) : []
-                };
-                that.setState((prevState) => {
-                    return { messages: [...prevState.messages, newMessage] };
-                });*/
+            }
         });
     }
-
 
     validarOpciones(value) {
         let opciones = this.state.opcionValue;
@@ -371,10 +310,9 @@ class listActividades extends React.Component {
         return flag;
     }
 
-
     crearCarpeta() {
         let folderId = this.props.usuarioDetail.usuario.wsCompartida;
-
+        alert(folderId)
         window.gapi.client.drive.files.create({
             name: "Nueva Carpeta",
             mimeType: 'application/vnd.google-apps.folder',
@@ -382,20 +320,15 @@ class listActividades extends React.Component {
             //fields: 'id'
         }).then((response) => {
             this.setState({ carpeta: response.result.id });
-
         },
             function (err) { console.error("Execute error", err); });
     }
 
-
-
     addNewMessage = (event) => {
         if (event.key === "Enter" || event.key === "13") {
             let value = this.state.inputC;
-
             if (value !== null) {
                 if (this.state.onlyOptions && this.validarOpciones(value)) { return; }
-
                 if (this.state.propertieBD) {
                     let registro = [];
                     registro[this.state.propertieBD] = value;
@@ -405,15 +338,11 @@ class listActividades extends React.Component {
                         registro["duracion"] = this.props.onMessage;
                         registro["h-inicio"] = moment().add('seconds', this.secondsAcum).format('h:mm:ss a');
                         registro["h-fin"] = moment().add('seconds', this.secondsAcum).add('seconds', this.props.onMessage).format('h:mm:ss a');
-
+                        registro["facha"] = moment().format("MMM Do YY");
                         if (this.stateAnt !== this.state.nivel) {
-                            console.log(this.props.onMessage);
-                            console.log(this.secondsAcum);
                             this.secondsAcum = this.secondsAcum + this.props.onMessage;
                             this.stateAnt = this.state.nivel;
                         }
-
-                        registro["facha"] = moment().format("MMM Do YY");
                     }
 
                     if (this.state.nivelAnt !== null && this.state.nivelAnt !== undefined) {
@@ -421,9 +350,7 @@ class listActividades extends React.Component {
                         for (const prop2 in this.state.addProperties) {
                             registroAnt[prop2] = this.state.addProperties[prop2];
                         }
-
                         this.state.registro[this.state.nivelAnt] = { ...this.state.registro[this.state.nivelAnt], ...registroAnt };
-
                     }
                     else {
                         for (const prop2 in this.state.addProperties) {
@@ -432,8 +359,6 @@ class listActividades extends React.Component {
                     }
 
                     if (this.state.nuevoParam === value) {
-
-                        console.log(value);
                         let newPostKey2 = firebase.database().ref().child('Usario-Pendiente').push().key;
                         registro[this.state.propertieBD] = newPostKey2;
                         firebase.database().ref(`Usuario-Pendiente/${this.props.userId}/${newPostKey2}`).update({
@@ -444,12 +369,10 @@ class listActividades extends React.Component {
                     if (this.state.stay !== null) {
                         this.setState({ stayValue: registro[this.state.propertieBD] });
                     }
-
                     if (this.state.property !== null && this.state.property !== undefined) {
-
                         registro[this.state.property] = this.state.stayValue;
                     }
-                    if (this.state.carpeta) {
+                    if (this.state.carpeta !== null) {
                         registro["carpeta"] = this.state.carpeta;
                         this.setState({ carpeta: null })
                     }
@@ -463,10 +386,8 @@ class listActividades extends React.Component {
                         this.state.registro = { ...this.state.registro, ...registro }
                     }
 
-
                     this.state.registro["etapa"] = this.state.registro["etapa"] + 1;
                     let consultP = this.state.consultaParams === null || this.state.consultaParams === undefined ? '' : this.state.consultaParams;
-
                     if (this.state.consultaParams) {
                         firebase.database().ref(this.queryConsulta + consultP + '/' + this.state.propertieBD).set(registro[this.state.propertieBD]);
                     }
@@ -476,7 +397,6 @@ class listActividades extends React.Component {
                         });
                     }
 
-
                 }
                 else {
 
@@ -485,14 +405,11 @@ class listActividades extends React.Component {
                 }
 
                 let pass = this.state.paso !== undefined && this.state.paso !== null ? this.state.paso : '';
-
-
                 if (this.state.workflow !== undefined && this.state.workflow !== null) {
                     this.validateWork(this.state.workflow, this.state.passflow.toString());
                     this.setState({ passflow: this.state.passflow + 1 });
                 }
                 else
-
                     this.client.textRequest(pass + " " + value).then(this.onResponse, this);
                 this.borrarDatos();
 
@@ -515,104 +432,80 @@ class listActividades extends React.Component {
         this.setState({ flag: true });
         this.setState({ textAux: true });
         this.setState({ tipoIn: 1 });
-
-
     }
-    /*
-        parseText z= (event) => {
-           
-                if (event.action !== undefined) {
-                    return event.action.value;
-                } else if (event.value) {
-                    return event.value;
-                } else {
-                    return event.message.text;
-                }
-            
-        }
-     
-    */
-    handlePaso = () => {
-        this.timeout = setTimeout(() => {
-            let text = document.body.querySelector(".text");
-            const split = acAnimated.Plugins.SplitText(text, { words: 1, chars: 1, spacing: 10 });
-            let timeline = null
-            switch (this.props.tipo) {
-                case 0:
-                    timeline = new window.TimelineMax({ repeat: -1, repeatDelay: 0 });
-                    for (var i = 0; i <= split.chars.length - 1; i++) {
-                        var char = split.chars[i];
-                        timeline.add("animated_char_" + String(i), acAnimated.randomNumber(1, 20) / 10);
-                        timeline.add(acAnimated.animateChar(char), "animated_char_" + String(i));
-                    }
-                    timeline.to(text, 3, {}).to(text, 1, { opacity: 0 });
-                    break;
-                case 1:
-                    timeline = new window.TimelineMax({ repeat: -1, repeatDelay: 0 });
-                    for (var i = 0; i <= split.words.length - 1; i++) {
-                        var word = split.words[i];
-                        timeline
-                            .add("animated_word_" + String(i), acAnimated.randomNumber(1, 20) / 10)
-                            .add(acAnimated.animateWord(word), "animated_word_" + String(i));
-                    }
-                    timeline.to(text, 3, {}).to(text, 1, { opacity: 0 });
-                    break;
-                case 2:
-                    for (var i = 0; i <= split.chars.length - 1; i++) {
-                        window.TweenMax.from(split.chars[i], 2.5, {
-                            opacity: 0,
-                            x: this.randomMax(-100, 100),
-                            y: this.randomMax(-100, 100),
-                            z: this.randomMax(-100, 100),
-                            scale: .1,
-                            delay: i * .02,
-                            yoyo: true,
-                            repeat: -1,
-                            repeatDelay: 10
-                        });
-                    };
-                    break;
-                case 3:
-                    for (var i = 0; i <= split.words.length - 1; i++) {
-                        window.TweenMax.from(split.words[i], 2.5, {
-                            opacity: 0,
-                            x: this.randomMax(-100, 100),
-                            y: this.randomMax(-100, 100),
-                            z: this.randomMax(-100, 100),
-                            scale: 1,
-                            delay: i * .02,
-                            yoyo: true,
-                            repeat: -1,
-                            repeatDelay: 10
-                        });
-                    };
-                    break;
-
-                default:
-                    break;
-            }
-            /*
-                      var timeline = new window.TimelineMax({repeat: -1, repeatDelay: 0});
-                      /*for (var i=0; i<=split.chars.length-1; i++) {
-                          var char = split.chars[i];
-                          timeline.add("animated_char_" + String(i), acAnimated.randomNumber(1, 20)/ 10);
-                          timeline.add(acAnimated.animateChar(char), "animated_char_" + String(i));
-                      }*/
-            /*
-            for (var i=0; i<=split.words.length-1; i++) {
-                var word = split.words[i];
-                timeline
-                .add("animated_word_" + String(i), acAnimated.randomNumber(1, 20)/ 10)
-                .add(acAnimated.animateWord(word), "animated_word_" + String(i));
-            }
-            timeline.to(text, 3, {}).to(text, 1, {opacity: 0});
-     
-            */
 
 
-
-
+    CambioEstado = () => {
+        this.timeout6 = setImmediate(() => {
+            this.flagT = true;
         }, timeoutLength)
+    }
+
+    handlePaso = (flagT) => {
+        if (flagT === true)
+            this.timeout2 = setTimeout(() => {
+                console.log('entro')
+                //this.flagT = false;
+                //this.CambioEstado();
+                let text = document.body.querySelector(".text");
+                const split = acAnimated.Plugins.SplitText(text, { words: 1, chars: 1, spacing: 10 });
+                let timeline = null;
+                switch (this.props.tipo) {
+                    case 0:
+                        timeline = new window.TimelineMax({ repeat: -1, repeatDelay: 0 });
+                        for (var i = 0; i <= split.chars.length - 1; i++) {
+                            var char = split.chars[i];
+                            timeline.add("animated_char_" + String(i), acAnimated.randomNumber(1, 20) / 10);
+                            timeline.add(acAnimated.animateChar(char), "animated_char_" + String(i));
+                        }
+                        timeline.to(text, 3, {}).to(text, 1, { opacity: 0 });
+                        break;
+                    case 1:
+                        timeline = new window.TimelineMax({ repeat: -1, repeatDelay: 0 });
+                        for (var i = 0; i <= split.words.length - 1; i++) {
+                            var word = split.words[i];
+                            timeline
+                                .add("animated_word_" + String(i), acAnimated.randomNumber(1, 20) / 10)
+                                .add(acAnimated.animateWord(word), "animated_word_" + String(i));
+                        }
+                        timeline.to(text, 3, {}).to(text, 1, { opacity: 0 });
+                        break;
+                    case 2:
+                        for (var i = 0; i <= split.chars.length - 1; i++) {
+                            window.TweenMax.from(split.chars[i], 2.5, {
+                                opacity: 0,
+                                x: this.randomMax(-100, 100),
+                                y: this.randomMax(-100, 100),
+                                z: this.randomMax(-100, 100),
+                                scale: .1,
+                                delay: i * .02,
+                                yoyo: true,
+                                repeat: -1,
+                                repeatDelay: 10
+                            });
+                        };
+                        break;
+                    case 3:
+
+                        for (var i = 0; i <= split.words.length - 1; i++) {
+                            window.TweenMax.from(split.words[i], 2.5, {
+                                opacity: 0,
+                                x: this.randomMax(-100, 100),
+                                y: this.randomMax(-100, 100),
+                                z: this.randomMax(-100, 100),
+                                scale: 1,
+                                delay: i * .02,
+                                yoyo: true,
+                                repeat: -1,
+                                repeatDelay: 10
+                            });
+                        };
+                        break;
+                    default:
+                        break;
+                }
+
+            }, timeoutLength *2)
     }
 
     organizarConsulta(parametros) {
@@ -620,7 +513,6 @@ class listActividades extends React.Component {
         for (const prop2 in parametros) {
             param[parametros[prop2]] = this.props.consultax[parametros[prop2]];
         }
-
         return param;
     }
 
@@ -645,7 +537,6 @@ class listActividades extends React.Component {
                         countCriteria++;
                         for (const propObj in objeto) {
                             if (propObj === cri) {
-
                                 if (objeto[propObj] === criteria[cri]) {
                                     flagCriteria++;
                                 }
@@ -674,12 +565,11 @@ class listActividades extends React.Component {
 
 
     opcionesLoad = () => {
-        this.timeout = setTimeout(() => {
+        this.timeout3 = setTimeout(() => {
 
             let opciones = <React.Fragment  >
                 <input
                     value={this.state.inputC}
-
                     onChange={this.onInputChange}
                     onKeyPress={(e) => { this.addNewMessage(e) }}
                     list='opciones' placeholder='Escoge una Opcion...'
@@ -700,11 +590,10 @@ class listActividades extends React.Component {
         }, 1000)
     }
 
-
     Cambio = () => {
-        this.timeout = setTimeout(() => {
+        this.timeout4 = setTimeout(() => {
             if (this.state.flag === true) {
-                this.handlePaso();
+                this.handlePaso(this.flagT);
                 this.text2();
             }
             this.setState({ flag: false });
@@ -712,15 +601,12 @@ class listActividades extends React.Component {
     }
 
     Cerrar = () => {
-        this.timeout = setTimeout(() => {
-
+        this.timeout10 = setTimeout(() => {
             if (this.state.pendingOk !== null) {
-
-                this.pendingConsulta = this.pendingConsulta + '/' + this.state.nivel;
-                firebase.database().ref(this.pendingConsulta).set({});
+                firebase.database().ref(this.pendingConsulta).update({
+                    ... this.state.pendingOk
+                });
             }
-
-
             this.state.registro["etapa"] = this.state.registro["etapa"] + 1;
             this.state.registro["estado"] = "completo";
             if (this.state.consultaParams === null || this.state.consultaParams === undefined) {
@@ -747,13 +633,11 @@ class listActividades extends React.Component {
             this.setState({ nuevoParam: event.target.value });
             this.setState({ inputC: event.target.value });
         }
-
-
     };
 
 
     text2 = () => {
-        this.timeout = setTimeout(() => {
+        this.timeout5 = setTimeout(() => {
             if (!this.state.t2 && this.state.response === null) {
 
                 let tiempo = null;
@@ -762,24 +646,11 @@ class listActividades extends React.Component {
                     topTiempo = '20em';
                     tiempo = <TimerClock programa={true}></TimerClock>
                 }
-
                 let opciones = null;
-
-                /*
-                  
-                       <a href="#" className="action-button  animate blue">Hello</a>
-                            <a href="#" className="action-button  animate red">How</a>
-                            <a href="#" className="action-button  animate green">Are</a>
-                            <a href="#" className="action-button  animate yellow">You?</a>
-                */
-
                 if (this.state.tipoIn === 1) {
                     this.setState({
                         t2: <div className="Wrapper">
                             <div className="ui container" style={{ top: '80px', height: topTiempo, width: '40%' }}>
-
-
-
                                 <div className="Input" style={{ top: '25%' }}>
                                     <input type="text" id="input" className="Input-text"
                                         value={this.state.inputC}
@@ -834,9 +705,8 @@ class listActividades extends React.Component {
 
                 }
             }
-        }, timeoutLength * 3)
+        }, timeoutLength)
     }
-
 
     clickOpcion(opcion) {
 
@@ -854,7 +724,6 @@ class listActividades extends React.Component {
 
             firebase.database().ref(this.queryConsulta + consultP).update(
                 { ...registro });
-
         }
 
         else {
@@ -879,7 +748,7 @@ class listActividades extends React.Component {
         let t1 = null;
         let t2 = null;
 
-        if (this.state.flag) {
+        if (this.state.flag === true) {
             this.Cambio();
             t1 = <div className="loader">
                 <span></span>
@@ -927,31 +796,6 @@ class listActividades extends React.Component {
 
             </div>
         );
-
-
-
-        /*  return (
-              <div className="sp-containerE1">
-                  <div className='text' id='text' style={{ opacity: '1' }}>
-                      <p className="split" style={{ opacity: '1', fontSize: '50px' }} >
-                          {this.props.onMessage}
-                      </p>
-                  </div>
-                  <div class="Wrapper">
-                      <div className="Input">
-                          <input type="text" id="input" className="Input-text"
-     
-                              value={this.state.inputC}
-                              onChange={(event) => this.setState({ inputC: event.target.value })}
-                              onKeyPress={(e) => { this.addNewMessage(e) }} placeholder="..." />
-                          <label for="input" className="Input-label">Hooy estoy</label>
-     
-                      </div>
-                  </div>
-              </div>
-     
-          );
-    */
     }
 };
 
@@ -983,4 +827,4 @@ const mapAppStateToProps = (state) => (
     });
 
 
-export default connect(mapAppStateToProps, { sendMessage, chatOff, endChatMes, consultas, popupBot, mensajeChat })(listActividades);
+export default connect(mapAppStateToProps, { sendMessage, chatOff, endChatMes, consultas, popupBot, mensajeChat })(efectText);

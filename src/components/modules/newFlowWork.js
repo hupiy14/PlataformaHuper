@@ -108,7 +108,7 @@ class newFlowWork extends React.Component {
             if (key > 0)
                 bt = <Button icon="trash alternate outline" circular size="medium" style={{
                     background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)',
-                    left: '2%',
+                    left: '-20%',
                     position: 'relative'
                 }} onClick={() => { the.renderBorrarDato(listaX[key].id) }}></Button>
 
