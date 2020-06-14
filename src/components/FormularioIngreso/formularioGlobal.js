@@ -73,7 +73,7 @@ class FomrularioGlobal extends React.Component {
                         </div>
                     </div>
                 </Modal.Content>
-                <Modal.Actions>
+                <Modal.Actions style={{position: 'relative', top: '108px'}}>
 
                     <Button color='grey' onClick={this.cancelar}>
                         Cancelar</Button>

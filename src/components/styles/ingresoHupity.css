@@ -28,5 +28,14 @@
 }
 
 
+.buttonH {
+    transition-duration: 0.4s;
+  }
+  
+  .buttonH:hover {
+    background-color: #ff13bd; /* Green */
+    color: white;
+  }
+
 
 

@@ -9,23 +9,23 @@ import history from '../../history';
 
 import perfil from '../../images/perfil.png';
 import ListFormacion from './listaFormacionesEquipo';
-import randomScalingFactor from '../../lib/randomScalingFactor'
+//import randomScalingFactor from '../../lib/randomScalingFactor'
 import ListaObjetivosE from '../../components/gestorModules/listaObjetivosEquipo';
 import ListaPersonasEquipo from '../utilidades/listaPersonasEquipo';
 import {
-  Button, Checkbox, Grid,
-  Header, Icon, Image,
-  Label, Menu, Segment,
-  Sidebar, Radio, MessageHeader,
+  Grid,
+   Image,
+   Segment,
+  Sidebar
 }
   from 'semantic-ui-react';
-import PropTypes from 'prop-types'
+//import PropTypes from 'prop-types'
 
 import GraficaG1 from '../gestorModules/CrearGraficaGestor';
 import GraficaG2 from '../gestorModules/CreargraficaHistorico';
 import GraficaG3 from '../gestorModules/GraficoTICgestos';
 import GraficaG4 from '../gestorModules/CrearGraficaProductividad';
-import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, verEquipos } from '../modules/chatBot/actions';
+import { listaObjetivos,  equipoConsultas, verEquipos } from '../modules/chatBot/actions';
 import moment from 'moment';
 
 
@@ -33,7 +33,7 @@ import moment from 'moment';
 
 
 
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+//import { makeStyles, useTheme } from '@material-ui/core/styles';
 import MobileStepper from '@material-ui/core/MobileStepper';
 import Button2 from '@material-ui/core/Button';
 

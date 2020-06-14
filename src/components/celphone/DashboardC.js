@@ -9,7 +9,7 @@ import '../styles/ingresoHupity.css';
 import randomScalingFactor from '../../lib/randomScalingFactor';
 
 import ListaActividades from './actividades';
-import DashGestor from '../gestorModules/dashboardG';
+//import DashGestor from '../gestorModules/dashboardG';
 import firebase from 'firebase';
 import moment from 'moment';
 import history from '../../history';
@@ -17,7 +17,7 @@ import construccion from '../../images/construccion.JPG'
 
 
 
-import { Popup, Modal, Menu, Segment, Button, Dimmer, Header, Icon, Image, Input, Step, Label, Checkbox, List } from 'semantic-ui-react';
+import {  Menu, Segment, Button, Dimmer, Icon, Image,  Checkbox } from 'semantic-ui-react';
 import MenuChat from '../MenuChat';
 import { pasoOnboardings, listaFormaciones, prioridadObjs, estadochats, listaObjetivos, objTIMs, datosEditCels } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
@@ -27,10 +27,10 @@ import Slider from 'react-animated-slider';
 import 'react-animated-slider/build/horizontal.css';
 import { Link } from 'react-router-dom';
 
-import { CircularProgressbar, buildStyles, CircularProgressbarWithChildren } from 'react-circular-progressbar';
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import AnimatedProgressProvider from "./AnimatedProgressProvider";
-import MenuEditObjeto from './menuEditO';
+//import MenuEditObjeto from './menuEditO';
 
 import { easeQuadInOut } from "d3-ease";
 
@@ -159,7 +159,7 @@ class DashBoard extends React.Component {
             const ObjTrabajo = snapshot.val();
             let objetivos = [];
             if (!snapshot.val()) return;
-            Object.keys(ObjTrabajo).map(function (key2, index) {
+            Object.keys(ObjTrabajo).map((key2, index) => {
                 if (ObjTrabajo[key2].compartidoEquipo) {
                     const starCountRef = firebase.database().ref().child(`Usuario-Objetivos/${ObjTrabajo[key2].idUsuarioGestor}/${ObjTrabajo[key2].objetivoPadre}`);
                     starCountRef.on('value', (snapshot) => {

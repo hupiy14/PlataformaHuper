@@ -7,7 +7,9 @@ import {
     ON_MESSAGE,
     END_CHAT,
     POPUP_MENSAJE,
-    MENSAJE_CHAT
+    MENSAJE_CHAT, 
+    ASANA
+   
 } from './types';
 
 import {
@@ -15,6 +17,7 @@ import {
     CHAT_OFF,
     NOMBRE_USER,
     USUARIO_DETAIL,
+    
 
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
@@ -49,6 +52,14 @@ export const slackApis = () => async dispatch => {
     // const response = await SlackApis.get();
     // console.log(response);
     // dispatch({ type: SLACKAPI, payload: response.data });
+};
+
+export const mensajeAsanas = (code) => {
+
+    return {
+        type: ASANA,
+        payload: code
+    };
 };
 export const usuarioDetails = (usuarioDetail) => {
 

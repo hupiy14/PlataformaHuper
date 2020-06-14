@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import '../components/styles/ingresoHupity.css';
-import { chatOn, chatOff } from '../actions';
-import { Card, Icon, Image, Button, Form, Message, Segment, Dimmer, Loader, Modal, Header, Input } from 'semantic-ui-react'
+import { chatOn, chatOff, mensajeAsanas, popupBot  } from '../actions';
+import { Card, Icon, Image, Button, Form, Message, Segment, Dimmer, Loader, Modal, Header, Input } from 'semantic-ui-react';
 import history from '../history';
 import firebase from 'firebase';
 import zonaEspana from '../components/utilidades/zonaEspana';
@@ -11,14 +11,20 @@ import drive from '../images/drive.png';
 import calendar from '../images/calendar.png';
 import slack from '../images/slack.png';
 import trelloImg from '../images/trello.png';
-import { red } from '@material-ui/core/colors';
+import asana from '../images/asana.png';
+import googleSheet from '../images/googleSheet.png';
+import clickup from '../images/clickup.png';
+import asanaH from '../apis/asana';
+import { clientIdAsana, clientSecrectAsana, clientSlack } from '../apis/stringConnection';
+
 import Select from 'react-select';
 import chroma from 'chroma-js';
 import { relativeTimeThreshold } from 'moment';
 
-
-var Trello = require("trello");
-var trello = null;// new Trello("bb3cab1a303c7bf996d56bb46db2a46f", "136434ae14c54519e4af94ed7f48ec43d710e777bb1bbe0b06cdda6368f1d44e");
+let timelenght = 20000;
+//const Asana = require('asana');
+let Trello = require("trello");
+let trello = null;// new Trello("bb3cab1a303c7bf996d56bb46db2a46f", "136434ae14c54519e4af94ed7f48ec43d710e777bb1bbe0b06cdda6368f1d44e");
 
 
 
@@ -44,11 +50,13 @@ class Profile extends React.Component {
         errorTipo: null, errorNombreUsuario: null, errorCargo: null, errorArea: null, errorTelefono: null, errorLugar: null, errorEmpresa: null, errorEquipo: null, errorCodigo: null, errorAcepto: null, idCalendar: null,
         codigoUsSlack: null, tokenUsSlack: null, tokenBotUsSlack: null, canalGestorSlack: null, canalEquipoSlack: null, canalReportesSlack: null, canalNotifiacionesSlack: null,
         codigoWSdrive: null, activo: false, listaCanales_Slack: null, usuarioTrello: null, trelloListaDashBoard: null, trelloLista: null, trelloDashboard: null, errorDashboard: null,
-        nivelEquipo: null, diaSemana: null,
+        nivelEquipo: null, diaSemana: null, liscalendars: null,
 
         trelloIn: '100%', slackIn: '100%', driveIn: '0%', calendarIn: '100%',
 
         trelloApi: null, tokenTrello: null, listaObjetivostoDO: null, listaOBjetivosDone: null, listaObjetivosTheEnd: null, imagenMostrar: null, imagenFondo: null, imagenPerfil: null,
+        asana: null, projectsIdAsana: null, sectionsAsana: null, collAsanaProyects: null, collsectionsAsana: null, asanaIn: 1
+
     }
 
 
@@ -62,10 +70,41 @@ class Profile extends React.Component {
 
         //se consulta todas las empresas
 
+        if (!this.props.isSignedIn || !this.props.usuarioDetail) {
+            history.push('/dashboard');
+            return;
+        }
+
         const starCountRef = firebase.database().ref().child('empresa');
         starCountRef.on('value', (snapshot) => {
             this.setState({ listaEmpresas: snapshot.val() })
         });
+
+        //herramientas usuario
+        if (this.props.usuarioDetail.usuario.asana)
+            this.setState({ asanaIn: 0 });
+        if (this.props.usuarioDetail.usuario.trello)
+            this.setState({ trelloIn: 0 });
+        if (this.props.usuarioDetail.usuario.calendar)
+            this.setState({ calendarIn: 0 });
+        if (this.props.usuarioDetail.usuario.slack)
+            this.setState({ slackIn: 0 });
+
+
+
+
+        if (this.props.mensajeAsana === 'Slack'){
+            this.setState({ open: 'slack' });
+            this.renderCargar('slack');
+        } 
+        else{
+           
+            this.setState({ open: 'asana' });
+            this.renderCargar('asana');
+        }
+        this.props.mensajeAsanas();
+
+
     }
 
     renderOpcionesEmpresa() {
@@ -101,6 +140,22 @@ class Profile extends React.Component {
         return opciones;
 
 
+    }
+
+
+    renderCalendars(listaX) {
+
+        let lista = {};
+        if (listaX) {
+            const opciones = Object.keys(listaX).map((key, index) => {
+                lista = { ...lista, value: listaX[key].id, label: listaX[key].summary };
+                this.canal = lista[0];
+                return lista;
+            });
+
+            return opciones;
+        }
+        return;
     }
 
 
@@ -231,48 +286,56 @@ class Profile extends React.Component {
         let visible = false;
         if (this.props.usuarioDetail.rol === '3')
             visible = true;
-
-
-
         let st = this.renderStyles();
         let op = this.renderCanaleSlack();
+        let formSlack = <div>
+            <Form  >
+                <h3>Cual es el canal mas importante?</h3>
+                <Select options={op}
+                    search
+                    value={this.state.canalReportesSlack}
+                    styles={st}
+                    onChange={(e, { value }) => { this.setState({ canalReportesSlack: e }); this.renderValidateSlack(); }}
 
-        return (
-            <div>
+                />
+                <h3>Cual sera el canal de tu equipo?</h3>
+                <Select options={op}
+                    search
+                    styles={st}
+                    value={this.state.canalEquipoSlack}
+                    onChange={(e, { value }) => { this.setState({ canalEquipoSlack: e }); this.renderValidateSlack(); }}
+
+                />
+                <h3>Menciona otro canal importante? </h3>
+                <Select options={op}
+                    search
+                    styles={st}
+                    value={this.state.canalNotifiacionesSlack}
+                    onChange={(e) => { console.log(e); this.setState({ canalNotifiacionesSlack: e }); this.renderValidateSlack(); }}
+                />
+            </Form>
+            <br />
+
+
+            <button disabled={this.state.canalEquipoSlack ? false : true}
+                onClick={() => { this.renderGuardar() }} className="ui pink button inverted " style={{ left: "10%" }}>
+                <i class="save icon"></i>
+                                Guardar
+                            </button>
+        </div>
+
+
+        if (this.state.listaCanales_Slack === undefined) {
+            formSlack = <div>
                 <Form  >
-                    <h3>Cual es el canal mas importante?</h3>
-                    <Select options={op}
-                        search
-                        value={this.state.canalReportesSlack}
-                        styles={st}
-                        onChange={(e, { value }) => { this.setState({ canalReportesSlack: e }); this.renderValidateSlack(); }}
-
-                    />
-                    <h3>Cual sera el canal de tu equipo?</h3>
-                    <Select options={op}
-                        search
-                        styles={st}
-                        value={this.state.canalEquipoSlack}
-                        onChange={(e, { value }) => { this.setState({ canalEquipoSlack: e }); this.renderValidateSlack(); }}
-
-                    />
-                    <h3>Menciona otro canal importante? </h3>
-                    <Select options={op}
-                        search
-                        styles={st}
-                        value={this.state.canalNotifiacionesSlack}      
-                        onChange={(e) => { console.log(e); this.setState({ canalNotifiacionesSlack: e }); this.renderValidateSlack(); }}
-
-
-                    />
+                    <a onClick={this.clickGuardarTemporal} href={`https://slack.com/oauth/authorize?scope=bot&redirect_uri=${window.location.origin}&client_id=${clientSlack}`}><img src="https://api.slack.com/img/sign_in_with_slack.png" /></a>
                 </Form>
                 <br />
-
-                <Button icon='save' disabled={
-                    this.state.activo
-                } style={{ left: '12%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
             </div>
+        }
 
+        return (
+            formSlack
         );
     }
 
@@ -284,6 +347,12 @@ class Profile extends React.Component {
             return (this.renderDrive());
         else if (this.state.open === 'calendar')
             return (this.renderCalendar());
+        else if (this.state.open === 'asana')
+            return (this.renderAsana());
+        else if (this.state.open === 'sheet')
+            return (this.renderConstruccion());
+        else if (this.state.open === 'clickup')
+            return (this.renderConstruccion());
         else if (this.state.open === 'trello')
             return (this.renderTrello());
         else {
@@ -304,11 +373,18 @@ class Profile extends React.Component {
 
                 </Form>
                 <br />
-                <Button icon='save' disabled={this.state.activo} style={{ left: '12%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+
+                <button disabled={this.state.codigoWSdrive ? false : true}
+                    onClick={() => { this.renderGuardar() }} className="ui pink button inverted " style={{ left: "10%" }}>
+                    <i class="save icon"></i>
+                                Guardar
+                            </button>
             </div>
 
         );
     }
+
+
 
     renderCalendar() {
         var event = {
@@ -338,14 +414,15 @@ class Profile extends React.Component {
                 ]
             }
         };
+        if (!this.state.liscalendars) {
+            window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
+                .then(() => {
+                    console.log("GAPI client loaded for API");
+                    window.gapi.client.calendar.calendarList.list().then((res) => { console.log(res.result.items); this.setState({ liscalendars: res.result.items }); })
+                },
+                    function (err) { console.error("Error loading GAPI client for API", err); });
 
-
-
-        window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
-            .then(function () { console.log("GAPI client loaded for API"); },
-                function (err) { console.error("Error loading GAPI client for API", err); });
-
-
+        }
         /*
         //Crear un evento
                 window.gapi.client.calendar.events.insert({
@@ -374,22 +451,27 @@ class Profile extends React.Component {
                         console.log("Response", response);
                     },
                         function (err) { console.error("Execute error", err); });*/
-
+        let st = this.renderStyles();
         return (
             <div>
                 <Form >
-                    <Form.Input label='Id de tu calendario de Google' placeholder='...@group.calendar.google.com'
+                    <h3>Selecciona tu calendario de google</h3>
+                    <Select options={this.renderCalendars(this.state.liscalendars)}
+                        search
                         value={this.state.idCalendar}
-                        onChange={e => this.setState({ idCalendar: e.target.value })}
+                        styles={st}
+                        onChange={(e, { value }) => { this.setState({ idCalendar: e }); }}
                     />
                 </Form >
                 <br />
-                <Button icon='save' disabled={this.state.activo} style={{ left: '12%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar'
 
-                    onClick={() => { this.renderGuardar() }}
-                />
+                <button disabled={this.state.idCalendar ? false : true}
+                    onClick={() => { this.renderGuardar() }} className="ui pink button inverted " style={{ left: "10%" }}>
+                    <i class="save icon"></i>
+                                Guardar
+                            </button>
+
             </div>
-
         );
     }
 
@@ -401,7 +483,7 @@ class Profile extends React.Component {
 
         let listaX = listaOpciones;
         let entro = null;
-        //console.log(listaX);
+
         let lista = {};
         if (!listaX)
             return;
@@ -418,7 +500,7 @@ class Profile extends React.Component {
         //  console.log(listaX);
         const opciones = Object.keys(listaX).map(function (key, index) {
             //  console.log(listaX[key]);
-            lista = { ...lista, key: key, text: listaX[key].name, value: listaX[key].id };
+            lista = { ...lista, label: listaX[key].name, value: listaX[key].id };
             return lista;
             //return cconsulta[key].concepto;
         });
@@ -439,6 +521,16 @@ class Profile extends React.Component {
                         //    console.log(res[0].idMember)
                         this.setState({ usuarioTrello: res[0].idMember });
                         trello.getBoards(res[0].idMember).then((Response) => { this.setState({ trelloListaDashBoard: Response }) })
+
+
+                        firebase.database().ref(`Usuario-Trello/${this.props.usuarioDetail.idUsuario}`).set({
+                            usuarioTrello: res[0].idMember,
+                            trelloApi: this.state.trelloApi,
+                            tokenTrello: snapshot2.val().token,
+                        });
+
+                        this.renderCloseTrello();
+                        this.myWindow.close();
                     });
                 }
 
@@ -447,7 +539,8 @@ class Profile extends React.Component {
         }
     }
     renderConsultaApiKeyTrello(valor) {
-        window.open(`https://trello.com/1/authorize?expiration=never&scope=read,write,account&response_type=token&name=Server%20Token&key=${valor}&return_url=http://${window.location.host}`);
+        this.renderClose()
+        this.myWindow = window.open(`https://trello.com/1/authorize?expiration=never&scope=read,write,account&response_type=token&name=Server%20Token&key=${valor}&return_url=${window.location.origin}`, '', 'width=600,height=400,left=200,top=200');
     }
 
     renderFiltroTrello(valor) {
@@ -457,8 +550,37 @@ class Profile extends React.Component {
 
     }
 
+
+    renderCloseTrello(myWindow) {
+        this.timeout = setTimeout(() => {
+            firebase.database().ref(`Usuario-TokenTrelloTemp/${this.props.usuarioDetail.idUsuario}`).set({});
+        }, timelenght)
+    }
+
+    renderClose() {
+        this.timeout = setTimeout(() => {
+            this.myWindow2.close();
+        }, 2500)
+    }
+
+
+
+
     renderTrello() {
         //https://www.npmjs.com/package/trello
+
+        /*
+        
+                                <h3>Si eres gestor agrega lo siguiente: </h3>
+                                <Form.Select label='Lista Objetivos validados' options={this.renderOpcionesTrello(this.state.trelloLista)} placeholder='Escogé una lista'
+                                    search
+                                    value={this.state.listaObjetivosTheEnd}
+        
+                                    onChange={(e, { value }) => this.setState({ listaObjetivosTheEnd: value })}
+                                    visible
+                                />
+        
+        */
 
 
         /// el token  lo debo recuperar axios
@@ -478,57 +600,55 @@ class Profile extends React.Component {
                 onChange={e => { this.setState({ trelloApi: e.target.value }); this.renderConsultaApiKeyTrello(e.target.value); }}
             />
             <div className="inline">
-                <Button color="blue" style={{ height: '37px' }} icon='trello' labelPosition='center' content='Generar' onClick={() => { window.open('https://trello.com/app-key/'); }} />
+                <Button color="blue" style={{ height: '37px' }} icon='trello' labelPosition='center' content='Generar' onClick={() => { this.myWindow2 = window.open('https://trello.com/app-key/', '', 'width=600,height=400,left=200,top=200'); }} />
             </div>
         </Form>
 
+        let st = this.renderStyles();
         if (this.state.trelloApi && this.state.tokenTrello) {
             contruir =
                 <div>
                     <Form >
 
-                        <Form.Select label='Selecciona Dashboard' options={this.renderOpcionesTrello(this.state.trelloListaDashBoard)} placeholder='Escogé un tablero'
+                        <h3>Selecciona Dashboard</h3>
+                        <Select options={this.renderOpcionesTrello(this.state.trelloListaDashBoard)}
                             search
                             value={this.state.trelloDashboard}
-                            onChange={(e, { value }) => {
-                                this.setState({ trelloDashboard: value });
-                                this.renderFiltroTrello(value);
-                            }
-                            }
-                            error={this.state.errorDashboard}
-                        />
+                            styles={st}
+                            onChange={(e, { value }) => { this.setState({ trelloDashboard: e }); this.renderFiltroTrello(e.value); }}
 
-                        <Form.Select label='Lista Objetivos por trabajar' options={this.renderOpcionesTrello(this.state.trelloLista)} placeholder='Escogé una lista'
+                        />
+                        <h3>Lista Objetivos por trabajar</h3>
+                        <Select options={this.renderOpcionesTrello(this.state.trelloLista)}
                             search
                             value={this.state.listaObjetivostoDO}
-                            onChange={(e, { value }) => this.setState({ listaObjetivostoDO: value })}
+                            styles={st}
+                            onChange={(e, { value }) => { this.setState({ listaObjetivostoDO: e }); }}
+
                         />
-                        <Form.Select label='Lista objetivos terminados' options={this.renderOpcionesTrello(this.state.trelloLista)} placeholder='Escogé una lista'
+                        <h3>Lista Objetivos terminados</h3>
+                        <Select options={this.renderOpcionesTrello(this.state.trelloLista)}
                             search
                             value={this.state.listaOBjetivosDone}
-                            onChange={(e, { value }) => this.setState({ listaOBjetivosDone: value })}
-                        />
+                            styles={st}
+                            onChange={(e, { value }) => { this.setState({ listaOBjetivosDone: e }); }}
 
-                        <h3>Si eres gestor agrega lo siguiente: </h3>
-                        <Form.Select label='Lista Objetivos validados' options={this.renderOpcionesTrello(this.state.trelloLista)} placeholder='Escogé una lista'
-                            search
-                            value={this.state.listaObjetivosTheEnd}
-
-                            onChange={(e, { value }) => this.setState({ listaObjetivosTheEnd: value })}
-                            visible
                         />
                     </Form>
                     <br />
-                    <Button icon='save' disabled={this.state.activo} style={{ left: '12%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar'
-                        disabled={this.state.trelloDashboard && (this.state.listaObjetivostoDO && this.state.listaObjetivostoDO !== '' ||
-                            this.state.listaOBjetivosDone && this.state.listaOBjetivosDone !== '' ||
-                            this.state.listaObjetivosTheEnd && this.state.listaObjetivosTheEnd !== '') ? false : true}
-                        onClick={() => { firebase.database().ref().child(`Usuario-TokenTrelloTemp/${this.props.usuarioDetail.idUsuario}`).remove(); this.renderGuardar() }} />
+
+
+                    <button disabled={this.state.trelloDashboard && (this.state.listaObjetivostoDO && this.state.listaObjetivostoDO !== '' ||
+                        this.state.listaOBjetivosDone && this.state.listaOBjetivosDone !== '' ||
+                        this.state.listaObjetivosTheEnd && this.state.listaObjetivosTheEnd !== '') ? false : true}
+                        onClick={() => { firebase.database().ref().child(`Usuario-TokenTrelloTemp/${this.props.usuarioDetail.idUsuario}`).remove(); this.renderGuardar() }} className="ui pink button inverted " style={{ left: "10%" }}>
+                        <i class="save icon"></i>
+                                Guardar
+                            </button>
+
 
                 </div>
         }
-
-
 
         // 
         return (
@@ -538,6 +658,134 @@ class Profile extends React.Component {
 
         );
     }
+
+
+
+    renderConsultasAsana = (consulta, value) => {
+        let response = null
+
+        switch (consulta) {
+            case 'projects':
+                response = asanaH.get('/api/1.0/projects', { headers: { Authorization: 'Bearer ' + this.state.asana.token } }).then((res) => { this.setState({ collAsanaProyects: res.data.data }); }).catch(err => { this.setState({ asana: null }) });
+                break;
+
+            case 'sections':
+                console.log(value.value)
+                response = asanaH.get('/api/1.0/projects/' + value.value + '/sections', { headers: { Authorization: 'Bearer ' + this.state.asana.token } }).then((res) => this.setState({ collsectionsAsana: res.data.data }));
+                break;
+            default:
+                break
+        }
+
+        return response;
+    }
+
+
+    renderOpcionesAsana(listaOpciones) {
+
+        let listaX = listaOpciones;
+        console.log('joseeee')
+        console.log(listaX)
+
+        let entro = null;
+        //console.log(listaX);
+        let lista = {};
+        if (!listaX)
+            return;
+
+
+
+        //  console.log(listaX);
+        const opciones = Object.keys(listaX).map(function (key, index) {
+            //  console.log(listaX[key]);
+            lista = { ...lista, label: listaX[key].name, value: listaX[key].gid };
+            return lista;
+            //return cconsulta[key].concepto;
+        });
+        //  console.log(opciones);
+        return opciones;
+
+    }
+
+    renderAsana() {
+
+        let formAsana = <div style={{ height: '37px', top: '2.5em', left: '9%', position: 'relative' }}>
+
+            <button class="ui red basic button " style={{ width: '240px' }}>
+                <Image src={asana} circular size="mini" />
+                <a style={{ top: '-25px', position: 'relative', left: '20px' }} href={`https://app.asana.com/-/oauth_authorize?client_id=${clientIdAsana}&redirect_uri=${window.location.origin}&response_type=code&state=asana_0.8wpnz8r4jj8kaspekwp`}>Authenticate with Asana</a>
+
+            </button>
+
+        </div>
+
+        let st = this.renderStyles();
+        if (this.state.asana) {
+
+
+            formAsana =
+                <div>
+
+                    <h3>Lista de tus proyectos</h3>
+                    <Select options={this.renderOpcionesAsana(this.state.collAsanaProyects)}
+                        search
+                        styles={st}
+                        value={this.state.projectsIdAsana}
+                        onChange={(e, { value }) => { this.setState({ projectsIdAsana: e }); if (e !== null) this.renderConsultasAsana('sections', e) }}
+
+                    />
+                    <h3>Lista de tus secciones</h3>
+                    <Select options={this.renderOpcionesAsana(this.state.collsectionsAsana)}
+                        search
+                        styles={st}
+                        value={this.state.sectionsAsana}
+                        onChange={(e, { value }) => { this.setState({ sectionsAsana: e }); }}
+
+
+                    />
+                    <br></br>
+
+                    <button disabled={this.state.sectionsAsana && this.state.projectsIdAsana ? false : true} onClick={() => { this.renderGuardar(); this.setState({ asanaIn: 0 }); }} className="ui pink button inverted " style={{ left: "10%" }}>
+                        <i class="save icon"></i>
+                                Guardar
+                            </button>
+
+                </div>
+        }
+        let contruir = <Form >
+            {formAsana}
+        </Form>
+        return (
+            <div>
+                {contruir}
+            </div>
+
+        );
+
+    }
+
+    renderConstruccion() {
+
+        let contruir = <Form >
+            <div className="box" style={{ top: '35px' }}>
+                <div className="loader9"></div>
+                <p style={{
+                    height: '60px',
+                    borderRadius: '60px',
+                    width: '280px'
+                }}>Lo estamos diseñando para ti</p>
+            </div >
+        </Form>
+        return (
+            <div>
+                {contruir}
+            </div>
+
+        );
+    }
+
+
+
 
     renderUsuario() {
         let nnivel = null;
@@ -610,7 +858,10 @@ class Profile extends React.Component {
                     />
                 </Form>
 
-                <Button icon='save' disabled={this.state.activo} style={{ left: '12%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Guardar' onClick={() => { this.renderGuardar() }} />
+                <button disabled={this.state.activo} onClick={() => { this.renderGuardar() }} className="ui pink button inverted " style={{ left: "10%" }}>
+                    <i class="save icon"></i>
+                                Guardar
+                            </button>
             </div>
         );
     }
@@ -635,7 +886,7 @@ class Profile extends React.Component {
     renderGuardar() {
 
 
-
+        this.props.popupBot({ mensaje: 'Ya hemos guardado tu configuración' });
 
         let tamano = '37em';
         if (this.state.open === 'slack') {
@@ -645,14 +896,14 @@ class Profile extends React.Component {
 
 
 
-            firebase.database().ref(`Usuario-Slack/${this.props.usuarioDetail.idUsuario}`).set({
-                usuarioSlack: this.state.codigoUsSlack,
-                tokenP: this.state.tokenUsSlack,
-                tokenB: this.state.tokenBotUsSlack,
+            firebase.database().ref(`Usuario-Slack/${this.props.usuarioDetail.idUsuario}`).update({
                 gestor: this.state.canalGestorSlack,
                 notifiacaiones: this.state.canalNotifiacionesSlack,
                 reporting: this.state.canalReportesSlack,
                 equipo: this.state.canalEquipoSlack,
+            });
+            firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).update({
+                slack: true,
             });
         }
         else if (this.state.open === 'drive') {
@@ -676,13 +927,16 @@ class Profile extends React.Component {
                 idCalendar: this.state.idCalendar,
                 fechaCreado: new Date(),
             });
+            firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).update({
+                calendar: true,
+            });
         }
         else if (this.state.open === 'trello') {
             this.setState({ trelloIn: '0%' });
             if (!this.state.trelloApi || this.state.trelloApi === '' || !this.state.trelloDashboard || this.state.trelloDashboard === '' || !this.state.listaObjetivostoDO || this.state.listaObjetivostoDO === '')
                 this.setState({ trelloIn: '100%' });
 
-            firebase.database().ref(`Usuario-Trello/${this.props.usuarioDetail.idUsuario}`).set({
+            firebase.database().ref(`Usuario-Trello/${this.props.usuarioDetail.idUsuario}`).update({
                 usuarioTrello: this.state.usuarioTrello,
                 trelloApi: this.state.trelloApi,
                 tokenTrello: this.state.tokenTrello,
@@ -691,6 +945,22 @@ class Profile extends React.Component {
                 listaOBjetivosDone: this.state.listaOBjetivosDone ? this.state.listaOBjetivosDone : null,
                 listaObjetivosTheEnd: this.state.listaObjetivosTheEnd ? this.state.listaObjetivosTheEnd : null,
 
+            });
+            firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).update({
+                trello: true,
+            });
+        }
+
+        else if (this.state.open === 'asana') {
+
+            firebase.database().ref(`Usuario-Asana/${this.props.usuarioDetail.idUsuario}`).update({
+                project: this.state.projectsIdAsana,
+                section: this.state.sectionsAsana,
+
+            });
+
+            firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).update({
+                asana: true,
             });
         }
         else {
@@ -730,32 +1000,17 @@ class Profile extends React.Component {
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
                     console.log(snapshot.val());
-                    this.setState({ codigoUsSlack: snapshot.val().usuarioSlack ? snapshot.val().usuarioSlack : '' });
-                    this.setState({ tokenUsSlack: snapshot.val().tokenP ? snapshot.val().tokenP : '' });
-                    this.setState({ tokenBotUsSlack: snapshot.val().tokenB ? snapshot.val().tokenB : '' });
                     this.setState({ canalGestorSlack: snapshot.val().gestor ? snapshot.val().gestor : null });
                     this.setState({ canalNotifiacionesSlack: snapshot.val().notifiacaiones ? snapshot.val().notifiacaiones : '' });
                     this.setState({ canalReportesSlack: snapshot.val().reporting ? snapshot.val().reporting : '' });
                     this.setState({ canalEquipoSlack: snapshot.val().equipo ? snapshot.val().equipo : '' });
 
-
-
-
-                    axios.get(` https://slack.com/api/channels.list?token=${snapshot.val().tokenB}&pretty=1`)
+                    axios.get(` https://slack.com/api/channels.list?token=${snapshot.val().tokenBot}&pretty=1`)
                         .then((res, tres) => {
                             // console.log(res.data);
                             this.setState({ listaCanales_Slack: res.data.channels });
                         });
 
-                }
-                else {
-                    this.setState({ codigoUsSlack: '' });
-                    this.setState({ tokenUsSlack: '' });
-                    this.setState({ tokenBotUsSlack: '' });
-                    this.setState({ canalGestorSlack: '' });
-                    this.setState({ canalNotifiacionesSlack: '' });
-                    this.setState({ canalReportesSlack: '' });
-                    this.setState({ canalEquipoSlack: '' });
                 }
 
                 if (!snapshot.val() || !snapshot.val().equipo)
@@ -796,6 +1051,34 @@ class Profile extends React.Component {
                     this.setState({ calendarIn: '100%' });
                 else
                     this.setState({ calendarIn: '0%' });
+
+            });
+        }
+
+        else if (pantalla === 'asana') {
+            const starCountRef = firebase.database().ref().child(`Usuario-Asana/${this.props.usuarioDetail.idUsuario}`);
+            starCountRef.on('value', (snapshot) => {
+                if (snapshot.val()) {
+                    this.setState({ asana: snapshot.val() });
+                    this.setState({ projectsIdAsana: snapshot.val().project ? snapshot.val().project : null })
+                    this.setState({ sectionsAsana: snapshot.val().section ? snapshot.val().section : null })
+                    axios.post(`https://cors-anywhere.herokuapp.com/https://app.asana.com/-/oauth_token`, null, {
+                        params: {
+                            grant_type: 'refresh_token',
+                            client_id: clientIdAsana, 'client_secret': clientSecrectAsana,
+                            redirect_uri: window.location.origin, code: snapshot.val().code, 'refresh_token': snapshot.val().rToken
+                        }
+                    }).then(res => {
+                        console.log(res);
+                        this.state.asana.token = res.data.access_token;
+                        this.renderConsultasAsana('projects');
+                    }
+                    ).catch(err => { this.setState({ asana: null }); })
+
+                }
+                else {
+                    this.setState({ asana: null });
+                }
 
             });
         }
@@ -879,11 +1162,21 @@ class Profile extends React.Component {
         else if (this.state.open === 'drive')
             tamano = '10em';
         else if (this.state.open === 'calendar')
+            tamano = '12em';
+        else if (this.state.open === 'asana') {
+            tamano = '10em';
+            if (this.state.asana)
+                tamano = '20em';
+        }
+        else if (this.state.open === 'sheet')
+            tamano = '10em';
+        else if (this.state.open === 'clickup')
             tamano = '10em';
         else if (this.state.open === 'trello') {
             tamano = '10em';
+
             if (this.state.trelloApi && this.state.tokenTrello)
-                tamano = '30em';
+                tamano = '28em';
         }
 
 
@@ -892,20 +1185,26 @@ class Profile extends React.Component {
             <div className="ui form">
                 <Card style={{ left: '10%', width: '80%' }}>
                     <Image src={this.state.imagenFondo ? this.state.imagenFondo : 'https://cdn.pixabay.com/photo/2016/08/09/21/54/yellowstone-national-park-1581879_960_720.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} style={{ height: '250px' }} />
-                    <Card.Content style={{ height: '250px', position: 'relative', left: '-30%' }}>
-                        <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '4%', height: '190px', position: 'relative', top: '-160px' }} />
+                    <Card.Content style={{ height: '250px', position: 'relative', left: '-25%' }}>
+                        <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '6%', height: '150px', position: 'relative', top: '-150px' }} />
                         <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.setState({ activo: false }); this.renderCargar('slack'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.slackIn + ')', background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-14%', position: 'relative', top: '-55px' }} />
                         <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.driveIn + ')', background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-12%', position: 'relative', top: '-55px' }} />
                         <Image src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.calendarIn + ')', background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-10%', position: 'relative', top: '-55px' }} />
                         <Image src={trelloImg} onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.trelloIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-8%', position: 'relative', top: '-55px' }} />
+                        <Image src={asana} onClick={() => { this.state.open === 'asana' ? this.setState({ open: null }) : this.setState({ open: 'asana' }); this.renderCargar('asana'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.asanaIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-16%', position: 'relative', top: '-12px' }} />
+                        <Image src={googleSheet} onClick={() => { this.state.open === 'sheet' ? this.setState({ open: null }) : this.setState({ open: 'sheet' }); this.renderCargar('sheet'); }} circular size="mini" style={{ filter: 'grayscale(1)', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-26%', position: 'relative', top: '-12px' }} />
+                        <Image src={clickup} onClick={() => { this.state.open === 'clickup' ? this.setState({ open: null }) : this.setState({ open: 'clickup' }); this.renderCargar('clickup'); }} circular size="mini" style={{ filter: 'grayscale(1)', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-36%', position: 'relative', top: '-12px' }} />
 
-                        <Button circular color="pink" style={{ position: 'relative', top: '-8em', left: '-15%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
-                        <Button circular color="pink" style={{ position: 'relative', top: '-24.2em', left: '62%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
+                        <Button circular color="pink" style={{ position: 'relative', top: '-8em', left: '-23%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
+                        <Button circular color="pink" style={{ position: 'relative', top: '-23.2em', left: '52%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
 
                     </Card.Content>
 
                 </Card>
-                <Button content="Crea tu propio flujo de trabajo" onClick={() => { history.push('/newworkflow'); }} style={{ width: '200px', top: '225px', left: '-19%', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} icon="object group outline"></Button>
+                <button onClick={() => { history.push('/newworkflow'); }} className="ui pink button inverted " style={{ width: '200px', top: '240px', left: '-19%' }}>
+                    <i class="object group outline icon"></i>
+                Crea tu propio flujo de trabajo
+                </button>
 
                 <div className="ui segment" style={{ height: tamano, top: '-1.8em', left: '34%', width: '56%', background: 'linear-gradient(to top, #e0399738 0.5%, rgb(255, 255, 255) 0.6%, rgba(245, 242, 224, 0) 200%)' }}>
                     <Modal open={this.state.openImagen}
@@ -938,13 +1237,13 @@ class Profile extends React.Component {
                             <Button onClick={this.close} style={{ background: "grey", left: "-20px" }}>
                                 Cancelar
                                       </Button>
-                            <Button
-                                onClick={() => { this.close(); this.renderGuardar(); }}
-                                style={{ background: "linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)", left: "-10px" }}
-                                labelPosition='center'
-                                icon='checkmark'
-                                content='Guardar'
-                            />
+
+
+                            <button onClick={() => { this.close(); this.renderGuardar(); }} className="ui pink button inverted " style={{ left: "-10px" }}>
+                                <i class="checkmark icon"></i>
+                                Guardar
+                            </button>
+
                         </Modal.Actions>
 
                     </Modal>
@@ -961,8 +1260,9 @@ const mapStateToProps = (state) => {
         usuarioDetail: state.chatReducer.usuarioDetail,
         isSignedIn: state.auth.isSignedIn,
         isChat: state.chatReducer.isChat,
+        mensajeAsana: state.chatReducer.mensajeAsana,
     };
 };
 
 
-export default connect(mapStateToProps, { chatOn, chatOff })(Profile);
+export default connect(mapStateToProps, { chatOn, chatOff, mensajeAsanas, popupBot })(Profile);

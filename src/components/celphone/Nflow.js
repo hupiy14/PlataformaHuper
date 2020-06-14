@@ -1,15 +1,13 @@
 import React from 'react';
-import { Button, Form, Icon, Modal, Segment, Input, Dimmer, Loader, Message } from 'semantic-ui-react';
+import { Button, Form} from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { inputDinamicos } from '../modules/chatBot/actions';
-import { slackApis } from '../../apis/slackApi';
-import { signOut, usuarioDetails } from '../../actions';
+
 import history from '../../history';
 import firebase from 'firebase';
 
 //input dinamico
 import InputDinamico from '../modules/inputDinamico';
-import { object } from 'prop-types';
 
 
 class newFlowWork extends React.Component {

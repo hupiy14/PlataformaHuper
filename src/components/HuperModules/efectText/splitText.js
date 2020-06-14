@@ -5,14 +5,14 @@ acAnimated.Plugins.SplitText = function(element, options) {
     if (!options.hasOwnProperty("chars")) options.chars = 1;
     if (!options.hasOwnProperty("spacing")) options.spacing = 5;
     this.searchTextNodes = function(element) {
-        var foundTextNodes = [];
+        let foundTextNodes = [];
         if (element === null || element === undefined) return foundTextNodes;
         for (var i=0; i<=element.childNodes.length-1; i++) {
             var node = element.childNodes[i];
             if (node.nodeName === "#text") { //text found
                 foundTextNodes.push(node);
             } else {
-                var foundTextNodes = foundTextNodes.concat(this.searchTextNodes(node));
+                 foundTextNodes = foundTextNodes.concat(this.searchTextNodes(node));
             }
         }
         return foundTextNodes;

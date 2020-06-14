@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Form, Icon, Modal, Segment, Input, Dimmer, Loader, Message } from 'semantic-ui-react';
+import { Button, Form, Icon } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { VerticalTimelineElement, VerticalTimeline } from 'react-vertical-timeline-component';
 import 'react-vertical-timeline-component/style.min.css';
@@ -29,23 +29,23 @@ class pointWork extends React.Component {
     }
 
     renderguardarFase() {
-
-        const fases = Object.keys(this.state.inputFase).length + 1;
-        const listaX = this.state.inputFase;
+        let listaX = this.state.inputFase;
         if (!listaX)
-            return;
+            listaX = [];
+        const fases = Object.keys(listaX).length + 1;
+
         listaX.push({ titulo: this.state.tituloFase, detalle: this.state.detalleFase, id: fases });
         firebase.database().ref(`Usuario-Flujo-Trabajo/${this.props.usuarioDetail.idUsuario}`).set({
             fechaCreado: new Date().toString(),
             cantidadFases: fases,
             fases: listaX,
         });
-        this.setState({tituloFase: ""});
-        this.setState({detalleFase: ""});
+        this.setState({ tituloFase: "" });
+        this.setState({ detalleFase: "" });
     }
 
 
-    renderEliminarFase(ind){
+    renderEliminarFase(ind) {
 
         const listaX = this.state.inputFase;
         listaX.splice(ind, 1);
@@ -66,7 +66,7 @@ class pointWork extends React.Component {
                 contentArrowStyle={{ borderRight: '7px solid  rgb(33, 150, 243)' }}
                 date={nombre}
                 iconStyle={{ background: '#e03997', color: '#fff' }}
-                icon={<div style={{  position: 'relative', top: '25%' }}>
+                icon={<div style={{ position: 'relative', top: '25%' }}>
                     <Icon name="thumbtack" size="big" />
                 </div>
                 }
@@ -74,7 +74,7 @@ class pointWork extends React.Component {
                 <h3 className="vertical-timeline-element-title">{titulo}</h3>
                 <h4 className="vertical-timeline-element-subtitle">{detalle}</h4>
             </VerticalTimelineElement>
-            <Icon name="cancel" size="big" onClick={()=>{this.renderEliminarFase(0)}} style={{ position: 'relative', left: '50%', top: '-100px' }} />
+            <Icon name="cancel" size="big" onClick={() => { this.renderEliminarFase(0) }} style={{ position: 'relative', left: '50%', top: '-100px' }} />
         </div>
             ;
     }
@@ -88,44 +88,43 @@ class pointWork extends React.Component {
                 date={nombre}
                 iconStyle={{ background: '#e03997', color: '#fff' }}
                 icon={
-                    <div style={{  position: 'relative', top: '25%' }}>
+                    <div style={{ position: 'relative', top: '25%' }}>
                         <Icon name="thumbtack" size="big" />
                     </div>}
             >
                 <h3 className="vertical-timeline-element-title">{titulo}</h3>
                 <h4 className="vertical-timeline-element-subtitle">{detalle}</h4>
             </VerticalTimelineElement>
-            <Icon name="cancel" size="big" onClick={()=>{this.renderEliminarFase(item)}} style={{ position: 'relative', left: '50%', top: '-100px' }} />
+            <Icon name="cancel" size="big" onClick={() => { this.renderEliminarFase(item) }} style={{ position: 'relative', left: '50%', top: '-100px' }} />
         </div>;
     }
 
 
-renderCrearFases(){
+    renderCrearFases() {
 
-    const listaX = this.state.inputFase;
-    if (!listaX)
-    return;
-    let mapFases = [];
-      Object.keys(listaX).map( (key, index) => {
-          if(index === 0)
-          {
-            mapFases.push(this.renderCrearComponentInicial((index + 1) + " fase", listaX[key].titulo, listaX[key].detalle));
-          }
-          else{
-            mapFases.push(this.renderCrearComponenteNormal((index + 1) + " fase", listaX[key].titulo, listaX[key].detalle, index));
-          }
-          
-    });
-    mapFases.push( this.renderCrearComponenteFin());
-    return mapFases;
-}
+        let listaX = this.state.inputFase;
+        if (!listaX )
+            listaX = [];
+        let mapFases = [];
+        Object.keys(listaX).map((key, index) => {
+            if (index === 0) {
+                mapFases.push(this.renderCrearComponentInicial((index + 1) + " fase", listaX[key].titulo, listaX[key].detalle));
+            }
+            else {
+                mapFases.push(this.renderCrearComponenteNormal((index + 1) + " fase", listaX[key].titulo, listaX[key].detalle, index));
+            }
+
+        });
+        mapFases.push(this.renderCrearComponenteFin());
+        return mapFases;
+    }
 
     renderCrearComponenteFin() {
 
         return <div style={{ height: '12em' }}>
             <VerticalTimelineElement
                 iconStyle={{ background: '#b5cc18', color: '#fff' }}
-                icon={<div style={{  position: 'relative', top: '25%' }}>
+                icon={<div style={{ position: 'relative', top: '25%' }}>
                     <Icon name="trophy" size="big" />
                 </div>
                 }
@@ -140,9 +139,9 @@ renderCrearFases(){
             <div >
                 <h1 style={{ position: 'relative', left: '2%' }}>El flujo de trabajo para tus objetivos</h1>
                 <VerticalTimeline>
-                   {this.renderCrearFases()}
+                    {this.renderCrearFases()}
                 </VerticalTimeline>
-                <Form style={{ width: '50%', left: '25%', position: 'relative', top: '-100px' }}>
+                <Form style={{ width: '50%', left: '25%', position: 'relative', top: '20px' }}>
 
                     <Form.Input label='El nombre de la fase es' placeholder='Primer contacto con...'
                         value={this.state.tituloFase}
@@ -155,8 +154,12 @@ renderCrearFases(){
 
                 </Form>
                 <br />
-                <Button icon='save' disabled={this.state.activo} style={{ color: 'white', left: '10%', top: '-100px', background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)' }} labelPosition='right' content='Agregar un nuevo fase' onClick={() => { this.renderguardarFase() }} />
-
+                <br />
+                <button disabled={!this.state.tituloFase}
+                    onClick={() => { this.renderguardarFase() }} className="ui pink button inverted " style={{ left: "10%" }}>
+                    <i class="save icon"></i>
+                Agregar un nuevo fase
+                            </button>
             </div>
         );
     }

@@ -8,7 +8,6 @@ import unsplash from '../../apis/unsplash';
 import ImagenObj from '../HuperModules/objPrincipal';
 import '../HuperModules/objetivodet.css';
 import '../styles/styleLoader.css';
-import fondo from '../../images/fondo2.jpg';
 import perfil from '../../images/perfil.png';
 import ButtonImport from '../HuperModules/importObjetic/importButton';
 
@@ -436,7 +435,7 @@ class listImportante extends React.Component {
 
                             });
 
-                            flujoActivo = <Label as='a' style={{ background: colorFase, 'z-index': '100', position: 'relative', 'top': '-320px', 'border': '0.5px solid', 'left': '28%', border: '2px #f39010' }} ribbon="right">
+                            flujoActivo = <Label as='a' style={{ background: colorFase, zIndex: '100', position: 'relative', 'top': '-320px', 'border': '0.5px solid', 'left': '28%', border: '2px #f39010' }} ribbon="right">
                                 {labelFase ? labelFase : '<"Por definir">'}
                             </Label>
                         }
@@ -448,7 +447,7 @@ class listImportante extends React.Component {
                     let topkeyResult2 = '-75px';
                     let topObjKey = '0px';
                     if (objPrincipal.tipologia === '3') {
-                        
+
                         iconoObjetivo = "users";
                         imageComp =
                             <div style={{
@@ -508,7 +507,7 @@ class listImportante extends React.Component {
                         </div>
                     }
                     let fontS = objPrincipal.concepto.length <= 20 ? 25 : 25 - (Math.round((objPrincipal.concepto.length - 20) / 3));
-                   
+
                     if (objPrincipal.concepto)
                         return (
                             <div className="item segment" key={key2} style={{ height: '14.2em', top: topObjKey, position: 'relative', left: '10%' }}  >
@@ -524,7 +523,6 @@ class listImportante extends React.Component {
                                         onMouseLeave={() => {
                                             this.setState({ objSelResul: null });
                                         }}>
-                                        <img src={fondo} alt="sample45" />
                                         <figcaption>
                                             <div className="header" style={{ left: '55%', width: '35%', fontStyle: 'arial', fontSize: fontS, top: '-120px', position: 'relative' }}  >{objPrincipal.concepto}</div>
                                             <div style={{ color: colorImpacto, left: '50%', position: 'relative', transform: 'scale(0.9)', top: '-120px' }}>
@@ -578,13 +576,13 @@ class listImportante extends React.Component {
                                             <Icon name='checkmark' /> Agregar</Button>
                                     </Modal.Actions>
                                 </Modal>
-                                <div style={{ left: '2.5%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-260px' }} onClick={() => { this.renderConsultarEW(objPrincipal.carpeta) }}>
+                                <div style={{ left: '2.1%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-260px' }} onClick={() => { this.renderConsultarEW(objPrincipal.carpeta) }}>
                                     <Popup
                                         trigger={<Icon name="paperclip" style={{ left: '-43%', position: 'relative', top: '-15px', transform: 'scale(1.2)' }} />}
                                         content='Consulta tus archivos'
                                         on='hover' />
                                 </div>
-                                <div style={{ left: '2.5%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-90px' }} onClick={() => { this.setState({ objetivoS: objPrincipal }); }}>
+                                <div style={{ left: '2.1%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-90px' }} onClick={() => { this.setState({ objetivoS: objPrincipal }); }}>
                                     <Popup
                                         trigger={<Icon name="telegram" style={{ transform: 'scale(1.7)', left: '-43%', position: 'relative', top: '-180px' }} />}
                                         on='hover'>
@@ -628,9 +626,9 @@ class listImportante extends React.Component {
                 <div className=" maximo-list" style={{ transform: 'scale(1.3)' }}>
                     <h1 style={{ color: '#947d0e', left: '1%', position: 'relative' }}>{titulo}</h1>
                     {this.renderConstruirObj(this.state.images)}
-                  
+
                 </div>
-                <ButtonImport style={{position: "relative", top: '150px'}}/>
+                <ButtonImport />
             </div>
         )
     };

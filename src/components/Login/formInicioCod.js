@@ -16,7 +16,7 @@ class FomrularioGlobal extends React.Component {
     }
 
     continuar = () => {
-        const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${this.props.detailUsNew.codigo}`);
+        const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${this.props.detailUsNew? this.props.detailUsNew.codigo: null}`);
         starCountRef.on('value', (snapshot) => {
             const cod = snapshot.val();
             if (cod) {
@@ -77,7 +77,7 @@ class FomrularioGlobal extends React.Component {
                         </Form>
                     </Modal.Description>
                 </Modal.Content>
-                <Modal.Actions>
+                <Modal.Actions style={{position: 'relative', top: '100px'}}>
                     <Button style={{background: "#d5d6d5"}} onClick={this.cancelar}>
                         Cancelar
                     </Button>

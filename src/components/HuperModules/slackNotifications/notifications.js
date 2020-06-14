@@ -3,12 +3,13 @@ import { connect } from 'react-redux';
 import firebase from 'firebase';
 import moment from 'moment';
 import { popupBot } from '../../../actions';
+import { tokenSlack } from '../../../apis/stringConnection';
 
 let timeoutLength = 30000;
 let timeoutLength2 = 30000;
 let timeoutLength3 = 30000;
 const slack = require('slack')
-const token = "xoxp-482555533539-486285033681-1135687828934-d3c03ee030f35b2669f717de68d31826";
+const token = tokenSlack;
 
 class notifiactions extends React.Component {
 
@@ -18,6 +19,7 @@ class notifiactions extends React.Component {
     notificationPriority = () => {
         this.timeout = setTimeout(() => {
             timeoutLength = 900000;
+            if(this.state.canales && this.state.canales.reporting)
             this.renderActualizarCanales(this.state.canales.reporting.value, true);
             this.notificationPriority();
         }, timeoutLength)
@@ -26,6 +28,7 @@ class notifiactions extends React.Component {
     notificationEquipo = () => {
         this.timeout = setTimeout(() => {
             timeoutLength2 = 300000;
+            if(this.state.canales && this.state.canales.equipo)
             this.renderActualizarCanales(this.state.canales.equipo.value, false);
             this.notificationEquipo();
         }, timeoutLength2)
@@ -33,6 +36,7 @@ class notifiactions extends React.Component {
     notificationOther = () => {
         this.timeout = setTimeout(() => {
             timeoutLength3 = 600000;
+            if(this.state.canales && this.state.canales.notifiacaiones)
             this.renderActualizarCanales(this.state.canales.notifiacaiones.value, false);
             this.notificationOther();
         }, timeoutLength3)

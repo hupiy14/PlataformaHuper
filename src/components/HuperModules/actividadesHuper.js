@@ -7,40 +7,126 @@ import moment from 'moment';
 import task from '../../images/task.svg';
 const timeoutLength = 900000;
 let timeoutLength2 = 1000;
+let timeoutLength4 = 5000;
 let timeoutLength3 = 5000;
 class listActividades extends React.Component {
 
     state = { actividades: null, tiempos: 0, horamaxima: 8, primero: null, aux: null, contenido: null }
 
     componentDidMount() {
-        console.log('componentDidMount');
         this.flag = true;
         if (this.props.usuarioDetail) {
-            const starCountRef = firebase.database().ref().child(`Usuario-Task/${this.props.usuarioDetail.idUsuario}/${moment().format("YYYYMMDD")}`);
-            starCountRef.on('value', (snapshot2) => {
-                this.setState({ actividades: snapshot2.val() });
-            });
+            window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
+                .then(() => {
+                    const starCountRef2 = firebase.database().ref().child(`Usuario-CalendarGoogle/${this.props.usuarioDetail.idUsuario}`);
+                    starCountRef2.on('value', (snapshot) => {
+                        this.Calendar = snapshot.val();
+                        window.gapi.client.calendar.events.list({ calendarId: this.Calendar.idCalendar.value, }).then((response) => {
+                            this.eventCalendar = response;
+                        }, (err) => { console.error("Execute error", err); });
+
+                    });
+                }, function (err) { console.error("Error loading GAPI client for API", err); });
+            this.actividadesTrabajoActividades();
         }
 
         this.setState({
-            primero: <div style={{ height: '7.5em' }}>
+            primero: <div style={{ height: '7.5em'  }}>
                 <Step active={true} style={{ height: '8.5em', borderRadius: '10px' }}>
                     <Image src={task} size="mini" style={{ left: '10px', top: '60px' }}></Image>
                     <Step.Content style={{ left: '8%', width: '90%', top: '-60px', position: 'relative' }}>
-                        <Step.Title style={{ width: '60%', color: '#947d0e', top: '100px', position: 'relative', transform: `scale(2.5)`, left: '50%' }}>Planifica tu actividad</Step.Title>
+                        <Step.Title style={{ width: '60%', color: '#947d0e', top: '100px', position: 'relative', transform: `scale(2.5)`, left: '20%' }}>Planifica tu actividad</Step.Title>
                     </Step.Content>
                 </Step>
             </div>
         });
 
-
-
         this.consultaTiempo();
     }
 
-    timerTrabajo = () => {
 
-        console.log('timerTrabajo');
+    actividadesTrabajoActividades = () => {
+
+        this.timeout = setTimeout(() => {
+            let flagFirst = false;
+            const starCountRef = firebase.database().ref().child(`Usuario-Task/${this.props.usuarioDetail.idUsuario}/${moment().format("YYYYMMDD")}`);
+            starCountRef.on('value', (snapshot2) => {
+                this.setState({ actividades: snapshot2.val() });
+                let act = snapshot2.val();
+
+                if (act && act.estado !== undefined) {
+                    Object.keys(act).map((key, index) => {
+
+                        let flag = true;
+                        Object.keys(this.eventCalendar.result.items).map((key2, index) => {
+                            if (this.eventCalendar.result.items[key2].summary === act[key].concepto && this.eventCalendar.result.items[key2].description === key)
+                                flag = false;
+                        });
+
+                        if (flag && act[key].concepto !== undefined && act[key].synCalendar === undefined && (this.calendarAcum !== undefined && !this.calendarAcum.includes(key) || this.calendarAcum === undefined)) {
+                            console.log(act[key]);
+
+                            let event = {
+                                'summary': act[key].concepto,
+                                'description': key,
+                                'start': {
+                                    'dateTime': moment(act[key]['h-inicio'], 'h:mm:ss a'),
+                                    'timeZone': 'America/Los_Angeles'
+                                },
+                                'end': {
+                                    'dateTime': moment(act[key]['h-fin'], 'h:mm:ss a'),
+                                    'timeZone': 'America/Los_Angeles'
+                                },
+                                'attendees': [],
+                                'reminders': {
+                                    'useDefault': false,
+                                    'overrides': [
+                                        { 'method': 'popup', 'minutes': 10 }
+                                    ]
+                                }
+                            };
+                            if (this.calendarAcum === undefined) {
+                                this.calendarAcum = [];
+                                this.calendarL = [];
+                            }
+                            this.calendarAcum[key] = act[key].concepto;
+                            this.calendarL[key] = event;
+                            firebase.database().ref(`Usuario-Task/${this.props.usuarioDetail.idUsuario}/${moment().format("YYYYMMDD")}/${key}`).update({
+                                synCalendar: true
+                            });
+                            if (flagFirst === false)
+                                this.createEventTrabajo(this.Calendar.idCalendar.value, 0);
+                            flagFirst = true;
+                        }
+                    })
+                }
+            });
+        }, timeoutLength4)
+    }
+
+
+    createEventTrabajo = (calendar, indC) => {
+
+        let event = null;
+        Object.keys(this.calendarL).map((key, index) => {
+            if (index === indC)
+                event = this.calendarL[key];
+        });
+        if (event !== null) {
+            this.timeout = setTimeout(() => {
+                window.gapi.client.calendar.events.insert({
+                    'calendarId': calendar,
+                    'resource': event
+                }).then((response) => {
+                    console.log("Response", response);
+                    this.createEventTrabajo(calendar,  indC + 1);
+                }, function (err) { console.error("Execute error", err); });
+            }, 3000)
+        }
+    }
+
+
+    timerTrabajo = () => {
         this.timeout = setTimeout(() => {
             this.setState({ aux: null });
         }, timeoutLength2)
@@ -48,8 +134,6 @@ class listActividades extends React.Component {
 
 
     consultaTiempo = () => {
-
-        console.log('consultaTiempo');
         this.timeout = setTimeout(() => {
             this.renderConsultarTiempoTrabajado();
             this.consultaTiempo();
@@ -58,7 +142,6 @@ class listActividades extends React.Component {
 
     //validar logica
     renderConsultarTiempoTrabajado() {
-        console.log('renderConsultarTiempoTrabajado');
         //this.renderTiempo();
         if (!this.props.MensajeIvily) return;
         let ant = moment(new Date(this.props.MensajeIvily.horaActivacion ? this.props.MensajeIvily.horaActivacion : this.props.MensajeIvily.inicio));
@@ -84,7 +167,6 @@ class listActividades extends React.Component {
 
 
     renderTiempo() {
-        console.log('renderTiempo');
         const actividadesU = this.state.actividades;
         let x = 0;
         let y = 0;
@@ -139,7 +221,6 @@ class listActividades extends React.Component {
 
     renderActividadXactividad() {
 
-        console.log('renderActividadXactividad');
         const actividadesU = this.state.actividades;
         let flag = false;
         let x = 0;
@@ -220,10 +301,10 @@ class listActividades extends React.Component {
                         this.setState({ aux: 'primera' });
                         this.setState({
                             primero: <div style={{ height: '7.5em' }}>
-                                <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '8.5em', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '10px' }}>
-                                    <h1 style={{ position: 'relative', top: '10%', left: '-35%', transform: 'scale(3)' }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
+                                <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '8.5em',widt: '130%', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '10px' }}>
+                                    <h1 style={{ position: 'relative', top: '7%', left: '-42%', transform: 'scale(2.5)' }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
                                     <Image src={task} size="mini" style={{ left: '18px', top: '20px' }}></Image>
-                                    <div style={{ position: 'relative', top: '5px', left: '-120px', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].prioridad} </div>
+                                    <div style={{ position: 'relative', top: '5px', left: '-40%', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].prioridad} </div>
                                     <Step.Content style={{ left: '8%', width: '90%', top: '-60px', position: 'relative' }}>
                                         <Step.Description style={{ position: 'relative', top: '4em', left: '20%', fontSize: 'smaller' }}>
                                             <Icon name="clock outline"></Icon>{tiempo}
@@ -269,7 +350,6 @@ class listActividades extends React.Component {
 
     actividadesEmpty(limite, actNum, opcionesX) {
 
-        console.log('actividadesEmpty');
         let x = 0;
         let margin = '-40%';
         if (actNum > 1)
@@ -278,7 +358,7 @@ class listActividades extends React.Component {
             x++;
             const element = <div key={index} style={{ height: '7.5em', width: '80%', position: 'relative', left: '20%', filter: 'grayscale(1)' }}>
                 <Step completed={false} style={{ background: '#efefef', height: '6.5em', borderRadius: '20px' }}>
-                    <h1 style={{ position: 'relative', top: '5%', left:  margin , transform: 'scale(1.4)' }}>{x}</h1>
+                    <h1 style={{ position: 'relative', top: '5%', left: margin, transform: 'scale(1.4)' }}>{x}</h1>
                     <Image src={task} size="mini" style={{ left: '1px', top: '-1px', transform: 'scale(0.75)' }}></Image>
                     <Step.Content style={{ left: '8%', width: '90%', top: '-70px', position: 'relative' }}>
                         <Step.Description style={{ position: 'relative', top: '50px', left: '25%', fontSize: 'smaller' }}>
@@ -298,16 +378,14 @@ class listActividades extends React.Component {
 
         if (this.flag === true) {
             this.timeout = setTimeout(() => {
-                timeoutLength3 = 60000;
+                timeoutLength3 = 15000;
                 this.flag = true;
                 this.timerTrabajo();
-
-
                 let stepG = <Step.Group vertical style={{
                     width: '100%', borderRadius: '10px',
                     borderColor: 'cornsilk'
                 }}>
-                    {this.renderActividadXactividad()}
+                     {this.renderActividadXactividad()}
                 </Step.Group>
                 this.setState({ contenido: stepG });
             }, timeoutLength3);
@@ -326,7 +404,7 @@ class listActividades extends React.Component {
             contenido = this.actividadesEmpty(6, 0, [])
 
         return (<div >
-            <div style={{ position: 'relative', top: '-60px' }}>
+            <div style={{ position: 'relative', top: '-60px', width: '130%' }}>
                 {this.state.primero}
             </div>
             <h3>{this.props.titulo}</h3>

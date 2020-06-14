@@ -8,10 +8,10 @@ THREE.ColladaLoader = function(a) {
         load: function(a, b, c, d) {
             function e(a) {
                 var b = a.split("/");
-                return b.pop(), (b.length < 1 ? "." : b.join("/")) + "/"
+                return b.pop(), (b.length < 1 ? "." : b.join("/")) + "/";
             }
             var f = this,
-                g = new THREE.XHRLoader(f.manager);
+                g = new THREE.FileLoader(f.manager);
             g.load(a, function(c) {
                 b(f.parse(c, e(a)))
             }, c, d)
@@ -77,7 +77,7 @@ THREE.ColladaLoader = function(a) {
             }
 
             function l(a, b) {
-                return void 0 !== a.build ? a.build : (a.build = b(a), a.build)
+                return void 0 !== a.build ? a.build : (a.build = b(a), a.build);
             }
 
             function n(a) {
@@ -90,11 +90,11 @@ THREE.ColladaLoader = function(a) {
             function o(a) {
                 if (void 0 !== a.build) return a.build;
                 var c = a.init_from;
-                return void 0 !== b && (c = b + c), m.load(c)
+                return void 0 !== b && (c = b + c), m.load(c);
             }
 
             function p(a) {
-                return l(ma.images[a], o)
+                return l(ma.images[a], o);
             }
 
             function q(a) {
@@ -574,16 +574,16 @@ THREE.ColladaLoader = function(a) {
                         var k = h[j];
                         switch (j) {
                             case "VERTEX":
-                                for (var l in d) i.addAttribute(l.toLowerCase(), Y(g, c[d[l]], k.offset));
+                                for (var l in d) i.setAttribute(l.toLowerCase(), Y(g, c[d[l]], k.offset));
                                 break;
                             case "NORMAL":
-                                i.addAttribute("normal", Y(g, c[k.id], k.offset));
+                                i.setAttribute("normal", Y(g, c[k.id], k.offset));
                                 break;
                             case "COLOR":
-                                i.addAttribute("color", Y(g, c[k.id], k.offset));
+                                i.setAttribute("color", Y(g, c[k.id], k.offset));
                                 break;
                             case "TEXCOORD":
-                                i.addAttribute("uv", Y(g, c[k.id], k.offset))
+                                i.setAttribute("uv", Y(g, c[k.id], k.offset))
                         }
                     }
                     var m;
@@ -634,7 +634,7 @@ THREE.ColladaLoader = function(a) {
                     h > 0 && console.log("ColladaLoader: Geometry has faces with more than 4 vertices.")
                 } else
                     for (var m = 0, n = d.length; m < n; m += e) g(m);
-                return new THREE.Float32Attribute(k, j)
+                return new THREE.Float32BufferAttribute(k, j)
             }
 
             function Z(a) {

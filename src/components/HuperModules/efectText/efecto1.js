@@ -8,6 +8,11 @@ import { consultas } from '../../modules/chatBot/actions';
 import TimerClock from '../timerClock/timerr';
 import firebase from 'firebase';
 import moment from 'moment';
+import asanaH from '../../../apis/asana';
+import { clientIdAsana, clientSecrectAsana } from '../../../apis/stringConnection';
+import axios from 'axios';
+import chroma from 'chroma-js';
+let Trello = require("trello");
 
 
 const timeoutLength = 1500;
@@ -19,7 +24,7 @@ acAnimated.randomNumber = function (min, max) {
 }
 acAnimated.randomDirection = function (number) {
     var direction = Math.floor(Math.random() * 2);
-    if (direction == 0) number = 0 - number;
+    if (direction === 0) number = 0 - number;
     return number;
 }
 acAnimated.animateChar = function (char) {
@@ -40,7 +45,7 @@ class listActividades extends React.Component {
         actividades: null, tiempos: 0, horamaxima: 8, primero: null, aux: null
         , index: 0, delay: .02, mensaje: null, messages: [], inputC: null, flag: false, response: null, tipoIn: 1, flagTiempo: false, textAux: null, opciones: null,
         consulta: null, criteria: null, parametros: null, mensajeUs: null, propertieBD: null, registro: [], opcionValue: [], nivel: null, addProperties: null, nuevoParam: null,
-        paso: null, nivelAnt: null, stay: null, property: null, stayValue: null, pasoFlujo: 1, flujo: null, etapa: null, consultaParams: null,
+        paso: null, nivelAnt: null, stay: null, property: null, stayValue: null, pasoFlujo: 1, flujo: null, etapa: null, consultaParams: null, optionSelect: null, options: null,
         opcionesDB: null, keyNivel: '', flujoAux: null, pendingOk: null, pendingConsulta: null, onlyOptions: null, workFlow: null, passflow: 0, objTask: null, carpeta: null, etapa: null
     }
 
@@ -48,6 +53,7 @@ class listActividades extends React.Component {
         this.secondsAcum = 0;
         this.stateAnt = null;
         this.pasoAnt = null;
+        this.st = this.renderStyles();
         if (this.mensaje === undefined || this.props.mensajeChatBot === null || (this.props.mensajeChatBot && this.mensaje !== this.props.mensajeChatBot.mensaje))
             this.chatBotSfot();
     }
@@ -85,7 +91,7 @@ class listActividades extends React.Component {
                 starCountRef3.on('value', (snapshot) => {
                     if (snapshot.val() !== null && snapshot.val().estado !== 'completo') {
                         //etapa = snapshot.val().etapa ;
-                        this.setState({ etapa: snapshot.val().etapa  });
+                        this.setState({ etapa: snapshot.val().etapa });
                         Object.keys(snapshot.val()).map((key, index) => {
                             if (snapshot.val()[key].duracion)
                                 ttiempo = snapshot.val()[key].duracion + ttiempo;
@@ -125,7 +131,7 @@ class listActividades extends React.Component {
         */
 
     }
-   
+
 
     pendingC = () => {
         this.timeout = setTimeout(() => {
@@ -261,11 +267,10 @@ class listActividades extends React.Component {
                 if (element.payload !== undefined) {
                     ind++;
                     let nuevo = element.payload;
-                
+
                     if (that.state.pasoFlujo > 1 && that.state.pasoFlujo - 1 <= that.state.etapa && that.state.etapa != null) {
                         that.borrarDatos();
                         that.adelantar(that.state.flujo);
-
                     }
                     else {
                         console.log(nuevo);
@@ -289,7 +294,7 @@ class listActividades extends React.Component {
                             that.setState({ addProperties: nuevo.add });
                             that.setState({ criteria: nuevo.criteria });
                             that.setState({ parametros: that.organizarConsulta(nuevo.parametros !== undefined ? nuevo.parametros.split(',') : '') });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.nombreUser) });
+                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario) });
                             that.setState({ propertieBD: nuevo.bd });
                             that.setState({ property: nuevo.property });
                             that.setState({ stay: nuevo.stay });
@@ -309,7 +314,7 @@ class listActividades extends React.Component {
                             that.setState({ property: nuevo.property });
                             that.setState({ stay: nuevo.stay });
                             that.setState({ addProperties: nuevo.add });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.nombreUser) });
+                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario) });
                             that.setState({ textAux: nuevo.labelAux });
                             that.setState({ paso: nuevo.paso });
                             that.setState({ flagTiempo: nuevo.tiempo });
@@ -325,7 +330,7 @@ class listActividades extends React.Component {
                             that.setState({ property: nuevo.property });
                             that.setState({ stay: nuevo.stay });
                             that.setState({ addProperties: nuevo.add });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.nombreUser) });
+                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario) });
                             that.setState({ flagTiempo: nuevo.tiempo });
                             that.setState({ propertieBD: nuevo.bd });
                             that.setState({ paso: nuevo.paso });
@@ -334,14 +339,14 @@ class listActividades extends React.Component {
                         else if (nuevo.tipo === "opciones") {
 
                             that.setState({ consultParam: nuevo.consultParam });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.nombreUser) });
+                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario) });
                             that.setState({ tipoIn: 2 });
                             that.setState({ paso: nuevo.paso });
                             that.setState({ opciones: nuevo.opciones });
 
                         }
                         else {
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.nombreUser) });
+                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario) });
                             that.Cerrar();
                         }
                     }
@@ -387,9 +392,125 @@ class listActividades extends React.Component {
             function (err) { console.error("Execute error", err); });
     }
 
+    renderUpdateApis(queryConsulta) {
+        if (this.state.registro[undefined].estado && queryConsulta.includes('OKR')) {
+
+            let id = queryConsulta.split('/')[2];
+            console.log(id);
+            const starCountRef2 = firebase.database().ref().child(queryConsulta);
+            starCountRef2.on('value', (snapshot2) => {
+                if (snapshot2.val() && snapshot2.val().tipo) {
+                    switch (snapshot2.val().tipo) {
+                        case 'asana':
+                            const starCountRef = firebase.database().ref().child(`Usuario-Asana/${this.props.usuarioDetail.idUsuario}`);
+                            starCountRef.on('value', (snapshot) => {
+
+                                axios.post(`https://cors-anywhere.herokuapp.com/https://app.asana.com/-/oauth_token`, null, {
+                                    params: {
+                                        grant_type: 'refresh_token',
+                                        client_id: clientIdAsana, 'client_secret': clientSecrectAsana,
+                                        redirect_uri: window.location.origin, code: snapshot.val().code, 'refresh_token': snapshot.val().rToken
+                                    }
+                                }).then(res => {
+                                    let body = {
+                                        "data": {
+                                            "completed": true
+                                        }
+                                    };
+                                    asanaH.put('/api/1.0/tasks/' + id,
+                                        body
+                                        , { headers: { Authorization: 'Bearer ' + res.data.access_token, 'Accept': 'application/json', 'Content-Type': 'application/json' }, }).then((res2) => {
+
+                                            console.log('bien');
+                                        }).catch(err => { this.props.popupBot({ mensaje: 'He tenido un probema !!!' }); });
+                                }
+                                ).catch(err => { this.props.popupBot({ mensaje: 'He tenido un probema  en confimar tu usuario!!!' }); })
+                            });
+
+                            break;
+                        case 'trello':
+                            const starCountRef2 = firebase.database().ref().child(`Usuario-Trello/${this.props.usuarioDetail.idUsuario}`);
+                            starCountRef2.on('value', (snapshot) => {
+
+                                let trelloClient = snapshot.val();
+                                let trello = new Trello(trelloClient.trelloApi, trelloClient.tokenTrello);
+                                trello.makeRequest('put', '/1/cards/' + id, { webhooks: true, idList: trelloClient.listaOBjetivosDone.value }).then((res) => {
+                                    console.log(res);
+                                }).catch(err => { this.props.popupBot({ mensaje: 'He tenido un probema !!!' }); });
+
+                            });
+
+                            break;
+                        default:
+                            break;
+
+                    }
+                }
+            });
+        }
+    }
+
+
+
+    renderStyles() {
+
+        let dot = (color = '#ccc') => ({
+            alignItems: 'center',
+            display: 'flex',
+
+            ':before': {
+                backgroundColor: '#48f70f',
+                borderRadius: 10,
+                content: '" "',
+                display: 'block',
+                marginRight: 8,
+                height: 10,
+                width: 10,
+            },
+        });
+
+
+
+        let st = {
+            control: styles => ({ ...styles, backgroundColor: 'white' }),
+
+            option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+                const color = chroma('#48f70f');
+                return {
+                    ...styles,
+                    backgroundColor: isDisabled
+                        ? null
+                        : isSelected
+                            ? data.color
+                            : isFocused
+                                ? color.alpha(0.1).css()
+                                : null,
+                    color: isDisabled
+                        ? '#ccc'
+                        : isSelected
+                            ? chroma.contrast(color, 'white') > 2
+                                ? 'white'
+                                : 'black'
+                            : data.color,
+                    cursor: isDisabled ? 'not-allowed' : 'default',
+
+                    ':active': {
+                        ...styles[':active'],
+                        backgroundColor: !isDisabled && (isSelected ? data.color : color.alpha(0.3).css()),
+                    },
+                };
+            },
+            input: styles => ({ ...styles, ...dot }),
+            placeholder: styles => ({ ...styles, ...dot }),
+            singleValue: (styles, { data }) => ({ ...styles, ...dot('#48f70f') }),
+        };
+
+        return st;
+    }
 
 
     addNewMessage = (event) => {
+        console.log(event);
         if (event.key === "Enter" || event.key === "13") {
             let value = this.state.inputC;
 
@@ -402,13 +523,12 @@ class listActividades extends React.Component {
                     registro["facha"] = moment().format("MMM Do YY");
 
                     if (this.state.flagTiempo) {
+                        this.secondsAcum = this.secondsAcum ? this.secondsAcum : 180;
                         registro["duracion"] = this.props.onMessage;
                         registro["h-inicio"] = moment().add('seconds', this.secondsAcum).format('h:mm:ss a');
                         registro["h-fin"] = moment().add('seconds', this.secondsAcum).add('seconds', this.props.onMessage).format('h:mm:ss a');
 
                         if (this.stateAnt !== this.state.nivel) {
-                            console.log(this.props.onMessage);
-                            console.log(this.secondsAcum);
                             this.secondsAcum = this.secondsAcum + this.props.onMessage;
                             this.stateAnt = this.state.nivel;
                         }
@@ -468,9 +588,11 @@ class listActividades extends React.Component {
                     let consultP = this.state.consultaParams === null || this.state.consultaParams === undefined ? '' : this.state.consultaParams;
 
                     if (this.state.consultaParams) {
+                        this.renderUpdateApis(this.queryConsulta + consultP);
                         firebase.database().ref(this.queryConsulta + consultP + '/' + this.state.propertieBD).set(registro[this.state.propertieBD]);
                     }
                     else {
+
                         firebase.database().ref(this.queryConsulta).update({
                             ... this.state.registro
                         });
@@ -591,25 +713,6 @@ class listActividades extends React.Component {
                 default:
                     break;
             }
-            /*
-                      var timeline = new window.TimelineMax({repeat: -1, repeatDelay: 0});
-                      /*for (var i=0; i<=split.chars.length-1; i++) {
-                          var char = split.chars[i];
-                          timeline.add("animated_char_" + String(i), acAnimated.randomNumber(1, 20)/ 10);
-                          timeline.add(acAnimated.animateChar(char), "animated_char_" + String(i));
-                      }*/
-            /*
-            for (var i=0; i<=split.words.length-1; i++) {
-                var word = split.words[i];
-                timeline
-                .add("animated_word_" + String(i), acAnimated.randomNumber(1, 20)/ 10)
-                .add(acAnimated.animateWord(word), "animated_word_" + String(i));
-            }
-            timeline.to(text, 3, {}).to(text, 1, {opacity: 0});
-     
-            */
-
-
 
 
         }, timeoutLength)
@@ -690,8 +793,8 @@ class listActividades extends React.Component {
 
             </React.Fragment >
             this.setState({
-                t2: <div className="Wrapper">
-                    <div className="ui container" style={{ top: '80px', height: '180px', width: '50%' }}>
+                t2: <div className="Wrapper" style={{ top: window.innerHeight * 0.7 }}>
+                    <div className="ui container" style={{  height: '180px', width: '50%' }}>
                         {opciones}
                     </div>
                 </div>
@@ -715,7 +818,6 @@ class listActividades extends React.Component {
         this.timeout = setTimeout(() => {
 
             if (this.state.pendingOk !== null) {
-
                 this.pendingConsulta = this.pendingConsulta + '/' + this.state.nivel;
                 firebase.database().ref(this.pendingConsulta).set({});
             }
@@ -775,10 +877,8 @@ class listActividades extends React.Component {
 
                 if (this.state.tipoIn === 1) {
                     this.setState({
-                        t2: <div className="Wrapper">
-                            <div className="ui container" style={{ top: '80px', height: topTiempo, width: '40%' }}>
-
-
+                        t2: <div className="Wrapper" style={{ top: window.innerHeight * 0.5, height: '19em' }}>
+                            <div className="ui container" style={{  height: topTiempo, width: '40%' }}>
 
                                 <div className="Input" style={{ top: '25%' }}>
                                     <input type="text" id="input" className="Input-text"
@@ -795,8 +895,8 @@ class listActividades extends React.Component {
                 }
                 else if (this.state.tipoIn === 4) {
                     this.setState({
-                        t2: <div className="Wrapper">
-                            <div className="ui container" style={{ top: '80px', height: topTiempo, width: '40%' }}>
+                        t2: <div className="Wrapper" style={{ top: window.innerHeight * 0.5,  height: '18em'}}>
+                            <div className="ui container" style={{  height: topTiempo, width: '40%' }}>
 
                                 {tiempo}
                                 <a href="#" style={{
@@ -817,15 +917,32 @@ class listActividades extends React.Component {
                     //    console.log(this.state.opciones);
                     if (this.state.opciones !== undefined) {
                         let cCon = this.state.opciones;
+                        let tabla = [];
                         opciones = Object.keys(cCon).map((key, index) => {
+                            console.log()
 
-                            return <a href="#" className="action-button animate purple" key={cCon[key]} onClick={() => { this.clickOpcion(cCon[key]) }}>{cCon[key]}</a>
+                            tabla.push(<div style={{ width: '120%', paddingLeft: '1%' }}>
+                                <a href="#" className="action-button animate purple" key={cCon[key]} onClick={() => { this.clickOpcion(cCon[key]) }}>{cCon[key]}</a>
+                            </div>)
+
+                            let tabla2 = tabla;
+                            if (index !== 0 && (index + 1) % 3 === 0 || Object.keys(cCon).length -1 === index) {
+                                tabla = [];
+
+                                let pad = '188px';
+                                if ((index + 1) % 3 === 0)
+                                    pad = '8px';
+
+                                return <div className="Wrapper" style={{ top: window.innerHeight * 0.6, paddingLeft: pad }}  >
+                                    {tabla2}
+                                </div>
+                            }
 
                         });
                         //   this.props.sendMessage(this.state.opciones.title);
 
                         this.setState({
-                            t2: <div className="Wrapper">
+                            t2: <div style={{ left: '10%', position: 'relative' }} >
                                 {opciones}
                             </div>
                         });
@@ -864,9 +981,7 @@ class listActividades extends React.Component {
 
         }
 
-        console.log(pass + " " + opcion);
         this.client.textRequest(pass + opcion).then(this.onResponse, this);
-
         this.setState({ opciones: null });
         this.setState({ tipoIn: 1 });
         this.setState({ t2: null })
@@ -928,30 +1043,6 @@ class listActividades extends React.Component {
             </div>
         );
 
-
-
-        /*  return (
-              <div className="sp-containerE1">
-                  <div className='text' id='text' style={{ opacity: '1' }}>
-                      <p className="split" style={{ opacity: '1', fontSize: '50px' }} >
-                          {this.props.onMessage}
-                      </p>
-                  </div>
-                  <div class="Wrapper">
-                      <div className="Input">
-                          <input type="text" id="input" className="Input-text"
-     
-                              value={this.state.inputC}
-                              onChange={(event) => this.setState({ inputC: event.target.value })}
-                              onKeyPress={(e) => { this.addNewMessage(e) }} placeholder="..." />
-                          <label for="input" className="Input-label">Hooy estoy</label>
-     
-                      </div>
-                  </div>
-              </div>
-     
-          );
-    */
     }
 };
 

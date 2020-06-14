@@ -99,7 +99,7 @@
     color: #3290B1;
  }
  
- .menus-item:nth-child(3) {
+ .menus-item:nth-child(1) {
     -webkit-transition-duration: 180ms;
     transition-duration: 180ms;
  }
@@ -141,14 +141,15 @@
     -webkit-transition-duration: 400ms;
     transition-duration: 400ms;
     -webkit-transform: scale(1.1, 1.1) translate3d(0, 0, 0);
-    transform: scale(1.1, 1.1) translate3d(0, 0, 0);
+    transform: scale(1.1, 1.1) translate3d(0, 0, 0)  rotate(-90deg);
     cursor: pointer;
     box-shadow: 3px 3px 0 0 rgba(0, 0, 0, 0.14);
  }
  
  .menus-open-button:hover {
     -webkit-transform: scale(1.2, 1.2) translate3d(0, 0, 0);
-    transform: scale(1.2, 1.2) translate3d(0, 0, 0);
+    transform: scale(1.2, 1.2) translate3d(0, 0, 0) rotate(-90deg);
+  
  }
  
  .menus-open:checked + .menus-open-button {
@@ -165,7 +166,7 @@
     transition-timing-function: cubic-bezier(0.935, 0, 0.34, 1.33);
  }
  
- .menus-open:checked ~ .menus-item:nth-child(3) {
+ .menus-open:checked ~ .menus-item:nth-child(9) {
     transition-duration: 180ms;
     -webkit-transition-duration: 180ms;
     -webkit-transform: translate3d(0.08361px, -104.99997px, 0);
@@ -207,11 +208,11 @@
     transform: translate3d(-91.03006px, -52.33095px, 0);
  }
  
- .menus-open:checked ~ .menus-item:nth-child(9) {
+ .menus-open:checked ~ .menus-item:nth-child(3) {
     transition-duration: 780ms;
     -webkit-transition-duration: 780ms;
     -webkit-transform: translate3d(-0.25084px, -104.9997px, 0);
-    transform: translate3d(-0.25084px, -104.9997px, 0);
+    transform: translate3d(-0.75084px, -104.9997px, 0);
  }
  
  .blue {

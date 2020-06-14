@@ -1,6 +1,6 @@
 const randomColorFactor = require('./randomColorFactor')
-const randomColorAnalogo = require('./randonAnalogos')
-const randomColorOpaco = require('./randonColorOpaco')
+//const randomColorAnalogo = require('./randonAnalogos')
+//const randomColorOpaco = require('./randonColorOpaco')
 
 module.exports = function(opacity, stilo) {
   

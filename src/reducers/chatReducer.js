@@ -41,12 +41,14 @@ import {
     CEL_CHAT,
     CEL_PERF,
     DATOS_EDIT_CEL,
+   
 
 } from '../components/modules/chatBot/types';
 import {
     END_CHAT,
     POPUP_MENSAJE,
-    MENSAJE_CHAT
+    MENSAJE_CHAT,
+    ASANA,
 
 } from '../actions/types';
 import firebase from 'firebase';
@@ -95,8 +97,8 @@ const INITIAL_STATE = {
     datosEditCel: null,
     endChatMessage: null,
     popupMensaje: null,
-    mensajeChatBot: null
-
+    mensajeChatBot: null,
+    mensajeAsana: null
 };
 
 
@@ -192,6 +194,8 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, popupMensaje: action.payload };
         case MENSAJE_CHAT:
             return { ...state, mensajeChatBot: action.payload };
+        case ASANA:
+            return { ...state, mensajeAsana: action.payload };
         default:
             return state;
 

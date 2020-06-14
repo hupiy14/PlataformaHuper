@@ -91,7 +91,7 @@ class DashBoard extends React.Component {
         open: false,
         open2: false,
         open3: false,
-        UtilFactors: null,
+        UtilFactors: [],
         ObjsFactors: [],
         ObjsFactorsM: [],
         TareasObjs: null,
@@ -125,13 +125,13 @@ class DashBoard extends React.Component {
             history.push('/');
         //    history.push('/login');
 
-        const starCountRef3 = firebase.database().ref().child(`Utilidades-Valoraciones`);
+      /*  const starCountRef3 = firebase.database().ref().child(`Utilidades-Valoraciones`);
         starCountRef3.on('value', (snapshot) => {
             this.setState({ UtilFactors: snapshot.val() });
         });
 
 
-
+*/
 
         //carga el limite que las empresas definan
         datosPlanificados = [];

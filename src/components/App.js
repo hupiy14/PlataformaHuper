@@ -21,11 +21,11 @@ import dashboard from './Dashboard/Dash1';
 import Hupps from './modules/Hupps';
 import { connect } from 'react-redux';
 import './modules/chatBot/chatHupApp.css';
-import Feedback from '../components/feedbackHupity';
+//import Feedback from '../components/feedbackHupity';
 import Onboard from './PruebaP';
 import Profile from './profileHuper';
 import Exito from './continuarProceso';
-import ContinuarProceso from './continuarProceso';
+//import ContinuarProceso from './continuarProceso';
 
 import MenuCel from './celphone/menuCel';
 import ModalFormValidacion from './gestorModules/formularioValidacionObj';

@@ -1,12 +1,5 @@
 import React from 'react';
-import { Bar } from 'react-chartjs-2';
 import { connect } from 'react-redux';
-import ReactDOM from 'react-dom';
-
-import randomColor from '../../lib/randomColor';
-import randomScalingFactor from '../../lib/randomScalingFactor';
-import { Responsive, Segment } from 'semantic-ui-react';
-import { DatesRangeInput } from 'semantic-ui-calendar-react';
 
 import Chart from "react-apexcharts";
 

@@ -80,7 +80,7 @@ class FomrularioGlobal extends React.Component {
                             <Modal.Description style={{ width: '38em' }}>
                                 <Form error={this.state.formError}>
 
-                                    <Form.Input label='Codigo de acceso' fluid placeholder='Escribe el codigo de acceso dado por Hupity' error={this.state.errorCodigo}
+                                    <Form.Input label='Codigo de accesos' fluid placeholder='Escribe el codigo de acceso dado por Hupity' error={this.state.errorCodigo}
                                         value={this.props.detailUsNew ? this.props.detailUsNew.codigo : null}
                                         onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, codigo: value })}
                                     />
@@ -94,7 +94,7 @@ class FomrularioGlobal extends React.Component {
                             </Modal.Description>
                         </div></div>
                 </Modal.Content>
-                <Modal.Actions>
+                <Modal.Actions style={{position: 'relative', top: '100px'}}>
                     <Button color='grey' onClick={this.cancelar}>
                         Cancelar
                     </Button>

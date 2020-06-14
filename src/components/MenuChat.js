@@ -216,7 +216,7 @@ class MenuChat extends React.Component {
 
 
             return (
-                <div>
+                <div style={{zIndex: 5000}}>
                       <Popup
                         trigger={<Icon circular name='heart' />}
                         content='Hello. This is an inverted popup'

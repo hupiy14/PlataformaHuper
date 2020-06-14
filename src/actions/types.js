@@ -6,4 +6,5 @@ export const ON_MESSAGE = 'ON_MESSAGE';
 export const END_CHAT = 'END_CHAT';
 export const POPUP_MENSAJE = 'POPUP_MENSAJE';
 export const MENSAJE_CHAT = 'MENSAJE_CHAT';
+export const ASANA = "ASANA";
 

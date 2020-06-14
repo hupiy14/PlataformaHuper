@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Button, Dimmer, Image, Segment } from 'semantic-ui-react'
+import { Button, Dimmer, Segment } from 'semantic-ui-react'
 
 class DimmerExampleBlurringInverted extends Component {
     state = {}
@@ -8,7 +8,7 @@ class DimmerExampleBlurringInverted extends Component {
     handleHide = () => this.setState({ active: false })
 
     render() {
-        const { active } = this.state
+      //  const { active } = this.state
 
         return (
             <div>

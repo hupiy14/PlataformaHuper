@@ -13,7 +13,7 @@ import ChatHup4 from '../efectText/efecto5';
 import '../../../lib/colladaLoader2';
 import TimerClock from '../timerClock/timerr';
 import firebase from 'firebase';
-import { Image, Popup, Icon, Modal, Button } from 'semantic-ui-react';
+import {  Popup, Icon, Modal, Button } from 'semantic-ui-react';
 import moment from 'moment';
 import music from '../../../images/bensound-goinghigher.mp3';
 import '../timerClock/./timer.css';
@@ -179,7 +179,7 @@ class THREEScene extends React.Component {
             // Set a pivot point
             this.mesh = new THREE.Object3D();
             this.box = new THREE.Box3().setFromObject(this.models);
-            this.box.center(this.models.position);
+            this.box.getCenter(this.models.position);
             this.models.position.multiplyScalar(-1);
 
             this.mesh.add(this.models);
@@ -221,7 +221,8 @@ class THREEScene extends React.Component {
             };
 
             // Remove loading message
-            window.TweenMax.to(document.getElementById('loading'), .5, { opacity: 0 });
+            if(document.getElementById('loading'))
+            window.TweenMax.to(document.getElementById('loading'), 0.5, { opacity: 0 });
         });
     }
     /**
@@ -318,7 +319,7 @@ class THREEScene extends React.Component {
             loadedComplete: false,
             textureLoaded() {
                 this.loaded++;
-                if (this.loaded == this.total) {
+                if (this.loaded === this.total) {
                     this.loadedComplete = true;
                 }
                 //    console.log(`${this.loaded}/${this.total} texture(s) loaded`);

@@ -10,7 +10,7 @@
 	width: 100%;
 	height: 100%;
 	text-align: center;
-	z-index: 0;
+	z-index: 50;
 	  background: -webkit-radial-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 1));
 	  background: -moz-radial-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 1));
 	  background: -ms-radial-gradient(rgba(0, 0, 0, 0.75),  rgba(0, 0, 0, 1));
@@ -105,12 +105,10 @@
 	top: 15%;
 	left: 10%;
 	position: relative;
-	display: flex;
-	align-items: center;
 	justify-content: center;
 	overflow: hidden;
 	width: 80vw;
-	height: 100vh;
+	height: 5em;
 	color: #455A64;
 	font-family: var(--fontFamily);
 	font-size: var(--fontSizeMd);
@@ -345,8 +343,8 @@ $speed: 2.5s;
 {
 	position: relative;
 	padding: 10px 40px;
-  margin: 0px 10px 10px 0px;
-  float: left;
+    margin: 0px 10px 10px 0px;
+    float: left;
 	border-radius: 10px;
 	font-family: 'Fredoka One';
 	font-size: 25px;

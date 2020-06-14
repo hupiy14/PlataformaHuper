@@ -1,14 +1,14 @@
 /**Conneccion con BD Firebase */
-import {keyFirebaseP,keyFirebaseD, keyFirebaseV} from './stringConnection';
+import { keyFirebaseP } from './stringConnection';
 export const config = {
-    apiKey: keyFirebaseP,
-    authDomain: 'upity-9b190.firebaseapp.com',
-    databaseURL: 'https://hupity-9b190.firebaseio.com',
-    projectId: 'hupity-9b190',
-    storageBucket: 'hupity-9b190.appspot.com',
-    messagingSenderId: '874067485777'
+  apiKey: keyFirebaseP,
+  authDomain: 'upity-9b190.firebaseapp.com',
+  databaseURL: 'https://hupity-9b190.firebaseio.com',
+  projectId: 'hupity-9b190',
+  storageBucket: 'hupity-9b190.appspot.com',
+  messagingSenderId: '874067485777'
 }
-///firebase desarrollo 
+///firebase desarrollo
 /*
 export const config = {
     apiKey: keyFirebaseD,
@@ -36,4 +36,3 @@ export const config = {
 
 
 
- 
