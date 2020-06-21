@@ -2,7 +2,6 @@ import React from 'react';
 import { Radar } from 'react-chartjs-2';
 import { connect } from 'react-redux';
 import randomColor from '../../lib/randomColor';
-import { Responsive, Segment } from 'semantic-ui-react';
 const randonStyle = require('../../lib/randonStyle')
 
 class GraficaGestorTIC extends React.Component {

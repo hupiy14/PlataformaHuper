@@ -2,16 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import GoogleAuth from '../components/loginGoogle/GoogleAuth';
 import image from '../images/logo.png';
-import { Image, Header, Button, Popup, Divider, List, Icon } from 'semantic-ui-react'
+import { Image, Popup, Divider, List, Icon } from 'semantic-ui-react'
 import '../components/styles/ingresoHupity.css';
-import procolombia from '../images/procolombia.png';
 import { connect } from 'react-redux';
-import { relative } from 'path';
-
 import perfil from '../images/perfil.png';
 import Noti from './HuperModules/slackNotifications/notifications';
 import NotiHupp from './HuperModules/notificationsHuoo/notifications';
-const timeoutLength2 = 2000;
+
 class Headers extends React.Component {
 
     state = {
@@ -25,25 +22,24 @@ class Headers extends React.Component {
         let menuPerfil = null;
         let notifications = null;
         let notificationsHupp = null;
-
         if (this.props.isSignedIn) {
             notifications = <Noti />
             notificationsHupp = <NotiHupp />
             menuPerfil = <Popup trigger={
                 <Image id="imagePerfilUs" src={this.props.usuarioDetail ? this.props.usuarioDetail.usuario && this.props.isSignedIn ? this.props.usuarioDetail.usuario.imagenPerfil ? this.props.usuarioDetail.usuario.imagenPerfil : perfil : perfil : perfil} circular
                     style={{
-                        width: '100px', position: 'absolute', height: '100px', left: '91%',
+                        width: '7.2em', position: 'absolute', height: '7.2em', left: '91%',
                         transform: 'scale(0.6)'
                     }}></Image>
             }
-                style={{ background: 'linear-gradient(to top,  #b5cc18 5%, #ffffff 2%', borderColor: '#fbbd08', boxShadow: '1px 1px 7px 1px #e03997' }}
+                style={{ background: 'linear-gradient(to top,  #b5cc18 5%, #ffffff 2%', borderColor: '#fbbd08' }}
                 flowing hoverable>
                 <List selection animated verticalAlign='middle' style={{ width: '12em' }}>
                     <div style={{ height: '6em' }}>
                         <div style={{ height: '3.5em' }}>
                             <Image src={this.props.usuarioDetail ? this.props.usuarioDetail.usuario && this.props.isSignedIn ? this.props.usuarioDetail.usuario.imagenPerfil ? this.props.usuarioDetail.usuario.imagenPerfil : perfil : perfil : perfil} circular
                                 style={{
-                                    width: '100px', height: '100px', position: 'relative', top: '-1.5em', left: '-1em',
+                                    width: '7.2em', height: '7.2em', position: 'relative', top: '-1.5em', left: '-1em',
                                     transform: 'scale(0.5)'
                                 }}></Image>
 
@@ -77,12 +73,11 @@ class Headers extends React.Component {
         return (
             <div className="ui secondary pointing menu" style={{ boxShadow: '0px 1.5px 0px 0px #e03997' }}>
                 <Link to="/dashboard" className="item">
-                    <img className="ui tiny rounded image" style={{ "transform": "scale(0.85)" }} src={image} id='1' />
+                    <img className='ui tiny rounded image' style={{ transform: 'scale(0.85)' }} src={image} id='1' alt="hupity tu compañero en el trabajo" />
                 </Link>
 
                 <div className="right menu">
                     {opcion}
-                    {this.state.menu}
                     {menuPerfil}
                     {notifications}
                     {notificationsHupp}

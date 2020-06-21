@@ -1,10 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-
 import Chart from "react-apexcharts";
-
-const randonStyle = require('../../lib/randonStyle')
-
 
 class legenExample extends React.Component {
 
@@ -12,12 +8,8 @@ class legenExample extends React.Component {
 
     render() {
 
-        let box = 'rgb(189, 93, 26)  6px 11px 12px 0px';
-        let t = <h3 style={{ 'text-align': 'center','top': '10px', position: 'relative', color: '#d05600' }}>{this.props.TituloGrafica}</h3>
-
-
+        let t = <h3 style={{ 'text-align': 'center', 'top': '10px', position: 'relative', color: '#d05600' }}>{this.props.TituloGrafica}</h3>
         if (this.props.equipoGrafica) {
-            box = '#ab778e -13px 17px 12px 0px';
             t = <h2 style={{ 'text-align': 'center', 'top': '10px', position: 'relative', color: '#d05600' }}>{this.props.TituloGrafica}</h2>
         }
 
@@ -40,8 +32,8 @@ class legenExample extends React.Component {
                                 max: 100,
                             },
                             theme: {
-                                mode: 'light', 
-                                palette: 'palette8', 
+                                mode: 'light',
+                                palette: 'palette8',
                                 shadeIntensity: 1,
                                 monochrome: {
                                     enabled: false,
@@ -52,7 +44,7 @@ class legenExample extends React.Component {
                             }
 
                         }}
-                        
+
                         responsive={[
                             {
                                 breakpoint: 1000,
@@ -68,14 +60,14 @@ class legenExample extends React.Component {
                                 }
                             }
                         ]}
-                        grid= {{
+                        grid={{
                             position: 'front'
-                          }}
+                        }}
                         series={this.props.datos}
                         type="area"
                         width="100%"
                         height="420px"
-                        
+
                     />
                 </div>
             </div>

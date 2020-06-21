@@ -2,15 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux';
 import '../components/styles/ingresoHupity.css';
 import ChatHup from './HuperModules/efectText/efecto1';
-import ChatHup2 from './HuperModules/efectText/efecto2';
+//import ChatHup2 from './HuperModules/efectText/efecto2';
 //import ChatHup3 from './HuperModules/efectText/efecto3';
-import ChatHup3 from './HuperModules/efectText/efecto4';
-import ChatHup4 from './HuperModules/efectText/efecto5';
-
+//import ChatHup3 from './HuperModules/efectText/efecto4';
+//import ChatHup4 from './HuperModules/efectText/efecto5';
 //import ChatHup from './modules/chatBot/paginaInicio';
 import firebase from 'firebase';
 import moment from 'moment';
-import { Image , Popup, Icon} from 'semantic-ui-react'
+import { Image, Popup, Icon } from 'semantic-ui-react'
 import chat from '../images/chat2.png';
 import { MensajeIvilys, estadochats, datoCloses } from './modules/chatBot/actions';
 import { chatOn, chatOff, } from '../actions';
@@ -24,7 +23,7 @@ class MenuChat extends React.Component {
 
 
     state = {
-        inicio: "chatGestorAni4", lat: null, errorMessage: '', efectos: 0, efectosAux: 0,
+        lat: null, errorMessage: '', efectos: 0, efectosAux: 0,
         long: null, inicio: false, colorC: '#ffac0000', efecto: null, estadoAnterior: null, colorPausa: '#f5deb3'
     }
 
@@ -181,7 +180,7 @@ class MenuChat extends React.Component {
     };
 
     renderMenu() {
-        if (this.props.isSignedIn && this.props.celPerf != 'menu') {
+        if (this.props.isSignedIn && this.props.celPerf !== 'menu') {
 
 
             let btChat =
@@ -216,17 +215,17 @@ class MenuChat extends React.Component {
 
 
             return (
-                <div style={{zIndex: 5000}}>
-                      <Popup
+                <div style={{ zIndex: 5000 }}>
+                    <Popup
                         trigger={<Icon circular name='heart' />}
                         content='Hello. This is an inverted popup'
                         inverted
                     />
-                    
+
                     <TimerClock programa={false}></TimerClock>
                     {btChat}
                     {this.renderAuthButton()}
-                  
+
                 </div>
             );
         }

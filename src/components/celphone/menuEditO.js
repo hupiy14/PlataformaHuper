@@ -1,18 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import GoogleAuth from '../loginGoogle/GoogleAuth';
-import image from '../../images/logo.png';
 import { Image, Header, Button, Input, Label, Modal, Icon } from 'semantic-ui-react'
 import '../styles/ingresoHupity.css';
-import procolombia from '../../images/procolombia.png';
+//import procolombia from '../../images/procolombia.png';
 import { connect } from 'react-redux';
-import { relative } from 'path';
 import { prioridadObjs, datosEditCels } from '../modules/chatBot/actions';
-import perfil from '../../images/perfil.png';
 import firebase from 'firebase';
 import history from '../../history';
 
-const timeoutLength2 = 2000;
 class HeadersC extends React.Component {
 
     state = {

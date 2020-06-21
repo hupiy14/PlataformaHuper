@@ -15,10 +15,10 @@ export const user = (user = defaultUser, action) => {
     const {
         activeChat,
         userChats,
-     //   userID,
-     //   contacts
+        //   userID,
+        //   contacts
     } = user;
-
+    let aP = null;
     switch (action.type) {
         case SET_ACTIVE_CHAT:
             if (action.participants === activeChat.participants) {
@@ -52,23 +52,26 @@ export const user = (user = defaultUser, action) => {
                 })
             });
         case BORRAR_CHAT:
-        
-            var aP = activeChat.participants;
-        //    console.log({aP});
-            const valorBorrado = {chatID: "13",
-            thread: [],
-            participants: "6"};
-      //      console.log({valorBorrado});
+
+            aP = activeChat.participants;
+            //    console.log({aP});
+            const valorBorrado = {
+                chatID: "13",
+                thread: [],
+                participants: "6"
+            };
+            //      console.log({valorBorrado});
             if (action.participants === aP) {
                 return Object.assign({}, user, {
                     activeChat: valorBorrado,
-                    userChats: [valorBorrado],  
-                 
+                    userChats: [valorBorrado],
+
                     //userChats: []
                 });
             }
+            break;
         case END_CHAT:
-            var aP = activeChat.participants;
+            aP = activeChat.participants;
 
             // if only one chat is open, simply return empty containers
             if (userChats.length === 1) {

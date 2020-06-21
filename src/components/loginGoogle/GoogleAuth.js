@@ -7,7 +7,7 @@ import '../../components/styles/ingresoHupity.css';
 import firebase from 'firebase';
 import axios from 'axios';
 import moment from 'moment';
-import { List, Icon } from 'semantic-ui-react'
+import { List } from 'semantic-ui-react'
 import { clientIdGoogle, apiKeyGoogle } from '../../apis/stringConnection';
 import { clientIdAsana, clientSecrectAsana, clientSlack, clientSecrectSlack } from '../../apis/stringConnection';
 
@@ -26,9 +26,11 @@ class GoogleAuth extends React.Component {
                 discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
                 scope: "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/drive"
             }).then(() => {
+
                 this.auth = window.gapi.auth2.getAuthInstance();
                 this.onAuthChange(this.auth.isSignedIn.get());
                 this.auth.isSignedIn.listen(this.onAuthChange);
+
             });
         });
     }
@@ -131,7 +133,6 @@ class GoogleAuth extends React.Component {
             this.props.nombreUsuario(this.auth.currentUser.get().w3.ofa);
 
         if (isSignedIn) {
-
             //Valida si se ha cerrado la session 
             //  if (isSignedIn && this.props.isSignedIn === false)
             //    return;
@@ -148,6 +149,7 @@ class GoogleAuth extends React.Component {
             //Encuentra el Rol,
             const nameRef = firebase.database().ref().child('Usuario').child(this.auth.currentUser.get().getId());
             nameRef.on('value', (snapshot) => {
+                console.log('ENtroooooo');
                 const Usuario = snapshot.val();
                 if (Usuario) {
 
@@ -171,7 +173,7 @@ class GoogleAuth extends React.Component {
                     const nameRef5 = firebase.database().ref().child(`Usuario-CalendarGoogle/${this.auth.currentUser.get().getId()}`);
                     nameRef5.on('value', (snapshot) => {
                         if (snapshot.val()) {
-                            calendar = snapshot.val().idCalendar;
+                            calendar = snapshot.val().idCalendar.value;
                         }
                     });
 
@@ -292,7 +294,7 @@ class GoogleAuth extends React.Component {
 
             return (
                 <div style={{ height: '1.2em' }}>
-                    <Icon name="google icon"></Icon>
+                    <i className="google icon"></i>
                     <List.Content style={{ top: '-15px', left: '25px', position: 'relative' }} onClick={this.onSignOutClick}>
                         <List.Header> Sign Out</List.Header>
                     </List.Content>
@@ -305,7 +307,7 @@ class GoogleAuth extends React.Component {
             if (this.props.googleIn) {
                 return (
                     <div style={{ height: '1.2em' }}>
-                        <Icon name="google icon"></Icon>
+                        <i className="google icon"></i>
                         <List.Content style={{ top: '-15px', left: '25px', position: 'relative' }}>
                             <List.Header> Tu cuenta Google</List.Header>
                         </List.Content>
@@ -315,11 +317,11 @@ class GoogleAuth extends React.Component {
             else {
 
                 return (
-                    <button 
-                        onClick={() => { this.onSignInClick() }} className="ui google button" style={{ background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)', position: 'relative', left: '31%', 'border-radius': '20px', width: '220px', display: 'grid', height: '52px' }} >
-                        <img style={{ left: '-14px', position: 'relative', top: '-5px', 'border-radius': '20px' }}
+                    <button
+                        onClick={() => { this.onSignInClick() }} className="ui google button" style={{ background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)', position: 'relative', left: '31%', borderRadius: '20px', width: '220px', display: 'grid', height: '52px' }} >
+                        <img style={{ left: '-14px', position: 'relative', top: '-5px', borderRadius: '20px' }}
                             width="40" height="40" alt="Google logo" src="https://cdn.goconqr.com/assets/social/google/btn_google_light_normal_ios_160-9ef927f3fdc8ade894b35a0eb01225e8602967d799a831565f9327840aaaf44c.png"></img>
-                        <b style={{ top: '-32px', left: '20px', position: 'relative', 'font-size': 'larger', color: 'white' }}> Ingresar con Google</b>
+                        <b style={{ top: '-32px', left: '20px', position: 'relative', fontSize: 'larger', color: 'white' }}> Ingresar con Google</b>
                     </button>
                 );
             }

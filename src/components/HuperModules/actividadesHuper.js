@@ -31,11 +31,11 @@ class listActividades extends React.Component {
         }
 
         this.setState({
-            primero: <div style={{ height: '7.5em'  }}>
-                <Step active={true} style={{ height: '8.5em', borderRadius: '10px' }}>
-                    <Image src={task} size="mini" style={{ left: '10px', top: '60px' }}></Image>
-                    <Step.Content style={{ left: '8%', width: '90%', top: '-60px', position: 'relative' }}>
-                        <Step.Title style={{ width: '60%', color: '#947d0e', top: '100px', position: 'relative', transform: `scale(2.5)`, left: '20%' }}>Planifica tu actividad</Step.Title>
+            primero: <div style={{ height: '7.5em' }}>
+                <Step active={true} style={{ height: '8.5em', borderRadius: '0.3em' }}>
+                    <Image src={task} size="mini" style={{ left: '-0.3em', top: '5.4em' }}></Image>
+                    <Step.Content style={{ left: '8%', width: '90%', top: '-4.8em', position: 'relative' }}>
+                        <Step.Title style={{ width: '60%', color: '#947d0e', top: '7.3em', position: 'relative', transform: `scale(2.5)`, left: '20%' }}>Planifica tu actividad</Step.Title>
                     </Step.Content>
                 </Step>
             </div>
@@ -61,9 +61,10 @@ class listActividades extends React.Component {
                         Object.keys(this.eventCalendar.result.items).map((key2, index) => {
                             if (this.eventCalendar.result.items[key2].summary === act[key].concepto && this.eventCalendar.result.items[key2].description === key)
                                 flag = false;
+                            return this.eventCalendar.result.items[key2];
                         });
 
-                        if (flag && act[key].concepto !== undefined && act[key].synCalendar === undefined && (this.calendarAcum !== undefined && !this.calendarAcum.includes(key) || this.calendarAcum === undefined)) {
+                        if (flag && act[key].concepto !== undefined && act[key].synCalendar === undefined && ((this.calendarAcum !== undefined && !this.calendarAcum.includes(key)) || this.calendarAcum === undefined)) {
                             console.log(act[key]);
 
                             let event = {
@@ -98,6 +99,7 @@ class listActividades extends React.Component {
                                 this.createEventTrabajo(this.Calendar.idCalendar.value, 0);
                             flagFirst = true;
                         }
+                        return act[key];
                     })
                 }
             });
@@ -111,6 +113,7 @@ class listActividades extends React.Component {
         Object.keys(this.calendarL).map((key, index) => {
             if (index === indC)
                 event = this.calendarL[key];
+            return this.calendarL[key];
         });
         if (event !== null) {
             this.timeout = setTimeout(() => {
@@ -119,7 +122,7 @@ class listActividades extends React.Component {
                     'resource': event
                 }).then((response) => {
                     console.log("Response", response);
-                    this.createEventTrabajo(calendar,  indC + 1);
+                    this.createEventTrabajo(calendar, indC + 1);
                 }, function (err) { console.error("Execute error", err); });
             }, 3000)
         }
@@ -169,23 +172,23 @@ class listActividades extends React.Component {
     renderTiempo() {
         const actividadesU = this.state.actividades;
         let x = 0;
-        let y = 0;
         let enProceso = 0;
         let arrayT = [];
         Object.keys(actividadesU).map((key, index) => {
             const objTar = { ...actividadesU[key], key: key }
             arrayT.push(objTar);
+            return actividadesU[key];
         });
 
         arrayT.sort((obj1, obj2) => { return obj1.dificultad.localeCompare(obj2.dificultad); });
         let tiempos = 0;
         Object.keys(arrayT).map((key3, index) => {
             Object.keys(actividadesU).map((key2, index) => {
-                if (arrayT[key3].key !== key2) return;
+                if (arrayT[key3].key !== key2) return null;
                 if (moment(moment().format('YYYY-MM-DD'), 'YYYY-MM-DD') > moment(actividadesU[key2].dateStart, 'YYYY-MM-DD')) {
                     if (actividadesU[key2].estado === 'activo')
                         actividadesU[key2].estado = 'anulado';
-                    return;
+                    return null;
                 }
                 if (actividadesU[key2].estado === "activo") {
                     if (x === 0)
@@ -199,7 +202,6 @@ class listActividades extends React.Component {
                     enProceso++;
                 }
                 else if (actividadesU[key2].estado === "finalizado") {
-                    y++;
                     const ti = moment(new Date(actividadesU[key2].fechaInicio));
                     const tf = moment(new Date(actividadesU[key2].fechaFin));
                     const td = tf.add('hours', -ti.hours('HH')).add('minutes', -tf.minutes);
@@ -209,8 +211,9 @@ class listActividades extends React.Component {
                         tt = 1;
                     tiempos = parseInt(tt + tiempos);
                 }
+                return null;
             });
-
+            return null;
         });
 
         if (enProceso === 0)
@@ -222,55 +225,52 @@ class listActividades extends React.Component {
     renderActividadXactividad() {
 
         const actividadesU = this.state.actividades;
-        let flag = false;
         let x = 0;
         let actNum = 0;
-        let actividadProceso = 0;
         let arrayT = [];
 
         Object.keys(actividadesU).map((key, index) => {
             const objTar = { ...actividadesU[key], key: key }
             arrayT.push(objTar);
+            return actividadesU[key];
         });
 
 
         arrayT.sort((obj1, obj2) => {
             if (obj1.prioridad !== undefined)
                 return obj1.prioridad.localeCompare(obj2.prioridad);
+            return null;
         });
 
         let tiempoMin = '24:00';
         Object.keys(arrayT).map((key3, index) => {
             Object.keys(actividadesU).map((key2, index) => {
-                if (arrayT[key3].key !== key2) return;
+                if (arrayT[key3].key !== key2) return null;
                 if (moment().format('YYYY-MM-DD') > moment(actividadesU[key2].dateStart, 'YYYY-MM-DD')) {
                     if (actividadesU[key2].estado === 'activo') {
                         actividadesU[key2].estado = 'anulado';
-                        flag = true;
                     }
-                    return;
+                    return null;
                 }
                 if (moment(tiempoMin, 'HH:mm') > moment(actividadesU[key2].horaPlanificada, 'HH:mm'))
                     tiempoMin = moment(actividadesU[key2].horaPlanificada, 'HH:mm');
+                return null;
             });
+            return null;
         });
 
-
-        let fechaTrabajo = null;
         let f = null;
         let opcionesX = Object.keys(arrayT).map((key3, index) => {
-
 
             let opciones2 = Object.keys(actividadesU).map((key2, index) => {
                 if (this.props.selObjetivo === null || this.props.selObjetivo === actividadesU[key2].objetivo) {
 
-                    if (arrayT[key3].key !== key2) return;
+                    if (arrayT[key3].key !== key2) return null;
                     if (moment().format('YYYY-MM-DD') > moment(actividadesU[key2].dateStart, 'YYYY-MM-DD')) {
                         if (actividadesU[key2].estado === 'activo') {
                             actividadesU[key2].estado = 'anulado';
-                            flag = true;
                         }
-                        return;
+                        return null;
 
                     }
                     const tiempo = actividadesU[key2]['h-inicio'] + '  a  ' + actividadesU[key2]['h-fin'];
@@ -286,13 +286,12 @@ class listActividades extends React.Component {
                     else if (actividadesU[key2].estado === "trabajando") {
                         actividadT = { completed: false, active: true, color: "#820bea", background: "linear-gradient(to right, rgb(220, 169, 247) 10%, rgb(255, 255, 255) 15%, rgb(184, 0, 245) 500%)" }
                         anima = 'actividadInmediata';
-                        actividadProceso++;
                         x++;
                     }
                     actNum++;
 
                     if (actividadesU[key2].concepto === undefined)
-                        return;
+                        return null;
 
                     if (this.state.aux == null && f == null && actividadesU[key2].estado === "activo" && actividadesU[key2].concepto !== undefined) {
                         f = '1';
@@ -301,15 +300,15 @@ class listActividades extends React.Component {
                         this.setState({ aux: 'primera' });
                         this.setState({
                             primero: <div style={{ height: '7.5em' }}>
-                                <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '8.5em',widt: '130%', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '10px' }}>
+                                <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '8.5em', widt: '130%', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '1em' }}>
                                     <h1 style={{ position: 'relative', top: '7%', left: '-42%', transform: 'scale(2.5)' }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
-                                    <Image src={task} size="mini" style={{ left: '18px', top: '20px' }}></Image>
+                                    <Image src={task} size="mini" style={{ left: '1em', top: '1.5em' }}></Image>
                                     <div style={{ position: 'relative', top: '5px', left: '-40%', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].prioridad} </div>
-                                    <Step.Content style={{ left: '8%', width: '90%', top: '-60px', position: 'relative' }}>
+                                    <Step.Content style={{ left: '8%', width: '90%', top: '-4em', position: 'relative' }}>
                                         <Step.Description style={{ position: 'relative', top: '4em', left: '20%', fontSize: 'smaller' }}>
                                             <Icon name="clock outline"></Icon>{tiempo}
                                         </Step.Description>
-                                        <Step.Title style={{ width: '50%', color: '#947d0e', top: '-50px', position: 'relative', transform: `scale(${scalet})`, left: titlelengt }}>{actividadesU[key2].concepto}</Step.Title>
+                                        <Step.Title style={{ width: '50%', color: '#947d0e', top: '-3em', position: 'relative', transform: `scale(${scalet})`, left: titlelengt }}>{actividadesU[key2].concepto}</Step.Title>
                                     </Step.Content>
                                 </Step>
                             </div>
@@ -317,22 +316,23 @@ class listActividades extends React.Component {
 
                     }
                     else {
-                        if (x != 1 && actividadesU[key2].estado === "activo")
+                        if (x !== 1 && actividadesU[key2].estado === "activo")
                             return (<div style={{ height: '7.5em', width: '80%', position: 'relative', left: '20%' }}>
-                                <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '6.5em', background: '#fff6fb', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '10px', 'z-index': '-1' }}>
+                                <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '6.5em', background: '#fff6fb', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '1em', 'z-index': '-1' }}>
                                     <h1 style={{ position: 'relative', top: '5%', left: '-5%', transform: 'scale(1.4)' }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
-                                    <Image src={task} size="mini" style={{ left: '-24px', top: '30px', transform: 'scale(0.75)' }}></Image>
-                                    <div style={{ position: 'relative', top: '40px', left: '-42px', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].prioridad} </div>
-                                    <Step.Content style={{ left: '8%', width: '90%', top: '-70px', position: 'relative' }}>
-                                        <Step.Description style={{ position: 'relative', top: '6em', left: '25%', fontSize: 'smaller' }}>
+                                    <Image src={task} size="mini" style={{ left: '-3.5em', top: '2.8em', transform: 'scale(0.75)' }}></Image>
+                                    <div style={{ position: 'relative', top: '2.5em', left: '-3.5em', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].prioridad} </div>
+                                    <Step.Content style={{ left: '8%', width: '90%', top: '-5em', position: 'relative' }}>
+                                        <Step.Description style={{ position: 'relative', top: '6em', left: '18%', fontSize: 'smaller' }}>
                                             <Icon name="clock outline"></Icon>{tiempo}
                                         </Step.Description>
-                                        <Step.Title style={{ color: '#947d0e', top: '10px', position: 'relative', left: '2%' }}>{actividadesU[key2].concepto}</Step.Title>
+                                        <Step.Title style={{ color: '#947d0e', top: '0.5em', position: 'relative', left: '2%' }}>{actividadesU[key2].concepto}</Step.Title>
                                     </Step.Content>
                                 </Step>
                             </div>);
                     }
                 }
+                return null;
             });
             return opciones2;
 
@@ -357,14 +357,14 @@ class listActividades extends React.Component {
         for (let index = actNum; index <= limite; index++) {
             x++;
             const element = <div key={index} style={{ height: '7.5em', width: '80%', position: 'relative', left: '20%', filter: 'grayscale(1)' }}>
-                <Step completed={false} style={{ background: '#efefef', height: '6.5em', borderRadius: '20px' }}>
+                <Step completed={false} style={{ background: '#efefef', height: '6.5em', borderRadius: '1em' }}>
                     <h1 style={{ position: 'relative', top: '5%', left: margin, transform: 'scale(1.4)' }}>{x}</h1>
-                    <Image src={task} size="mini" style={{ left: '1px', top: '-1px', transform: 'scale(0.75)' }}></Image>
-                    <Step.Content style={{ left: '8%', width: '90%', top: '-70px', position: 'relative' }}>
-                        <Step.Description style={{ position: 'relative', top: '50px', left: '25%', fontSize: 'smaller' }}>
+                    <Image src={task} size="mini" style={{ transform: 'scale(0.75)' }}></Image>
+                    <Step.Content style={{ left: '8%', width: '90%', top: '-5em', position: 'relative' }}>
+                        <Step.Description style={{ position: 'relative', top: '4.5em', left: '25%', fontSize: 'smaller' }}>
                             <Icon name="clock outline"></Icon>00:00 a 00:00
                     </Step.Description>
-                        <Step.Title style={{ color: '#947d0e', top: '-5px', position: 'relative', left: '2%' }}>Programa tu nueva actividad</Step.Title>
+                        <Step.Title style={{ color: '#947d0e', top: '-0.5em', position: 'relative', left: '2%' }}>Programa tu nueva actividad</Step.Title>
                     </Step.Content>
                 </Step>
             </div>
@@ -382,10 +382,10 @@ class listActividades extends React.Component {
                 this.flag = true;
                 this.timerTrabajo();
                 let stepG = <Step.Group vertical style={{
-                    width: '100%', borderRadius: '10px',
+                    width: '100%', borderRadius: '1em',
                     borderColor: 'cornsilk'
                 }}>
-                     {this.renderActividadXactividad()}
+                    {this.renderActividadXactividad()}
                 </Step.Group>
                 this.setState({ contenido: stepG });
             }, timeoutLength3);
@@ -401,10 +401,10 @@ class listActividades extends React.Component {
             this.renderActividades();
         }
         else
-            contenido = this.actividadesEmpty(6, 0, [])
+            contenido = this.actividadesEmpty(5, 0, [])
 
-        return (<div >
-            <div style={{ position: 'relative', top: '-60px', width: '130%' }}>
+        return (<div style={{ position: 'relative', top: '-4em'}} >
+            <div style={{ position: 'relative', top: '-4em', width: '130%' }}>
                 {this.state.primero}
             </div>
             <h3>{this.props.titulo}</h3>

@@ -1,24 +1,6 @@
 @import url(https://fonts.googleapis.com/css?family=Quicksand:300,400,700);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 .swiper-container {
   width: 280px;
   height: 410px;
@@ -1105,7 +1087,7 @@ button.swiper-pagination-bullet {
     transform: scale(1);
   }
   to {
-    background:linear-gradient(to right, rgb(187, 56, 255) 10%, rgb(255, 255, 255) 13%, rgb(206, 211, 249) 200%);
+    background:linear-gradient(to right, rgb(181, 219, 25) 10%, rgb(255, 255, 255) 13%, rgb(206, 211, 249) 200%);
     box-shadow: rgb(46, 19, 61) 0.5px 0.5px 5px 0.5px;
     transform: translate(2%, -1em);
   }
@@ -1142,7 +1124,7 @@ button.swiper-pagination-bullet {
     transform: scale(0.25);
   }
   to {
-    background:linear-gradient(to right, rgb(166, 29, 240) 40%, rgb(255, 255, 255) 60%, rgb(133, 146, 248) 200%);
+    background:linear-gradient(to right, rgb(240, 29, 194) 40%, rgb(255, 255, 255) 60%, rgb(133, 146, 248) 200%);
     transform: scale(0.27);
 
     
@@ -1162,7 +1144,7 @@ button.swiper-pagination-bullet {
     transform: scale(0.5);
   }
   to {
-    background:linear-gradient(to right, rgb(166, 29, 240) 40%, rgb(255, 255, 255) 60%, rgb(133, 146, 248) 200%);
+    background:linear-gradient(to right, rgb(240, 29, 194) 40%, rgb(255, 255, 255) 60%, rgb(133, 146, 248) 200%);
     transform: scale(0.57);
 
     
@@ -1244,7 +1226,7 @@ button.swiper-pagination-bullet {
   to {
    
     transform: scale(0.35) translate(-5em,-3.1em);
-    background:linear-gradient(to bottom, rgb(166, 29, 240) 30%, rgb(255, 255, 255) 70%, rgb(133, 146, 248) 200%);
+    background:linear-gradient(to bottom, rgb(240, 29, 229) 30%, rgb(255, 255, 255) 70%, rgb(133, 146, 248) 200%);
     
   }
 }
@@ -1266,7 +1248,7 @@ button.swiper-pagination-bullet {
   to {
    
     transform: scale(0.65) translate(-5em,-3.1em);
-    background:linear-gradient(to bottom, rgb(166, 29, 240) 30%, rgb(255, 255, 255) 70%, rgb(133, 146, 248) 200%);
+    background:linear-gradient(to bottom, rgb(240, 29, 222) 30%, rgb(255, 255, 255) 70%, rgb(133, 146, 248) 200%);
     
   }
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import '../../components/styles/ingresoHupity.css';
 import { chatOn, chatOff } from '../../actions';
-import { Card, Icon, Image, Button, Form, Message, Segment, Dimmer, Loader, Modal, Header, Input } from 'semantic-ui-react'
+import { Card, Image, Button, Form, Message, Modal, Header, Input } from 'semantic-ui-react'
 import history from '../../history';
 import firebase from 'firebase';
 import zonaEspana from '../../components/utilidades/zonaEspana';
@@ -71,9 +71,10 @@ class Profile extends React.Component {
 
         const listaX = zonaEspana();
         let entro = null;
-        Object.keys(listaX).map(function (key, index) {
+        Object.keys(listaX).map((key, index) => {
             if (listaX[key].name === ' ')
                 entro = true;
+            return listaX[key];
         });
 
         if (!entro) {
@@ -81,7 +82,7 @@ class Profile extends React.Component {
         }
 
         let lista = {};
-        const opciones = Object.keys(listaX).map(function (key, index) {
+        const opciones = Object.keys(listaX).map((key, index) => {
             lista = { ...lista, key: key, text: listaX[key], value: listaX[key] };
             return lista;
         });
@@ -95,7 +96,7 @@ class Profile extends React.Component {
         const listaX = this.state.listaCanales_Slack;
         let lista = {};
         if (listaX) {
-            const opciones = Object.keys(listaX).map(function (key, index) {
+            const opciones = Object.keys(listaX).map((key, index) => {
                 lista = { ...lista, key: key, text: listaX[key].name, value: listaX[key].id };
                 return lista;
             });
@@ -140,12 +141,6 @@ class Profile extends React.Component {
                  
         */
 
-
-
-
-        let visible = false;
-        if (this.props.usuarioDetail.rol === '3')
-            visible = true;
         return (
             <div>
                 <Form >
@@ -206,6 +201,7 @@ class Profile extends React.Component {
     }
 
     renderCalendar() {
+        /*
         var event = {
             'summary': 'Google I/O 2015',
             'location': '800 Howard St., San Francisco, CA 94103',
@@ -239,7 +235,7 @@ class Profile extends React.Component {
         window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
             .then(function () { console.log("GAPI client loaded for API"); },
                 function (err) { console.error("Error loading GAPI client for API", err); });
-
+*/
 
         /*
         //Crear un evento
@@ -301,9 +297,10 @@ class Profile extends React.Component {
         if (!listaX)
             return;
 
-        Object.keys(listaX).map(function (key, index) {
+        Object.keys(listaX).map( (key, index) => {
             if (listaX[key].name === 'Ninguno')
                 entro = true;
+                return listaX[key];
         });
 
         if (!entro) {
@@ -311,7 +308,7 @@ class Profile extends React.Component {
         }
 
         //  console.log(listaX);
-        const opciones = Object.keys(listaX).map(function (key, index) {
+        const opciones = Object.keys(listaX).map((key, index)=> {
             //  console.log(listaX[key]);
             lista = { ...lista, key: key, text: listaX[key].name, value: listaX[key].id };
             return lista;
@@ -361,11 +358,6 @@ class Profile extends React.Component {
         value={this.state.tokenTrello}
         onChange={e => this.setState({ tokenTrello: e.target.value })}
     />*/
-        let visible = true;
-        if (this.props.usuarioDetail.rol === '3')
-            visible = false;
-
-
 
         let contruir = <Form >
             <Form.Input label='Trello Api Key' placeholder='bb3cab1a303c7bf996d5...'
@@ -414,10 +406,10 @@ class Profile extends React.Component {
                         />
                     </Form>
                     <br />
-                    <Button color="yellow" icon='save' disabled={this.state.activo} style={{ left: '30%' }} labelPosition='right' content='Guardar'
-                        disabled={this.state.trelloDashboard && (this.state.listaObjetivostoDO && this.state.listaObjetivostoDO !== '' ||
-                            this.state.listaOBjetivosDone && this.state.listaOBjetivosDone !== '' ||
-                            this.state.listaObjetivosTheEnd && this.state.listaObjetivosTheEnd !== '') ? false : true}
+                    <Button color="yellow" icon='save'  style={{ left: '30%' }} labelPosition='right' content='Guardar'
+                        disabled={this.state.trelloDashboard && ((this.state.listaObjetivostoDO && this.state.listaObjetivostoDO !== '' )||
+                            (this.state.listaOBjetivosDone && this.state.listaOBjetivosDone !== '' )||
+                            (this.state.listaObjetivosTheEnd && this.state.listaObjetivosTheEnd !== '')) ? false : true}
                         onClick={() => { firebase.database().ref().child(`Usuario-TokenTrelloTemp/${this.props.usuarioDetail.idUsuario}`).remove(); this.renderGuardar() }} />
 
                 </div>
@@ -529,10 +521,6 @@ class Profile extends React.Component {
 
     renderGuardar() {
 
-
-
-
-        let tamano = '37em';
         if (this.state.open === 'slack') {
             this.setState({ slackIn: '0%' });
             if (!this.state.canalEquipoSlack || this.state.canalEquipoSlack === '')
@@ -784,10 +772,10 @@ class Profile extends React.Component {
                             <Card.Content style={{ height: '250px' }}>
                                 <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '26%', height: '140px', position: 'relative', top: '-80px' }} />
                                 <Card.Header style={{ top: '-65px', position: 'relative', 'text-align': 'center' }}>{this.state.nombreUsuario}</Card.Header>
-                                <Card.Meta style={{ top: '-65px', position: 'relative', 'text-align': 'center'  }}>
+                                <Card.Meta style={{ top: '-65px', position: 'relative', 'text-align': 'center' }}>
                                     <span className='date'>{this.state.cargo}</span>
                                 </Card.Meta>
-                                <Card.Description style={{ top: '-65px', position: 'relative', 'text-align': 'center'  }}>{this.state.area}.</Card.Description>
+                                <Card.Description style={{ top: '-65px', position: 'relative', 'text-align': 'center' }}>{this.state.area}.</Card.Description>
                                 <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.renderCargar('slack'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.slackIn + ')', background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '5%', position: 'relative', top: '-50px' }} />
                                 <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.driveIn + ')', background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '20%', position: 'relative', top: '-50px' }} />
                                 <Image src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.calendarIn + ')', background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '35%', position: 'relative', top: '-50px' }} />
@@ -799,7 +787,7 @@ class Profile extends React.Component {
                             </Card.Content>
 
                         </Card>
-                        <Button content="Crea tu propio flujo de trabajo"  onClick={() => { history.push('/newworkflow'); }} fluid style={{background:'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 80%)'}} icon="object group outline"></Button>
+                        <Button content="Crea tu propio flujo de trabajo" onClick={() => { history.push('/newworkflow'); }} fluid style={{ background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 80%)' }} icon="object group outline"></Button>
 
                     </div>
                     <div className="column sixteen wide">
@@ -816,13 +804,13 @@ class Profile extends React.Component {
                                         this.state.imagenMostrar ? this.state.imagenMostrar : 'https://react.semantic-ui.com/images/avatar/large/rachel.png'} />
                                     <Modal.Description fluid>
                                         <Header>Selecciona tu fondo</Header>
-                                        <Input  fluid label='Url de la imagen' placeholder='https://react.semantic-ui.com/images...'
+                                        <Input fluid label='Url de la imagen' placeholder='https://react.semantic-ui.com/images...'
                                             onClick={() => { this.renderCargarImagen(this.state.imagenFondo); }}
                                             value={this.state.imagenFondo}
                                             onChange={(e) => { this.setState({ imagenFondo: e.target.value }); this.renderCargarImagen(e.target.value); }}>
                                         </Input>
                                         <Header>Selecciona tu perfil</Header>
-                                        <Input  fluid label='Url de la imagen' placeholder='https://react.semantic-ui.com/images...'
+                                        <Input fluid label='Url de la imagen' placeholder='https://react.semantic-ui.com/images...'
                                             onClick={() => { this.renderCargarImagen(this.state.imagenPerfil); }}
                                             value={this.state.imagenPerfil}
                                             onChange={(e) => { this.setState({ imagenPerfil: e.target.value }); this.renderCargarImagen(e.target.value); }}>
@@ -843,7 +831,7 @@ class Profile extends React.Component {
                                 </Modal.Actions>
 
                             </Modal>
-                            <h3 style={{'text-align': 'center' }}>Datos a modificar</h3>
+                            <h3 style={{ 'text-align': 'center' }}>Datos a modificar</h3>
                             {this.renderForm()}
                         </div>
                     </div>

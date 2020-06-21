@@ -2,8 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
 import { listaFormaciones, pasoOnboardings } from '../modules/chatBot/actions';
-import { Progress, Segment, Modal, Header, Button, Icon } from 'semantic-ui-react';
-const timeoutLength = 100000;
+import { Progress, Segment, Modal, Header, Button } from 'semantic-ui-react';
 
 class ListEjemplo extends React.Component {
     state = { modalOpen: false, videoSrc0: 'r9SI6-yKCpA', videoSrc: '', typeform: null }
@@ -67,12 +66,12 @@ class ListEjemplo extends React.Component {
                         styleBt.left = '40%'
                     return (
 
-                       <Modal key={key2}
+                        <Modal key={key2}
                             trigger={
                                 <div className="item" key={key2} onClick={() => {
                                     the.handleOpen()
                                     the.renderbuttton(cconsulta[key2]);
-                                
+
                                 }} >
                                     <i className={`large middle ${iconos} aligned icon`}></i>
                                     <div className="content">
@@ -112,6 +111,7 @@ class ListEjemplo extends React.Component {
 
                     );
                 }
+                return null;
             });
             return opciones;
         }

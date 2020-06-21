@@ -1,12 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
-import { Button, Popup, Grid, Input, Icon, Header, Modal, Image, Message, Form, Progress, Segment } from 'semantic-ui-react';
+import { Button, Popup, Input, Icon, Modal, Image, Message, Form, Progress, Segment } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas } from '../modules/chatBot/actions';
-import unsplash from '../../apis/unsplash';
 import MaskedInput from 'react-text-mask';
 import perfil from '../../images/perfil.png';
-import { relative } from 'path';
 import history from '../../history';
 
 const timeoutLength = 1500;
@@ -49,7 +47,9 @@ class ListaObjetivosEquipo extends React.Component {
                             ...data
                         });
                     }
+                    return cconsulta[key];
                 });
+                return this.state.porInputs[key];
             });
         }
 
@@ -74,7 +74,7 @@ class ListaObjetivosEquipo extends React.Component {
 
 
         updates[`Usuario-Objetivos/${objetivo.idUsuario}/${key}`] = tarea;
-      //  firebase.database().ref().update(updates);
+        //  firebase.database().ref().update(updates);
         this.setState({ mensajeCodigo: null });
         this.setState({ error: null });
 
@@ -108,10 +108,7 @@ class ListaObjetivosEquipo extends React.Component {
 
 
     eliminarObjetivo(key) {
-        var updates = {};
         let idObjetivo;
-
-
         const cconsulta = this.props.equipoConsulta;
         Object.keys(cconsulta).map((key2, index) => {
             if (cconsulta[key2].estado === 'activo' || cconsulta[key2].estado === 'validar')
@@ -119,6 +116,7 @@ class ListaObjetivosEquipo extends React.Component {
                     idObjetivo = key2;
                     //  console.log(key2);
                 }
+            return cconsulta[key2];
         });
 
 
@@ -127,8 +125,9 @@ class ListaObjetivosEquipo extends React.Component {
 
             if (key2 === idObjetivo) {
                 obj[key2] = undefined;
-                return;
+                return null;
             }
+            return obj[key2];
 
         });
 
@@ -219,12 +218,12 @@ class ListaObjetivosEquipo extends React.Component {
 
                         Object.keys(listaEOB).map((key4, index) => {
                             const listaEOBT = listaEOB[key4];
-                            if (!listaEOBT) return;
+                            if (!listaEOBT) return null;
                             if (Usuarios[key2].idUsuario === key4) {
                                 //    console.log(listaEOBT)
                                 Object.keys(listaEOBT).map((key3, index) => {
                                     const consultaTareaTT = listaEOBT[key3];
-                                    if (!consultaTareaTT) return;
+                                    if (!consultaTareaTT) return null;
                                     Object.keys(consultaTareaTT).map((key33, index) => {
                                         if (key3 === Usuarios[key2].key) {
 
@@ -244,15 +243,13 @@ class ListaObjetivosEquipo extends React.Component {
 
 
                                         }
-
+                                        return consultaTareaTT[key33];
                                     });
+                                    return listaEOBT[key3];
                                 });
                             }
+                            return listaEOB[key4];
                         });
-
-
-
-
 
                         aux = aux + 20;
                         hEquipo.push(
@@ -272,6 +269,7 @@ class ListaObjetivosEquipo extends React.Component {
                             </Popup>
                         );
                     }
+                    return Usuarios[key2];
                 });
 
             }
@@ -284,12 +282,12 @@ class ListaObjetivosEquipo extends React.Component {
                 const listaEOB = this.props.listaObjetivo;
                 Object.keys(listaEOB).map((key4, index) => {
                     const listaEOBT = listaEOB[key4];
-                    if (!listaEOBT) return;
+                    if (!listaEOBT) return null;
                     if (idUsuario === key4) {
                         //    console.log(listaEOBT)
                         Object.keys(listaEOBT).map((key3, index) => {
                             const consultaTareaTT = listaEOBT[key3];
-                            if (!consultaTareaTT) return;
+                            if (!consultaTareaTT) return null;
                             Object.keys(consultaTareaTT).map((key33, index) => {
                                 if (key3 === keyT) {
 
@@ -308,10 +306,12 @@ class ListaObjetivosEquipo extends React.Component {
 
 
                                 }
-
+                                return consultaTareaTT[key33];
                             });
+                            return listaEOBT[key3];
                         });
                     }
+                    return listaEOB[key4];
                 });
 
 
@@ -338,6 +338,8 @@ class ListaObjetivosEquipo extends React.Component {
                     </Popup>
                 );
             }
+
+            return equipo[key];
         });
 
         this.setState({ ImageEqp: hEquipo });
@@ -363,7 +365,7 @@ class ListaObjetivosEquipo extends React.Component {
                             top: '-170px',
                             left: '50px',
                             position: 'relative',
-                        }} ><p> <i key={i} className="share icon" /> "  {file.name} "  <a onClick={() => { this.renderEliminarArchivo(`${filesID}`) }} style={{ background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 100%)' }} className="ui  tiny tag label">Eliminar</a>  </p><br /></div>);
+                        }} ><p> <i key={i} className="share icon" /> "  {file.name} "  <h5 onClick={() => { this.renderEliminarArchivo(`${filesID}`) }} style={{ background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 100%)' }} className="ui  tiny tag label">Eliminar</h5>  </p><br /></div>);
                         //  console.log(imprimir);
                     }
                     this.setState({ files: imprimir });
@@ -407,7 +409,7 @@ class ListaObjetivosEquipo extends React.Component {
                                         top: '-170px',
                                         left: '50px',
                                         position: 'relative',
-                                    }} ><p> <i key={i} className="share icon" /> "  {file.name} "  <a onClick={() => { this.renderEliminarArchivo(`${filesID}`) }} style={{ background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 100%)' }} className="ui  tiny tag label">Eliminar</a>  </p><br /></div>);
+                                    }} ><p> <i key={i} className="share icon" /> "  {file.name} "  <h5 onClick={() => { this.renderEliminarArchivo(`${filesID}`) }} style={{ background: 'linear-gradient(to right, rgb(239, 163, 26) 10%, rgb(243, 130, 38) 100%)' }} className="ui  tiny tag label">Eliminar</h5>  </p><br /></div>);
                                     //  console.log(imprimir);
                                 }
                                 this.setState({ files: imprimir });
@@ -420,9 +422,9 @@ class ListaObjetivosEquipo extends React.Component {
                         });
 
                     }
-
+                    return equipoC[key2];
                 });
-
+                return equipo[key];
             });
 
         }
@@ -502,8 +504,6 @@ class ListaObjetivosEquipo extends React.Component {
                 );
             });
 
-
-
             Object.keys(equipo).map((key, index) => {
                 Object.keys(equipoC).map((key2, index) => {
 
@@ -530,10 +530,13 @@ class ListaObjetivosEquipo extends React.Component {
                                         }}> {equipoC[key2].comentarios[key3].usuario} </b></p>
                                     </Segment>);
                                 }
+                                return equipoC[key2].comentarios[key3];
                             });
                         }
                     }
+                    return equipoC[key2];
                 });
+                return equipo[key];
             });
             const com = <div style={{ height: '8em', top: '-200px', overflow: 'auto', position: 'relative' }}>
                 {comEquipo}
@@ -552,13 +555,13 @@ class ListaObjetivosEquipo extends React.Component {
             let imprimir = [];
             Object.keys(listaEOB).map((key4, index) => {
                 const listaEOBT = listaEOB[key4];
-                if (!listaEOBT) return;
+                if (!listaEOBT) return null;
                 if (IdUsuario === key4) {
                     //    console.log(listaEOBT)
                     Object.keys(listaEOBT).map((key3, index) => {
                         const consultaTareaTT = listaEOBT[key3];
                         //      console.log(consultaTareaTT)
-                        if (!consultaTareaTT) return;
+                        if (!consultaTareaTT) return null;
                         Object.keys(consultaTareaTT).map((key33, index) => {
                             if (key3 === key2) {
 
@@ -582,11 +585,12 @@ class ListaObjetivosEquipo extends React.Component {
 
                                 imprimir.push(<div key={key33}  ><p> <i key={key33} className={icono} /> <b style={{ width: '60%', color: col }}>{consultaTareaTT[key33].concepto}</b>  </p><br /></div>);
                             }
-
+                            return consultaTareaTT[key33];
                         });
-
+                        return listaEOBT[key3];
                     });
                 }
+                return listaEOB[key4];
             });
 
             const actImp = <Segment style={{
@@ -612,10 +616,10 @@ class ListaObjetivosEquipo extends React.Component {
 
                 Object.keys(listaEOB).map((key4, index) => {
                     const listaEOBT = listaEOB[key4];
-                    if (!listaEOBT) return;
+                    if (!listaEOBT) return null;
                     Object.keys(listaEOBT).map((key3, index) => {
                         const consultaTareaTT = listaEOBT[key3];
-                        if (!consultaTareaTT) return;
+                        if (!consultaTareaTT) return null;
                         Object.keys(consultaTareaTT).map((key33, index) => {
                             if (key3 === equipo[key].key) {
 
@@ -634,19 +638,16 @@ class ListaObjetivosEquipo extends React.Component {
                                     icono = "trash icon";
                                     col = '#beb3ad';
                                 }
-
-
-
                                 imprimir.push(<div key={key33}  ><p> <i key={key33} className={icono} /> <b style={{ width: '60%', color: col }}>{consultaTareaTT[key33].concepto}</b>  </p><br /></div>);
                             }
-
+                            return consultaTareaTT[key33];
                         });
-
+                        return listaEOBT[key3];
                     });
-
+                    return listaEOB[key4];
                 });
 
-
+                return equipo[key];
 
             });
             const actImp = <Segment style={{
@@ -697,7 +698,9 @@ class ListaObjetivosEquipo extends React.Component {
                             <i className="google drive icon prueba-xx"> </i>
                         </button>);
                     }
+                    return equipoC[key2];
                 });
+                return equipo[key];
             });
         }
         this.setState({ espacios: esp })
@@ -736,8 +739,6 @@ class ListaObjetivosEquipo extends React.Component {
                     Object.keys(listaEOB).map((key3, index) => {
 
                         if (key3 === equipo[key].key) {
-
-
                             newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${listaEOB[key3].idUsuario}/${key3}`).push().key;
                             firebase.database().ref(`Usuario-Objetivos/${listaEOB[key3].idUsuario}/${key3}/comentarios/${newPostKey2}`).set({
                                 usuario,
@@ -746,17 +747,14 @@ class ListaObjetivosEquipo extends React.Component {
                                 concepto: this.state.comentario
                             });
                         }
+                        return listaEOB[key3];
                     });
+                    return equipo[key];
                 });
 
             }
-
-
             this.setState({ comentario: null });
-
         }
-
-
         this.handleActualizar(objetivo);
         this.setState({ detalleO: '' });
     }
@@ -778,30 +776,25 @@ class ListaObjetivosEquipo extends React.Component {
             const opciones = Object.keys(cconsulta).map((key2, index) => {
 
                 if (!cconsulta[key2])
-                    return;
+                    return null;
                 //muestra los objetivos propios del gestor y compartidos
                 if (cconsulta[key2].gestor) {
                     if (!cconsulta[key2].propio && !cconsulta[key2].compartidoEquipo)
-                        return;
+                        return null;
                 }
 
-                if (this.props.equipoConsulta.sell !== key2) return;
+                if (this.props.equipoConsulta.sell !== key2) return null;
 
                 const objetivo = cconsulta[key2];
-                let factor = {};
+
                 let tareasCompleta = 0;
                 let resultado = cconsulta[key2].avance ? cconsulta[key2].avance : 0;
-                let iconGetor = 'assistive listening systems';
-                let boolGestor = false;
-                const usuarioIF = cconsulta[key2].idUsuario;
 
                 let iconoObjetivo = 'Objetivo personal';
                 if (cconsulta[key2].tipo === "Es parte de mi flujo de trabajo")
                     iconoObjetivo = "Objetivo de flujo de trabajo";
                 if (cconsulta[key2].compartidoEquipo)
                     iconoObjetivo = "Objetivo de equipo";
-
-
 
                 if (cconsulta[key2].estado === 'activo' || cconsulta[key2].estado === 'validar') {
                     const listaEOB = this.props.listaObjetivo;
@@ -817,19 +810,20 @@ class ListaObjetivosEquipo extends React.Component {
 
                             if (key2 === this.state.factores[keyfac].key)
                                 factorObjetivo = this.state.factores[keyfac].puntos;
-
+                            return this.state.factores[keyfac];
                         });
+
 
                     }
                     Object.keys(listaEOB).map((key4, index) => {
                         const listaEOBT = listaEOB[key4];
-                        if (!listaEOBT) return;
+                        if (!listaEOBT) return null;
                         //    console.log(listaEOBT)
                         Object.keys(listaEOBT).map((key3, index) => {
 
                             const consultaTareaTT = listaEOBT[key3];
                             //      console.log(consultaTareaTT)
-                            if (!consultaTareaTT) return;
+                            if (!consultaTareaTT) return null;
                             Object.keys(consultaTareaTT).map((key33, index) => {
 
                                 if (key3 === key2) {
@@ -837,6 +831,7 @@ class ListaObjetivosEquipo extends React.Component {
                                         tareasCompleta = tareasCompleta + 1;
                                     }
                                 }
+                                return consultaTareaTT[key33];
                             });
                             // the.increment(factorObjetivo, numeroTareasTs);
 
@@ -855,16 +850,12 @@ class ListaObjetivosEquipo extends React.Component {
                             else
                                 resul = Math.round((tareasCompleta / atrabajo) * 65);
 
-                            factor = { factor: factorObjetivo, numero: tareasCompleta };
+
                             resultado = cconsulta[key2].avance ? resultado : resul;
-
+                            return listaEOBT[key3];
                         });
+                        return listaEOB[key4];
                     });
-                    if (cconsulta[key2].estado === 'activo') {
-                        iconGetor = 'user times';
-                        boolGestor = true;
-                    }
-
 
                     let style = {
                         borderRadius: '35px',
@@ -893,19 +884,7 @@ class ListaObjetivosEquipo extends React.Component {
                         }
                     }
 
-                    let style2 = {
-                        borderRadius: 0.2,
-                    };
-
-                    if (window.screen.width < 500) {
-                        style2 = {
-                            overflow: 'auto',
-                            height: '360px',
-                        };
-
-                    }
                     ///mask={['(', /[1-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]}
-
 
                     let flujo = this.props.equipoConsulta.flujo;
                     let fase = 'No tiene ninguna fase relacionada';
@@ -917,8 +896,10 @@ class ListaObjetivosEquipo extends React.Component {
                                     if (parseInt(keyFf) === cconsulta[key2].fase && cconsulta[key2].tipo !== 'Unico') {
                                         fase = flujoF[keyFf].label;
                                     }
+                                    return flujoF[keyFf];
                                 });
                             }
+                            return flujo[keyF];
                         });
                     }
                     if (this.state.estadoSel !== this.props.equipoConsulta.sell) {
@@ -1107,7 +1088,7 @@ class ListaObjetivosEquipo extends React.Component {
                         </div >
                     );
                 }
-
+                return null;
             });
 
             return opciones;

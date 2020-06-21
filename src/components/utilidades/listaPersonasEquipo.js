@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
 import { Image, Progress, Segment } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas } from '../modules/chatBot/actions';
 
@@ -60,13 +59,12 @@ class listPersonasEquipo extends React.Component {
 
         if (this.props.diateletrabajo && Object.keys(this.props.diateletrabajo).length > 0) {
             const dias = this.props.diateletrabajo;
-            Object.keys(dias).find(function (element) {
+            Object.keys(dias).find((element) => {
 
                 if (element === key) {
                     dia = dias[element];
-                    return;
                 }
-
+                return null;
             });
 
             const fecha = new Date();
@@ -87,10 +85,10 @@ class listPersonasEquipo extends React.Component {
         }
         return (
             <div className="ui compact menu">
-                <a className="item">
-                    <i className="calendar alternate outline icon"></i> Dia de teletrabajo
+                <h5 className="item">
+                    <i  className="calendar alternate outline icon"></i> Dia de teletrabajo
                     <div className={classNames}>{fechaM}</div>
-                </a>
+                </h5>
 
             </div>
         );
@@ -158,10 +156,10 @@ class listPersonasEquipo extends React.Component {
                 if (Object.keys(cconsulta).find((key2, index) => key2 === key)) {
 
                     if (key === this.props.userId) {
-                        return;
+                        return null;
                     }
 
-                    if (cconsulta[key].Rol === '2') return;
+                    if (cconsulta[key].Rol === '2') return null;
                     const resultado = 100;
 
                     return (
@@ -176,7 +174,7 @@ class listPersonasEquipo extends React.Component {
                                     <div className="ui header"   >{cconsulta[key].usuario}</div>
                                     <div className="description"   >{cconsulta[key].cargo ? cconsulta[key].cargo : ''}</div>
                                     {this.renderCalendario(key)}
-                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} color='purple' size='small' attached='top' attached='bottom' />
+                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} color='purple' size='small' attached='bottom' />
                                 </Segment>
 
                             </div>
@@ -185,7 +183,7 @@ class listPersonasEquipo extends React.Component {
 
 
                 }
-
+                return null;
             });
 
 

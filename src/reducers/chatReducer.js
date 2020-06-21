@@ -3,7 +3,6 @@ import {
     CHAT_OFF,
     CHAT_UBI,
     COLOR_THEME,
-    USER_ROL,
     NOMBRE_USER,
     NUMERO_PREGUNTA,
     IDCHAT,

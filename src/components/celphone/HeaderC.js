@@ -1,15 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import GoogleAuth from '../loginGoogle/GoogleAuth';
 import image from '../../images/logo.png';
-import { Image, Header, Button, Popup, Divider, List, Icon } from 'semantic-ui-react'
+import { Image, Icon } from 'semantic-ui-react'
 import '../styles/ingresoHupity.css';
-import procolombia from '../../images/procolombia.png';
 import { connect } from 'react-redux';
-import { relative } from 'path';
-
 import perfil from '../../images/perfil.png';
-const timeoutLength2 = 2000;
+
 class HeadersC extends React.Component {
 
     state = {
@@ -107,7 +103,7 @@ class HeadersC extends React.Component {
         return (
             <div className="ui secondary pointing menu" style={{ 'box-shadow': '0px 1.5px 0px 0px #fbbd08', height: '5em' }}>
                 <Link to="/dashboard" className="item">
-                    <img className="ui tiny rounded image" src={image} id='1' />
+                    <img alt='hupity home' className="ui tiny rounded image" src={image} id='1' />
                 </Link>
                 {perfilCel}
             </div>

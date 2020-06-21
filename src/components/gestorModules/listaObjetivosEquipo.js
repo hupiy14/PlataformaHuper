@@ -58,11 +58,13 @@ class ListaObjetivosEquipo extends React.Component {
                 Object.keys(cconsulta).map((key3, index) => {
                     if (this.state.porInputs[key].key === key3) {
                         const data = { ...cconsulta[key3], porcentajeResp: this.state.porInputs[key].por }
-                       firebase.database().ref(`Usuario-Objetivos/${this.state.porInputs[key].idUsuario}/${this.state.porInputs[key].key}`).set({
+                        firebase.database().ref(`Usuario-Objetivos/${this.state.porInputs[key].idUsuario}/${this.state.porInputs[key].key}`).set({
                             ...data
                         });
                     }
+                    return cconsulta[key3];
                 });
+                return this.state.porInputs[key];
             });
         }
 
@@ -120,12 +122,8 @@ class ListaObjetivosEquipo extends React.Component {
             window.open(`https://drive.google.com/drive/folders/${this.state.detalleO.carpeta}`);
     }
 
-
     eliminarObjetivo(key) {
-        var updates = {};
         let idObjetivo;
-
-
         const cconsulta = this.props.equipoConsulta;
         Object.keys(cconsulta).map((key2, index) => {
             if (cconsulta[key2].estado === 'activo' || cconsulta[key2].estado === 'validar')
@@ -133,6 +131,7 @@ class ListaObjetivosEquipo extends React.Component {
                     idObjetivo = key2;
                     //  console.log(key2);
                 }
+            return cconsulta[key2];
         });
 
 
@@ -141,9 +140,9 @@ class ListaObjetivosEquipo extends React.Component {
 
             if (key2 === idObjetivo) {
                 obj[key2] = undefined;
-                return;
+                return null;
             }
-
+            return obj[key2];
         });
 
         this.props.equipoConsultas(this.props.equipoConsulta);
@@ -224,14 +223,14 @@ class ListaObjetivosEquipo extends React.Component {
             const opciones = Object.keys(cconsulta).map((key2, index) => {
 
                 if (!cconsulta[key2])
-                    return;
+                    return null;
                 //muestra los objetivos propios del gestor y compartidos
-             
+
                 if (cconsulta[key2].compartidoEquipo && (!this.props.equipoConsulta.sell || this.props.equipoConsulta.sell === 0)) {
-                    return;
+                    return null;
                 }
                 else if (cconsulta[key2].compartidoEquipo && !cconsulta[key2].idUsuarioGestor)
-                    return;
+                    return null;
 
                 const objetivo = cconsulta[key2];
                 const factorObjetivo = cconsulta[key2].numeroTareas;
@@ -254,32 +253,35 @@ class ListaObjetivosEquipo extends React.Component {
                     const listaEOB = this.props.listaObjetivo;
                     Object.keys(listaEOB).map((key4, index) => {
                         const listaEOBT = listaEOB[key4];
-                        if (!listaEOBT) return;
+                        if (!listaEOBT) return null;
                         //    console.log(listaEOBT)
                         Object.keys(listaEOBT).map((key3, index) => {
 
                             const consultaTareaTT = listaEOBT[key3];
                             //      console.log(consultaTareaTT)
-                            if (!consultaTareaTT) return;
+                            if (!consultaTareaTT) return null;
                             Object.keys(consultaTareaTT).map((key33, index) => {
                                 if (key3 === key2) {
                                     if (consultaTareaTT[key33].estado === 'finalizado') {
                                         tareasCompleta = tareasCompleta + 1;
                                     }
                                 }
+                                return consultaTareaTT[key33];
                             });
                             // the.increment(factorObjetivo, numeroTareasTs);
                             factor = { factor: (100 / factorObjetivo), numero: tareasCompleta };
                             resultado = cconsulta[key2].avance ? resultado : Math.round(factor.factor * tareasCompleta);
                             // console.log(resultado);
+                            return listaEOBT[key3];
                         });
+                        return listaEOB[key4];
                     });
                     if (cconsulta[key2].estado === 'activo') {
                         iconGetor = 'user times';
                         boolGestor = true;
                     }
                     if (this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0 && this.props.equipoConsulta.sell !== usuarioIF) {
-                        return;
+                        return null;
                     }
                     ///configuracion responsive
                     let cssBotonesEdicion = `right aling-Derecha`;
@@ -301,17 +303,6 @@ class ListaObjetivosEquipo extends React.Component {
                         }
                     }
 
-                    let style2 = {
-                        borderRadius: 0.2,
-                    };
-
-                    if (window.screen.width < 500) {
-                        style2 = {
-                            overflow: 'auto',
-                            height: '360px',
-                        };
-
-                    }
                     ///mask={['(', /[1-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]}
 
                     return (
@@ -488,6 +479,7 @@ class ListaObjetivosEquipo extends React.Component {
                         </div >
                     );
                 }
+                return null;
             });
             return opciones;
 

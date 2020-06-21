@@ -1,18 +1,6 @@
 import React from 'react';
 import CrearGrafica from '../utilidades/CrearGrafica';
 
-
-const datosG1 = [
-    100,
-    80,
-    70,
-    75,
-    60,
-    40,
-    35,
-];
-
-
 class CrearGraficaHistorico extends React.Component {
     render() {
 

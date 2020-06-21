@@ -1,35 +1,22 @@
 import React from 'react';
 import CrearGrafica from '../utilidades/CrearGrafica';
-import randomScalingFactor from '../../lib/randomScalingFactor';
 import moment from 'moment';
-
-
-
 //productividad sera el resultado de las entregas de cada objetivo sumado la dificultad
 //calidad medida subjetiva del jefe
 
 
 let calData = [];
 let prodData = [];
-const datosG111 = [
-    80, 80, 60, 80, 60, 80
-];
-
-let labelsDias = [];
-
-
-
-
 class CrearGraficaProd extends React.Component {
 
     render() {
 
         let datos = [];
-        labelsDias = [];
+        let labelsDias = [];
         prodData = [];
         calData = [];
         let fecha = null;
-      //  console.log(this.props.prod)
+        //  console.log(this.props.prod)
         //console.log(this.props.cal)
 
         Object.keys(this.props.prod).map((key, index) => {
@@ -48,6 +35,7 @@ class CrearGraficaProd extends React.Component {
                 calData.push(this.props.cal[key] ? this.props.cal[key].calidad * 100 : null);
                 fecha = this.props.prod[key].fecha;
             }
+            return this.props.prod[key];
         });
         if (labelsDias.length < 6) {
             for (let index = 0; index < 8 - labelsDias.length; index++) {

@@ -33,7 +33,7 @@ class ingresoPlataforma extends React.Component {
                 <br></br>
                 <br></br>
                 <div className="inline center">
-                    <img className="ui medium rounded image" src={image} />
+                    <img alt='hupity tu compañero en el trabajo' className="ui medium rounded image" src={image} />
                 </div>
                 <div className="inline center" >
                     <br></br>

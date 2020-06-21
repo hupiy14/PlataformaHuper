@@ -2,54 +2,23 @@ import React from 'react';
 import { connect } from 'react-redux';
 import ListFormacion from './listaFormacionesEquipo';
 import '../styles/ingresoHupity.css';
-import randomScalingFactor from '../../lib/randomScalingFactor'
 import ListaObjetivosE from '../../components/gestorModules/objetivosG';
 import DetailObj from '../../components/gestorModules/detailobjectG';
 import ListaPersonasEquipo from '../utilidades/listaPersonasEquipo';
 import {
-    Button,
     Checkbox,
-    Grid,
-    Header,
-    Icon,
-    Image,
-    Label,
-    Menu,
-    Segment,
-    Sidebar,
-    Radio,
-    MessageHeader,
 }
     from 'semantic-ui-react';
-import PropTypes from 'prop-types'
 
 import GraficaG1 from '../gestorModules/CrearGraficaGestor';
-import GraficaG2 from '../gestorModules/CreargraficaHistorico';
-import GraficaG3 from '../gestorModules/GraficoTICgestos';
-import GraficaG4 from '../gestorModules/CrearGraficaProductividad';
 import firebase from 'firebase';
-import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, verEquipos } from '../modules/chatBot/actions';
+import { listaObjetivos, equipoConsultas, verEquipos } from '../modules/chatBot/actions';
 import moment from 'moment';
 
 const timeoutLength = 1000;
 const timeoutLength2 = 300;
 const timeoutLength3 = 1200;
 let labelsMonths = [];
-const HorizontalSidebar = ({ animation, direction, visible, equipo }) => (
-    <Sidebar as={Segment} animation={animation} direction={direction} visible={visible}>
-        <Grid textAlign='center'>
-            <Grid.Row columns={1}>
-                <Grid.Column>
-                    {equipo}
-
-                </Grid.Column>
-            </Grid.Row>
-
-        </Grid>
-    </Sidebar>
-)
-
-
 
 class DashBoard extends React.Component {
     state = {
@@ -62,7 +31,7 @@ class DashBoard extends React.Component {
         grafica: null, numeroO: 0, UtilFactors: null, selEq: null,
         semanasP: [], facSemana: null, nivelEquipo: null, productividadobj: [],
         valorSlide: 0, actDif: [], calidadSubjetiva: null, factorCalidad: null,
-        
+
     };
 
     handleVariables = (x) => {
@@ -118,7 +87,6 @@ class DashBoard extends React.Component {
     };
 
     consultaProductivad(year, Nsemana, puntos, puntosP, fPP, fE, nsemanaMes, mes, tipo) {
-        const fecha = new Date();
         let valido = false;
         const list = this.state.semanasP;
         if (list) {
@@ -127,13 +95,15 @@ class DashBoard extends React.Component {
                 Object.keys(listaY).map((key2, index) => {
                     if (year === key && Nsemana === key2)
                         valido = true;
+                    return listaY[key2];
                 });
+                return list[key];
             });
         }
 
         if (valido === false) {
             firebase.database().ref(`Equipo-Puntospro/${tipo}/${year}/${Nsemana}`).set({
-                fechaCreado: moment(new Date).format('YYYY-MM-DD'),
+                fechaCreado: moment(new Date()).format('YYYY-MM-DD'),
                 unidadesTrabajadas: puntos,
                 unidadesPlan: puntosP ? puntosP : 0,
                 productividadPropia: fPP,
@@ -146,7 +116,6 @@ class DashBoard extends React.Component {
     }
 
     consultaProductivadPersonal(year, Nsemana, puntos, puntosP, fPP, fE, fEq, nsemanaMes, mes, tipo) {
-        const fecha = new Date();
         let valido = false;
         const list = this.state.semanasP;
         if (list) {
@@ -155,13 +124,15 @@ class DashBoard extends React.Component {
                 Object.keys(listaY).map((key2, index) => {
                     if (year === key && Nsemana === key2)
                         valido = true;
+                    return listaY[key2];
                 });
+                return list[key];
             });
         }
-    
+
         if (valido === false) {
             firebase.database().ref(`Usuario-Puntospro/${tipo}/${year}/${Nsemana}`).set({
-                fechaCreado: moment(new Date).format('YYYY-MM-DD'),
+                fechaCreado: moment(new Date()).format('YYYY-MM-DD'),
                 unidadesTrabajadas: puntos,
                 unidadesPlan: puntosP,
                 productividadPropia: fPP,
@@ -182,32 +153,31 @@ class DashBoard extends React.Component {
         const diat = new Date();
         const ticUsuarios = this.props.equipoConsulta.listaPersonas;
         const ns = this.getWeekNumber(diat);
-        let datos = [];
         let datosA = [];
         const arrL = ['Talneto en tus actividades', 'Impacto de mis actividades', 'Responsabilidad en tus actividades', 'Talento grupal', 'Impacto en tu equipo', 'Motivacion en tu equipo', 'Mi talento', 'Mi impacto', 'Mi compromiso'];
         let inicio = 0;
         let limite = 2;
-        let valores = [];
+        let datos2 = [];
 
         if (ns - 3 > 0) {
             inicio = ns - 2;
             limite = ns + 1;
         }
         for (let index = inicio; index < limite; index++) {
-            const an = (new Date).getFullYear() + "-01-01";
+            const an = (new Date()).getFullYear() + "-01-01";
             const mm = (moment(an, "YYYY-MM-DD").add('days', index * 7).week() - (moment(an, "YYYY-MM-DD").add('days', index * 7).month() * 4));
             Object.keys(ticUsuarios).map((key2, index2) => {
                 let ticUsuario = [];
                 if (ticUsuarios[key2].rol === '2')
-                    return;
+                    return null;
                 if (this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0 && key2 !== this.props.equipoConsulta.sell) {
-                    return;
+                    return null;
                 }
 
 
                 ticUsuario = ticUsuarios[key2].tic ? ticUsuarios[key2].tic : [];
                 Object.keys(ticUsuario).map((key, index2) => {
-                    const valores = [];
+                    let valores = [];
 
                     if (parseInt(key) === index) {
                         const lab = 'Sen ' + (mm - 2) + '. ' + moment(an, "YYYY-MM-DD").add('days', index * 7).format('MMMM');
@@ -230,11 +200,12 @@ class DashBoard extends React.Component {
 
                         //   datos.push({ label: "MIT " + lab, data: valores });
                     }
+                    return null;
                 });
-
+                return null;
             });
 
-            datos = [];
+            
             Object.keys(datosA).map((key, index2) => {
                 const dt = [];
                 dt.push(datosA[key].te);
@@ -246,13 +217,13 @@ class DashBoard extends React.Component {
                 dt.push(datosA[key].cf);
                 dt.push(datosA[key].ce);
                 dt.push(datosA[key].ct);
-                datos.push({ label: "MIT " + key, data: dt });
-
+                datos2.push({ label: "MIT " + key, data: dt });
+                return null;
             });
 
 
         }
-        return { arrL, datos };
+        return { arrL, datos2 };
     }
 
 
@@ -284,7 +255,7 @@ class DashBoard extends React.Component {
                     starCountRef2.on('value', (snapshot) => {
                         const valor = snapshot.val();
                         if (!valor)
-                            return
+                            return null;
                         variable[key] = valor
                         this.props.listaObjetivos({ ...this.props.listaObjetivo, ...variable });
                     });
@@ -307,6 +278,7 @@ class DashBoard extends React.Component {
                         this.setState({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
                         this.props.equipoConsultas({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
                     });
+                    return consulta[key];
                 });
 
             });
@@ -341,15 +313,14 @@ class DashBoard extends React.Component {
 
                     Object.keys(lista).map((key2, index) => {
                         objetivoT[key2] = { ...lista[key2], idUsuario: key };
+                        return null;
                     })
 
                     const objetos = { ...this.props.equipoConsulta, ...objetivoT };
                     this.props.equipoConsultas({ ...this.props.equipoConsulta, ...objetos });
 
                 });
-
-
-
+                return equipo[key];
             });
 
         });
@@ -382,10 +353,13 @@ class DashBoard extends React.Component {
                         entro = true;
                         actividadesDia[key2] = { fecha: actividadesDia[key2].fecha, avance: actividadesDia[key2].avance + (arr[key].cantidad * arreglo[key3].avance * arreglo[key3].factor) }
                     }
+                    return actividadesDia[key2];
                 });
                 if (entro === false)
                     actividadesDia.push({ fecha: arr[key].fecha, avance: arr[key].cantidad * arreglo[key3].avance * arreglo[key3].factor });
+                return null;
             });
+            return null;
         });
         let datos = [];
         let fechas = this.arregloFechaSemana();
@@ -398,9 +372,11 @@ class DashBoard extends React.Component {
                     datos.push(acumulado);
                     flagRegistro = true;
                 }
+                return null;
             });
             if (flagRegistro === false)
                 datos.push(acumulado);
+            return null;
         });
         return datos;
     }
@@ -414,18 +390,18 @@ class DashBoard extends React.Component {
         let factorSemana = 0;
         let factorEqHup = [];
         //Encontrar factor
-        if(!objs) return;
+        if (!objs) return;
         this.setState({ ObjsFactors: [] });
 
         Object.keys(objs).map((key, index) => {
 
             if (!objs[key] || !objs[key].concepto)
-                return;
+                return null;
             if (this.props.userId === objs[key].idUsuario)
-                return;
+                return null;
 
             if (this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== objs[key].idUsuario && !this.props.equipoConsulta.factorProgreso)
-                return;
+                return null;
 
 
             let facPrioridad = 1;
@@ -436,25 +412,28 @@ class DashBoard extends React.Component {
             let facCalidad = 1;
             let facValidacion = 1;
             let facProductividad = 1;
-            let nTareasFinalizados = 0;
             let nTareas = 0;
 
             //Object.keys(this.state.UtilFactors.Calidad).map((key2, index) =>{});
             Object.keys(this.state.UtilFactors.Dificultad).map((key2, index) => {
                 if (objs[key].dificultad === this.state.UtilFactors.Dificultad[key2].concepto)
                     facDificultad = this.state.UtilFactors.Dificultad[key2].valor;
+                return this.state.UtilFactors.Dificultad[key2];
             });
             Object.keys(this.state.UtilFactors.Prioridad).map((key2, index) => {
                 if (objs[key].prioridad === key2)
                     facPrioridad = this.state.UtilFactors.Prioridad[key2];
+                return this.state.UtilFactors.Prioridad[key2];
             });
             Object.keys(this.state.UtilFactors.Tipo).map((key2, index) => {
                 if (objs[key].tipo === this.state.UtilFactors.Tipo[key2].concepto)
                     facTipo = this.state.UtilFactors.Tipo[key2].valor;
+                return this.state.UtilFactors.Tipo[key2];
             });
             Object.keys(this.state.UtilFactors.ValidacionGestor).map((key2, index) => {
                 if (objs[key].estado === this.state.UtilFactors.ValidacionGestor[key2].concepto)
                     facValidacion = this.state.UtilFactors.ValidacionGestor[key2].valor;
+                return this.state.UtilFactors.ValidacionGestor[key2];
             });
             //algoritmo de medicion del trabajo
             const puntos = ((1 + facPrioridad + facTipo) * facRepeticiones * facDificultad) * facCompartido * facCalidad * facValidacion * facProductividad;
@@ -464,7 +443,7 @@ class DashBoard extends React.Component {
             let tiempo = 0;
             let tiempoMM = 0;
             if (!tareas)
-                return;
+                return null;
             Object.keys(tareas).map((key5, index) => {
                 let tar = tareas[key5];
                 if (tar) {
@@ -492,16 +471,19 @@ class DashBoard extends React.Component {
 
 
                                         }
+                                        return actividades[key4];
                                     });
                                     if (entro === false) {
                                         actividades.push({ fecha: ttareas[key3].dateEnd, cantidad: 1 });
                                     }
-                                    nTareasFinalizados++;
                                 }
+                                return ttareas[key3];
                             });
                         }
+                        return tar[key2];
                     });
                 }
+                return tareas[key5];
             });
             const fact = this.state.ObjsFactors;
             fact[key] = {
@@ -514,6 +496,7 @@ class DashBoard extends React.Component {
             };
             this.setState({ ObjsFactors: fact });
             factorSemana = factorSemana + Math.round(puntos);
+            return null;
         });
         this.props.equipoConsultas({ ...this.props.equipoConsulta, factorProgreso: factorEqHup })
         this.setState({ factorSemana });
@@ -521,7 +504,6 @@ class DashBoard extends React.Component {
 
     arregloFechaSemana() {
         var fecahMinima = new Date();
-        const diferencia = fecahMinima.getDay() - 1;
         fecahMinima = moment(fecahMinima).add(-7, 'days').format('YYYY-MM-DD');
         //fecahMinima.setDate(fecahMinima.getDate() + (-(diferencia)));
         let fechas = [];
@@ -533,7 +515,6 @@ class DashBoard extends React.Component {
     arregloFechaMes() {
         var fecahMinima = new Date();
         labelsMonths = [];
-        const diferencia = fecahMinima.getDay() - 1;
         fecahMinima = moment(fecahMinima).add(-7, 'days').format('YYYY-MM-DD');
         //   fecahMinima.setDate(fecahMinima.getDate() + (-(diferencia)));
         let fechas = [];
@@ -588,26 +569,13 @@ class DashBoard extends React.Component {
         this.handleVariables();
     }
 
-    getWeekNumber(date) {
-        var d = new Date(date);  //Creamos un nuevo Date con la fecha de "this".
-        d.setHours(0, 0, 0, 0);   //Nos aseguramos de limpiar la hora.
-        d.setDate(d.getDate() + 4 - (d.getDay() || 7)); // Recorremos los días para asegurarnos de estar "dentro de la semana"
-        //Finalmente, calculamos redondeando y ajustando por la naturaleza de los números en JS:
-        return Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
-    };
-
-    
-
-
-
- 
-
     renderTituloObjetivo() {
         if (this.props.equipoConsulta && this.props.equipoConsulta.sell && this.props.equipoConsulta.sell !== 0) {
             let titulo;
             Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
                 if (key === this.props.equipoConsulta.sell)
                     titulo = this.props.equipoConsulta.listaPersonas[key].usuario;
+                return this.props.equipoConsulta.listaPersonas[key];
             });
             this.setState({ seleccion: titulo });
             return 'Lista de Objetivos ' + titulo;
@@ -700,11 +668,12 @@ class DashBoard extends React.Component {
 
 
                 }
-
+                return arreglo[key];
             });
 
             factorPlan.push(factorP);
             factorTrab.push(factorT);
+            return fechas[key2];
         });
         this.setState({ facSemana: { factorTrabS, factorPlanS } });
 
@@ -739,8 +708,8 @@ class DashBoard extends React.Component {
                         const facActividades = (actividadesW > 2 ? 2 : actividadesW) * 0.1;
 
                         //factor actividades por dificultad
-                        const dificultadA = (arreglo[keyA].actividades.length > 0 ? arreglo[keyA].actividades.length : 1);
-                        const dificultadB = dificultadA;
+                        let dificultadA = (arreglo[keyA].actividades.length > 0 ? arreglo[keyA].actividades.length : 1);
+                        let dificultadB = dificultadA;
                         let dicultadW = 1;
 
                         //
@@ -753,8 +722,10 @@ class DashBoard extends React.Component {
                                         if (keyE === arreglo[keyA].obj.dificultad) {
                                             dificultadA = list2[keyE];
                                         }
+                                        return list2[keyE];
                                     });
                                 }
+                                return list[keyD];
                             });
                             const lt = this.state.actDif;
                             if (dificultadB !== dificultadA) {
@@ -779,9 +750,11 @@ class DashBoard extends React.Component {
                     }
 
                 }
+                return arreglo[keyA];
             });
 
             calidadF['sem.' + factorTrabS[keyP].nsemanMes + ' ' + factorTrabS[keyP].mes] = { calidad, fecha: factorTrabS[keyP].fecha };
+            return factorTrabS[keyP];
         });
         this.setState({ factorCalidad: calidadF });
         this.guardarDifultad();
@@ -799,6 +772,7 @@ class DashBoard extends React.Component {
         Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
             if (this.props.equipoConsulta.listaPersonas[key].Rol === '3')
                 numeroPersonas++;
+                return this.props.equipoConsulta.listaPersonas[key];
         });
 
 
@@ -830,8 +804,10 @@ class DashBoard extends React.Component {
                                     fEq = arrayValores[key3].valor / (!numeroPersonas ? 1 : numeroPersonas);
                                     fE = arrayValores[key3].valorEsperado / (!numeroPersonas ? 1 : numeroPersonas);
                                 }
+                                return arrayValores[key3];
                             });
                         }
+                        return this.state.nivelEquipo.unidadesEquipo[key2];
                     });
                     //algortimo de productividad personas
                     const valor = (fT / fP) * 0.5 + (fT / fE) * 0.2 + (fEq === 0 ? 1 : fT / fEq) * 0.3;
@@ -843,10 +819,11 @@ class DashBoard extends React.Component {
                     //algortimo de productividad equipo
                     const valor = (fT / fP) * 0.6 + fE * 0.4;
                     console.log(valor)
-                  
+
                     productividadSemana['sem.' + factorPlanS[key].nsemanMes + ' ' + factorPlanS[key].mes] = { valor, fecha: factorPlanS[key].fecha };
                     afT[factorPlanS[key].year] = { ...afT[factorPlanS[key].year], [factorPlanS[key].semana]: { valor: fT, valorEsperado: fTE } }
                 }
+                return this.props.equipoConsulta.listaPersonas[key];
             });
         }
         else { ///si no tiene ningun valor
@@ -877,6 +854,7 @@ class DashBoard extends React.Component {
             Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
                 if (key === this.props.equipoConsulta.sell)
                     titulo = this.props.equipoConsulta.listaPersonas[key].usuario;
+                    return this.props.equipoConsulta.listaPersonas[key];
             });
             this.setState({ seleccion: titulo });
             return 'Lista de Formaciones ' + titulo;
@@ -897,6 +875,7 @@ class DashBoard extends React.Component {
 
                 if (key === this.props.equipoConsulta.sell)
                     carpeta = this.state.equipo[key].linkWs;
+                    return this.state.equipo[key];
             });
         }
         return carpeta;
@@ -912,7 +891,7 @@ class DashBoard extends React.Component {
             Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
                 if (key === this.props.equipoConsulta.sell)
                     titulo = this.props.equipoConsulta.listaPersonas[key].usuario;
-
+                    return this.props.equipoConsulta.listaPersonas[key];
             });
             this.setState({ seleccion: titulo });
         }
@@ -955,16 +934,7 @@ class DashBoard extends React.Component {
 
     renderGestor() {
 
-        let porcentajeTexto = 0;
-        let verUsuario = 'none';
-
-        if (this.state.seleccion) {
-            porcentajeTexto = this.state.seleccion.length * 8.5;
-            verUsuario = 'block';
-        }
-
         if (this.state.listaPersonas && this.state.equipo && this.state.diateletrabajo) {
-
             // console.log(this.props.usuarioDetail);
             return (
                 <div className="ui form">
@@ -1008,6 +978,6 @@ const mapStateToProps = (state) => {
         userId: state.auth.userId,
     };
 };
-export default connect(mapStateToProps, {  equipoConsultas, listaObjetivos, verEquipos })(DashBoard);
+export default connect(mapStateToProps, { equipoConsultas, listaObjetivos, verEquipos })(DashBoard);
 
 ///<ListAdjuntos />

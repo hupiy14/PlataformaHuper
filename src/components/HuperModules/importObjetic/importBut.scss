@@ -10,13 +10,13 @@
  .menus-open-button {
     background: #EEEEEE;
     border-radius: 100%;
-    width: 80px;
-    height: 80px;
-    margin-left: -40px;
+    width: 2.8em;
+    height: 2.8em;
+    margin-left: -1em;
     position: absolute;
     color: #FFFFFF;
     text-align: center;
-    line-height: 80px;
+    line-height: 2em;
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
     -webkit-transition: -webkit-transform ease-out 200ms;
@@ -30,15 +30,15 @@
  }
  
  .liness {
-    width: 25px;
-    height: 3px;
+    width: 1em;
+    height: 0.1em;
     background: #596778;
     display: block;
     position: absolute;
     top: 50%;
     left: 50%;
-    margin-left: -12.5px;
-    margin-top: -1.5px;
+    margin-left: -0.5em;
+    margin-top: -0.05em;
     -webkit-transition: -webkit-transform 200ms;
     transition: -webkit-transform 200ms;
     transition: transform 200ms;
@@ -82,8 +82,8 @@
     bottom: 0;
     left: 0;
     right: 0;
-    width: 80px;
-    height: 80px;
+    width: 2em;
+    height: 2em;
     text-align: center;
     box-sizing: border-box;
     font-size: 26px;
@@ -174,7 +174,7 @@
  }
  
  .menus-open:checked ~ .menus-item:nth-child(4) {
-    transition-duration: 280ms;
+    transition-duration: 280;
     -webkit-transition-duration: 280ms;
     -webkit-transform: translate3d(90.9466px, -52.47586px, 0);
     transform: translate3d(90.9466px, -52.47586px, 0);

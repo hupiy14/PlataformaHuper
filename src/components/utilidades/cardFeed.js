@@ -2,11 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import '../styles/ingresoHupity.css';
 import { Button, Header, Icon, Modal, Input, Image, Card } from 'semantic-ui-react';
-import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, pasoOnboardings } from '../modules/chatBot/actions';
-import _ from 'lodash';
+import { equipoConsultas, pasoOnboardings } from '../modules/chatBot/actions';
 import firebase from 'firebase';
-import moment from 'moment';
-import { Link } from 'react-router-dom';
 import history from '../../history';
 const timeoutLength = 150000;
 
@@ -156,7 +153,7 @@ class ListEjemplo extends React.Component {
                     var file = files[i];
                     //        console.log(file);
                     const filesID = file.id;
-                    imprimir.push(<div key={i} ><p> <i key={i} className="share icon" /> "  {file.name} "  <a onClick={() => { this.renderEliminarArchivo(`${filesID}`) }} className="ui  tiny green tag label">Eliminar</a>  </p><br /></div>);
+                    imprimir.push(<div key={i} ><p> <i key={i} className="share icon" /> "  {file.name} "  <h5 onClick={() => { this.renderEliminarArchivo(`${filesID}`) }} className="ui  tiny green tag label">Eliminar</h5>  </p><br /></div>);
                     //  console.log(imprimir);
                 }
 
@@ -243,7 +240,7 @@ class ListEjemplo extends React.Component {
 
         if (this.props.objetivoF.resaltar) {
             //   this.setState({ valueR: this.props.objetivoF.resaltar });
-            return (<a className="ui yellow right ribbon label">Destacado</a>);
+            return (<h5 className="ui yellow right ribbon label">Destacado</h5>);
         }
 
     }
@@ -281,7 +278,7 @@ class ListEjemplo extends React.Component {
 
             <div className="ui card ">
                 <div className="image big tamaño-Imagen" >
-                    <img ref={this.imageRef} style={{ height: '200px' }} src={this.props.image} />
+                    <img alt='Objetivo descripcion imagen' ref={this.imageRef} style={{ height: '200px' }} src={this.props.image} />
                 </div>
 
                 <div className="content">

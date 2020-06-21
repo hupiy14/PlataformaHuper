@@ -1,24 +1,16 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { chatOff, chatOn, signOut } from '../../actions';
-import ListImportan from '../utilidades/listaImportante';
-import ListEjemplo from '../utilidades/ListaEjemplo';
 import CrearGrafica from '../celphone/grafica';
 import CrearGraficaH from '../celphone/graficaHc';
 import CrearGraficaTIM from '../celphone/graficaMITC';
 import '../styles/ingresoHupity.css';
-import ListaActividades from '../HuperModules/actividadesHuper';
-import DashGestor from '../gestorModules/dashboardG';
-import Hupps from '../modules/Hupps';
 import firebase from 'firebase';
 import moment from 'moment';
 import history from '../../history';
-import { Grid, Modal, Menu, Segment, Button, Dimmer, Header, Icon, Image, Portal, Step, Label, Checkbox } from 'semantic-ui-react';
-import MenuChat from '../MenuChat';
+import { Menu, Segment, Checkbox } from 'semantic-ui-react';
 import { pasoOnboardings, listaFormaciones, estadochats } from '../modules/chatBot/actions';
 
-
-var ReactRotatingText = require('react-rotating-text');
 
 const timeoutLength6 = 200;
 
@@ -60,7 +52,7 @@ class DashBoard extends React.Component {
         activeItem2: null,
     }
 
-  
+
 
 
     componentDidMount() {
@@ -136,10 +128,13 @@ class DashBoard extends React.Component {
                         entro = true;
                         actividadesDia[key2] = { fecha: actividadesDia[key2].fecha, avance: actividadesDia[key2].avance + (arr[key].cantidad * arreglo[key3].avance * arreglo[key3].factor) }
                     }
+                    return actividadesDia[key2];
                 });
                 if (entro === false)
                     actividadesDia.push({ fecha: arr[key].fecha, avance: arr[key].cantidad * arreglo[key3].avance * arreglo[key3].factor });
+                return arr[key];
             });
+           return arreglo[key3];
         });
         let datos = [];
         let fechas = this.arregloFechaSemana();
@@ -152,9 +147,11 @@ class DashBoard extends React.Component {
                     datos.push(acumulado);
                     flagRegistro = true;
                 }
+                return actividadesDia[key];
             });
             if (flagRegistro === false)
                 datos.push(acumulado);
+                return fechas[key0];
         });
         return datos;
     }
@@ -174,32 +171,35 @@ class DashBoard extends React.Component {
             let facCalidad = 1;
             let facValidacion = 1;
             let facProductividad = 1;
-            let nTareasFinalizados = 0;
             let nTareas = 0;
 
             //Object.keys(this.state.UtilFactors.Calidad).map((key2, index) =>{});
             Object.keys(this.state.UtilFactors.Dificultad).map((key2, index) => {
                 if (objs[key].dificultad === this.state.UtilFactors.Dificultad[key2].concepto)
                     facDificultad = this.state.UtilFactors.Dificultad[key2].valor;
+                    return this.state.UtilFactors.Dificultad[key2];
             });
             Object.keys(this.state.UtilFactors.Prioridad).map((key2, index) => {
                 if (objs[key].prioridad === key2)
                     facPrioridad = this.state.UtilFactors.Prioridad[key2];
+                    return this.state.UtilFactors.Prioridad[key2];
             });
             Object.keys(this.state.UtilFactors.Tipo).map((key2, index) => {
                 if (objs[key].tipo === this.state.UtilFactors.Tipo[key2].concepto)
                     facTipo = this.state.UtilFactors.Tipo[key2].valor;
+                    return this.state.UtilFactors.Tipo[key2];
             });
             Object.keys(this.state.UtilFactors.ValidacionGestor).map((key2, index) => {
                 if (objs[key].estado === this.state.UtilFactors.ValidacionGestor[key2].concepto)
                     facValidacion = this.state.UtilFactors.ValidacionGestor[key2].valor;
+                    return this.state.UtilFactors.ValidacionGestor[key2];
             });
             //algoritmo de medicion del trabajo
             const puntos = ((1 + facPrioridad + facTipo) * facRepeticiones * facDificultad) * facCompartido * facCalidad * facValidacion * facProductividad;
 
             let actividades = [];
             if (!this.state.TareasObjs)
-                return;
+                return null;
             Object.keys(this.state.TareasObjs).map((key2, index) => {
                 if (key2 === key) {
                     const ttareas = this.state.TareasObjs[key2];
@@ -212,19 +212,23 @@ class DashBoard extends React.Component {
                                     entro = true;
                                     actividades[key4] = { fecha: actividades[key4].fecha, cantidad: actividades[key4].cantidad + 1 }
                                 }
+                                return actividades[key4];
                             });
                             if (entro === false) {
                                 actividades.push({ fecha: ttareas[key3].dateEnd, cantidad: 1 });
                             }
-                            nTareasFinalizados++;
+                           
                         }
+                        return ttareas[key2];
                     });
                 }
+                return this.state.TareasObjs[key2];
             });
             const fact = this.state.ObjsFactors;
             fact[key] = { factor: Math.round(puntos), avance: nTareas === 0 ? 0 : 1 / nTareas, actividades, fechafin: objs[key].fechafin, dateEnd: objs[key].dateEnd };
             this.setState({ ObjsFactors: fact })
             factorSemana = factorSemana + Math.round(puntos);
+           return objs[key];
         });
         this.setState({ factorSemana });
     }
@@ -241,9 +245,11 @@ class DashBoard extends React.Component {
                     factorP = factorP + arreglo[key].factor;
                 if (fechas[key2] === moment(arreglo[key].dateEnd, "YYYY-MM-DD").format("MM"))
                     factorT = factorT + arreglo[key].factor;
+                    return arreglo[key];
             });
             factorPlan.push(factorP);
             factorTrab.push(factorT);
+            return fechas[key2];
         });
 
         return ({ factorPlan, factorTrab });
@@ -261,7 +267,7 @@ class DashBoard extends React.Component {
         datos.push({ name: "Trabajo planificado", data: datosPlanificados, });
         datos.push({ name: "Progreso del trabajo", data: this.calcularAvancePorDia(this.state.ObjsFactors, this.state.factorSemana), hidden: true, });
         this.setState({
-            grafica: <div style={{ height: '34em'}}>
+            grafica: <div style={{ height: '34em' }}>
                 <Checkbox style={{ left: '-130px' }} checked={false} className="historico-padding" label='Histórico' onChange={(e, { checked }) => { this.handleDimmedChange(checked); }} toggle />
                 <CrearGrafica labelsX={labelsDias}
                     datos={datos}
@@ -280,7 +286,7 @@ class DashBoard extends React.Component {
         datos.push({ name: "Trabajo planificado", data: dat.factorPlan, hidden: true, });
         datos.push({ name: "Trabajo realizado", data: dat.factorTrab });
         this.setState({
-            grafica: <div style={{ height: '34em'}}>
+            grafica: <div style={{ height: '34em' }}>
                 <Checkbox style={{ left: '-130px' }} checked={true} className="historico-padding" label='Histórico' onChange={(e, { checked }) => { this.handleDimmedChange(checked); }} toggle />
                 <CrearGraficaH labelsX={labelsMonths}
                     datos={datos}
@@ -291,7 +297,7 @@ class DashBoard extends React.Component {
             </div>
         });
     }
-   
+
     handleDimmedChange(checked) {
         this.calculoDeAvance();
         if (checked)
@@ -308,17 +314,17 @@ class DashBoard extends React.Component {
         let datos = [];
         const arrL = ['Talneto en tus actividades', 'Impacto de mis actividades', 'Responsabilidad en tus actividades', 'Talento grupal', 'Impacto en tu equipo', 'Motivacion en tu equipo', 'Mi talento', 'Mi impacto', 'Mi compromiso'];
         const arrI = ['T. Actividad', 'I. Actividad', 'M. Actividad', 'T. equipo', 'I. equipo', 'M. equipo', 'Talento', 'Impacto', 'Compromiso'];
-       
+
         let inicio = 0;
         let limite = 2;
-        let valores = [];
+      
 
         if (ns - 3 > 0) {
             inicio = ns - 2;
             limite = ns + 1;
         }
         for (let index = inicio; index < limite; index++) {
-            const an = (new Date).getFullYear() + "-01-01";
+            const an = (new Date()).getFullYear() + "-01-01";
             const mm = (moment(an, "YYYY-MM-DD").add('days', index * 7).week() - (moment(an, "YYYY-MM-DD").add('days', index * 7).month() * 4));
             Object.keys(this.state.ticUsuario).map((key, index2) => {
                 const valores = [];
@@ -339,6 +345,7 @@ class DashBoard extends React.Component {
                     const lab = 'Sen ' + (mm - 2) + '. ' + moment(an, "YYYY-MM-DD").add('days', index * 7).format('MMMM');
                     datos.push({ name: "MIT " + lab, data: valores });
                 }
+                return this.state.ticUsuario[key];
             });
 
         }
@@ -348,9 +355,9 @@ class DashBoard extends React.Component {
     handleItemClick = (e, { name }) => {
         this.setState({ activeItem: name })
         this.calculoDeAvance();
-        if (name === 'semana') 
+        if (name === 'semana')
             this.renderGraficaSemana();
-        
+
         else if (name === 'MIT') {
             let datos = [];
             const trab = this.arregloSemana();
@@ -391,11 +398,11 @@ class DashBoard extends React.Component {
 
     renderTeletrabajador() {
         return (
-             <div>
+            <div>
                 <div className="ui form">
                     <div className="two column stackable ui grid">
                         <div className="column two wide">
-                            <div className="ui segment" style={{ width: "100%",  height:'44em', background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)' }}>
+                            <div className="ui segment" style={{ width: "100%", height: '44em', background: 'linear-gradient(to top, rgb(247, 203, 122) 0.5%, rgb(255, 255, 255) 0.6%, rgb(245, 242, 224) 200%)' }}>
                                 {this.renderProgresoTrabajo()}
                             </div>
                         </div>

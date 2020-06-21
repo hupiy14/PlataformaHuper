@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Form, Icon } from 'semantic-ui-react';
+import { Form, Icon } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { VerticalTimelineElement, VerticalTimeline } from 'react-vertical-timeline-component';
 import 'react-vertical-timeline-component/style.min.css';
@@ -74,7 +74,7 @@ class pointWork extends React.Component {
                 <h3 className="vertical-timeline-element-title">{titulo}</h3>
                 <h4 className="vertical-timeline-element-subtitle">{detalle}</h4>
             </VerticalTimelineElement>
-            <Icon name="cancel" size="big" onClick={() => { this.renderEliminarFase(0) }} style={{ position: 'relative', left: '50%', top: '-100px' }} />
+            <Icon name="cancel" size="big" onClick={() => { this.renderEliminarFase(0) }} style={{ position: 'relative', left: '50%', top: '-7.2em' }} />
         </div>
             ;
     }
@@ -95,7 +95,7 @@ class pointWork extends React.Component {
                 <h3 className="vertical-timeline-element-title">{titulo}</h3>
                 <h4 className="vertical-timeline-element-subtitle">{detalle}</h4>
             </VerticalTimelineElement>
-            <Icon name="cancel" size="big" onClick={() => { this.renderEliminarFase(item) }} style={{ position: 'relative', left: '50%', top: '-100px' }} />
+            <Icon name="cancel" size="big" onClick={() => { this.renderEliminarFase(item) }} style={{ position: 'relative', left: '50%', top: '-7.2em' }} />
         </div>;
     }
 
@@ -103,7 +103,7 @@ class pointWork extends React.Component {
     renderCrearFases() {
 
         let listaX = this.state.inputFase;
-        if (!listaX )
+        if (!listaX)
             listaX = [];
         let mapFases = [];
         Object.keys(listaX).map((key, index) => {
@@ -113,7 +113,7 @@ class pointWork extends React.Component {
             else {
                 mapFases.push(this.renderCrearComponenteNormal((index + 1) + " fase", listaX[key].titulo, listaX[key].detalle, index));
             }
-
+            return listaX[key];
         });
         mapFases.push(this.renderCrearComponenteFin());
         return mapFases;
@@ -121,7 +121,7 @@ class pointWork extends React.Component {
 
     renderCrearComponenteFin() {
 
-        return <div style={{ height: '12em' }}>
+        return <div style={{ height: '12em', key: 15 }}>
             <VerticalTimelineElement
                 iconStyle={{ background: '#b5cc18', color: '#fff' }}
                 icon={<div style={{ position: 'relative', top: '25%' }}>
@@ -136,12 +136,12 @@ class pointWork extends React.Component {
 
 
         return (
-            <div >
+            <div style={{ overflow: 'auto', height: window.innerHeight * 0.7 }}>
                 <h1 style={{ position: 'relative', left: '2%' }}>El flujo de trabajo para tus objetivos</h1>
                 <VerticalTimeline>
                     {this.renderCrearFases()}
                 </VerticalTimeline>
-                <Form style={{ width: '50%', left: '25%', position: 'relative', top: '20px' }}>
+                <Form style={{ width: '50%', left: '25%', position: 'relative', top: '1.2em' }}>
 
                     <Form.Input label='El nombre de la fase es' placeholder='Primer contacto con...'
                         value={this.state.tituloFase}

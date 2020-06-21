@@ -1,10 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
-import { Image, Icon, Step } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, estadochats, MensajeIvilys } from '../modules/chatBot/actions';
-import moment from 'moment';
-import task from '../../images/task.svg';
 import '../HuperModules/styleOBJ1.css';
 
 class listActividades extends React.Component {

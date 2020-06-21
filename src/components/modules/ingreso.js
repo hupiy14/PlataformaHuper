@@ -4,15 +4,9 @@ import GoogleAuth from '../loginGoogle/GoogleAuth';
 import image from '../../images/logo.png';
 import { connect } from 'react-redux';
 import { nuevoUsuarios } from '../modules/chatBot/actions';
-import { Link } from 'react-router-dom';
 
 
 class ingreso extends React.Component {
-    componentDidMount() {
-        //  if(this.props.nuevoUsuario !== true)
-        // this.props.nuevoUsuarios(null);
-    }
-
 
     render() {
         return ReactDOM.createPortal(
@@ -21,18 +15,12 @@ class ingreso extends React.Component {
 
                     <div className="header center">
                         <div style={{ top: '40px', position: 'relative' }}>
-                            <h2 style={{ left: window.screen.width <= 500 ? '15px' :'40px', position: 'relative' }}>
+                            <h2 style={{ left: window.screen.width <= 500 ? '15px' : '40px', position: 'relative' }}>
                                 Bienvenido a
                             </h2>
                         </div>
-                        <img style={{ position: 'relative', left:  window.screen.width <= 500 ? '160px':'200px', top: '-1em' }} className="ui small rounded image" src={image} />
+                        <img alt='Hupity tu compañero en el trabajo' style={{ position: 'relative', left: window.screen.width <= 500 ? '160px' : '200px', top: '-1em' }} className="ui small rounded image" src={image} />
                     </div>
-
-
-
-
-
-
 
                     <div className="content">
                         <h3>
@@ -40,7 +28,6 @@ class ingreso extends React.Component {
                         </h3>
                         <GoogleAuth />
                     </div>
-                 
 
 
                 </div>
@@ -52,8 +39,6 @@ class ingreso extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        //   usuarioDetail: state.chatReducer.usuarioDetail,
-
         isSignedIn: state.auth.isSignedIn,
         nuevoUsuario: state.chatReducer.nuevoUsuario,
     };

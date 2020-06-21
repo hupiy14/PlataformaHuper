@@ -1,18 +1,10 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import { connect } from 'react-redux';
-import ReactDOM from 'react-dom';
-
 import randomColor from '../../lib/randomColor';
-import randomScalingFactor from '../../lib/randomScalingFactor';
-import { Responsive, Segment } from 'semantic-ui-react';
-import { DatesRangeInput } from 'semantic-ui-calendar-react';
 const randonStyle = require('../../lib/randonStyle')
 
 class legenExample extends React.Component {
-
-
-
     render() {
         const data = {
             labels: this.props.labelsX,

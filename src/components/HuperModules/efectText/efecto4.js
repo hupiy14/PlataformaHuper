@@ -1,9 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
-import { Image, Icon, Step } from 'semantic-ui-react';
 import './efect4.scss';
-import { gsap, Power1, TweenLite } from "gsap/all";
+
 
 
 

@@ -2,7 +2,7 @@
 
 
 .clock-title {
-    font-size: 20px;
+    font-size: 1.1em;
     font-family: 'Covered By Your Grace', cursive;
     color: #e8f5e8;
 }
@@ -10,7 +10,7 @@
 
 
 .flip-clock-divider .flip-clock-label {
-    font-size: 16px;
+    font-size: 1em;
     font-family: 'Covered By Your Grace', cursive;
     color: #e8f5e8;
 }
@@ -32,7 +32,7 @@
 
 .session-clock, .break-clock {
     display: inline-block;
-    height: 150px;
+    height: 14em;
     width: auto;
     animation: session-clock-s 3s cubic-bezier(0.680, 0, 0.265, 1);
     animation-delay: 0s;
@@ -67,16 +67,16 @@
 
 
 .btn-edit {
-    width: 64px;
-    font-size: 36px;
+    width: 2.1em;
+    font-size: 1.5em;
     color: rgb(195, 54, 223);
     background: white;
 }
 
 
 .btn-main {
-    width: 225px;
-    font-size: 36px;
+    width: 4em;
+    font-size: 2em;
     color: #DF36C7;
     background: white;
     font-family: 'Covered By Your Grace', cursive;

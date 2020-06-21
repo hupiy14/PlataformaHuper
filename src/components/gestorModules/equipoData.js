@@ -1,60 +1,27 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import '../modules/chatBot/chatHupApp.css';
-import Swiper from 'swiper';
 import firebase from 'firebase';
 import history from '../../history';
-
-
-
 import perfil from '../../images/perfil.png';
 import ListFormacion from './listaFormacionesEquipo';
 //import randomScalingFactor from '../../lib/randomScalingFactor'
 import ListaObjetivosE from '../../components/gestorModules/listaObjetivosEquipo';
 import ListaPersonasEquipo from '../utilidades/listaPersonasEquipo';
 import {
-  Grid,
-   Image,
-   Segment,
-  Sidebar
+  Image,
 }
   from 'semantic-ui-react';
 //import PropTypes from 'prop-types'
-
 import GraficaG1 from '../gestorModules/CrearGraficaGestor';
 import GraficaG2 from '../gestorModules/CreargraficaHistorico';
 import GraficaG3 from '../gestorModules/GraficoTICgestos';
 import GraficaG4 from '../gestorModules/CrearGraficaProductividad';
-import { listaObjetivos,  equipoConsultas, verEquipos } from '../modules/chatBot/actions';
+import { listaObjetivos, equipoConsultas, verEquipos } from '../modules/chatBot/actions';
 import moment from 'moment';
-
-
-
-
-
-
 //import { makeStyles, useTheme } from '@material-ui/core/styles';
 import MobileStepper from '@material-ui/core/MobileStepper';
 import Button2 from '@material-ui/core/Button';
-
-
-
-
-
-
-const HorizontalSidebar = ({ animation, direction, visible, equipo }) => (
-  <Sidebar as={Segment} animation={animation} direction={direction} visible={visible}>
-    <Grid textAlign='center'>
-      <Grid.Row columns={1}>
-        <Grid.Column>
-          {equipo}
-
-        </Grid.Column>
-      </Grid.Row>
-
-    </Grid>
-  </Sidebar>
-)
 
 
 const timeoutLength3 = 1200;
@@ -79,7 +46,6 @@ class hupData extends React.Component {
     activeStep: 0,
     activeEquipo: 0,
 
-    slide: null,
     slides: (() => {
       let slides = [];
       for (let i = 0; i < 600; i += 1) {
@@ -105,9 +71,9 @@ class hupData extends React.Component {
     switch (step) {
       case 0:
         // console.log(this.calcularAvancePorDia(this.state.ObjsFactors, this.state.factorSemana));
-        graficaG = <GraficaG1 tope={100} equipoGra={true} datosAvance={this.calcularAvancePorDia(factorsObj, this.state.factorSemana)} />
+        graficaG = <GraficaG1 key='1' tope={100} equipoGra={true} datosAvance={this.calcularAvancePorDia(factorsObj, this.state.factorSemana)} />
         factorsObj = this.calculoDeAvance(keyTrabajo);
-        graficaG2 = <GraficaG1 tope={100} datosAvance={this.calcularAvancePorDia(factorsObj, this.state.factorSemana)} />
+        graficaG2 = <GraficaG1 key='2' tope={100} datosAvance={this.calcularAvancePorDia(factorsObj, this.state.factorSemana)} />
         break;
       case 1:
 
@@ -180,16 +146,8 @@ class hupData extends React.Component {
     }, timeoutLength3)
   }
 
-  getWeekNumber(date) {
-    var d = new Date(date);  //Creamos un nuevo Date con la fecha de "this".
-    d.setHours(0, 0, 0, 0);   //Nos aseguramos de limpiar la hora.
-    d.setDate(d.getDate() + 4 - (d.getDay() || 7)); // Recorremos los días para asegurarnos de estar "dentro de la semana"
-    //Finalmente, calculamos redondeando y ajustando por la naturaleza de los números en JS:
-    return Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
-  };
 
   consultaProductivad(year, Nsemana, puntos, puntosP, fPP, fE, nsemanaMes, mes, tipo) {
-    const fecha = new Date();
     let valido = false;
     const list = this.state.semanasP;
     if (list) {
@@ -198,14 +156,16 @@ class hupData extends React.Component {
         Object.keys(listaY).map((key2, index) => {
           if (year === key && Nsemana === key2)
             valido = true;
+          return listaY[key2];
         });
+        return list[key];
       });
     }
 
 
     if (valido === false) {
       firebase.database().ref(`Equipo-Puntospro/${tipo}/${year}/${Nsemana}`).set({
-        fechaCreado: moment(new Date).format('YYYY-MM-DD'),
+        fechaCreado: moment(new Date()).format('YYYY-MM-DD'),
         unidadesTrabajadas: puntos,
         unidadesPlan: puntosP ? puntosP : 0,
         productividadPropia: fPP,
@@ -218,7 +178,6 @@ class hupData extends React.Component {
   }
 
   consultaProductivadPersonal(year, Nsemana, puntos, puntosP, fPP, fE, fEq, nsemanaMes, mes, tipo) {
-    const fecha = new Date();
     let valido = false;
     const list = this.state.semanasP;
     if (list) {
@@ -227,12 +186,14 @@ class hupData extends React.Component {
         Object.keys(listaY).map((key2, index) => {
           if (year === key && Nsemana === key2)
             valido = true;
+          return listaY[key2];
         });
+        return list[key];
       });
     }
     if (valido === false) {
       firebase.database().ref(`Usuario-Puntospro/${tipo}/${year}/${Nsemana}`).set({
-        fechaCreado: moment(new Date).format('YYYY-MM-DD'),
+        fechaCreado: moment(new Date()).format('YYYY-MM-DD'),
         unidadesTrabajadas: puntos,
         unidadesPlan: puntosP,
         productividadPropia: fPP,
@@ -255,10 +216,10 @@ class hupData extends React.Component {
     const ns = this.getWeekNumber(diat);
     let datos = [];
     let datosA = [];
+    let datos2 = [];
     const arrL = ['Talneto en tus actividades', 'Impacto de mis actividades', 'Responsabilidad en tus actividades', 'Talento grupal', 'Impacto en tu equipo', 'Motivacion en tu equipo', 'Mi talento', 'Mi impacto', 'Mi compromiso'];
     let inicio = 0;
     let limite = 2;
-    let valores = [];
 
     if (keyTrabajo === 0) return { arrL, datos };
     if (ns - 3 > 0) {
@@ -266,8 +227,7 @@ class hupData extends React.Component {
       limite = ns + 1;
     }
     for (let index = inicio; index < limite; index++) {
-      const an = (new Date).getFullYear() + "-01-01";
-      const mm = (moment(an, "YYYY-MM-DD").add('days', index * 7).week() - (moment(an, "YYYY-MM-DD").add('days', index * 7).month() * 4));
+      let an = (new Date()).getFullYear() + "-01-01";
       Object.keys(ticUsuarios).map((key2, index2) => {
         let ticUsuario = [];
         let ticEquipoEsta = false
@@ -275,26 +235,21 @@ class hupData extends React.Component {
         Object.keys(this.state.equipo).map((keyEq, index2) => {
           if (key2 === keyEq)
             ticEquipoEsta = true;
+          return this.state.equipo[keyEq];
         });
 
         if (ticEquipoEsta === false)
-          return;
+          return null;
 
         if (ticUsuarios[key2].rol === '2')
-          return;
+          return null;
         if (keyTrabajo && key2 !== keyTrabajo) {
-          return;
+          return null;
         }
 
-
         ticUsuario = ticUsuarios[key2].tic ? ticUsuarios[key2].tic : [];
-
-
-
         Object.keys(ticUsuario).map((key, index2) => {
-          const valores = [];
-
-
+          let valores = [];
           if (parseInt(key) === index) {
             const lab = 'Sen ' + (moment(an, "YYYY-MM-DD").add('days', index * 7).month() * 4) + 'del Año ';
             const dat = datosA[lab] ? datosA[lab] : 0;
@@ -312,17 +267,16 @@ class hupData extends React.Component {
             //  console.log(valores);
             datosA[lab] = { ...valores };
 
-
-
             //   datos.push({ label: "MIT " + lab, data: valores });
           }
+          return ticUsuario[key];
         });
-
+        return ticUsuarios[key2];
       });
 
-      datos = [];
+
       Object.keys(datosA).map((key, index2) => {
-        const dt = [];
+        let dt = [];
         dt.push(datosA[key].te);
         dt.push(datosA[key].tt);
         dt.push(datosA[key].tf);
@@ -332,13 +286,13 @@ class hupData extends React.Component {
         dt.push(datosA[key].cf);
         dt.push(datosA[key].ce);
         dt.push(datosA[key].ct);
-        datos.push({ label: "MIT " + key, data: dt });
-
+        datos2.push({ label: "MIT " + key, data: dt });
+        return datosA[key];
       });
 
 
     }
-    return { arrL, datos };
+    return { arrL, datos2 };
   }
 
 
@@ -370,16 +324,17 @@ class hupData extends React.Component {
           Object.keys(equipo).map((keyEQ, index) => {
             if (keyEQ === key)
               flagEQ = true;
+            return equipo[keyEQ];
           });
           if (flagEQ === false)
-            return;
+            return null;
 
           //tareas de cada persona
           const starCountRef2 = firebase.database().ref().child(`Usuario-Tareas/${key}`);
           starCountRef2.on('value', (snapshot) => {
             const valor = snapshot.val();
             if (!valor)
-              return
+              return null;
             variable[key] = valor
             this.props.listaObjetivos({ ...this.props.listaObjetivo, ...variable });
           });
@@ -404,8 +359,8 @@ class hupData extends React.Component {
             this.setState({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
             this.props.equipoConsultas({ ...this.props.equipoConsulta, listaPersonas: { ...usuariosCompletos } });
           });
+          return consulta[key];
         });
-
       });
 
 
@@ -425,10 +380,7 @@ class hupData extends React.Component {
             const objetos = { ...this.state.diateletrabajo, ...usuariodia }
             this.setState({ diateletrabajo: objetos })
           }
-
         });
-
-        // console.log(key)
 
         const starCountRef3 = firebase.database().ref().child(`Usuario-Objetivos/${key}`);
         starCountRef3.on('value', (snapshot2) => {
@@ -438,15 +390,14 @@ class hupData extends React.Component {
 
           Object.keys(lista).map((key2, index) => {
             objetivoT[key2] = { ...lista[key2], idUsuario: key };
+            return lista[key2];
           })
 
           const objetos = { ...this.props.equipoConsulta, ...objetivoT };
           this.props.equipoConsultas({ ...this.props.equipoConsulta, ...objetos });
 
         });
-
-
-
+        return equipo[key];
       });
 
     });
@@ -472,19 +423,7 @@ class hupData extends React.Component {
       history.push('/dashboard');
       return;
     }
-    const swiper = new Swiper('.swiper-container', {
-      effect: 'flip',
-      grabCursor: true,
-      pagination: {
-        el: '.swiper-pagination',
-      },
-      navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
-      },
-    });
-
-
+  
     window.gapi.client.load("https://www.googleapis.com/discovery/v1/apis/drive/v3/rest")
       .then(function () { console.log("GAPI client loaded for API"); },
         function (err) { console.error("Error loading GAPI client for API", err); });
@@ -542,10 +481,13 @@ class hupData extends React.Component {
             entro = true;
             actividadesDia[key2] = { fecha: actividadesDia[key2].fecha, avance: actividadesDia[key2].avance + (arr[key].cantidad * arreglo[key3].avance * arreglo[key3].factor) }
           }
+          return actividadesDia[key2];
         });
         if (entro === false)
           actividadesDia.push({ fecha: arr[key].fecha, avance: arr[key].cantidad * arreglo[key3].avance * arreglo[key3].factor });
+          return arr[key];
       });
+      return arreglo[key3];
     });
     let datos = [];
     let fechas = this.arregloFechaSemana();
@@ -559,9 +501,11 @@ class hupData extends React.Component {
           datos.push(acumulado);
           flagRegistro = true;
         }
+        return actividadesDia[key];
       });
       if (flagRegistro === false)
         datos.push(acumulado);
+        return fechas[key0];
     });
     return datos;
   }
@@ -576,19 +520,13 @@ class hupData extends React.Component {
     this.setState({ ObjsFactors: [] });
     if (keyTrabajo === 0) return fact;
     Object.keys(objs).map((key, index) => {
-
-
-
-
-      if (!objs[key]) return;
+      if (!objs[key]) return null;
       if (this.props.userId === objs[key].idUsuario)
-        return;
+        return null;
       if (!objs[key].concepto)
-        return;
-
-
+        return null;
       if (keyTrabajo && keyTrabajo !== objs[key].idUsuario) {
-        return;
+        return null;
       }
 
 
@@ -596,10 +534,11 @@ class hupData extends React.Component {
       Object.keys(this.state.equipo).map((keyEq, index2) => {
         if (objs[key].idUsuario === keyEq)
           ticEquipoEsta = true;
+          return this.state.equipo[keyEq];
       });
 
       if (ticEquipoEsta === false)
-        return;
+        return null;
 
       let facPrioridad = 1;
       let facDificultad = 1;
@@ -609,25 +548,28 @@ class hupData extends React.Component {
       let facCalidad = 1;
       let facValidacion = 1;
       let facProductividad = 1;
-      let nTareasFinalizados = 0;
       let nTareas = 0;
 
       //Object.keys(this.state.UtilFactors.Calidad).map((key2, index) =>{});
       Object.keys(this.state.UtilFactors.Dificultad).map((key2, index) => {
         if (objs[key].dificultad === this.state.UtilFactors.Dificultad[key2].concepto)
           facDificultad = this.state.UtilFactors.Dificultad[key2].valor;
+          return this.state.UtilFactors.Dificultad[key2];
       });
       Object.keys(this.state.UtilFactors.Prioridad).map((key2, index) => {
         if (objs[key].prioridad === key2)
           facPrioridad = this.state.UtilFactors.Prioridad[key2];
+          return this.state.UtilFactors.Prioridad[key2];
       });
       Object.keys(this.state.UtilFactors.Tipo).map((key2, index) => {
         if (objs[key].tipo === this.state.UtilFactors.Tipo[key2].concepto)
           facTipo = this.state.UtilFactors.Tipo[key2].valor;
+          return this.state.UtilFactors.Tipo[key2];
       });
       Object.keys(this.state.UtilFactors.ValidacionGestor).map((key2, index) => {
         if (objs[key].estado === this.state.UtilFactors.ValidacionGestor[key2].concepto)
           facValidacion = this.state.UtilFactors.ValidacionGestor[key2].valor;
+          return this.state.UtilFactors.ValidacionGestor[key2];
       });
       //algoritmo de medicion del trabajo
       const puntos = ((1 + facPrioridad + facTipo) * facRepeticiones * facDificultad) * facCompartido * facCalidad * facValidacion * facProductividad;
@@ -638,7 +580,7 @@ class hupData extends React.Component {
       let tiempo = 0;
       let tiempoMM = 0;
       if (!tareas)
-        return;
+        return null;
       Object.keys(tareas).map((key5, index) => {
         let tar = tareas[key5];
         if (tar) {
@@ -666,16 +608,19 @@ class hupData extends React.Component {
 
 
                     }
+                    return actividades[key4];
                   });
                   if (entro === false) {
                     actividades.push({ fecha: ttareas[key3].dateEnd, cantidad: 1 });
                   }
-                  nTareasFinalizados++;
                 }
+                return ttareas[key3];
               });
             }
+            return tar[key2];
           });
         }
+        return tareas[key5];
       });
       fact = this.state.ObjsFactors;
 
@@ -691,6 +636,7 @@ class hupData extends React.Component {
 
       this.setState({ ObjsFactors: fact });
       factorSemana = factorSemana + Math.round(puntos);
+      return objs[key];
     });
 
 
@@ -710,7 +656,6 @@ class hupData extends React.Component {
   arregloFechaMes() {
     var fecahMinima = new Date();
     labelsMonths = [];
-    const diferencia = fecahMinima.getDay() - 1;
     fecahMinima = moment(fecahMinima).add(-7, 'days').format('YYYY-MM-DD');
     //   fecahMinima.setDate(fecahMinima.getDate() + (-(diferencia)));
     let fechas = [];
@@ -740,6 +685,7 @@ class hupData extends React.Component {
       Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
         if (key === this.props.equipoConsulta.sell)
           titulo = this.props.equipoConsulta.listaPersonas[key].usuario;
+          return this.props.equipoConsulta.listaPersonas[key];
       });
       this.setState({ seleccion: titulo });
       return 'Lista de Objetivos ' + titulo;
@@ -835,11 +781,12 @@ class hupData extends React.Component {
 
 
         }
-
+        return arreglo[key];
       });
 
       factorPlan.push(factorP);
       factorTrab.push(factorT);
+      return fechas[key2];
     });
     this.setState({ facSemana: { factorTrabS, factorPlanS } });
 
@@ -869,13 +816,13 @@ class hupData extends React.Component {
 
 
             //factor actividades por unidad
-            const actividadesE = (factorTrabS[keyP].act / factorTrabS[keyP].puntos) * arreglo[keyA].factor;
-            const actividadesW = (arreglo[keyA].actividades ? arreglo[keyA].actividades.length : actividadesE) / actividadesE;
-            const facActividades = (actividadesW > 2 ? 2 : actividadesW) * 0.1;
+            let actividadesE = (factorTrabS[keyP].act / factorTrabS[keyP].puntos) * arreglo[keyA].factor;
+            let actividadesW = (arreglo[keyA].actividades ? arreglo[keyA].actividades.length : actividadesE) / actividadesE;
+            let facActividades = (actividadesW > 2 ? 2 : actividadesW) * 0.1;
 
             //factor actividades por dificultad
-            const dificultadA = (arreglo[keyA].actividades.length > 0 ? arreglo[keyA].actividades.length : 1);
-            const dificultadB = dificultadA;
+            let dificultadA = (arreglo[keyA].actividades.length > 0 ? arreglo[keyA].actividades.length : 1);
+            let dificultadB = dificultadA;
             let dicultadW = 1;
 
             //
@@ -888,8 +835,10 @@ class hupData extends React.Component {
                     if (keyE === arreglo[keyA].obj.dificultad) {
                       dificultadA = list2[keyE];
                     }
+                    return list2[keyE];
                   });
                 }
+                return list[keyD];
               });
               const lt = this.state.actDif;
               if (dificultadB !== dificultadA) {
@@ -914,9 +863,11 @@ class hupData extends React.Component {
           }
 
         }
+        return arreglo[keyA];
       });
 
       calidadF['sem.' + factorTrabS[keyP].nsemanMes + ' ' + factorTrabS[keyP].mes] = { calidad, fecha: factorTrabS[keyP].fecha };
+      return factorTrabS[keyP];
     });
     this.setState({ factorCalidad: calidadF });
     this.guardarDifultad();
@@ -938,10 +889,12 @@ class hupData extends React.Component {
       Object.keys(this.state.equipo).map((keyEq, index2) => {
         if (key === keyEq)
           ticEquipoEsta = true;
+          return this.state.equipo[keyEq];
       });
 
       if (this.props.equipoConsulta.listaPersonas[key].Rol === '3' && ticEquipoEsta === true)
         numeroPersonas++;
+        return this.props.equipoConsulta.listaPersonas[key];
     });
 
 
@@ -974,8 +927,10 @@ class hupData extends React.Component {
                   fEq = arrayValores[key3].valor / (!numeroPersonas ? 1 : numeroPersonas);
                   fE = arrayValores[key3].valorEsperado / (!numeroPersonas ? 1 : numeroPersonas);
                 }
+                return arrayValores[key3];
               });
             }
+            return this.state.nivelEquipo.unidadesEquipo[key2];
           });
           //algortimo de productividad personas
           const FEq = fEq === 0 ? 1 : fT / fEq;
@@ -991,6 +946,7 @@ class hupData extends React.Component {
           productividadSemana['sem.' + factorPlanS[key].nsemanMes + ' ' + factorPlanS[key].mes] = { valor, fecha: factorPlanS[key].fecha };
           afT[factorPlanS[key].year] = { ...afT[factorPlanS[key].year], [factorPlanS[key].semana]: { valor: fT, valorEsperado: fTE } }
         }
+        return factorPlanS[key];
       });
     }
     else { ///si no tiene ningun valor
@@ -1021,6 +977,7 @@ class hupData extends React.Component {
       Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
         if (key === this.props.equipoConsulta.sell)
           titulo = this.props.equipoConsulta.listaPersonas[key].usuario;
+          return this.props.equipoConsulta.listaPersonas[key];
       });
       this.setState({ seleccion: titulo });
       return 'Lista de Formaciones ' + titulo;
@@ -1041,6 +998,7 @@ class hupData extends React.Component {
 
         if (key === this.props.equipoConsulta.sell)
           carpeta = this.state.equipo[key].linkWs;
+          return this.state.equipo[key];
       });
     }
     return carpeta;
@@ -1056,7 +1014,7 @@ class hupData extends React.Component {
       Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
         if (key === this.props.equipoConsulta.sell)
           titulo = this.props.equipoConsulta.listaPersonas[key].usuario;
-
+          return this.props.equipoConsulta.listaPersonas[key];
       });
       this.setState({ seleccion: titulo });
     }
@@ -1110,8 +1068,9 @@ class hupData extends React.Component {
 
 
           }
+          return cconsulta[key2];
         });
-
+        return consultaEq[key];
       });
 
 
@@ -1307,7 +1266,6 @@ const mapStateToProps = (state) => {
     usuarioDetail: state.chatReducer.usuarioDetail,
     listaObjetivo: state.chatReducer.listaObjetivo,
     verEquipo: state.chatReducer.verEquipo,
-    equipoConsulta: state.chatReducer.equipoConsulta,
     userId: state.auth.userId,
   };
 };

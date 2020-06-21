@@ -13,11 +13,10 @@ import { clientIdAsana, clientSecrectAsana } from '../../../apis/stringConnectio
 import axios from 'axios';
 import chroma from 'chroma-js';
 let Trello = require("trello");
-
-
 const timeoutLength = 1500;
 const timeoutLength2 = 2000;
 const timeoutLength3 = 3000;
+
 acAnimated.randomNumber = function (min, max) {
     var num = min + Math.floor(Math.random() * (max - (min - 1)));
     return num;
@@ -46,7 +45,7 @@ class listActividades extends React.Component {
         , index: 0, delay: .02, mensaje: null, messages: [], inputC: null, flag: false, response: null, tipoIn: 1, flagTiempo: false, textAux: null, opciones: null,
         consulta: null, criteria: null, parametros: null, mensajeUs: null, propertieBD: null, registro: [], opcionValue: [], nivel: null, addProperties: null, nuevoParam: null,
         paso: null, nivelAnt: null, stay: null, property: null, stayValue: null, pasoFlujo: 1, flujo: null, etapa: null, consultaParams: null, optionSelect: null, options: null,
-        opcionesDB: null, keyNivel: '', flujoAux: null, pendingOk: null, pendingConsulta: null, onlyOptions: null, workFlow: null, passflow: 0, objTask: null, carpeta: null, etapa: null
+        opcionesDB: null, keyNivel: '', flujoAux: null, pendingOk: null, pendingConsulta: null, onlyOptions: null, workFlow: null, passflow: 0, objTask: null, carpeta: null
     }
 
     componentWillMount() {
@@ -61,7 +60,7 @@ class listActividades extends React.Component {
 
     chatBotSfot() {
         this.props.consultas({ ...this.props.consultax, currentId: this.props.userId, hoy: moment().format("YYYYMMDD"), util: 'prioridad' });
-        this.state.registro["etapa"] = 0;
+        this.setState({ registro: { ...this.state.registro, 'etapa': 0 } });
         //this.props.mensajeChat({ mensaje: 'prueba', agent: 'task' });
         let etapa = null;
         //     console.log(this.props.mensajeChatBot)
@@ -95,6 +94,7 @@ class listActividades extends React.Component {
                         Object.keys(snapshot.val()).map((key, index) => {
                             if (snapshot.val()[key].duracion)
                                 ttiempo = snapshot.val()[key].duracion + ttiempo;
+                            return snapshot.val()[key];
                         });
                     }
                     else if (snapshot.val() !== null && snapshot.val().estado === 'completo') {
@@ -152,7 +152,7 @@ class listActividades extends React.Component {
         this.timeout = setTimeout(() => {
             this.props.mensajeChat(null);
             if (this.state.etapa) {
-                this.state.registro["etapa"] = this.state.etapa;
+                this.setState({ registro: { ...this.state.registro, 'etapa': this.state.etapa } })
                 this.client.textRequest('Continuar planificando mi día', { sessionId: 'test' }).then(this.onResponse, this);
             }
             else {
@@ -187,12 +187,15 @@ class listActividades extends React.Component {
                             registro[prop2] = pending[key][prop2];
                         }
                     }
-                    this.state.registro[key] = { ...this.state.registro[key], ...registro }
+                    let reg = [];
+                    reg[key] = { ...this.state.registro[key], ...registro };
+                    this.setState({ registro: { ...this.state.registro, ...reg } });
                     pending[key].estado = 'completo';
                     this.setState({ pendingOk: pending[key] });
                     this.adelantar(pending[key].flujoAux);
-                    return;
+                    return null;
                 }
+                return null;
             });
         }
     }
@@ -372,6 +375,7 @@ class listActividades extends React.Component {
             if (value === opciones[key]) {
                 flag = false;
             }
+            return opciones[key];
         });
         return flag;
     }
@@ -515,6 +519,7 @@ class listActividades extends React.Component {
             let value = this.state.inputC;
 
             if (value !== null) {
+                let reg = this.state.registro;
                 if (this.state.onlyOptions && this.validarOpciones(value)) { return; }
 
                 if (this.state.propertieBD) {
@@ -542,7 +547,7 @@ class listActividades extends React.Component {
                             registroAnt[prop2] = this.state.addProperties[prop2];
                         }
 
-                        this.state.registro[this.state.nivelAnt] = { ...this.state.registro[this.state.nivelAnt], ...registroAnt };
+                        reg[this.state.nivelAnt] = { ...reg[this.state.nivelAnt], ...registroAnt };
 
                     }
                     else {
@@ -574,17 +579,17 @@ class listActividades extends React.Component {
                         this.setState({ carpeta: null })
                     }
                     if (this.state.nivel !== null) {
-                        if (this.state.registro.hasOwnProperty(this.state.nivel))
-                            this.state.registro[this.state.nivel] = { ...this.state.registro[this.state.nivel], ...registro };
+                        if (reg.hasOwnProperty(this.state.nivel))
+                            reg[this.state.nivel] = { ...reg[this.state.nivel], ...registro };
                         else
-                            this.state.registro[this.state.nivel] = registro;
+                            reg[this.state.nivel] = registro;
                     }
                     else {
-                        this.state.registro = { ...this.state.registro, ...registro }
+                        reg = { ...reg, ...registro }
                     }
 
 
-                    this.state.registro["etapa"] = this.state.registro["etapa"] + 1;
+                    reg["etapa"] = reg["etapa"] + 1;
                     let consultP = this.state.consultaParams === null || this.state.consultaParams === undefined ? '' : this.state.consultaParams;
 
                     if (this.state.consultaParams) {
@@ -594,7 +599,7 @@ class listActividades extends React.Component {
                     else {
 
                         firebase.database().ref(this.queryConsulta).update({
-                            ... this.state.registro
+                            ...reg
                         });
                     }
 
@@ -617,6 +622,7 @@ class listActividades extends React.Component {
 
                     this.client.textRequest(pass + " " + value).then(this.onResponse, this);
                 this.borrarDatos();
+                this.setState({ registro: reg });
 
             }
         }
@@ -658,11 +664,12 @@ class listActividades extends React.Component {
         this.timeout = setTimeout(() => {
             let text = document.body.querySelector(".text");
             const split = acAnimated.Plugins.SplitText(text, { words: 1, chars: 1, spacing: 10 });
-            let timeline = null
+            let timeline = null;
+            let i;
             switch (this.props.tipo) {
                 case 0:
                     timeline = new window.TimelineMax({ repeat: -1, repeatDelay: 0 });
-                    for (var i = 0; i <= split.chars.length - 1; i++) {
+                    for (i = 0; i <= split.chars.length - 1; i++) {
                         var char = split.chars[i];
                         timeline.add("animated_char_" + String(i), acAnimated.randomNumber(1, 20) / 10);
                         timeline.add(acAnimated.animateChar(char), "animated_char_" + String(i));
@@ -671,7 +678,7 @@ class listActividades extends React.Component {
                     break;
                 case 1:
                     timeline = new window.TimelineMax({ repeat: -1, repeatDelay: 0 });
-                    for (var i = 0; i <= split.words.length - 1; i++) {
+                    for (i = 0; i <= split.words.length - 1; i++) {
                         var word = split.words[i];
                         timeline
                             .add("animated_word_" + String(i), acAnimated.randomNumber(1, 20) / 10)
@@ -680,8 +687,8 @@ class listActividades extends React.Component {
                     timeline.to(text, 3, {}).to(text, 1, { opacity: 0 });
                     break;
                 case 2:
-                    for (var i = 0; i <= split.chars.length - 1; i++) {
-                        window.TweenMax.from(split.chars[i], 2.5, {
+                    for (i = 0; i <= split.chars.length - 1; i++) {
+                        window.TweenMax.from(split.chars[i], 1.8, {
                             opacity: 0,
                             x: this.randomMax(-100, 100),
                             y: this.randomMax(-100, 100),
@@ -695,8 +702,8 @@ class listActividades extends React.Component {
                     };
                     break;
                 case 3:
-                    for (var i = 0; i <= split.words.length - 1; i++) {
-                        window.TweenMax.from(split.words[i], 2.5, {
+                    for (i = 0; i <= split.words.length - 1; i++) {
+                        window.TweenMax.from(split.words[i], 1.8, {
                             opacity: 0,
                             x: this.randomMax(-100, 100),
                             y: this.randomMax(-100, 100),
@@ -738,37 +745,39 @@ class listActividades extends React.Component {
             const starCountRef3 = firebase.database().ref().child(consulta);
             return starCountRef3.on('value', (snapshot) => {
                 let objetos = snapshot.val();
+                if (snapshot.val()) {
+                    opciones = Object.keys(objetos).map((key, index) => {
+                        let objeto = objetos[key];
+                        this.setState({ UtilFactors: snapshot.val() });
+                        let flagCriteria = 0;
+                        let countCriteria = 0;
+                        for (const cri in criteria) {
+                            countCriteria++;
+                            for (const propObj in objeto) {
+                                if (propObj === cri) {
 
-                opciones = Object.keys(objetos).map((key, index) => {
-                    let objeto = objetos[key];
-                    this.setState({ UtilFactors: snapshot.val() });
-                    let flagCriteria = 0;
-                    let countCriteria = 0;
-                    for (const cri in criteria) {
-                        countCriteria++;
-                        for (const propObj in objeto) {
-                            if (propObj === cri) {
-
-                                if (objeto[propObj] === criteria[cri]) {
-                                    flagCriteria++;
+                                    if (objeto[propObj] === criteria[cri]) {
+                                        flagCriteria++;
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (flagCriteria === countCriteria) {
-                        let opciones = this.state.opcionValue;
+                        if (flagCriteria === countCriteria) {
+                            let opciones = this.state.opcionValue;
 
-                        opciones[objeto.concepto] = key;
-                        this.setState({ opcionValue: opciones })
-                        return <option value={objeto.concepto} key={key} />
-                    }
-                });
-                this.setState({
-                    opcionesDB: <datalist id='opciones'>
-                        {opciones}
-                    </datalist>
-                });
+                            opciones[objeto.concepto] = key;
+                            this.setState({ opcionValue: opciones })
+                            return <option value={objeto.concepto} key={key} />
+                        }
 
+                        return null;
+                    });
+                    this.setState({
+                        opcionesDB: <datalist id='opciones'>
+                            {opciones}
+                        </datalist>
+                    });
+                }
             });
 
         }
@@ -794,7 +803,7 @@ class listActividades extends React.Component {
             </React.Fragment >
             this.setState({
                 t2: <div className="Wrapper" style={{ top: window.innerHeight * 0.7 }}>
-                    <div className="ui container" style={{  height: '180px', width: '50%' }}>
+                    <div className="ui container" style={{ height: '5em', width: '50%' }}>
                         {opciones}
                     </div>
                 </div>
@@ -821,13 +830,12 @@ class listActividades extends React.Component {
                 this.pendingConsulta = this.pendingConsulta + '/' + this.state.nivel;
                 firebase.database().ref(this.pendingConsulta).set({});
             }
-
-
-            this.state.registro["etapa"] = this.state.registro["etapa"] + 1;
-            this.state.registro["estado"] = "completo";
+            let reg = this.state.registro;
+            reg["etapa"] = reg["etapa"] + 1;
+            reg["estado"] = "completo";
             if (this.state.consultaParams === null || this.state.consultaParams === undefined) {
                 firebase.database().ref(this.queryConsulta).update({
-                    ... this.state.registro
+                    ...reg
                 });
             }
             this.setState({ registro: null })
@@ -844,6 +852,7 @@ class listActividades extends React.Component {
                 this.setState({ inputC: opciones[key] });
                 flagNuevo = false;
             }
+            return opciones[key];
         });
         if (flagNuevo === true) {
             this.setState({ nuevoParam: event.target.value });
@@ -878,7 +887,7 @@ class listActividades extends React.Component {
                 if (this.state.tipoIn === 1) {
                     this.setState({
                         t2: <div className="Wrapper" style={{ top: window.innerHeight * 0.5, height: '19em' }}>
-                            <div className="ui container" style={{  height: topTiempo, width: '40%' }}>
+                            <div className="ui container" style={{ height: topTiempo, width: '40%' }}>
 
                                 <div className="Input" style={{ top: '25%' }}>
                                     <input type="text" id="input" className="Input-text"
@@ -895,16 +904,16 @@ class listActividades extends React.Component {
                 }
                 else if (this.state.tipoIn === 4) {
                     this.setState({
-                        t2: <div className="Wrapper" style={{ top: window.innerHeight * 0.5,  height: '18em'}}>
-                            <div className="ui container" style={{  height: topTiempo, width: '40%' }}>
+                        t2: <div className="Wrapper" style={{ top: window.innerHeight * 0.5, height: '18em' }}>
+                            <div className="ui container" style={{ height: topTiempo, width: '40%' }}>
 
                                 {tiempo}
-                                <a href="#" style={{
+                                <h5 href="#" style={{
                                     position: 'relative',
-                                    top: '30px',
+                                    top: '1.3em',
                                     width: '70%',
                                     left: '13%'
-                                }} className="action-button animate purple" key={1} onClick={() => { this.clickOpcion('') }}>Continuar</a>
+                                }} className="action-button animate purple" key={1} onClick={() => { this.clickOpcion('') }}>Continuar</h5>
                             </div>
                         </div>
                     });
@@ -919,30 +928,28 @@ class listActividades extends React.Component {
                         let cCon = this.state.opciones;
                         let tabla = [];
                         opciones = Object.keys(cCon).map((key, index) => {
-                            console.log()
-
                             tabla.push(<div style={{ width: '120%', paddingLeft: '1%' }}>
-                                <a href="#" className="action-button animate purple" key={cCon[key]} onClick={() => { this.clickOpcion(cCon[key]) }}>{cCon[key]}</a>
+                                <h5 href="#" className="action-button animate purple" key={cCon[key]} onClick={() => { this.clickOpcion(cCon[key]) }}>{cCon[key]}</h5>
                             </div>)
 
                             let tabla2 = tabla;
-                            if (index !== 0 && (index + 1) % 3 === 0 || Object.keys(cCon).length -1 === index) {
+                            if ((index !== 0 && (index + 1) % 3 === 0) || Object.keys(cCon).length - 1 === index) {
                                 tabla = [];
 
-                                let pad = '188px';
+                                let pad = '13em';
                                 if ((index + 1) % 3 === 0)
-                                    pad = '8px';
+                                    pad = '0.4em';
 
                                 return <div className="Wrapper" style={{ top: window.innerHeight * 0.6, paddingLeft: pad }}  >
                                     {tabla2}
                                 </div>
                             }
-
+                            return null;
                         });
                         //   this.props.sendMessage(this.state.opciones.title);
 
                         this.setState({
-                            t2: <div style={{ left: '10%', position: 'relative' }} >
+                            t2: <div style={{ left: '-2%', position: 'relative' }} >
                                 {opciones}
                             </div>
                         });
@@ -992,7 +999,6 @@ class listActividades extends React.Component {
     render() {
 
         let t1 = null;
-        let t2 = null;
 
         if (this.state.flag) {
             this.Cambio();
@@ -1027,7 +1033,7 @@ class listActividades extends React.Component {
         }
         else {
             t1 = <div className='text' id='text' style={{ opacity: '1' }}>
-                <p className="split" style={{ opacity: '1', fontSize: '50px', color: '#e8f5e8', position: 'relative', top: '-0.4em', height: '2em' }} >
+                <p className="split" style={{ opacity: '1', fontSize: '1.8em', color: '#e8f5e8', position: 'relative', top: '-0.4em', height: '2em' }} >
                     {this.state.mensajeUs}
                 </p>
             </div>
@@ -1056,10 +1062,8 @@ const mapAppStateToProps = (state) => (
         consultax: state.chatReducer.consultax,
         nombreUser: state.chatReducer.nombreUser,
         mensajeChatBot: state.chatReducer.mensajeChatBot,
-
         userId: state.auth.userId,
         equipoConsulta: state.chatReducer.equipoConsulta,
-
         pregFantasma: state.chatReducer.pregFantasma,
         mensajeEnt: state.chatReducer.mensajeEnt,
         consultaPreguntaControl: state.chatReducer.consultaPreguntaControl,
@@ -1067,7 +1071,6 @@ const mapAppStateToProps = (state) => (
         numeroPregunta: state.chatReducer.numeroPregunta,
         consultaPregunta: state.chatReducer.consultaPregunta,
         idChatUser: state.chatReducer.idChatUser,
-        nombreUser: state.chatReducer.nombreUser,
         ValorTexto: state.chatReducer.ValorTexto,
         inputSlack: state.chatReducer.inputSlack,
         user: state.user

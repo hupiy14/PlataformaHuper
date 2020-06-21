@@ -1,11 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import './timer.css';
+import { responseEmWidth } from '../../../lib/responseUtils';
 import music from '../../../images/bensound-goinghigher.mp3';
 import { sendMessage } from '../../../actions';
 import moment from 'moment';
 import firebase from 'firebase';
-import { chatOn, chatOff, popupBot } from '../../../actions';
+import { popupBot } from '../../../actions';
 
 let timeoutLength = 5000;
 let timeoutLength3 = 5000;
@@ -57,14 +58,13 @@ class timerClock extends React.Component {
             });
             */
 
-
-
         this.actual();
         this.actual2();
         this.timerChangeTop();
         this.timerChange();
     }
 
+ 
     renderConsulta() {
         this.queryConsulta = `Usuario-Task/${this.props.userId}/${moment().format("YYYYMMDD")}`;
         const starCountRef3 = firebase.database().ref().child(this.queryConsulta);
@@ -90,7 +90,7 @@ class timerClock extends React.Component {
                 interval: () => {
                     var breakTime = this.breakClock.getTime().time;
 
-                    if (breakTime == 0) {
+                    if (breakTime === 0) {
 
                         //set time again to offset the one second difference
                         this.sessionClock.setTime(this.sessionTime + 1);
@@ -102,7 +102,7 @@ class timerClock extends React.Component {
 
                         this.playBreakOverMusic();
 
-                    } else if (this.sessionTime == 0 && this.isSessionStop) {
+                    } else if (this.sessionTime === 0 && this.isSessionStop) {
 
                         //set time for display
                         this.sessionClock.setTime(this.sessionTime);
@@ -124,7 +124,7 @@ class timerClock extends React.Component {
             callbacks: {
                 interval: () => {
                     var sessionTime = this.sessionClock.getTime().time;
-                    if (sessionTime == 0) {
+                    if (sessionTime === 0) {
                         //set time again to offset the one second difference
                         //  this.breakClock.setTime(this.breakTime + 1);
                         //this.breakClock.start();
@@ -132,10 +132,9 @@ class timerClock extends React.Component {
 
                         this.isSessionStop = true;
                         this.sessionWasRunning = false;
-                        let men = this.actividad === '0' ? '' : this.actividad;
                         // this.playSessionOverMusic();
 
-                    } else if (this.breakTime == 0 && this.isBreakStop) {
+                    } else if (this.breakTime === 0 && this.isBreakStop) {
 
                         //set time for display
                         this.breakClock.setTime(this.breakTime);
@@ -169,6 +168,7 @@ class timerClock extends React.Component {
                     acum = this.props.onMessage + acum;
 
                 }
+                return task[key];
             });
             if (this.timepoAnt !== acum) {
                 firebase.database().ref(this.queryConsulta).update({
@@ -320,8 +320,6 @@ class timerClock extends React.Component {
     renderTiempoTrabajo() {
         let task = this.timepoTask;
         if (task !== undefined) {
-
-            let tiempo = 0;
             this.sessionTime = 0;
             Object.keys(task).map((key, index) => {
                 if (task[key].estado === 'activo') {
@@ -338,6 +336,7 @@ class timerClock extends React.Component {
                     }
 
                 }
+                return task[key];
             });
 
             firebase.database().ref(this.queryConsulta).update({
@@ -355,20 +354,24 @@ class timerClock extends React.Component {
     }
 
 
-
+    componentWillMount ()
+    {
+        console.log('entor-->');
+    }
     render() {
-
+        console.log(window.innerWidth);
+        console.log('entor--<');
         let planCurrent = null;
         let titulo = null;
         //  let style ={  top: '-30%', left: '-20%', position: 'fixed' };
-        let style = { top: '82%', position: 'fixed', transform: 'scale(0.3)', left: 0.62 * window.innerWidth };
+        let style = { top: '82%', position: 'fixed', transform: 'scale(0.3)', left: responseEmWidth(window.innerWidth) };
 
         if (this.props.programa) {
 
-            style = { top: '100px', transform: 'scale(0.78)' };
-            planCurrent = <div style={{ top: '-64px', position: 'relative', left: '-100px' }}>
+            style = { top: '4.5em', transform: 'scale(0.78)' };
+            planCurrent = <div style={{ top: '-3em', position: 'relative', left: '-4.25em' }}>
                 <button type="button" onClick={() => { this.changeSessionTime(-900); }} className="btn btn-lg btn-edit" id="btn-reduce-session-minute">-</button>
-                <button type="button" onClick={() => { this.changeSessionTime(900); }} style={{ position: 'relative', left: '210px' }} className="btn btn-lg btn-edit" id="btn-increase-session-minute">+</button>
+                <button type="button" onClick={() => { this.changeSessionTime(900); }} style={{ position: 'relative', left: '6.5em' }} className="btn btn-lg btn-edit" id="btn-increase-session-minute">+</button>
             </div>
             titulo = "¿Cuanto tiempo esperas demorarte?";
         }

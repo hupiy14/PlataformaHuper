@@ -2,22 +2,13 @@ import React from 'react';
 import { connect } from 'react-redux';
 import Chart from "react-apexcharts";
 
-const randonStyle = require('../../lib/randonStyle')
-
-
 class legenExample extends React.Component {
 
-
-
     render() {
-
        let t = <h3 style={{ 'text-align': 'center','top': '10px', position: 'relative', color: '#d05600' }}>{this.props.TituloGrafica}</h3>
         if (this.props.equipoGrafica) 
             t = <h2 style={{ 'text-align': 'center', 'top': '10px', position: 'relative', color: '#d05600' }}>{this.props.TituloGrafica}</h2>
         
-
-
-        console.log(this.props.datos);
         return (
 
             <div>

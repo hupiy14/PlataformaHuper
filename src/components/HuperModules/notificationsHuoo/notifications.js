@@ -5,11 +5,11 @@ import moment from 'moment';
 import { popupBot } from '../../../actions';
 import { ApiAiClient } from 'api-ai-javascript';
 
-let timeoutLength = 1200000;
+let timeoutLength = 12000;
 
 class notifiactions extends React.Component {
 
-    state = { dia: [], etapa: 1, mensajes: null}
+    state = { dia: [], etapa: 1, mensajes: null }
 
 
     notificationPriority = () => {
@@ -30,12 +30,12 @@ class notifiactions extends React.Component {
                 this.dia['entrada'] = moment().format('x');
                 this.dia['cantIn'] = 0;
                 console.log(this.dia);
-                timeoutLength = 20000;
+                timeoutLength = 2000000;
                 this.notificationPriority();
 
             }
             firebase.database().ref(`Usuario-Dia/${this.props.userId}/${moment().format("YYYYMMDD")}`).update({
-                ... this.dia
+                ...this.dia
             });
 
 
@@ -49,8 +49,9 @@ class notifiactions extends React.Component {
         Object.keys(mensajes).map((key, index) => {
 
             this.etapas[mensajes[key].tiempo] = key;
+            return mensajes[key];
         });
-        console.log(this.etapas);
+
     }
 
     obtenerPaso(dif) {
@@ -60,43 +61,43 @@ class notifiactions extends React.Component {
 
             if (dif <= parseFloat(key) + 6000 && flag) {
                 flag = false;
-                console.log("fff " + this.etapas[key])
                 this.setState({ etapa: this.etapas[key] })
-                return
             }
+            return this.etapas[key];
         });
     }
 
     consultarMensajes(mensajes, dif) {
+        if (mensajes)
+            Object.keys(mensajes).map((key, index) => {
+                // console.log(key);
+                if (key === this.state.etapa.toString()) {
+                    if (dif <= parseFloat(mensajes[key].tiempo) + 6000 && dif >= parseFloat(mensajes[key].tiempo) - 6000) {
+                        console.log(mensajes[key].mensaje)
+                        this.dia['etapa'] = this.state.etapa;
+                        this.dia['etapas'] = this.dia['etapas'] !== undefined ? this.state.etapa + this.dia['etapas'] : this.state.etapa;
 
-        Object.keys(mensajes).map((key, index) => {
-            // console.log(key);
-            if (key === this.state.etapa.toString()) {
-                if (dif <= parseFloat(mensajes[key].tiempo) + 6000 && dif >= parseFloat(mensajes[key].tiempo) - 6000) {
-                    console.log(mensajes[key].mensaje)
-                    this.dia['etapa'] = this.state.etapa;
-                    this.dia['etapas'] = this.dia['etapas'] !== undefined ? this.state.etapa + this.dia['etapas'] : this.state.etapa;
+                        let men = [];
+                        men["mensaje"] = mensajes[key].mensaje;
+                        men["header"] = mensajes[key].header ? mensajes[key].header : null;
+                        men["sleep"] = mensajes[key].sleep ? mensajes[key].sleep : null;
+                        men["dormir"] = mensajes[key].dormir ? mensajes[key].dormir : null;
+                        men["activate"] = mensajes[key].activate ? mensajes[key].activate : null;
+                        men["chat"] = mensajes[key].chat ? mensajes[key].chat : null;
+                        men["agent"] = mensajes[key].agent ? mensajes[key].agent : null;
+                        if (mensajes[key].video) {
+                            men["link"] = mensajes[key].video;
+                            men["video"] = true;
+                            men["lection"] = mensajes[key].lection;
 
-                    let men = [];
-                    men["mensaje"] = mensajes[key].mensaje;
-                    men["header"] = mensajes[key].header ? mensajes[key].header : null;
-                    men["sleep"] = mensajes[key].sleep ? mensajes[key].sleep : null;
-                    men["dormir"] = mensajes[key].dormir ? mensajes[key].dormir : null;
-                    men["activate"] = mensajes[key].activate ? mensajes[key].activate : null;
-                    men["chat"] = mensajes[key].chat ? mensajes[key].chat : null;
-                    men["agent"] = mensajes[key].agent ? mensajes[key].agent : null;
-                    if (mensajes[key].video) {
-                        men["link"] = mensajes[key].video;
-                        men["video"] = true;
-                        men["lection"] = mensajes[key].lection;
+                        }
+                        this.props.popupBot({ ...men });
 
+                        // this.setState({ etapa: this.state.etapa + 1 });
                     }
-                    this.props.popupBot({ ...men });
-
-                    // this.setState({ etapa: this.state.etapa + 1 });
                 }
-            }
-        });
+                return mensajes[key];
+            });
     }
 
     componentWillMount() {
@@ -106,7 +107,7 @@ class notifiactions extends React.Component {
         this.client = new ApiAiClient({
             accessToken: '4cbf623fd1fc4e2d8ef3d48658a82030 '
         });
-        this.client.textRequest('Dame un apoyo hupp', { sessionId: 'test' }).then(this.onResponse, this);
+        this.client.textRequest('Dame un apoyo hupp', { sessionId: 'test' }).then(this.onResponse);
         const nameRef = firebase.database().ref().child(`Usuario-Dia/${this.props.userId}/${moment().format("YYYYMMDD")}`)
         nameRef.on('value', (snapshot2) => {
             if (snapshot2.val() !== null) {
@@ -122,14 +123,11 @@ class notifiactions extends React.Component {
 
 
     onResponse = (activity) => {
-        let that = this;
-        activity.result.fulfillment.messages.forEach(function (element) {
-            console.log(element);
+        activity.result.fulfillment.messages.forEach((element) => {
             if (element.payload !== undefined) {
                 let nuevo = element.payload;
-                that.setState({ mensajes: nuevo });
-                that.organizarMensajes(nuevo);
-                console.log(nuevo);
+                this.setState({ mensajes: nuevo });
+                this.organizarMensajes(nuevo);
             }
         });
     }

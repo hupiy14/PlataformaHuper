@@ -21,7 +21,7 @@ class InputDinamico extends React.Component {
                 if (listaX[key].id.toString() !== id) {
                     listaNew = [...listaNew, listaX[key]];
                 }
-
+                return listaX[key];
             });
             this.props.inputDinamicos([...listaNew, { id, valor, label }]);
         }

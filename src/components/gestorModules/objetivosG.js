@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
-import { Button, Popup, Grid, Input, Header, Modal, Image, Message, Form, Progress, Segment } from 'semantic-ui-react';
+import { Image, Progress, Segment } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, selObjetivos } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
 import MaskedInput from 'react-text-mask';
@@ -68,11 +68,15 @@ class ListaObjetivosEquipo extends React.Component {
                 Object.keys(cconsulta).map((key3, index) => {
                     if (this.state.porInputs[key].key === key3) {
                         const data = { ...cconsulta[key3], porcentajeResp: this.state.porInputs[key].por }
-                       firebase.database().ref(`Usuario-Objetivos/${this.state.porInputs[key].idUsuario}/${this.state.porInputs[key].key}`).set({
+                        firebase.database().ref(`Usuario-Objetivos/${this.state.porInputs[key].idUsuario}/${this.state.porInputs[key].key}`).set({
                             ...data
                         });
                     }
+
+                    return cconsulta[key3];
                 });
+
+                return this.state.porInputs[key];
             });
         }
 
@@ -132,10 +136,8 @@ class ListaObjetivosEquipo extends React.Component {
 
 
     eliminarObjetivo(key) {
-        var updates = {};
+
         let idObjetivo;
-
-
         const cconsulta = this.props.equipoConsulta;
         Object.keys(cconsulta).map((key2, index) => {
             if (cconsulta[key2].estado === 'activo' || cconsulta[key2].estado === 'validar')
@@ -143,6 +145,7 @@ class ListaObjetivosEquipo extends React.Component {
                     idObjetivo = key2;
                     //  console.log(key2);
                 }
+            return cconsulta[key2];
         });
 
 
@@ -151,9 +154,9 @@ class ListaObjetivosEquipo extends React.Component {
 
             if (key2 === idObjetivo) {
                 obj[key2] = undefined;
-                return;
+                return null;
             }
-
+            return obj[key2];
         });
 
         this.props.equipoConsultas(this.props.equipoConsulta);
@@ -251,27 +254,22 @@ class ListaObjetivosEquipo extends React.Component {
             const opciones = Object.keys(cconsulta).map((key2, index) => {
 
                 if (!cconsulta[key2])
-                    return;
+                    return null;
                 //muestra los objetivos propios del gestor y compartidos
                 if (cconsulta[key2].gestor) {
                     if (!cconsulta[key2].propio && !cconsulta[key2].compartidoEquipo)
-                        return;
+                        return null;
                 }
                 else if (cconsulta[key2].compartidoEquipo && !cconsulta[key2].gestor)
-                    return;
+                    return null;
                 if (cconsulta[key2].compartidoEquipo && !cconsulta[key2].gestor && (!this.props.equipoConsulta.sell || this.props.equipoConsulta.sell === 0)) {
-                    return;
+                    return null;
                 }
 
 
                 const objetivo = cconsulta[key2];
-                const factorObjetivo = cconsulta[key2].numeroTareas;
-                let factor = {};
                 let tareasCompleta = 0;
                 let resultado = cconsulta[key2].avance ? cconsulta[key2].avance : 0;
-                let iconGetor = 'assistive listening systems';
-                let boolGestor = false;
-                const usuarioIF = cconsulta[key2].idUsuario;
 
                 let iconoObjetivo = this.props.icono;
                 if (cconsulta[key2].tipo === "Es parte de mi flujo de trabajo")
@@ -294,26 +292,27 @@ class ListaObjetivosEquipo extends React.Component {
 
                             if (key2 === this.state.factores[keyfac].key)
                                 factorObjetivo = this.state.factores[keyfac].puntos;
-
+                            return this.state.factores[keyfac];
                         });
 
 
 
                     Object.keys(listaEOB).map((key4, index) => {
                         const listaEOBT = listaEOB[key4];
-                        if (!listaEOBT) return;
+                        if (!listaEOBT) return null;
                         //    console.log(listaEOBT)
                         Object.keys(listaEOBT).map((key3, index) => {
 
                             const consultaTareaTT = listaEOBT[key3];
                             //      console.log(consultaTareaTT)
-                            if (!consultaTareaTT) return;
+                            if (!consultaTareaTT) return null;
                             Object.keys(consultaTareaTT).map((key33, index) => {
                                 if (key3 === key2) {
                                     if (consultaTareaTT[key33].estado === 'finalizado') {
                                         tareasCompleta = tareasCompleta + 1;
                                     }
                                 }
+                               return consultaTareaTT[key33];
                             });
 
 
@@ -333,24 +332,15 @@ class ListaObjetivosEquipo extends React.Component {
                             else
                                 resul = Math.round((tareasCompleta / atrabajo) * 65);
 
-                            factor = { factor: factorObjetivo, numero: tareasCompleta };
                             resultado = cconsulta[key2].avance ? resultado : resul;
 
 
-
+                            return listaEOBT[key3];
                         });
+                        return listaEOB[key4];
                     });
-                    if (cconsulta[key2].estado === 'activo') {
-                        iconGetor = 'user times';
-                        boolGestor = true;
-                    }
 
                     ///configuracion responsive
-                    let cssBotonesEdicion = `right aling-Derecha`;
-                    if (window.screen.width < 500) {
-                        cssBotonesEdicion = `right aling-DerechaX2`;
-                    }
-
                     let style = {
                         borderRadius: '10px',
                         background: this.props.equipoConsulta.sell === key2 ? 'linear-gradient(to top, rgb(255, 255, 255) 35%, rgb(196, 24, 214) 120%)' : 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 144, 4) 180%)',
@@ -365,8 +355,6 @@ class ListaObjetivosEquipo extends React.Component {
                         const fec = new Date(objetivo.fechafin);
                         if (fec < new Date()) {
                             style = {
-                                borderRadius: 0.5,
-                                background: '#f9e63340',
                                 borderRadius: '10px',
                                 background: this.props.equipoConsulta.sell === key2 ? 'linear-gradient(to top, rgb(255, 255, 255) 35%, rgb(196, 24, 214) 120%)' : 'linear-gradient(to top, rgb(255, 255, 255) 70%, rgb(250, 80, 0) 180%)',
                                 left: '25px',
@@ -378,17 +366,6 @@ class ListaObjetivosEquipo extends React.Component {
                         }
                     }
 
-                    let style2 = {
-                        borderRadius: 0.2,
-                    };
-
-                    if (window.screen.width < 500) {
-                        style2 = {
-                            overflow: 'auto',
-                            height: '360px',
-                        };
-
-                    }
                     ///mask={['(', /[1-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]}
                     y++;
                     if (y > 7)
@@ -396,14 +373,13 @@ class ListaObjetivosEquipo extends React.Component {
 
 
                     let topA = -(Math.round((cconsulta[key2].concepto.length + 6) / 15) * 15) - 20;
-                   if(!images[y]) return;
-                    let imagenT = images[y] ? images[y].urls.regular : null ;
+                    if (!images[y]) return null;
+                    let imagenT = images[y] ? images[y].urls.regular : null;
 
-                    if (nObj === 0 && !this.props.equipoConsulta.sell && !this.state.est )
-                        {
-                            this.setState({est: true});
-                            this.handleSeleccionar(key2, imagenT);
-                        }
+                    if (nObj === 0 && !this.props.equipoConsulta.sell && !this.state.est) {
+                        this.setState({ est: true });
+                        this.handleSeleccionar(key2, imagenT);
+                    }
 
                     nObj++;
                     return (
@@ -444,6 +420,7 @@ class ListaObjetivosEquipo extends React.Component {
                         </div >
                     );
                 }
+                return null;
             });
             return opciones;
 
@@ -451,7 +428,6 @@ class ListaObjetivosEquipo extends React.Component {
         return (
             <div className="ui segment loaderOBJG">
                 <div className="ui active dimmer loaderOBJG">
-
                     <div className="ui text loader">A la espera de tus Objetivos</div>
                 </div>
                 <br></br>
@@ -465,20 +441,14 @@ class ListaObjetivosEquipo extends React.Component {
     render() {
         //  console.log(this.props.popupDetalle);
         // console.log( <RandomImage/>);
-        const titulo = `${this.props.titulo}`;
         return (
             <div>
                 <div className="maximo-listEObj" >
-
                     <div className="ui relaxed divided animated list ">
-
                         {this.renderConstruirObj(this.state.images)}
-
                     </div>
                 </div>
             </div>
-
-
         )
     };
 };

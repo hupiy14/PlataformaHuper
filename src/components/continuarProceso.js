@@ -1,7 +1,5 @@
 import React from 'react';
 import image from '../images/hupityNewlogo.png';
-import { Link } from 'react-router-dom';
-
 
 
 class ContinuarProceso extends React.Component {
@@ -13,7 +11,7 @@ class ContinuarProceso extends React.Component {
 
                 <br></br>
                 <div className="inline center">
-                    <img className="ui medium rounded image" src={image} />
+                    <img alt='hupity tu compañero en el trabajo' className="ui medium rounded image" src={image} />
 
                 </div>
 

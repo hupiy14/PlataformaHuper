@@ -1,15 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
-import moment from 'moment';
 import { popupBot } from '../../../actions';
-import { tokenSlack } from '../../../apis/stringConnection';
+
 
 let timeoutLength = 30000;
 let timeoutLength2 = 30000;
 let timeoutLength3 = 30000;
 const slack = require('slack')
-const token = tokenSlack;
+let token = null;
 
 class notifiactions extends React.Component {
 
@@ -19,8 +18,8 @@ class notifiactions extends React.Component {
     notificationPriority = () => {
         this.timeout = setTimeout(() => {
             timeoutLength = 900000;
-            if(this.state.canales && this.state.canales.reporting)
-            this.renderActualizarCanales(this.state.canales.reporting.value, true);
+            if (this.state.canales && this.state.canales.reporting)
+                this.renderActualizarCanales(this.state.canales.reporting.value, true);
             this.notificationPriority();
         }, timeoutLength)
     }
@@ -28,16 +27,16 @@ class notifiactions extends React.Component {
     notificationEquipo = () => {
         this.timeout = setTimeout(() => {
             timeoutLength2 = 300000;
-            if(this.state.canales && this.state.canales.equipo)
-            this.renderActualizarCanales(this.state.canales.equipo.value, false);
+            if (this.state.canales && this.state.canales.equipo)
+                this.renderActualizarCanales(this.state.canales.equipo.value, false);
             this.notificationEquipo();
         }, timeoutLength2)
     }
     notificationOther = () => {
         this.timeout = setTimeout(() => {
             timeoutLength3 = 600000;
-            if(this.state.canales && this.state.canales.notifiacaiones)
-            this.renderActualizarCanales(this.state.canales.notifiacaiones.value, false);
+            if (this.state.canales && this.state.canales.notifiacaiones)
+                this.renderActualizarCanales(this.state.canales.notifiacaiones.value, false);
             this.notificationOther();
         }, timeoutLength3)
     }
@@ -51,6 +50,7 @@ class notifiactions extends React.Component {
                  client: SlackOAuthClient.connect(snapshot2.val().tokenP)
              });*/
             this.setState({ canales: snapshot2.val() });
+            token = snapshot2.val().tokenSlack;
             console.log(snapshot2.val());
         });
 
@@ -65,7 +65,6 @@ class notifiactions extends React.Component {
         //obtiene el historico y envia el mensaje
 
         slack.conversations.history({ token, channel, count: 10 }).then(res => {
-            let flagActualiza = false;
             res.messages.sort((a, b) => (a.ts + b.ts))
             let mensajeUltimo = null;
             let NumMensajes = 0;
@@ -92,6 +91,7 @@ class notifiactions extends React.Component {
                         NumMensajes++;
 
                 }
+                return res.messages[key];
 
             });
 
@@ -99,8 +99,9 @@ class notifiactions extends React.Component {
 
                 slack.users.info({ token, user }).then(res2 => {
                     let numero = NumMensajes > 0 ? NumMensajes : null;
-                    this.state.ultimoMensaje[channel] = mensajeUltimo;
-                    // this.setState({ ultimoMensaje: mensajeUltimo })
+                    let ultimo = this.state.ultimoMensaje;
+                    ultimo[channel] = mensajeUltimo;
+                    this.setState({ ultimoMensaje: ultimo })
                     console.log(user)
                     if (mensajeUltimo.includes('<@'))
                         mensajeUltimo = mensajeUltimo.replace('<@' + user + '>', res2.user.real_name);

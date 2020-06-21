@@ -11,9 +11,10 @@ import ChatHup2 from '../efectText/efecto2';
 import ChatHup3 from '../efectText/efecto4';
 import ChatHup4 from '../efectText/efecto5';
 import '../../../lib/colladaLoader2';
+import { responseEmHeight } from '../../../lib/responseUtils';
 import TimerClock from '../timerClock/timerr';
 import firebase from 'firebase';
-import {  Popup, Icon, Modal, Button } from 'semantic-ui-react';
+import { Popup, Icon, Modal, Button } from 'semantic-ui-react';
 import moment from 'moment';
 import music from '../../../images/bensound-goinghigher.mp3';
 import '../timerClock/./timer.css';
@@ -221,8 +222,8 @@ class THREEScene extends React.Component {
             };
 
             // Remove loading message
-            if(document.getElementById('loading'))
-            window.TweenMax.to(document.getElementById('loading'), 0.5, { opacity: 0 });
+            if (document.getElementById('loading'))
+                window.TweenMax.to(document.getElementById('loading'), 0.5, { opacity: 0 });
         });
     }
     /**
@@ -388,20 +389,11 @@ class THREEScene extends React.Component {
         this.camera.updateProjectionMatrix();
     }
 
-
-
     renderScene = () => {
         this.updateRobot();
         this.renderer.render(this.scene, this.camera)
     }
 
-    componentDidUpdate() {
-        if (this.props.endChatMessage === true) {
-            this.cambioEstado();
-            this.props.endChatMes(false);
-        }
-
-    }
 
     cambioEstado() {
         if (this.props.isChat) {
@@ -462,6 +454,10 @@ class THREEScene extends React.Component {
             this.setState({ push: true });
             this.pushnotificationBotClose();
 
+        }
+        if (this.props.endChatMessage === true) {
+            this.cambioEstado();
+            this.props.endChatMes(false);
         }
     }
 
@@ -636,14 +632,18 @@ class THREEScene extends React.Component {
         </Popup>);
     }
 
+
+
+
     render() {
         let tiempo = null;
         if (!this.props.isChat)
             tiempo = <TimerClock programa={false}></TimerClock>;
+
         return (
             <div>
                 {this.renderControlNotification()}
-                <div style={{ width: '400px', height: '400px', position: 'fixed', left: '80%', bottom: '40%', zIndex: '6' }} ref={(mount) => { this.mount = mount }} onClick={() => { this.cambioEstado() }}></div>
+                <div style={{ width: '400px', height: '400px', position: 'fixed', left: '80%', bottom: responseEmHeight(window.innerHeight), zIndex: '6' }} ref={(mount) => { this.mount = mount }} onClick={() => { this.cambioEstado() }}></div>
                 {this.renderAuthButton()}
                 {this.renderControlVideo()}
                 {tiempo}

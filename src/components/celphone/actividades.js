@@ -1,11 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
-import { Button, Popup, Grid, Input, Header, Modal, Image, Form, Progress, Segment, Label, Divider, Icon, Step } from 'semantic-ui-react';
+import { Icon, Step } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, estadochats, MensajeIvilys, celPerfs } from '../modules/chatBot/actions';
 import moment from 'moment';
-
-
 
 
 const timeoutLength = 900000; //900000
@@ -15,7 +13,7 @@ class listActividades extends React.Component {
 
     componentDidMount() {
         if (this.props.usuarioDetail) {
-            const starCountRef = firebase.database().ref().child(`Usuario-Tareas/${this.props.usuarioDetail.idUsuario}`);
+            const starCountRef = firebase.database().ref().child(`Usuario-Task/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot2) => {
                 this.setState({ actividades: snapshot2.val() });
 
@@ -63,15 +61,16 @@ class listActividades extends React.Component {
 
         const ObjetivosU = this.state.actividades;
         let x = 0;
-        let y = 0;
         let enProceso = 0;
         let arrayT = [];
         Object.keys(ObjetivosU).map((key, index) => {
             const actividadesU = ObjetivosU[key];
-            Object.keys(actividadesU).map((key, index) => {
-                const objTar = { ...actividadesU[key], key: key }
+            Object.keys(actividadesU).map((key2, index) => {
+                const objTar = { ...actividadesU[key2], key: key2 }
                 arrayT.push(objTar);
+                return actividadesU[key2];
             });
+            return ObjetivosU[key];
         });
 
         arrayT.sort((obj1, obj2) => { return parseInt(obj1.dificultad) - parseInt(obj2.dificultad); });
@@ -80,11 +79,11 @@ class listActividades extends React.Component {
             Object.keys(ObjetivosU).map((key, index) => {
                 const actividadesU = ObjetivosU[key];
                 Object.keys(actividadesU).map((key2, index) => {
-                    if (arrayT[key3].key !== key2) return;
+                    if (arrayT[key3].key !== key2) return null;
                     if (moment().format('YYYY-MM-DD') !== actividadesU[key2].dateStart) {
                         if (actividadesU[key2].estado === 'activo')
                             actividadesU[key2].estado = 'anulado';
-                        return;
+                        return null;
                     }
                     if (actividadesU[key2].estado === "activo") {
                         if (x === 0) {
@@ -100,7 +99,6 @@ class listActividades extends React.Component {
                         enProceso++;
                     }
                     else if (actividadesU[key2].estado === "finalizado") {
-                        y++;
                         const ti = moment(new Date(actividadesU[key2].fechaInicio));
                         const tf = moment(new Date(actividadesU[key2].fechaFin));
                         const td = tf.add('hours', -ti.hours('HH')).add('minutes', -tf.minutes);
@@ -110,10 +108,11 @@ class listActividades extends React.Component {
                             tt = 1;
                         tiempos = parseInt(tt + tiempos);
                     }
+                    return actividadesU[key2];
                 });
-
+                return ObjetivosU[key];
             });
-
+            return arrayT[key3];
         });
 
         if (enProceso === 0)
@@ -128,19 +127,20 @@ class listActividades extends React.Component {
 
 
     renderActividadXactividad() {
+
         const ObjetivosU = this.state.actividades;
         let flag = false;
         let x = 0;
         let actNum = 0;
-        let actividadProceso = 0;
-
         let arrayT = [];
         Object.keys(ObjetivosU).map((key, index) => {
             const actividadesU = ObjetivosU[key];
-            Object.keys(actividadesU).map((key, index) => {
-                const objTar = { ...actividadesU[key], key: key }
+            Object.keys(actividadesU).map((key2, index) => {
+                const objTar = { ...actividadesU[key2], key: key2 }
                 arrayT.push(objTar);
+                return actividadesU[key2]
             });
+            return ObjetivosU[key]
         });
 
         arrayT.sort((obj1, obj2) => { return parseInt(obj1.dificultad) - parseInt(obj2.dificultad); });
@@ -154,7 +154,7 @@ class listActividades extends React.Component {
                 if (this.props.selObjetivo === null || this.props.selObjetivo === key) {
                     const opciones2 = Object.keys(actividadesU).map((key2, index) => {
 
-                        if (arrayT[key3].key !== key2) return;
+                        if (arrayT[key3].key !== key2) return null;
 
                         const h = parseInt(actividadesU[key2].tiempoEstimado.substring(0, 2));
                         actividadesU[key2].horaPlanificada = fechaTrabajo === null ? actividadesU[key2].horaEstimada : fechaTrabajo;
@@ -166,13 +166,11 @@ class listActividades extends React.Component {
                                 actividadesU[key2].estado = 'anulado';
                                 flag = true;
                             }
-                            return;
+                            return null;
 
                         }
 
-                        const tiempo = actividadesU[key2].horaPlanificada + '  a  ' + actividadesU[key2].horaEstimada;
-                        const tiempo2 = 'Hora a terminar: ' + actividadesU[key2].horaEstimada;
-                        let icono = 'id badge';
+                        let tiempo = actividadesU[key2].horaPlanificada + '  a  ' + actividadesU[key2].horaEstimada;
                         let actividadT = { completed: true, active: false, colorf: null, backgroundf: null }
                         let anima = null;
 
@@ -186,8 +184,6 @@ class listActividades extends React.Component {
                         else if (actividadesU[key2].estado === "trabajando") {
                             actividadT = { completed: false, active: true, color: "#820bea", background: "linear-gradient(to bottom, rgb(255, 255, 255) 50%, rgb(162, 21, 251) 150%)" }
                             anima = 'actividadInmediata';
-                            icono = 'cog';
-                            actividadProceso++;
                             x++;
                         }
                         actNum++;
@@ -221,6 +217,7 @@ class listActividades extends React.Component {
 
                     return opciones2;
                 }
+                return null;
             });
             if (flag === true)
                 firebase.database().ref(`Usuario-Tareas/${this.props.usuarioDetail.idUsuario}`).set({
@@ -252,7 +249,7 @@ class listActividades extends React.Component {
     renderActividades() {
         return (<Step.Group vertical style={{
             width: '100%', 'border-radius': '10px',
-          
+
         }}>
             {this.renderActividadXactividad()}
         </Step.Group>);

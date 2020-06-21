@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
 import { listaFormaciones, pasoOnboardings } from '../modules/chatBot/actions';
-import { Progress, Segment, Modal, Header, Button, Icon } from 'semantic-ui-react';
+import { Progress, Segment, Modal, Header, Button } from 'semantic-ui-react';
 const timeoutLength = 100000;
 
 class ListEjemplo extends React.Component {
@@ -61,7 +61,7 @@ class ListEjemplo extends React.Component {
         if (the.props.listaFormacion) {
 
             const cconsulta = the.props.listaFormacion
-            const opciones = Object.keys(cconsulta).map(function (key2, index) {
+            const opciones = Object.keys(cconsulta).map((key2, index) => {
                 if (cconsulta[key2].estado === 'activo') {
                     const styleBt = {
                         position: 'relative',
@@ -115,9 +115,9 @@ class ListEjemplo extends React.Component {
                                 </div>
                             </Modal.Content>
                         </Modal >
-
                     );
                 }
+                return null;
             });
             return opciones;
         }

@@ -3,7 +3,6 @@ import SlackApiss from '../apis/slackApi';
 import {
     SIGN_IN,
     SIGN_OUT,
-    SLACKAPI,
     ON_MESSAGE,
     END_CHAT,
     POPUP_MENSAJE,
@@ -48,7 +47,7 @@ export const signIn = (userId) => {
 };
 
 export const slackApis = () => async dispatch => {
-    const response = await SlackApiss.get().then((response) => { console.log(response); });
+   return await SlackApiss.get().then((response) => { console.log(response); });
     // const response = await SlackApis.get();
     // console.log(response);
     // dispatch({ type: SLACKAPI, payload: response.data });
@@ -112,7 +111,6 @@ export const chatOff = () => {
 };
 
 const escribirUsuario = (userId) => {
-    var newPostKey2 = firebase.database().ref().child('Preguntas-Chat').push().key; 
     const starCountRef = firebase.database().ref().child(`Preguntas-Chat/-LXt_TDJQilcvBxWh955`);
     starCountRef.on('value', (snapshot) => {
     });

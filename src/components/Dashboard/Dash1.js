@@ -3,22 +3,17 @@ import { connect } from 'react-redux';
 import { chatOff, chatOn } from '../../actions';
 import ListImportan from '../utilidades/listaImportante';
 import ListEjemplo from '../utilidades/ListaEjemplo';
-import Calendario2 from '../utilidades/calendar2';
 import CrearGrafica from '../utilidades/CrearGrafica';
 import CrearGrafica2 from '../utilidades/CrearGrafica2';
 import '../styles/ingresoHupity.css';
 import randomScalingFactor from '../../lib/randomScalingFactor';
-import { Line } from 'react-chartjs-2';
 import ListaActividades from '../HuperModules/actividadesHuper';
 import DashGestor from '../gestorModules/dashboardG';
-import Hupps from '../modules/Hupps';
 import firebase from 'firebase';
 import moment from 'moment';
 import history from '../../history';
 import { signOut } from '../../actions';
-
-
-import { Grid, Modal, Menu, Segment, Button, Dimmer, Header, Icon, Image, Portal, Step, Label, Checkbox } from 'semantic-ui-react';
+import { Menu, Segment, Dimmer, Checkbox, Modal, Header } from 'semantic-ui-react';
 import MenuChat from '../MenuChat';
 import { pasoOnboardings, listaFormaciones, estadochats } from '../modules/chatBot/actions';
 
@@ -125,13 +120,13 @@ class DashBoard extends React.Component {
             history.push('/');
         //    history.push('/login');
 
-      /*  const starCountRef3 = firebase.database().ref().child(`Utilidades-Valoraciones`);
-        starCountRef3.on('value', (snapshot) => {
-            this.setState({ UtilFactors: snapshot.val() });
-        });
-
-
-*/
+        /*  const starCountRef3 = firebase.database().ref().child(`Utilidades-Valoraciones`);
+          starCountRef3.on('value', (snapshot) => {
+              this.setState({ UtilFactors: snapshot.val() });
+          });
+  
+  
+  */
 
         //carga el limite que las empresas definan
         datosPlanificados = [];
@@ -211,10 +206,13 @@ class DashBoard extends React.Component {
                         entro = true;
                         actividadesDia[key2] = { fecha: actividadesDia[key2].fecha, avance: actividadesDia[key2].avance + (arr[key].cantidad * arreglo[key3].avance * arreglo[key3].factor) }
                     }
+                    return actividadesDia[key2];
                 });
                 if (entro === false)
                     actividadesDia.push({ fecha: arr[key].fecha, avance: arr[key].cantidad * arreglo[key3].avance * arreglo[key3].factor });
+                return arr[key];
             });
+            return arreglo[key3];
         });
         let datos = [];
         let fechas = this.arregloFechaSemana();
@@ -227,9 +225,11 @@ class DashBoard extends React.Component {
                     datos.push(acumulado);
                     flagRegistro = true;
                 }
+                return actividadesDia[key];
             });
             if (flagRegistro === false)
                 datos.push(acumulado);
+            return fechas[key0];
         });
         return datos;
     }
@@ -249,32 +249,35 @@ class DashBoard extends React.Component {
             let facCalidad = 1;
             let facValidacion = 1;
             let facProductividad = 1;
-            let nTareasFinalizados = 0;
             let nTareas = 0;
 
             //Object.keys(this.state.UtilFactors.Calidad).map((key2, index) =>{});
             Object.keys(this.state.UtilFactors.Dificultad).map((key2, index) => {
                 if (objs[key].dificultad === this.state.UtilFactors.Dificultad[key2].concepto)
                     facDificultad = this.state.UtilFactors.Dificultad[key2].valor;
+                return this.state.UtilFactors.Dificultad[key2];
             });
             Object.keys(this.state.UtilFactors.Prioridad).map((key2, index) => {
                 if (objs[key].prioridad === key2)
                     facPrioridad = this.state.UtilFactors.Prioridad[key2];
+                return this.state.UtilFactors.Prioridad[key2];
             });
             Object.keys(this.state.UtilFactors.Tipo).map((key2, index) => {
                 if (objs[key].tipo === this.state.UtilFactors.Tipo[key2].concepto)
                     facTipo = this.state.UtilFactors.Tipo[key2].valor;
+                return this.state.UtilFactors.Tipo[key2];
             });
             Object.keys(this.state.UtilFactors.ValidacionGestor).map((key2, index) => {
                 if (objs[key].estado === this.state.UtilFactors.ValidacionGestor[key2].concepto)
                     facValidacion = this.state.UtilFactors.ValidacionGestor[key2].valor;
+                return this.state.UtilFactors.ValidacionGestor[key2];
             });
             //algoritmo de medicion del trabajo
             const puntos = ((1 + facPrioridad + facTipo) * facRepeticiones * facDificultad) * facCompartido * facCalidad * facValidacion * facProductividad;
 
             let actividades = [];
             if (!this.state.TareasObjs)
-                return;
+                return null;
             Object.keys(this.state.TareasObjs).map((key2, index) => {
                 if (key2 === key) {
                     const ttareas = this.state.TareasObjs[key2];
@@ -287,19 +290,22 @@ class DashBoard extends React.Component {
                                     entro = true;
                                     actividades[key4] = { fecha: actividades[key4].fecha, cantidad: actividades[key4].cantidad + 1 }
                                 }
+                                return actividades[key4];
                             });
                             if (entro === false) {
                                 actividades.push({ fecha: ttareas[key3].dateEnd, cantidad: 1 });
                             }
-                            nTareasFinalizados++;
                         }
+                        return ttareas[key3];
                     });
                 }
+                return this.state.TareasObjs[key2];
             });
             const fact = this.state.ObjsFactors;
             fact[key] = { factor: Math.round(puntos), avance: nTareas === 0 ? 0 : 1 / nTareas, actividades, fechafin: objs[key].fechafin, dateEnd: objs[key].dateEnd };
             this.setState({ ObjsFactors: fact })
             factorSemana = factorSemana + Math.round(puntos);
+            return objs[key];
         });
         this.setState({ factorSemana });
     }
@@ -316,9 +322,11 @@ class DashBoard extends React.Component {
                     factorP = factorP + arreglo[key].factor;
                 if (fechas[key2] === moment(arreglo[key].dateEnd, "YYYY-MM-DD").format("MM"))
                     factorT = factorT + arreglo[key].factor;
+                return arreglo[key];
             });
             factorPlan.push(factorP);
             factorTrab.push(factorT);
+            return fechas[key2];
         });
 
         return ({ factorPlan, factorTrab });
@@ -400,17 +408,16 @@ class DashBoard extends React.Component {
         const arrL = ['Talneto en tus actividades', 'Impacto de mis actividades', 'Responsabilidad en tus actividades', 'Talento grupal', 'Impacto en tu equipo', 'Motivacion en tu equipo', 'Mi talento', 'Mi impacto', 'Mi compromiso'];
         let inicio = 0;
         let limite = 2;
-        let valores = [];
 
         if (ns - 3 > 0) {
             inicio = ns - 2;
             limite = ns + 1;
         }
         for (let index = inicio; index < limite; index++) {
-            const an = (new Date).getFullYear() + "-01-01";
+            const an = (new Date()).getFullYear() + "-01-01";
             const mm = (moment(an, "YYYY-MM-DD").add('days', index * 7).week() - (moment(an, "YYYY-MM-DD").add('days', index * 7).month() * 4));
             Object.keys(this.state.ticUsuario).map((key, index2) => {
-                const valores = [];
+                let valores = [];
 
                 if (parseInt(key) === index) {
                     valores.push(this.state.ticUsuario[key].talentoE ? this.state.ticUsuario[key].talentoE.valorC * 20 : 10);
@@ -428,6 +435,7 @@ class DashBoard extends React.Component {
                     const lab = 'Sen ' + (mm - 2) + '. ' + moment(an, "YYYY-MM-DD").add('days', index * 7).format('MMMM');
                     datos.push({ label: "MIT " + lab, data: valores });
                 }
+                return this.state.ticUsuario[key];
             });
 
         }
@@ -542,21 +550,21 @@ class DashBoard extends React.Component {
                 <div className="ui form">
                     <div className="two column stackable ui grid">
                         <div className="column five wide">
-                            <div style={{ position: 'relative', height: '26em', 'border':'0.5px', top: '15em' }}  >
+                            <div style={{ position: 'relative', height: '26em', 'border': '0.5px', top: '15em' }}  >
                                 {this.renderListaActividades()}
                             </div>
                         </div>
                         <div className="column one wide"></div>
                         <div className="column ten wide" style={{ left: '20px' }} >
-                            <div  style={{ position: 'relative', top: '120px', borderColor: 'white' }}>
-                            {this.renderListaObjetivos()}
+                            <div style={{ position: 'relative', top: '120px', borderColor: 'white' }}>
+                                {this.renderListaObjetivos()}
                             </div>
                         </div>
 
 
                     </div>
                 </div >
-              
+
             </div >
 
         );
@@ -599,7 +607,7 @@ class DashBoard extends React.Component {
                 onboarding: true,
             };
             updates[`Usuario/${this.props.usuarioDetail.idUsuario}`] = postData;
-          //  firebase.database().ref().update(updates);
+            //  firebase.database().ref().update(updates);
 
         }, timeoutLength5)
     }
@@ -611,24 +619,7 @@ class DashBoard extends React.Component {
 
     render() {
         let varriable
-        let onboarding = null;
-        let styleS = {
-            position: 'fixed',
-            margin: '0.5em',
-            bottom: '10%',
-            right: '40%',
-            'z-index': '6',
-        }
-
-        let bt;
-
-
-
-
-
         if (this.props.usuarioDetail && this.props.usuarioDetail.rol === '3') {
-
-
 
             let pageActivi = null;
             let pageAux0 = null;
@@ -639,7 +630,6 @@ class DashBoard extends React.Component {
                 const tOn = "Hola " + this.props.usuarioDetail.usuario.usuario + " soy huper, ";
                 const tOn2 = "te apoyare en el trabajo que debas realizar ";
                 const tOn3 = "para comenzar... ";
-
                 const tOn4 = "Nuestra metodología es basada en Ivy lee ";
                 const tOn5 = "Empecemos...";
                 const tOn6 = "'Muéstrame el camino para hacer más cosas' -- Ivy lee";
@@ -703,8 +693,8 @@ class DashBoard extends React.Component {
 
 
                 if (this.props.pasoOnboarding === 10) {
-                  
-                     pageAux = <div style={{ transform: 'scale(1.3)', height: '700px', width: '1000px' }}>
+
+                    pageAux = <div style={{ transform: 'scale(1.3)', height: '700px', width: '1000px' }}>
                         <MenuChat />
                     </div>
                 }
@@ -763,18 +753,18 @@ class DashBoard extends React.Component {
 
                 </Dimmer>
             }
-    /*        else if ((this.props.MensajeIvily && this.props.MensajeIvily.nActIVi && this.props.MensajeIvily.nActIVi < 6) || !this.props.listaObjetivo || !this.props.listaObjetivo.objetivos) {
-                let xAct = 6
-                this.props.estadochats('dimmer Plan');
-                if (this.props.MensajeIvily && this.props.MensajeIvily.nActIVi)
-                    xAct = 6 - this.props.MensajeIvily.nActIVi;
-                pageActivi = <Dimmer active={true} page>
-                    <h2>Te quedan {xAct} actividades por planificar</h2>
-                    <h1>¡Animo!</h1>
-                    <MenuChat />
-                </Dimmer>
-            }
-*/
+            /*        else if ((this.props.MensajeIvily && this.props.MensajeIvily.nActIVi && this.props.MensajeIvily.nActIVi < 6) || !this.props.listaObjetivo || !this.props.listaObjetivo.objetivos) {
+                        let xAct = 6
+                        this.props.estadochats('dimmer Plan');
+                        if (this.props.MensajeIvily && this.props.MensajeIvily.nActIVi)
+                            xAct = 6 - this.props.MensajeIvily.nActIVi;
+                        pageActivi = <Dimmer active={true} page>
+                            <h2>Te quedan {xAct} actividades por planificar</h2>
+                            <h1>¡Animo!</h1>
+                            <MenuChat />
+                        </Dimmer>
+                    }
+        */
             varriable = <div>
                 {pageActivi}
                 {this.renderTeletrabajador()}
@@ -888,32 +878,31 @@ class DashBoard extends React.Component {
 
             }
 
-
             varriable = <div>
                 {pageActivi}
                 {this.renderGestor()}
             </div>
 
-
-
-
-
-
-
-
-
         }
 
-
-
-
-
-
+        let errorMessage = null;
+        if (!this.props.isSignedIn) {
+            errorMessage = <Modal
+                open={true}
+                onClose={this.handleClose}
+                basic
+                size='small'
+            >
+                <Header size='huge' icon='browser' content='Hola Hupper!!!' />
+                <Modal.Content>
+                    <h3>Hemos terminado el tiempo de prueba, escribenos para continuar y seguir acompañandote en tu trabajo</h3>
+                </Modal.Content>
+            </Modal>
+        }
         return (
             <div> {varriable}
-
+                {errorMessage}
             </div >
-
         );
 
     }

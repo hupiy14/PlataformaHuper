@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import '../components/styles/ingresoHupity.css';
-import { chatOn, chatOff, mensajeAsanas, popupBot  } from '../actions';
-import { Card, Icon, Image, Button, Form, Message, Segment, Dimmer, Loader, Modal, Header, Input } from 'semantic-ui-react';
+import { chatOn, chatOff, mensajeAsanas, popupBot } from '../actions';
+import { Card, Image, Button, Form, Message, Modal, Header, Input } from 'semantic-ui-react';
 import history from '../history';
 import firebase from 'firebase';
 import zonaEspana from '../components/utilidades/zonaEspana';
@@ -19,7 +19,6 @@ import { clientIdAsana, clientSecrectAsana, clientSlack } from '../apis/stringCo
 
 import Select from 'react-select';
 import chroma from 'chroma-js';
-import { relativeTimeThreshold } from 'moment';
 
 let timelenght = 20000;
 //const Asana = require('asana');
@@ -93,12 +92,12 @@ class Profile extends React.Component {
 
 
 
-        if (this.props.mensajeAsana === 'Slack'){
+        if (this.props.mensajeAsana === 'Slack') {
             this.setState({ open: 'slack' });
             this.renderCargar('slack');
-        } 
-        else{
-           
+        }
+        else {
+
             this.setState({ open: 'asana' });
             this.renderCargar('asana');
         }
@@ -123,9 +122,11 @@ class Profile extends React.Component {
 
         const listaX = zonaEspana();
         let entro = null;
-        Object.keys(listaX).map(function (key, index) {
+        Object.keys(listaX).map((key, index) => {
             if (listaX[key].name === ' ')
                 entro = true;
+            return listaX[key];
+
         });
 
         if (!entro) {
@@ -281,11 +282,6 @@ class Profile extends React.Component {
         */
 
 
-
-
-        let visible = false;
-        if (this.props.usuarioDetail.rol === '3')
-            visible = true;
         let st = this.renderStyles();
         let op = this.renderCanaleSlack();
         let formSlack = <div>
@@ -325,10 +321,10 @@ class Profile extends React.Component {
         </div>
 
 
-        if (this.state.listaCanales_Slack === undefined) {
+        if (this.state.listaCanales_Slack === undefined || !this.state.listaCanales_Slack) {
             formSlack = <div>
                 <Form  >
-                    <a onClick={this.clickGuardarTemporal} href={`https://slack.com/oauth/authorize?scope=bot&redirect_uri=${window.location.origin}&client_id=${clientSlack}`}><img src="https://api.slack.com/img/sign_in_with_slack.png" /></a>
+                    <h5 onClick={this.clickGuardarTemporal} href={`https://slack.com/oauth/authorize?scope=bot&redirect_uri=${window.location.origin}&client_id=${clientSlack}`}><img alt='login Asana' src="https://api.slack.com/img/sign_in_with_slack.png" /></h5>
                 </Form>
                 <br />
             </div>
@@ -387,7 +383,7 @@ class Profile extends React.Component {
 
 
     renderCalendar() {
-        var event = {
+        /*var event = {
             'summary': 'Google I/O 2015',
             'location': '800 Howard St., San Francisco, CA 94103',
             'description': 'A chance to hear more about Google\'s developer products.',
@@ -413,7 +409,7 @@ class Profile extends React.Component {
                     { 'method': 'popup', 'minutes': 10 }
                 ]
             }
-        };
+        };*/
         if (!this.state.liscalendars) {
             window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
                 .then(() => {
@@ -488,9 +484,10 @@ class Profile extends React.Component {
         if (!listaX)
             return;
 
-        Object.keys(listaX).map(function (key, index) {
+        Object.keys(listaX).map((key, index) => {
             if (listaX[key].name === 'Ninguno')
                 entro = true;
+            return listaX[key];
         });
 
         if (!entro) {
@@ -588,10 +585,6 @@ class Profile extends React.Component {
         value={this.state.tokenTrello}
         onChange={e => this.setState({ tokenTrello: e.target.value })}
     />*/
-        let visible = true;
-        if (this.props.usuarioDetail.rol === '3')
-            visible = false;
-
 
 
         let contruir = <Form >
@@ -600,7 +593,7 @@ class Profile extends React.Component {
                 onChange={e => { this.setState({ trelloApi: e.target.value }); this.renderConsultaApiKeyTrello(e.target.value); }}
             />
             <div className="inline">
-                <Button color="blue" style={{ height: '37px' }} icon='trello' labelPosition='center' content='Generar' onClick={() => { this.myWindow2 = window.open('https://trello.com/app-key/', '', 'width=600,height=400,left=200,top=200'); }} />
+                <Button basic color="blue" style={{ height: '3.3em' }} icon='trello' labelPosition='center' content='Generar' onClick={() => { this.myWindow2 = window.open('https://trello.com/app-key/', '', 'width=600,height=400,left=200,top=200'); }} />
             </div>
         </Form>
 
@@ -638,9 +631,9 @@ class Profile extends React.Component {
                     <br />
 
 
-                    <button disabled={this.state.trelloDashboard && (this.state.listaObjetivostoDO && this.state.listaObjetivostoDO !== '' ||
-                        this.state.listaOBjetivosDone && this.state.listaOBjetivosDone !== '' ||
-                        this.state.listaObjetivosTheEnd && this.state.listaObjetivosTheEnd !== '') ? false : true}
+                    <button disabled={this.state.trelloDashboard && ((this.state.listaObjetivostoDO && this.state.listaObjetivostoDO !== '') ||
+                        (this.state.listaOBjetivosDone && this.state.listaOBjetivosDone !== '') ||
+                        (this.state.listaObjetivosTheEnd && this.state.listaObjetivosTheEnd !== '')) ? false : true}
                         onClick={() => { firebase.database().ref().child(`Usuario-TokenTrelloTemp/${this.props.usuarioDetail.idUsuario}`).remove(); this.renderGuardar() }} className="ui pink button inverted " style={{ left: "10%" }}>
                         <i class="save icon"></i>
                                 Guardar
@@ -684,10 +677,7 @@ class Profile extends React.Component {
     renderOpcionesAsana(listaOpciones) {
 
         let listaX = listaOpciones;
-        console.log('joseeee')
-        console.log(listaX)
 
-        let entro = null;
         //console.log(listaX);
         let lista = {};
         if (!listaX)
@@ -709,20 +699,15 @@ class Profile extends React.Component {
 
     renderAsana() {
 
-        let formAsana = <div style={{ height: '37px', top: '2.5em', left: '9%', position: 'relative' }}>
-
-            <button class="ui red basic button " style={{ width: '240px' }}>
+        let formAsana = <div style={{ height: '3.3em', top: '2.5em', left: '9%', position: 'relative' }}>
+            <button class="ui red basic button " style={{ width: '17em' }}>
                 <Image src={asana} circular size="mini" />
-                <a style={{ top: '-25px', position: 'relative', left: '20px' }} href={`https://app.asana.com/-/oauth_authorize?client_id=${clientIdAsana}&redirect_uri=${window.location.origin}&response_type=code&state=asana_0.8wpnz8r4jj8kaspekwp`}>Authenticate with Asana</a>
-
+                <a style={{ top: '-1.6em', position: 'relative', left: '1.6em' }} href={`https://app.asana.com/-/oauth_authorize?client_id=${clientIdAsana}&redirect_uri=${window.location.origin}&response_type=code&state=asana_0.8wpnz8r4jj8kaspekwp`}>Authenticate with Asana</a>
             </button>
-
         </div>
 
         let st = this.renderStyles();
         if (this.state.asana) {
-
-
             formAsana =
                 <div>
 
@@ -765,14 +750,13 @@ class Profile extends React.Component {
     }
 
     renderConstruccion() {
-
         let contruir = <Form >
-            <div className="box" style={{ top: '35px' }}>
+            <div className="box" style={{ top: '2.2em' }}>
                 <div className="loader9"></div>
                 <p style={{
-                    height: '60px',
-                    borderRadius: '60px',
-                    width: '280px'
+                    height: '3em',
+                    borderRadius: '2.5em',
+                    width: '14em'
                 }}>Lo estamos diseñando para ti</p>
             </div >
         </Form>
@@ -783,9 +767,6 @@ class Profile extends React.Component {
 
         );
     }
-
-
-
 
     renderUsuario() {
         let nnivel = null;
@@ -888,7 +869,6 @@ class Profile extends React.Component {
 
         this.props.popupBot({ mensaje: 'Ya hemos guardado tu configuración' });
 
-        let tamano = '37em';
         if (this.state.open === 'slack') {
             this.setState({ slackIn: '0%' });
             if (!this.state.canalEquipoSlack || this.state.canalEquipoSlack === '')
@@ -1070,7 +1050,7 @@ class Profile extends React.Component {
                         }
                     }).then(res => {
                         console.log(res);
-                        this.state.asana.token = res.data.access_token;
+                        this.setState({ asana: { ...this.state.asana, token: res.data.access_token } });
                         this.renderConsultasAsana('projects');
                     }
                     ).catch(err => { this.setState({ asana: null }); })
@@ -1184,24 +1164,23 @@ class Profile extends React.Component {
         return (
             <div className="ui form">
                 <Card style={{ left: '10%', width: '80%' }}>
-                    <Image src={this.state.imagenFondo ? this.state.imagenFondo : 'https://cdn.pixabay.com/photo/2016/08/09/21/54/yellowstone-national-park-1581879_960_720.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} style={{ height: '250px' }} />
-                    <Card.Content style={{ height: '250px', position: 'relative', left: '-25%' }}>
-                        <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '6%', height: '150px', position: 'relative', top: '-150px' }} />
-                        <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.setState({ activo: false }); this.renderCargar('slack'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.slackIn + ')', background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-14%', position: 'relative', top: '-55px' }} />
-                        <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.driveIn + ')', background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-12%', position: 'relative', top: '-55px' }} />
-                        <Image src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.calendarIn + ')', background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-10%', position: 'relative', top: '-55px' }} />
-                        <Image src={trelloImg} onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.trelloIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-8%', position: 'relative', top: '-55px' }} />
-                        <Image src={asana} onClick={() => { this.state.open === 'asana' ? this.setState({ open: null }) : this.setState({ open: 'asana' }); this.renderCargar('asana'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.asanaIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-16%', position: 'relative', top: '-12px' }} />
-                        <Image src={googleSheet} onClick={() => { this.state.open === 'sheet' ? this.setState({ open: null }) : this.setState({ open: 'sheet' }); this.renderCargar('sheet'); }} circular size="mini" style={{ filter: 'grayscale(1)', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-26%', position: 'relative', top: '-12px' }} />
-                        <Image src={clickup} onClick={() => { this.state.open === 'clickup' ? this.setState({ open: null }) : this.setState({ open: 'clickup' }); this.renderCargar('clickup'); }} circular size="mini" style={{ filter: 'grayscale(1)', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-36%', position: 'relative', top: '-12px' }} />
-
+                    <Image src={this.state.imagenFondo ? this.state.imagenFondo : 'https://cdn.pixabay.com/photo/2016/08/09/21/54/yellowstone-national-park-1581879_960_720.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} style={{ height: '18em' }} />
+                    <Card.Content style={{ height: '18em', position: 'relative', left: '-25%' }}>
+                        <Image src={this.state.imagenPerfil ? this.state.imagenPerfil : 'https://files.informabtl.com/uploads/2015/08/perfil.jpg'} onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }} circular size="small" style={{ left: '6%', height: '12em', position: 'relative', top: '-12em' }} />
+                        <Image src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.setState({ activo: false }); this.renderCargar('slack'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.slackIn + ')', background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-14%', position: 'relative', top: '-5.2em' }} />
+                        <Image src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.driveIn + ')', background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-12%', position: 'relative', top: '-5.2em' }} />
+                        <Image src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.calendarIn + ')', background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-10%', position: 'relative', top: '-5.2em' }} />
+                        <Image src={trelloImg} onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.trelloIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-8%', position: 'relative', top: '-5.2em' }} />
+                        <Image src={asana} onClick={() => { this.state.open === 'asana' ? this.setState({ open: null }) : this.setState({ open: 'asana' }); this.renderCargar('asana'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.asanaIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-16%', position: 'relative', top: '-1em' }} />
+                        <Image src={googleSheet} onClick={() => { this.state.open === 'sheet' ? this.setState({ open: null }) : this.setState({ open: 'sheet' }); this.renderCargar('sheet'); }} circular size="mini" style={{ filter: 'grayscale(1)', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-26%', position: 'relative', top: '-1em' }} />
+                        <Image src={clickup} onClick={() => { this.state.open === 'clickup' ? this.setState({ open: null }) : this.setState({ open: 'clickup' }); this.renderCargar('clickup'); }} circular size="mini" style={{ filter: 'grayscale(1)', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-36%', position: 'relative', top: '-1em' }} />
                         <Button circular color="pink" style={{ position: 'relative', top: '-8em', left: '-23%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
                         <Button circular color="pink" style={{ position: 'relative', top: '-23.2em', left: '52%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
 
                     </Card.Content>
 
                 </Card>
-                <button onClick={() => { history.push('/newworkflow'); }} className="ui pink button inverted " style={{ width: '200px', top: '240px', left: '-19%' }}>
+                <button onClick={() => { history.push('/newworkflow'); }} className="ui pink button inverted " style={{ width: '14em', top: '16em', left: '-19%' }}>
                     <i class="object group outline icon"></i>
                 Crea tu propio flujo de trabajo
                 </button>
@@ -1211,7 +1190,7 @@ class Profile extends React.Component {
                         closeOnEscape={false}
                         closeOnDimmerClick={true}
                         onClose={this.state.close}
-                        style={{ height: '350px', top: '150px' }}
+                        style={{ height: '25em', top: '11em' }}
                     >
                         <Modal.Header>Tu imagén</Modal.Header>
                         <Modal.Content image>
@@ -1233,14 +1212,13 @@ class Profile extends React.Component {
                                 </Input>
                             </Modal.Description>
                         </Modal.Content>
-                        <Modal.Actions style={{ top: '340px', position: 'relative' }}>
-                            <Button onClick={this.close} style={{ background: "grey", left: "-20px" }}>
+                        <Modal.Actions style={{ top: '24em', position: 'relative' }}>
+                            <Button onClick={this.close} style={{ background: "grey", left: "-1.2em" }}>
                                 Cancelar
                                       </Button>
 
-
-                            <button onClick={() => { this.close(); this.renderGuardar(); }} className="ui pink button inverted " style={{ left: "-10px" }}>
-                                <i class="checkmark icon"></i>
+                            <button onClick={() => { this.close(); this.renderGuardar(); }} className="ui pink button inverted " style={{ left: "-0.5em" }}>
+                                <i className="checkmark icon"></i>
                                 Guardar
                             </button>
 

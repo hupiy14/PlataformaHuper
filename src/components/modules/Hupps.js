@@ -3,9 +3,6 @@ import { connect } from 'react-redux';
 import CardFeedback from '../utilidades/cardFeed';
 //import image from '../../images/hupityNewlogo.png';
 import unsplash from '../../apis/unsplash';
-import { Button, Header, Icon, Modal, Input, Image, Card } from 'semantic-ui-react';
-import history from '../../history';
-
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs } from '../modules/chatBot/actions';
 
 
@@ -18,9 +15,6 @@ class Hupps extends React.Component {
 
     componentDidMount() {
         this.onSearchSubmit('business')
-
-        //  console.log('Imagenes Hupps')
-        //  console.log(this.props.listaObjetivo);
         if (this.props.equipoConsulta) {
             //    console.log(this.props.equipoConsulta);
             this.props.listaObjetivos({ tareas: this.props.listaObjetivo, objetivos: this.props.equipoConsulta });
@@ -60,18 +54,17 @@ class Hupps extends React.Component {
         const cconsulta = this.props.listaObjetivo.objetivos;
         let x = 0;
         let y = 0;
-        const opciones = Object.keys(cconsulta).map(function (key2, index) {
+        const opciones = Object.keys(cconsulta).map((key2, index) => {
 
-            if (cconsulta[key2].estado === 'concluido') { return; }
+            if (cconsulta[key2].estado === 'concluido') { return null; }
             x = x + 1;
-
-
             let tareas = {};
             const tareaO = the.props.listaObjetivo.tareas;
 
-            Object.keys(tareaO).map(function (key3, index) {
+            Object.keys(tareaO).map((key3, index)=> {
                 if (key3 === key2)
                     tareas = tareaO[key3];
+                return tareaO[key3];
             })
 
             if (y > 8) {
@@ -110,7 +103,6 @@ class Hupps extends React.Component {
         const cconsulta = this.props.listaObjetivo.objetivos;
         let x = 0;
         let y = 0;
-        let listaPerObjetivos = {};
         let usuario = null;
         let usuarioGesto = null;
         console.log(cconsulta);
@@ -118,17 +110,13 @@ class Hupps extends React.Component {
 
 
             if (!cconsulta[key2].concepto) {
-                return;
+                return null;
             }
 
-
-            //         console.log(cconsulta[key2]);
-
-            if (cconsulta[key2].estado === 'finalizado') { return; }
+            if (cconsulta[key2].estado === 'finalizado') { return null; }
 
             x = x + 1;
             let tareas = {};
-            const tareaO = the.props.listaObjetivo.tareas;
             usuarioGesto = cconsulta[key2].idUsuario;
             const personas = this.props.listaObjetivo.objetivos.listaPersonas;
             if (personas) {
@@ -138,14 +126,12 @@ class Hupps extends React.Component {
                         console.log(usuario + '   ' + key);
 
                     }
+                    return personas[key];
                 });
             }
 
-
-
             if (y > 8) {
                 y = 0;
-                //  the.onSearchSubmit('company')
             }
 
             y = y + 1;
