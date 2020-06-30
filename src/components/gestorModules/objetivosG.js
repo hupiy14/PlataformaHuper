@@ -374,7 +374,7 @@ class ListaObjetivosEquipo extends React.Component {
 
                     let topA = -(Math.round((cconsulta[key2].concepto.length + 6) / 15) * 15) - 20;
                     if (!images[y]) return null;
-                    let imagenT = images[y] ? images[y].urls.regular : null;
+                    let imagenT = images[y] ? images[y].urls.thumb : null;
 
                     if (nObj === 0 && !this.props.equipoConsulta.sell && !this.state.est) {
                         this.setState({ est: true });
@@ -403,7 +403,7 @@ class ListaObjetivosEquipo extends React.Component {
                                         transform: 'scale(1.15,1)',
                                         'border-radius': '55px 15px 55px 8px',
                                         'box-shadow': '#fbbd0894 0.8px 0.8px 5px 1.5px',
-                                    }} src={images[1] ? images[y].urls.regular : ''} />
+                                    }} src={images[1] ? images[y].urls.thumb : ''} />
                                     <div className="header" style={{
                                         top: '-76px',
                                         position: 'relative',

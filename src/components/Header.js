@@ -26,7 +26,7 @@ class Headers extends React.Component {
             notifications = <Noti />
             notificationsHupp = <NotiHupp />
             menuPerfil = <Popup trigger={
-                <Image id="imagePerfilUs" src={this.props.usuarioDetail ? this.props.usuarioDetail.usuario && this.props.isSignedIn ? this.props.usuarioDetail.usuario.imagenPerfil ? this.props.usuarioDetail.usuario.imagenPerfil : perfil : perfil : perfil} circular
+                <Image alt= 'Imagen perfil Hupper' id="imagePerfilUs" src={this.props.usuarioDetail ? this.props.usuarioDetail.usuario && this.props.isSignedIn ? this.props.usuarioDetail.usuario.imagenPerfil ? this.props.usuarioDetail.usuario.imagenPerfil : perfil : perfil : perfil} circular
                     style={{
                         width: '7.2em', position: 'absolute', height: '7.2em', left: '91%',
                         transform: 'scale(0.6)'

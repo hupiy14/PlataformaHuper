@@ -488,7 +488,6 @@ class DashBoard extends React.Component {
                     maxLen={'140'}
                     TituloGrafica={"Avance de tu trabajo Historico"}
                 />
-                />
             </div>
         });
     }
@@ -932,7 +931,7 @@ class DashBoard extends React.Component {
                                 return <div>
                                     <div
                                         key={index}
-                                        style={{ height: '28em', filter: 'contrast(40%)', background: `url('${this.state.images[indice].urls.regular}') no-repeat center center` }}
+                                        style={{ height: '28em', filter: 'contrast(40%)', background: `url('${this.state.images[indice].urls.thumb}') no-repeat center center` }}
                                     >
                                         <h3 style={{ 'text-align': 'center', color: 'black', top: '1em', position: 'relative' }}> Tus Objetivos Semanales</h3>
 

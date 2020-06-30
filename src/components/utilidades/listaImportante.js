@@ -394,7 +394,7 @@ class listImportante extends React.Component {
                                 filter: 'opacity(0.4)',
                                 height: '0.2em'
                             }}>
-                                <ImagenObj imageXV={this.state.images[y] ? this.state.images[y].urls.regular : ''} />
+                                <ImagenObj imageXV={this.state.images[y] ? this.state.images[y].urls.thumb : ''} />
                             </div>
                             ;
                         avancePadre =
@@ -419,7 +419,7 @@ class listImportante extends React.Component {
                                 filter: 'opacity(0.4)',
                                 height: '1em'
                             }} onClick={() => { this.changeObj(objPrincipal) }}>
-                                <ImagenObj imageXV={this.state.images[imgyAux] ? this.state.images[imgyAux].urls.regular : ''} />
+                                <ImagenObj imageXV={this.state.images[imgyAux] ? this.state.images[imgyAux].urls.thumb : ''} />
                             </div>;
                         topkeyResult = '-3.5em';
                         topkeyResult2 = '-5em';
@@ -443,7 +443,7 @@ class listImportante extends React.Component {
                                 <div>
                                     {imageComp}
                                     <div style={{ position: 'relative', top: '2.2em', left: '10%', zIndex: '5' }}>
-                                        <ImagenObj imageXV={this.state.images[imgy] ? this.state.images[imgy].urls.regular : ''} />
+                                        <ImagenObj imageXV={this.state.images[imgy] ? this.state.images[imgy].urls.thumb : ''} />
                                     </div>
 
                                     <figure className="snip1361" style={{ position: 'relative', top: '-5em' }} onMouseOver={(e, s) => {
@@ -473,7 +473,7 @@ class listImportante extends React.Component {
                                                 this.setState({ comentariosObj: this.renderComentarios() });
                                                 this.setState({ comentario: null });
                                                 this.handleOpen();
-                                            }}>
+                                            }}>.
 
                                             <i className="comment alternate outline icon "></i>
                                         </button>

@@ -367,7 +367,6 @@ class DashBoard extends React.Component {
                     maxLen={'140'}
                     TituloGrafica={"Avance de tu trabajo Historico"}
                 />
-                />
             </div>
         });
     }

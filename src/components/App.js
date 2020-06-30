@@ -46,9 +46,9 @@ import ProfileC from './celphone/profileC';
 import NewFlujoC from './celphone/Nflow';
 import ProgresoC from './celphone/progreso';
 
-import { hotjar } from 'react-hotjar';
+//import { hotjar } from 'react-hotjar';
 
-hotjar.initialize(1412405, 6);
+//hotjar.initialize(1412405, 6);
 
 
 
@@ -103,6 +103,7 @@ class App extends React.Component {
         if (this.props.isSignedIn)
             menuC = <MenuChat></MenuChat>;
         let apps = null;
+        /*
         if (window.screen.width <= 500 || (window.screen.height <= 500 && window.screen.width <= 800)) {
 
             apps =
@@ -159,8 +160,9 @@ class App extends React.Component {
 
         }
         else {
+            */
             apps = <div  >
-                <div className="ui container " style={{ height: window.innerHeight, overflow: 'auto' }} >
+                <div className="ui container "   style={{ height: window.innerHeight, overflow: 'auto'}} >
                     <div className="ui items ">
                         <div className="item  ">
                             <div className="content  ">
@@ -195,7 +197,7 @@ class App extends React.Component {
 
 
             </div >
-        }
+        //}
 
 
         return apps;

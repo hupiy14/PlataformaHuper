@@ -77,6 +77,7 @@ class HeadersC extends React.Component {
                                         style={{ transform: 'scale(1.2)', top: '10px', 'border-radius': '30px', position: 'relative', left: '80%' }}
                                         onClick={() => { this.handleOpen(); this.setState({ comentario: null }); }}>
                                         <i className="comment alternate outline icon "></i>
+                                        .
                                     </button>
                                 }
                                 open={this.state.modalOpen}

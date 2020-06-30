@@ -179,10 +179,10 @@ class importButton extends React.Component {
                                 <span className="liness lines-3"></span>
                             </label>
 
-                            <a href="#" onClick={() => { this.renderActivitisTrello() }} className={`menus-item ${tpTrello}`}> <Image src={trello} size="mini" style={{ top: '1.6em', left: '1.6em', transform: 'rotate(-90deg)', filter: 'grayscale(' + tpTrelloImg + ')' }}></Image> </a>
-                            <a href="#" onClick={() => { this.renderActivitisAsana() }} className={`menus-item ${tpasana}`}> <Image src={asana} size="mini" style={{ top: '1.6em', left: '1.6em', transform: 'rotate(-90deg)', filter: 'grayscale(' + tpasanaImg + ')' }}></Image> </a>
-                            <a href="#" className="menus-item gray"> <Image src={googleSheet} size="mini" style={{ top: '1.6em', left: '1.6em', transform: 'rotate(-90deg)', filter: 'grayscale(1)' }}></Image> </a>
-                            <a href="#" className="menus-item gray"> <Image src={clickup} size="mini" style={{ top: '1.6em', left: '1.6em', transform: 'rotate(-90deg)', filter: 'grayscale(1)' }}></Image></a>
+                            <a href="#" onClick={() => { this.renderActivitisTrello() }} className={`menus-item ${tpTrello}`}> <Image alt='sincroniza trello' src={trello} size="mini" style={{ top: '1.6em', left: '1.6em', transform: 'rotate(-90deg)', filter: 'grayscale(' + tpTrelloImg + ')' }}></Image> </a>
+                            <a href="#" onClick={() => { this.renderActivitisAsana() }} className={`menus-item ${tpasana}`}> <Image alt='sincroniza asana' src={asana} size="mini" style={{ top: '1.6em', left: '1.6em', transform: 'rotate(-90deg)', filter: 'grayscale(' + tpasanaImg + ')' }}></Image> </a>
+                            <a href="#" className="menus-item gray"> <Image alt='sincroniza googleSheet' src={googleSheet} size="mini" style={{ top: '1.6em', left: '1.6em', transform: 'rotate(-90deg)', filter: 'grayscale(1)' }}></Image> </a>
+                            <a href="#" className="menus-item gray"> <Image alt='sincroniza clickup' src={clickup} size="mini" style={{ top: '1.6em', left: '1.6em', transform: 'rotate(-90deg)', filter: 'grayscale(1)' }}></Image></a>
 
                         </nav>
                     </div>}

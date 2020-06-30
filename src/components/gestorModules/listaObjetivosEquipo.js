@@ -362,7 +362,7 @@ class ListaObjetivosEquipo extends React.Component {
                                                 <div className="ui form">
                                                     <div className="ui grid">
                                                         <div className="eight wide column">
-                                                            <Image wrapped size='medium' src={images[1] ? images[this.state.cambio].urls.regular : ''} />
+                                                            <Image wrapped size='medium' src={images[1] ? images[this.state.cambio].urls.small : ''} />
                                                         </div>
                                                         <div className="eight wide column">
                                                             <Modal.Description>

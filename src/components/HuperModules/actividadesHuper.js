@@ -33,9 +33,9 @@ class listActividades extends React.Component {
         this.setState({
             primero: <div style={{ height: '7.5em' }}>
                 <Step active={true} style={{ height: '8.5em', borderRadius: '0.3em' }}>
-                    <Image src={task} size="mini" style={{ left: '-0.3em', top: '5.4em' }}></Image>
+                    <Image src={task} size="mini" style={{ left: '-0.3em', top: '5.4em' }} alt='Task Hupper'></Image>
                     <Step.Content style={{ left: '8%', width: '90%', top: '-4.8em', position: 'relative' }}>
-                        <Step.Title style={{ width: '60%', color: '#947d0e', top: '7.3em', position: 'relative', transform: `scale(2.5)`, left: '20%' }}>Planifica tu actividad</Step.Title>
+                        <Step.Title style={{ width: '60%', color: '#766203', top: '7.3em', position: 'relative', transform: `scale(2.5)`, left: '20%' }}>Planifica tu actividad</Step.Title>
                     </Step.Content>
                 </Step>
             </div>
@@ -302,7 +302,7 @@ class listActividades extends React.Component {
                             primero: <div style={{ height: '7.5em' }}>
                                 <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '8.5em', widt: '130%', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '1em' }}>
                                     <h1 style={{ position: 'relative', top: '7%', left: '-42%', transform: 'scale(2.5)' }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
-                                    <Image src={task} size="mini" style={{ left: '1em', top: '1.5em' }}></Image>
+                                    <Image src={task} size="mini" style={{ left: '1em', top: '1.5em' }} alt= 'task hupper'></Image>
                                     <div style={{ position: 'relative', top: '5px', left: '-40%', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].prioridad} </div>
                                     <Step.Content style={{ left: '8%', width: '90%', top: '-4em', position: 'relative' }}>
                                         <Step.Description style={{ position: 'relative', top: '4em', left: '20%', fontSize: 'smaller' }}>
@@ -320,7 +320,7 @@ class listActividades extends React.Component {
                             return (<div style={{ height: '7.5em', width: '80%', position: 'relative', left: '20%' }}>
                                 <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '6.5em', background: '#fff6fb', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '1em', 'z-index': '-1' }}>
                                     <h1 style={{ position: 'relative', top: '5%', left: '-5%', transform: 'scale(1.4)' }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
-                                    <Image src={task} size="mini" style={{ left: '-3.5em', top: '2.8em', transform: 'scale(0.75)' }}></Image>
+                                    <Image src={task} size="mini" style={{ left: '-3.5em', top: '2.8em', transform: 'scale(0.75)' }} alt= 'task hupper'></Image>
                                     <div style={{ position: 'relative', top: '2.5em', left: '-3.5em', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].prioridad} </div>
                                     <Step.Content style={{ left: '8%', width: '90%', top: '-5em', position: 'relative' }}>
                                         <Step.Description style={{ position: 'relative', top: '6em', left: '18%', fontSize: 'smaller' }}>
@@ -356,15 +356,15 @@ class listActividades extends React.Component {
             margin = '-8%';
         for (let index = actNum; index <= limite; index++) {
             x++;
-            const element = <div key={index} style={{ height: '7.5em', width: '80%', position: 'relative', left: '20%', filter: 'grayscale(1)' }}>
+            const element = <div key={index} style={{ height: '7.5em', width: '80%', position: 'relative', left: '20%', filter: 'grayscale(0.5)' }}>
                 <Step completed={false} style={{ background: '#efefef', height: '6.5em', borderRadius: '1em' }}>
                     <h1 style={{ position: 'relative', top: '5%', left: margin, transform: 'scale(1.4)' }}>{x}</h1>
-                    <Image src={task} size="mini" style={{ transform: 'scale(0.75)' }}></Image>
+                    <Image src={task} size="mini" style={{ transform: 'scale(0.75)' }} alt= 'task hupper'></Image>
                     <Step.Content style={{ left: '8%', width: '90%', top: '-5em', position: 'relative' }}>
                         <Step.Description style={{ position: 'relative', top: '4.5em', left: '25%', fontSize: 'smaller' }}>
                             <Icon name="clock outline"></Icon>00:00 a 00:00
                     </Step.Description>
-                        <Step.Title style={{ color: '#947d0e', top: '-0.5em', position: 'relative', left: '2%' }}>Programa tu nueva actividad</Step.Title>
+                        <Step.Title style={{ color: '#725f03', top: '-0.5em', position: 'relative', left: '2%' }}>Programa tu nueva actividad</Step.Title>
                     </Step.Content>
                 </Step>
             </div>

@@ -74,7 +74,7 @@ class Hupps extends React.Component {
             y = y + 1;
             return (
                 <div className="column  " key={key2}>
-                    <CardFeedback image={the.state.images[y].urls.regular}
+                    <CardFeedback image={the.state.images[y].urls.thumb}
                         title={cconsulta[key2].concepto}
                         descripcion={cconsulta[key2].detalle}
                         fechaFin={cconsulta[key2].dateFinalizado ? cconsulta[key2].dateFinalizado : ''}
@@ -137,7 +137,7 @@ class Hupps extends React.Component {
             y = y + 1;
             return (
                 <div className="column  " key={key2}>
-                    <CardFeedback image={the.state.images[y].urls.regular}
+                    <CardFeedback image={the.state.images[y].urls.thumb}
                         title={cconsulta[key2].concepto}
                         descripcion={cconsulta[key2].detalle}
                         fechaFin={cconsulta[key2].dateFinalizado ? cconsulta[key2].dateFinalizado : ''}
