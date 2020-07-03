@@ -218,15 +218,16 @@ $speed: 2.5s;
   position: absolute;
   top: 0em;
   bottom: 0em;
-  left: 0em;
+  left: 3em;
   right: 0em;
   margin: auto;
   width: 14em;
   height: 7.2em;
+  transform: scale(0.6);
   span {
     display: block;
     background: #ccc;
-    width: 0.15em;
+    width: 0.1em;
     height: 10%;
     border-radius: 0.25em;
     margin-right: 0.25em;

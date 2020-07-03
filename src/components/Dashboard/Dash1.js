@@ -14,7 +14,7 @@ import moment from 'moment';
 import history from '../../history';
 import { signOut } from '../../actions';
 import { Menu, Segment, Dimmer, Checkbox, Modal, Header } from 'semantic-ui-react';
-import MenuChat from '../MenuChat';
+import MenuChat from '../HuperModules/chat3X/chatZ';
 import { pasoOnboardings, listaFormaciones, estadochats } from '../modules/chatBot/actions';
 
 
@@ -373,7 +373,6 @@ class DashBoard extends React.Component {
                     titleGrafica={"Objetivo vs Meses"}
                     maxLen={'140'}
                     TituloGrafica={"Avance de tu trabajo Historico"}
-                />
                 />
             </div>
         });

@@ -2,11 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import './timer.css';
 import { responseEmWidth } from '../../../lib/responseUtils';
-import music from '../../../images/bensound-goinghigher.mp3';
-import { sendMessage } from '../../../actions';
+import { sendMessage, popupBot } from '../../../actions';
 import moment from 'moment';
 import firebase from 'firebase';
-import { popupBot } from '../../../actions';
+import { numeroTareasTs } from '../../modules/chatBot/actions';
 
 let timeoutLength = 5000;
 let timeoutLength3 = 5000;
@@ -43,7 +42,7 @@ class timerClock extends React.Component {
 
         this.sessionOverMusic = new window.Howl({
             //edit this to the music you want to play
-            src: [music],
+
             onend: function () {
                 stopMusicButton.prop('disabled', false);
             }
@@ -64,7 +63,7 @@ class timerClock extends React.Component {
         this.timerChange();
     }
 
- 
+
     renderConsulta() {
         this.queryConsulta = `Usuario-Task/${this.props.userId}/${moment().format("YYYYMMDD")}`;
         const starCountRef3 = firebase.database().ref().child(this.queryConsulta);
@@ -333,6 +332,7 @@ class timerClock extends React.Component {
                     }
                     else if (imTime > tiempof) {
                         this.timepoTask[key].estado = 'finalizado';
+                        this.props.numeroTareasTs(this.props.numeroTareasTerminadas + 1);
                     }
 
                 }
@@ -354,8 +354,7 @@ class timerClock extends React.Component {
     }
 
 
-    componentWillMount ()
-    {
+    componentWillMount() {
         console.log('entor-->');
     }
     render() {
@@ -406,4 +405,4 @@ const mapAppStateToProps = (state) => (
     });
 
 
-export default connect(mapAppStateToProps, { sendMessage, popupBot })(timerClock);
+export default connect(mapAppStateToProps, { sendMessage, popupBot, numeroTareasTs })(timerClock);

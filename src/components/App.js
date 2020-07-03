@@ -25,30 +25,14 @@ import './modules/chatBot/chatHupApp.css';
 import Onboard from './PruebaP';
 import Profile from './profileHuper';
 import Exito from './continuarProceso';
-//import ContinuarProceso from './continuarProceso';
-
-import MenuCel from './celphone/menuCel';
 import ModalFormValidacion from './gestorModules/formularioValidacionObj';
-//configuracion de flujo
+
 
 import FLujoCreate from './HuperModules/pointWork';
 import { celChats } from '../components/modules/chatBot/actions';
 import equipoDash from './gestorModules/equipoData';
 
-//celular
 
-import HeaderC from './celphone/HeaderC';
-import DashBoardC from './celphone/DashboardC';
-import MenuEditObj from './celphone/menuEditO';
-import FormacionesObjC from './celphone/formacionesC';
-import CalendarioC from './utilidades/calendar2';
-import ProfileC from './celphone/profileC';
-import NewFlujoC from './celphone/Nflow';
-import ProgresoC from './celphone/progreso';
-
-//import { hotjar } from 'react-hotjar';
-
-//hotjar.initialize(1412405, 6);
 
 
 
@@ -103,101 +87,44 @@ class App extends React.Component {
         if (this.props.isSignedIn)
             menuC = <MenuChat></MenuChat>;
         let apps = null;
-        /*
-        if (window.screen.width <= 500 || (window.screen.height <= 500 && window.screen.width <= 800)) {
 
-            apps =
-                <div onTouchMove={() => {
-
-                    this.props.celChats(false);
-                    if (window.scrollY > 2) this.props.celChats(true);
-
-
-
-                }} id="pageIntt" >
-                    <div className="ui container " >
-                        <div className="ui items ">
-                            <div className="item  ">
-                                <div className="content  ">
-
-
-                                    <Router history={history}>
-                                        <div>
-                                            <HeaderC />
-
-                                            <Switch>
-                                                <Route path="/" exact component={hupityIngreso} />
-                                                <Route path="/login" exact component={ingreso} />
-                                                <Route path="/profile" exact component={ProfileC} />
-                                                <Route path="/proceso/exito" exact component={Exito} />
-                                                <Route path="/formulario/validacion" exact component={ModalFormValidacion} />
-                                                <Route path="/formulario" exact component={FomularioGlobal} />
-                                                <Route path="/formulario/inicio" exact component={FomularioInicio} />
-                                                <Route path="/formulario/herramientas" exact component={FomularioHerramientas} />
-                                                <Route path="/formulario/termcond" exact component={FomularioTerm} />
-                                                <Route path="/dashboard" component={DashBoardC} />
-                                                <Route path="/editObj" component={MenuEditObj} />
-                                                <Route path="/newworkflow" exact component={NewFlujoC} />
-                                                <Route path="/menucel" exact component={MenuCel} />
-                                                <Route path="/formacionesC" exact component={FormacionesObjC} />
-                                                <Route path="/calendarioC" exact component={CalendarioC} />
-                                                <Route path="/progreso" exact component={ProgresoC} />
-                                            </Switch>
-
-                                        </div>
-
-                                    </Router>
-
+        apps = <div  >
+            <div className="ui container " style={{ height: window.innerHeight, overflow: 'auto' }} >
+                <div className="ui items ">
+                    <div className="item  ">
+                        <div className="content  ">
+                            <Router history={history}>
+                                <div>
+                                    <Header />
+                                    <Switch>
+                                        <Route path="/" exact component={hupityIngreso} />
+                                        <Route path="/login" exact component={ingreso} />
+                                        <Route path="/dashboard" component={dashboard} />
+                                        <Route path="/hupps" exact component={Hupps} />
+                                        <Route path="/onboarding" exact component={Onboard} />
+                                        <Route path="/profile" exact component={Profile} />
+                                        <Route path="/equipoData" exact component={equipoDash} />
+                                        <Route path="/proceso/exito" exact component={Exito} />
+                                        <Route path="/formulario/validacion" exact component={ModalFormValidacion} />
+                                        <Route path="/formulario" exact component={FomularioGlobal} />
+                                        <Route path="/formulario/inicio" exact component={FomularioInicio} />
+                                        <Route path="/formulario/herramientas" exact component={FomularioHerramientas} />
+                                        <Route path="/formulario/termcond" exact component={FomularioTerm} />
+                                        <Route path="/newworkflow" exact component={FLujoCreate} />
+                                    </Switch>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="pie-Pagina">
-                        {this.renderMenuChatC()}
-                    </div>
+                            </Router>
 
-                </div >
-
-        }
-        else {
-            */
-            apps = <div  >
-                <div className="ui container "   style={{ height: window.innerHeight, overflow: 'auto'}} >
-                    <div className="ui items ">
-                        <div className="item  ">
-                            <div className="content  ">
-                                <Router history={history}>
-                                    <div>
-                                        <Header />
-                                        <Switch>
-                                            <Route path="/" exact component={hupityIngreso} />
-                                            <Route path="/login" exact component={ingreso} />
-                                            <Route path="/dashboard" component={dashboard} />
-                                            <Route path="/hupps" exact component={Hupps} />
-                                            <Route path="/onboarding" exact component={Onboard} />
-                                            <Route path="/profile" exact component={Profile} />
-                                            <Route path="/equipoData" exact component={equipoDash} />
-                                            <Route path="/proceso/exito" exact component={Exito} />
-                                            <Route path="/formulario/validacion" exact component={ModalFormValidacion} />
-                                            <Route path="/formulario" exact component={FomularioGlobal} />
-                                            <Route path="/formulario/inicio" exact component={FomularioInicio} />
-                                            <Route path="/formulario/herramientas" exact component={FomularioHerramientas} />
-                                            <Route path="/formulario/termcond" exact component={FomularioTerm} />
-                                            <Route path="/newworkflow" exact component={FLujoCreate} />
-                                        </Switch>
-                                    </div>
-                                </Router>
-
-                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {menuC}
+            {menuC}
 
 
-            </div >
-        //}
+        </div >
+
 
 
         return apps;

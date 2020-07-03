@@ -384,7 +384,6 @@ class listImportante extends React.Component {
                     let topkeyResult2 = '-5.5em';
                     let topObjKey = '0em';
                     if (objPrincipal.tipologia === '3') {
-                        console.log('---=>' + objPrincipal.concepto);
                         imageComp =
                             <div style={{
                                 transform: 'scale(0.35)',

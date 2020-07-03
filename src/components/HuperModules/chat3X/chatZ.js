@@ -16,7 +16,6 @@ import TimerClock from '../timerClock/timerr';
 import firebase from 'firebase';
 import { Popup, Icon, Modal, Button } from 'semantic-ui-react';
 import moment from 'moment';
-import music from '../../../images/bensound-goinghigher.mp3';
 import '../timerClock/./timer.css';
 var THREE = require('three');
 
@@ -25,12 +24,13 @@ const timeoutLength = 5000;
 let timeoutLength2 = 8000;
 class THREEScene extends React.Component {
     state = { push: false, open: null }
-    componentDidMount() {
 
+
+    renderMusic(music) {
         let stopMusicButton = window.$("#btn-stop-music");
         stopMusicButton.prop('disabled', true);
-        this.soundRep = 0;
-        this.isSessionStop = false;
+        if (!music)
+            music = 'https://cdns-preview-d.dzcdn.net/stream/c-deda7fa9316d9e9e880d2c6207e92260-8.mp3';
         this.sessionOverMusic = new window.Howl({
             //edit this to the music you want to play
             src: [music],
@@ -38,6 +38,15 @@ class THREEScene extends React.Component {
                 stopMusicButton.prop('disabled', false);
             }
         });
+    }
+
+
+    componentDidMount() {
+
+
+        this.soundRep = 0;
+        this.isSessionStop = false;
+
 
         this.windowWidth = window.innerWidth / 6;
         this.windowHeight = window.innerHeight;
@@ -471,9 +480,13 @@ class THREEScene extends React.Component {
             this.animation.eyelidsOpening = this.animation.eyelidsOpening * - 1;
             window.TweenMax.to(this.mesh.rotation, 1.5, {
                 x: THREE.Math.degToRad(getRandom(-30, 20)),
-                y: THREE.Math.degToRad(getRandom(-50, 30)),
+                y: THREE.Math.degToRad(getRandom(-50, 50)),
                 z: THREE.Math.degToRad(getRandom(-40, 20)),
                 ease: window.Power2.easeOut
+            });
+
+            window.TweenMax.to(this.mesh.translateOnAxis, 1, {  
+                y: THREE.Math.degToRad(getRandom(-10, 80))
             });
             this.soundRep++;
             if (this.soundRep === 5) {
@@ -543,14 +556,22 @@ class THREEScene extends React.Component {
             f2.add(this.animation, 'eyelidsOpening', -10, 10).name('eyelids opening');
         }*/
 
-    renderformaciones(video) {
+    renderformaciones(video, music) {
+
         let src = `https://www.youtube.com/embed/${video}`;
+        let styleMusic = null;
+        let iiframe = <iframe style={{ display: 'grid', height: '32em', width: '100%' }} title="video player" src={src} />;
+        if (music) {
+            styleMusic = { height: '6em', top: '25em', position: 'relative' };
+            iiframe = <iframe scrolling="no" frameborder="0" allowTransparency="true" src={`https://www.deezer.com/plugins/player?format=classic&autoplay=false&playlist=true&width=700&height=350&color=007FEB&layout=dark&size=medium&type=tracks&id=${music}&app_id=422762`} width="6em" height="1.2em"></iframe>;
+
+
+        }
         return (
             <div className="ui grid " style={{ width: '100%' }}>
                 <div className="sixteen wide column Black videoFormacion ">
-
-                    <div className="ui embed "  >
-                        <iframe style={{ display: 'grid', height: '32em', width: '100%' }} title="video player" src={src} />
+                    <div className="ui embed " style={styleMusic}  >
+                        {iiframe}
                     </div>
                 </div>
             </div >
@@ -567,7 +588,7 @@ class THREEScene extends React.Component {
                 open={this.state.open}
             >
                 <Modal.Content image style={{ height: '600px', width: '100%', position: 'relative', top: '-1em' }}>
-                    {this.renderformaciones(this.props.popupMensaje.link)}
+                    {this.renderformaciones(this.props.popupMensaje.link, this.props.popupMensaje.music)}
                 </Modal.Content>
                 <Modal.Actions>
                     <Button style={{ top: "-10em" }} onClick={() => {
@@ -613,6 +634,7 @@ class THREEScene extends React.Component {
         }
         if (this.props.popupMensaje && this.props.popupMensaje.activate) {
             this.sleepBot = this.props.popupMensaje.sleep;
+            this.renderMusic(this.props.popupMensaje.previous)
             this.renderAnimo();
         }
 

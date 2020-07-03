@@ -1,0 +1,128 @@
+
+  @import url('https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css');
+  @import url(https://fonts.googleapis.com/css?family=Fredoka+One);
+
+
+
+
+
+
+.bodyFlash {
+  text-align:center;
+  color:#eee;
+  font-family:'Roboto';
+  font-weight:100;
+  font-size:50px;
+  height:100vh;
+  overflow:hidden;
+  }
+
+  .sp-containerE1 {
+    overflow: hidden;
+    font: 3vw/100vh "Fredoka One";
+    text-align: center;
+    color: transparent;
+    backface-visibility: hidden;
+      top: 0px;
+      left: 0px;
+      width: 100%;
+      height: 100vh;
+      z-index: 5;
+      background: -webkit-radial-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 1));
+	  background: -moz-radial-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 1));
+	  background: -ms-radial-gradient(rgba(0, 0, 0, 0.75),  rgba(0, 0, 0, 1));
+	  background: radial-gradient(rgba(0, 0, 0, 0.75),  rgba(0, 0, 0, 1));
+  }
+
+.divFlash {
+  display:inline-block;
+  overflow:hidden;
+  white-space:nowrap;
+}
+
+.divFlash:first-of-type {    /* For increasing performance 
+                       ID/Class should've been used. 
+                       For a small demo 
+                       it's okaish for now */
+  animation: showup 7s infinite;
+}
+
+.divFlash:last-of-type {
+  width:0px;
+  animation: reveal 7s infinite;
+}
+
+.divFlash:last-of-type span {
+  margin-left:-555px;
+  animation: slidein 7s infinite;
+}
+
+@keyframes showup {
+    0% {opacity:0;}
+    20% {opacity:1;}
+    80% {opacity:1;}
+    100% {opacity:0;}
+}
+
+@keyframes slidein {
+    0% { margin-left:-800px; }
+    20% { margin-left:-800px; }
+    35% { margin-left:0px; }
+    100% { margin-left:0px; }
+}
+
+@keyframes reveal {
+    0% {opacity:0;width:0px;}
+    20% {opacity:1;width:0px;}
+    30% {width:555px;}
+    80% {opacity:1;}
+    100% {opacity:0;width:555px;}
+}
+
+
+p {
+  font-size:50px;
+  color:#999;
+  margin-top:200px;
+}
+  .icon-right{
+    position: absolute;
+    top: 30px;
+}
+
+.bar-top{
+    position: relative;
+   
+    top: 10px;
+}
+
+.color-Calendario{
+    background:#d42626;
+}
+.bt-chat{
+    background: linear-gradient(to right, #55b242 0%, #418a33 100%);
+}
+
+.tamaño-Calendario{
+    display: relative;
+    height: 25%;
+}
+
+.tamaño-Imagen{
+
+    height: 100%;
+
+}
+
+
+.buttonH {
+    transition-duration: 0.4s;
+  }
+  
+  .buttonH:hover {
+    background-color: #ff13bd; /* Green */
+    color: white;
+  }
+
+
+

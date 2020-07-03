@@ -1,5 +1,5 @@
 import React from 'react';
-import image from '../images/hupityNewlogo.png';
+import image from '../images/logo.png';
 
 
 class ContinuarProceso extends React.Component {

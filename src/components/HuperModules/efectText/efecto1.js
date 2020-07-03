@@ -52,6 +52,7 @@ class listActividades extends React.Component {
         this.secondsAcum = 0;
         this.stateAnt = null;
         this.pasoAnt = null;
+        this.paramAnt = [];
         this.st = this.renderStyles();
         if (this.mensaje === undefined || this.props.mensajeChatBot === null || (this.props.mensajeChatBot && this.mensaje !== this.props.mensajeChatBot.mensaje))
             this.chatBotSfot();
@@ -556,16 +557,27 @@ class listActividades extends React.Component {
                         }
                     }
 
-                    if (this.state.nuevoParam === value) {
+                    if (this.state.nuevoParam === value && (this.paramAnt === null || !this.paramAnt.find(element => element.value === value))) {
 
-                        console.log(value);
                         let newPostKey2 = firebase.database().ref().child('Usario-Pendiente').push().key;
                         registro[this.state.propertieBD] = newPostKey2;
+                        this.paramAnt.push({ key: newPostKey2, value });
+                        alert(newPostKey2);
                         firebase.database().ref(`Usuario-Pendiente/${this.props.userId}/${newPostKey2}`).update({
                             "concepto": value, "id": newPostKey2, flujoAux: this.state.flujoAux, "estado": "activo", "tipo": this.state.propertieBD
                         });
 
                     }
+                    if (this.paramAnt.find(element => element.value === value)) {
+                        Object.keys(this.paramAnt).map((key, index) => {
+                            if (this.paramAnt[key].value === value){
+                                registro[this.state.propertieBD] = this.paramAnt[key].key;
+                                alert(value);
+                            }
+                            return this.paramAnt[key];
+                        });
+                    }
+                  
                     if (this.state.stay !== null) {
                         this.setState({ stayValue: registro[this.state.propertieBD] });
                     }
@@ -928,7 +940,7 @@ class listActividades extends React.Component {
                         let cCon = this.state.opciones;
                         let tabla = [];
                         opciones = Object.keys(cCon).map((key, index) => {
-                            tabla.push(<div style={{ width: '120%', paddingLeft: '1%' }}>
+                            tabla.push(<div style={{ width: '110%', paddingLeft: '15%' }}>
                                 <h5 href="#" className="action-button animate purple" key={cCon[key]} onClick={() => { this.clickOpcion(cCon[key]) }}>{cCon[key]}</h5>
                             </div>)
 

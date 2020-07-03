@@ -1,5 +1,5 @@
 import React from 'react';
-import image from '../images/hupityNewlogo.png';
+import image from '../images/logo.png';
 import GoogleAuth from '../components/loginGoogle/GoogleAuth';
 import { connect } from 'react-redux';
 import history from '../history';

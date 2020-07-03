@@ -6,7 +6,6 @@ import ListEjemplo from './utilidades/ListaEjemplo';
 import Calendario2 from './utilidades/calendar2';
 import CrearGrafica from './utilidades/CrearGrafica';
 import CrearGrafica2 from './utilidades/CrearGrafica2';
-import './styles/ingresoHupity.css';
 import randomScalingFactor from '../lib/randomScalingFactor';
 import { Line } from 'react-chartjs-2';
 import ListaActividades from './HuperModules/actividadesHuper';
@@ -21,7 +20,7 @@ import { signOut } from '../actions';
 
 
 import { Grid, Modal, Menu, Segment, Button, Dimmer, Header, Icon, Image, Portal, Step, Label, Checkbox } from 'semantic-ui-react';
-import MenuChat from './MenuChat';
+import MenuChat from './HuperModules/chat3X/chatZ';
 import { pasoOnboardings, listaFormaciones, estadochats } from './modules/chatBot/actions';
 
 

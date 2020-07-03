@@ -30,7 +30,7 @@ class notifiactions extends React.Component {
                 this.dia['entrada'] = moment().format('x');
                 this.dia['cantIn'] = 0;
                 console.log(this.dia);
-                timeoutLength = 2000000;
+                timeoutLength = 300000;
                 this.notificationPriority();
 
             }
@@ -85,6 +85,8 @@ class notifiactions extends React.Component {
                         men["activate"] = mensajes[key].activate ? mensajes[key].activate : null;
                         men["chat"] = mensajes[key].chat ? mensajes[key].chat : null;
                         men["agent"] = mensajes[key].agent ? mensajes[key].agent : null;
+                        men["previous"] = mensajes[key].previous ? mensajes[key].previous : null;
+                        men["music"] = mensajes[key].music ? mensajes[key].music : null;
                         if (mensajes[key].video) {
                             men["link"] = mensajes[key].video;
                             men["video"] = true;

@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import CardFeedback from '../utilidades/cardFeed';
-//import image from '../../images/hupityNewlogo.png';
 import unsplash from '../../apis/unsplash';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs } from '../modules/chatBot/actions';
 

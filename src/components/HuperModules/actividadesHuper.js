@@ -7,8 +7,8 @@ import moment from 'moment';
 import task from '../../images/task.svg';
 const timeoutLength = 900000;
 let timeoutLength2 = 1000;
-let timeoutLength4 = 5000;
-let timeoutLength3 = 5000;
+let timeoutLength4 = 2000;
+let timeoutLength3 = 2000;
 class listActividades extends React.Component {
 
     state = { actividades: null, tiempos: 0, horamaxima: 8, primero: null, aux: null, contenido: null }
@@ -124,7 +124,7 @@ class listActividades extends React.Component {
                     console.log("Response", response);
                     this.createEventTrabajo(calendar, indC + 1);
                 }, function (err) { console.error("Execute error", err); });
-            }, 3000)
+            }, 2000)
         }
     }
 
@@ -295,8 +295,8 @@ class listActividades extends React.Component {
 
                     if (this.state.aux == null && f == null && actividadesU[key2].estado === "activo" && actividadesU[key2].concepto !== undefined) {
                         f = '1';
-                        let titlelengt = actividadesU[key2].concepto.length > 20 ? '25%' : '30%';
-                        let scalet = actividadesU[key2].concepto.length > 20 ? '1.5' : '3';
+                        let titlelengt = actividadesU[key2].concepto.length > 17 ? '25%' : '30%';
+                        let scalet = actividadesU[key2].concepto.length > 17 ? '1.6' : '3';
                         this.setState({ aux: 'primera' });
                         this.setState({
                             primero: <div style={{ height: '7.5em' }}>
@@ -378,7 +378,7 @@ class listActividades extends React.Component {
 
         if (this.flag === true) {
             this.timeout = setTimeout(() => {
-                timeoutLength3 = 15000;
+                timeoutLength3 = 2000;
                 this.flag = true;
                 this.timerTrabajo();
                 let stepG = <Step.Group vertical style={{
@@ -407,7 +407,7 @@ class listActividades extends React.Component {
             <div style={{ position: 'relative', top: '-4em', width: '130%' }}>
                 {this.state.primero}
             </div>
-            <h3>{this.props.titulo}</h3>
+            <h3>{this.props.titulo + ' (' + this.props.numeroTareasTerminadas + ')'}</h3>
             <div className=" maximo-list">
                 <div className="ui relaxed divided animated list ">
                     {contenido ? contenido : this.state.contenido}
