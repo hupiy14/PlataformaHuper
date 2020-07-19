@@ -1,12 +1,12 @@
 import React from 'react';
 import { Router, Route, Switch } from 'react-router-dom';
 import history from '../history';
-
+import dashboardCel from './celPhone/task';
+//import MenuChat from './HuperModules/chat3X/chatZ';
 import MenuChat from './HuperModules/chat3X/chatZ';
-//import MenuChat from './MenuChat';
-
+import MenuChat2 from './celPhone/chatz';
 import Header from './Header';
-
+import Header2 from './celPhone/header';
 
 // formulario 
 import FomularioGlobal from './Login/formInicioCod';
@@ -31,7 +31,6 @@ import ModalFormValidacion from './gestorModules/formularioValidacionObj';
 import FLujoCreate from './HuperModules/pointWork';
 import { celChats } from '../components/modules/chatBot/actions';
 import equipoDash from './gestorModules/equipoData';
-
 
 
 
@@ -84,47 +83,89 @@ class App extends React.Component {
     render() {
 
         let menuC = null;
+
+        //  let menuC = <MenuChat></MenuChat>;
         if (this.props.isSignedIn)
             menuC = <MenuChat></MenuChat>;
         let apps = null;
+        if (window.innerWidth < 450 || (window.innerWidth < 850 && window.innerHeight < 450)) {
+            menuC = <MenuChat2 />;
+            apps = <div  >
+                <div className="ui container " style={{ height: window.innerHeight, overflow: 'auto' }} >
+                    <div className="ui items ">
+                        <div className="item  ">
+                            <div className="content  ">
+                                <Router history={history}>
+                                    <div>
+                                        <Header2 />
+                                        <Switch>
+                                            <Route path="/" exact component={hupityIngreso} />
+                                            <Route path="/login" exact component={ingreso} />
+                                            <Route path="/dashboard" component={dashboardCel} />
+                                            <Route path="/hupps" exact component={Hupps} />
+                                            <Route path="/onboarding" exact component={Onboard} />
+                                            <Route path="/profile" exact component={Profile} />
+                                            <Route path="/equipoData" exact component={equipoDash} />
+                                            <Route path="/proceso/exito" exact component={Exito} />
+                                            <Route path="/formulario/validacion" exact component={ModalFormValidacion} />
+                                            <Route path="/formulario" exact component={FomularioGlobal} />
+                                            <Route path="/formulario/inicio" exact component={FomularioInicio} />
+                                            <Route path="/formulario/herramientas" exact component={FomularioHerramientas} />
+                                            <Route path="/formulario/termcond" exact component={FomularioTerm} />
+                                            <Route path="/newworkflow" exact component={FLujoCreate} />
+                                        </Switch>
+                                    </div>
+                                </Router>
 
-        apps = <div  >
-            <div className="ui container " style={{ height: window.innerHeight, overflow: 'auto' }} >
-                <div className="ui items ">
-                    <div className="item  ">
-                        <div className="content  ">
-                            <Router history={history}>
-                                <div>
-                                    <Header />
-                                    <Switch>
-                                        <Route path="/" exact component={hupityIngreso} />
-                                        <Route path="/login" exact component={ingreso} />
-                                        <Route path="/dashboard" component={dashboard} />
-                                        <Route path="/hupps" exact component={Hupps} />
-                                        <Route path="/onboarding" exact component={Onboard} />
-                                        <Route path="/profile" exact component={Profile} />
-                                        <Route path="/equipoData" exact component={equipoDash} />
-                                        <Route path="/proceso/exito" exact component={Exito} />
-                                        <Route path="/formulario/validacion" exact component={ModalFormValidacion} />
-                                        <Route path="/formulario" exact component={FomularioGlobal} />
-                                        <Route path="/formulario/inicio" exact component={FomularioInicio} />
-                                        <Route path="/formulario/herramientas" exact component={FomularioHerramientas} />
-                                        <Route path="/formulario/termcond" exact component={FomularioTerm} />
-                                        <Route path="/newworkflow" exact component={FLujoCreate} />
-                                    </Switch>
-                                </div>
-                            </Router>
-
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {menuC}
+                {menuC}
+
+            </div >
+            // {menuC}
+        }
+
+        else {
+            apps = <div  >
+                <div className="ui container " style={{ height: window.innerHeight, overflow: 'auto' }} >
+                    <div className="ui items ">
+                        <div className="item  ">
+                            <div className="content  ">
+                                <Router history={history}>
+                                    <div>
+                                        <Header />
+                                        <Switch>
+                                            <Route path="/" exact component={hupityIngreso} />
+                                            <Route path="/login" exact component={ingreso} />
+                                            <Route path="/dashboard" component={dashboard} />
+                                            <Route path="/hupps" exact component={Hupps} />
+                                            <Route path="/onboarding" exact component={Onboard} />
+                                            <Route path="/profile" exact component={Profile} />
+                                            <Route path="/equipoData" exact component={equipoDash} />
+                                            <Route path="/proceso/exito" exact component={Exito} />
+                                            <Route path="/formulario/validacion" exact component={ModalFormValidacion} />
+                                            <Route path="/formulario" exact component={FomularioGlobal} />
+                                            <Route path="/formulario/inicio" exact component={FomularioInicio} />
+                                            <Route path="/formulario/herramientas" exact component={FomularioHerramientas} />
+                                            <Route path="/formulario/termcond" exact component={FomularioTerm} />
+                                            <Route path="/newworkflow" exact component={FLujoCreate} />
+                                        </Switch>
+                                    </div>
+                                </Router>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {menuC}
 
 
-        </div >
-
+            </div >
+        }
 
 
         return apps;

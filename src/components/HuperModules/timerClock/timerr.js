@@ -358,12 +358,12 @@ class timerClock extends React.Component {
         console.log('entor-->');
     }
     render() {
-        console.log(window.innerWidth);
-        console.log('entor--<');
         let planCurrent = null;
         let titulo = null;
         //  let style ={  top: '-30%', left: '-20%', position: 'fixed' };
         let style = { top: '82%', position: 'fixed', transform: 'scale(0.3)', left: responseEmWidth(window.innerWidth) };
+
+
 
         if (this.props.programa) {
 
@@ -373,8 +373,31 @@ class timerClock extends React.Component {
                 <button type="button" onClick={() => { this.changeSessionTime(900); }} style={{ position: 'relative', left: '6.5em' }} className="btn btn-lg btn-edit" id="btn-increase-session-minute">+</button>
             </div>
             titulo = "¿Cuanto tiempo esperas demorarte?";
+
         }
 
+        let planCC = <div className="col-md-5">
+            <h1 className="clock-title">{titulo}</h1>
+            <div className="clock session-clock"></div>
+            {planCurrent}
+        </div>
+        if (this.props.programa === 'PWA') {
+            planCC = <div className='clock-PWA'>
+                <h1 className="clock-title">{titulo}</h1>
+                <div className="clock session-clock"></div>
+                {planCurrent}
+            </div>
+        }
+        else if (window.innerWidth < 600 || (window.innerHeight < 600)) {
+            style = { top: '6%', position: 'absolute', transform: 'scale(0.3)', left: '31%', width: '100%', zIndex: '20', filter: 'opacity(0.7)' };
+
+            planCC = <div >
+                <h1 className="clock-title">{titulo}</h1>
+                <div className="clock session-clock"></div>
+                {planCurrent}
+            </div>
+
+        }
 
         // top: '-30%', left: '-20%', position: 'fixed'
         /*let btPrueba = <div>
@@ -382,12 +405,8 @@ class timerClock extends React.Component {
         </div>
 */
         return (
-            <div className="ui container" style={style}>
-                <div className="col-md-5">
-                    <h1 className="clock-title">{titulo}</h1>
-                    <div className="clock session-clock"></div>
-                    {planCurrent}
-                </div>
+            <div style={style}>
+                {planCC}
             </div>
 
         );

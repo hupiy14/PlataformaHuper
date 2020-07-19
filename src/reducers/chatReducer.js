@@ -40,7 +40,9 @@ import {
     CEL_CHAT,
     CEL_PERF,
     DATOS_EDIT_CEL,
-   
+
+
+
 
 } from '../components/modules/chatBot/types';
 import {
@@ -48,7 +50,11 @@ import {
     POPUP_MENSAJE,
     MENSAJE_CHAT,
     ASANA,
-
+    ACTIVIDAD_PRINCIPAL,
+    ACTIVIDAD_PROGRAMA,
+    IMAGEN_OKR,
+    IMAGEN_FONDO,
+    HOME_APP
 } from '../actions/types';
 import firebase from 'firebase';
 import { config } from '../apis/huperDB';
@@ -97,7 +103,12 @@ const INITIAL_STATE = {
     endChatMessage: null,
     popupMensaje: null,
     mensajeChatBot: null,
-    mensajeAsana: null
+    mensajeAsana: null,
+    actividadPrin: null,
+    actividadProg: null,
+    imagenOKR: null,
+    imagef: null,
+    homeApps: null,
 };
 
 
@@ -195,6 +206,16 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, mensajeChatBot: action.payload };
         case ASANA:
             return { ...state, mensajeAsana: action.payload };
+        case ACTIVIDAD_PRINCIPAL:
+            return { ...state, actividadPrin: action.payload };
+        case ACTIVIDAD_PROGRAMA:
+            return { ...state, actividadProg: action.payload };
+        case IMAGEN_OKR:
+            return { ...state, imagenOKR: action.payload };
+        case IMAGEN_FONDO:
+            return { ...state, imagef: action.payload };
+        case HOME_APP:
+            return { ...state, homeApps: action.payload };
         default:
             return state;
 

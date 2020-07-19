@@ -6,7 +6,12 @@
     font-family: 'Covered By Your Grace', cursive;
     color: #e8f5e8;
 }
-
+.clock-PWA {
+    width: 17em;
+    transform: scale(0.8);
+    left: -3em;
+    position: relative;
+}
 
 
 .flip-clock-divider .flip-clock-label {

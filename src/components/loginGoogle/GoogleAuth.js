@@ -193,7 +193,8 @@ class GoogleAuth extends React.Component {
                 else {
 
                     let direccion = '/formulario';
-                    const usuarioNuevo = { nombre: this.auth.currentUser.get().Tt.Bd, correo: this.auth.currentUser.get().Tt.Du, id: this.auth.currentUser.get().getId(), rol: '2' };
+                    console.log(this.auth.currentUser.get());
+                    let usuarioNuevo = { nombre: this.auth.currentUser.get().Qt.Bd, email: this.auth.currentUser.get().Qt.Au, id: this.auth.currentUser.get().getId(), rol: '2' };
                     this.props.usuarioDetails({ usuarioNuevo });
 
                     const starCountRef = firebase.database().ref().child(`Usuario-Temporal/${this.auth.currentUser.get().getId()}`);
@@ -318,7 +319,7 @@ class GoogleAuth extends React.Component {
 
                 return (
                     <button
-                        onClick={() => { this.onSignInClick() }} className="ui google button" style={{ background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)', position: 'relative', left: '31%', borderRadius: '20px', width: '220px', display: 'grid', height: '52px' }} >
+                        onClick={() => { this.onSignInClick() }} className="ui google button" style={{ background: 'linear-gradient(to right, #fe10bd 20%, #f0bbe1 50% ,#fe10bd 100%)', position: 'relative', left: '50%', borderRadius: '20px', width: '220px', display: 'grid', height: '52px' }} >
                         <img style={{ left: '-14px', position: 'relative', top: '-5px', borderRadius: '20px' }}
                             width="40" height="40" alt="Google logo" src="https://cdn.goconqr.com/assets/social/google/btn_google_light_normal_ios_160-9ef927f3fdc8ade894b35a0eb01225e8602967d799a831565f9327840aaaf44c.png"></img>
                         <b style={{ top: '-32px', left: '20px', position: 'relative', fontSize: 'larger', color: 'white' }}> Ingresar con Google</b>

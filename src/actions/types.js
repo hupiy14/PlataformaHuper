@@ -7,4 +7,8 @@ export const END_CHAT = 'END_CHAT';
 export const POPUP_MENSAJE = 'POPUP_MENSAJE';
 export const MENSAJE_CHAT = 'MENSAJE_CHAT';
 export const ASANA = "ASANA";
-
+export const ACTIVIDAD_PRINCIPAL = "ACTIVIDAD_PRINCIPAL";
+export const ACTIVIDAD_PROGRAMA = "ACTIVIDAD_PROGRAMA";
+export const IMAGEN_OKR = "IMAGEN_OKR";
+export const IMAGEN_FONDO = "IMAGEN_FONDO";
+export const HOME_APP = "HOME_APP";

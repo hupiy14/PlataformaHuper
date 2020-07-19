@@ -178,10 +178,10 @@ class FomrularioGlobal extends React.Component {
 
         //crea usuario
         firebase.database().ref(`Usuario/${this.state.id}`).set({
-            area: this.props.detailUsNew.rol === '3' ? this.props.detailUsNew.area : cod.area,
+        //    area: this.props.detailUsNew.rol === '3' ? this.props.detailUsNew.area : cod.area,
             cargo: this.props.detailUsNew.cargo,
             // canalSlack: this.props.detailUsNew.userSlack,
-            email: this.props.usuarioDetail.usuarioNuevo.correo,
+            email: this.props.usuarioDetail.usuarioNuevo.email,
             empresa: keyEmpresa,
             equipo: keyEquipoEmp,
             usuario: this.props.detailUsNew.nombreUsuario,
@@ -200,6 +200,8 @@ class FomrularioGlobal extends React.Component {
             estado: 'activo',
             link: "mfN_JVLHlbQ",
         });
+        //         area: this.props.detailUsNew.rol === '3' ? this.props.detailUsNew.area ? this.props.detailUsNew.area : "" : cod.area ? cod.area : ""
+   
 
         firebase.database().ref(`Codigo-Acceso/${this.props.detailUsNew.codigo}`).set({
             ...cod,
@@ -208,7 +210,6 @@ class FomrularioGlobal extends React.Component {
             fechaUso: moment().format('YYYY-MM-DD'),
             kequipo: keyEquipoEmp,
             empresa: keyEmpresa,
-            area: this.props.detailUsNew.rol === '3' ? this.props.detailUsNew.area : cod.area
         })
 
         firebase.database().ref(`Usuario-CodeTemporal/${this.state.id}`).remove();
@@ -224,10 +225,11 @@ class FomrularioGlobal extends React.Component {
 
     close = () => this.setState({ open: false })
     render() {
+
         return (
             <Modal size='tiny' open={this.state.open} >
                 <Modal.Header>Queremos conocerte</Modal.Header>
-                <Modal.Content image>
+                <Modal.Content >
                     <Modal.Description >
                         <Form error={this.state.formError}>
                             <Form.Input label='¿Como te llamas?' placeholder='Como te gustaría que te llamaran'
@@ -256,11 +258,11 @@ class FomrularioGlobal extends React.Component {
                     </Modal.Description>
                 </Modal.Content>
                 <Modal.Actions>
-                    <Button style={{background: "#d5d6d5"}} onClick={this.cancelar}>
+                    <Button style={{ background: "#d5d6d5" }} onClick={this.cancelar}>
                         Cancelar
                      </Button>
                     <Button
-                        style={{background: '#fe10bd', color: "aliceblue" }}
+                        style={{ background: '#fe10bd', color: "aliceblue" }}
                         icon='arrow right'
                         labelPosition='right'
                         content="Comenzar"

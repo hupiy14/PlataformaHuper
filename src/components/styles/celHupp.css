@@ -1,0 +1,436 @@
+  
+
+    @import url('https://fonts.googleapis.com/css?family=Roboto');
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css');
+    @import url('https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css');
+
+      
+      body {
+        font: 300 14px/18px Roboto
+      }
+      
+      *,
+      :after,
+      :before {
+        box-sizing: border-box
+      }
+      
+  .clearfix:after {
+    clear: both;
+    display: block
+  }
+  
+  .muck-up {
+    width: '100%';
+    height: '80%';
+    margin: 1em auto;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
+  
+  .overlay:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(110, 18, 87, 0.8);
+  }
+  
+  .muck-up > .top {    
+    position: relative;
+    min-height: 50%;
+    padding: 17%;
+    color: #fff;
+  }
+  
+  .top .nav span {
+    float: left;
+    display: block;
+  }
+  
+  .nav p {
+    margin-top: 2px;
+    display: inline-block;
+    vertical-align: bottom;
+  }
+  
+  .ion-android-menu {
+    font-size: 24px;
+    margin-right: 17px;
+  }
+  
+  .nav .ion-ios-more-outline {
+    font-size: 38px;
+    float: right !important;
+  }
+  
+  .user-profile {
+    margin-top: 80%;
+  }
+  
+  .user-profile img {
+    height: 45px;
+    width: 45px;
+    border-radius: 50%;
+    float: left;
+    margin-right: 24px;
+    position: relative;
+    top: -7em;
+  }
+  
+  .user-details p {
+    font-size: 13px;
+  }
+  
+  .user-details {
+    float: left;
+    position: relative;
+    top: -10.5em;
+    margin-top: 0.4em;
+    vertical-align: bottom;
+  }
+  
+  .user-details h4 {
+    font-size: 18px;
+  }
+  
+  .filter-btn {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    transition: all 0.4s ease-in-out 0s;
+  }
+  
+  .filter-btn span {
+    width: 40px;
+    height: 40px;
+    background: #59fa39;
+    display: block;
+    position: absolute;
+    right: 25px;
+    top: -46px;
+    text-align: center;
+    color: #fff;
+    line-height: 40px;
+    border-radius: 50%;
+    font-size: 22px;
+    z-index: 999;
+  }
+  span.toggle-btn.ion-android-funnel:hover{
+        cursor: pointer;
+  }
+/*///////////////////////////////////////////////////////////////////////*/
+.filter-btn a {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    right: 25px;
+    display: block;
+    top: -46px;
+    color: #fff;
+    z-index: 99;
+    font-size: 22px;
+    transition: all .4s cubic-bezier(.68, 1, .265, 1)
+  }
+  
+  .filter-btn:after {
+    height: 170px;
+    width: 170px;
+    content: '';
+    background-color: #34e411;
+    position: absolute;
+    top: -110px;
+    right: -40px;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: all 0.3s ease-in-out 0s;
+  }
+  
+  .filter-btn.open span.toggle-btn.ion-android-funnel {
+    background-color: #59fa39;
+  }
+  
+  .filter-btn.open .ion-android-funnel:before {
+    content: "\f2d7";
+  }
+  
+  .open:after {
+    transform: scale(1);
+  }
+  
+  .filter-btn.open a:nth-child(1) {
+    transform: translate(9px, -62px);
+  }
+  
+  .filter-btn.open a:nth-child(2) {
+    transform: translate(-50px, -34px);
+  }
+  
+  .filter-btn.open a:nth-child(3) {
+    transform: translate(-56px, 25px);
+  }
+  
+  .filter-btn.open a:nth-child(4) {
+    transform: translate(5px, 61px);
+  }
+
+
+/*********************************************************************************/
+
+.filter-btn2 {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    transition: all 0.4s ease-in-out 0s;
+  }
+  
+  .filter-btn2 span {
+    width: 40px;
+    height: 40px;
+    background: #fa53b2;
+    display: block;
+    position: absolute;
+    right: 25px;
+    top: -46px;
+    text-align: center;
+    color: #fff;
+    line-height: 40px;
+    border-radius: 50%;
+    font-size: 22px;
+    z-index: 999;
+  }
+  span.toggle-btn.ion-android-funnel:hover{
+        cursor: pointer;
+  }
+  .filter-btn2 a {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    right: 25px;
+    display: block;
+    top: -46px;
+    color: #fff;
+    z-index: 99;
+    font-size: 22px;
+    transition: all .4s cubic-bezier(.68, 1, .265, 1)
+  }
+  
+  .filter-btn2:after {
+    height: 170px;
+    width: 170px;
+    content: '';
+    background-color: #eec7dd;
+    position: absolute;
+    top: -110px;
+    right: -40px;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: all 0.3s ease-in-out 0s;
+  }
+  
+  .filter-btn2.open span.toggle-btn.ion-android-funnel {
+    background-color: #f72d9f;
+  }
+  
+  .filter-btn2.open .ion-android-funnel:before {
+    content: "\f2d7";
+  }
+  
+  .open:after {
+    transform: scale(1);
+  }
+  
+  .filter-btn2.open a:nth-child(1) {
+    transform: translate(-9px, -62px);
+  }
+  
+  .filter-btn2.open a:nth-child(2) {
+    transform: translate(50px, -34px);
+  }
+  
+  .filter-btn2.open a:nth-child(3) {
+    transform: translate(56px, 25px);
+  }
+  
+  .filter-btn2.open a:nth-child(4) {
+    transform: translate(-5px, 61px);
+  }
+  
+  .muck-up .bottomCel {
+    background-color: #fff;
+    min-height: 303px;
+    z-index: 1;
+    padding: 35px;
+    position: relative;
+    color: #222;
+    padding-top: 0px;
+  }
+  
+  .bottomLogo {
+    top: 32px;
+    background: rgb(255, 255, 255);
+    left: -1px;
+    right: 0;
+    height: 90px;
+    transform: rotate(5deg);
+    width: 7em;
+    z-index: 5;
+    position: fixed;
+    border-radius: 20em;
+}
+
+  .bottomCel:after {
+    content: '';
+    position: absolute;
+    top: -46px;
+    background: #fff;
+    left: -22px;
+    right: 0;
+    height: 100px;
+    transform: rotate(10deg);
+    z-index: -1;
+  }
+  
+  .bottomCel .title {
+    margin-bottom: 20px;
+  }
+  
+  .bottomCel .title h3 {
+    font-size: 22px;
+    margin-bottom: 5px;
+  }
+  
+  .title small {
+    font-size: 10px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  ul.tasks .task-title {
+    font-size: 13px;
+    display: inline-block;
+  }
+  
+  ul.tasks .task-time {
+    float: right;
+    font-size: 10px;
+    color: #888;
+  }
+  
+  ul.tasks .task-cat {
+    font-size: 10px;
+    display: block;
+    color: #888;
+  }
+  
+  ul.tasks li {
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 8;
+  }
+  
+  ul.tasks li:after {
+    content: '';
+    position: absolute;
+    left: -18px;
+    top: 8px;
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+  }
+  
+  ul.tasks li.red2:after {
+  background: #FF3163;
+  padding: 5px;
+  top: 1.2em;
+  }
+  
+  ul.tasks li.red3:after {
+    background: #FF3163;
+    padding: 5px;
+    top: 2.6em;
+  }
+
+  ul.tasks li.red4:after {
+    background: #FF3163;
+    padding: 5px;
+    top: 3.9em;
+  }
+
+
+  ul.tasks li.sel:after {
+    background: #c13292;
+    padding: 5px;
+    top: 2.6em;
+  }
+
+  ul.tasks li.sel2:after {
+    background: #c13292;
+    padding: 5px;
+    top: 3.9em;
+  }
+
+  ul.tasks li.green3:after {
+    background: #52fc30;
+    padding: 5px;
+    top: 2.6em;
+  }
+  ul.tasks li.green4:after {
+    background: #52fc30;
+    padding: 5px;
+    top: 3.9em;
+  }
+
+  ul.tasks li.yellow3m:after {
+    background: #ebb01a;
+    padding: 5px;
+    top: 2.6em;
+  }
+  ul.tasks li.yellow4m:after {
+    background: #ebb01a;
+    padding: 5px;
+    top: 3.9em;
+  }
+  
+
+  
+  ul.tasks::after {
+    content: '';
+    position: absolute;
+    height: 400px;
+    width: 1px;
+    background: #eee;
+    left: 20px;
+    top: -68px;
+  }
+  
+  ul li.hang {
+    margin-bottom: 48px;
+  }
+  
+  ul li.hang img {
+    float: left;
+    height: 20ox;
+    width: 20px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }

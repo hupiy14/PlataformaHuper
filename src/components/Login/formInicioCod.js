@@ -59,17 +59,18 @@ class FomrularioGlobal extends React.Component {
     }
     close = () => this.setState({ open: false })
     render() {
+      
         return (
             <Modal size='tiny' open={true} >
                 <Modal.Header>Bienvenido a Hupity</Modal.Header>
-                <Modal.Content image>
+                <Modal.Content >
                     <Modal.Description >
                         <Form error={this.state.formError}>
                             <Form.Input label='Intruduce tu codigo de acceso' fluid placeholder='Escribe aqui el codigo de acceso dado por Hupity' error={this.state.errorCodigo}
                                 value={this.props.detailUsNew ? this.props.detailUsNew.codigo : null}
                                 onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, codigo: value })}
                             />
-                            <Message
+                            <Message  size="small"
                                 error
                                 header={this.state.mensajeCodigo.titulo}
                                 content={this.state.mensajeCodigo.detalle}
@@ -77,7 +78,7 @@ class FomrularioGlobal extends React.Component {
                         </Form>
                     </Modal.Description>
                 </Modal.Content>
-                <Modal.Actions style={{position: 'relative', top: '100px'}}>
+                <Modal.Actions >
                     <Button style={{background: "#d5d6d5"}} onClick={this.cancelar}>
                         Cancelar
                     </Button>

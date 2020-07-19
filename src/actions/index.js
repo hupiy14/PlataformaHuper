@@ -7,7 +7,12 @@ import {
     END_CHAT,
     POPUP_MENSAJE,
     MENSAJE_CHAT, 
-    ASANA
+    ASANA,
+    ACTIVIDAD_PRINCIPAL,
+    ACTIVIDAD_PROGRAMA,
+    IMAGEN_OKR,
+    IMAGEN_FONDO, 
+    HOME_APP
    
 } from './types';
 
@@ -22,6 +27,19 @@ import {
 import firebase from 'firebase';
 
 
+export const homeApp = (home) =>(
+    {
+        type: HOME_APP,
+        payload: home
+    }
+)
+
+export const changeImage = (changeI) =>(
+    {
+        type: IMAGEN_FONDO,
+        payload: changeI
+    }
+)
 export const endChatMes = (text) =>(
     {
         type: END_CHAT,
@@ -53,11 +71,35 @@ export const slackApis = () => async dispatch => {
     // dispatch({ type: SLACKAPI, payload: response.data });
 };
 
+export const actividadProgramas = (actividad) => {
+
+    return {
+        type: ACTIVIDAD_PROGRAMA,
+        payload: actividad
+    };
+};
+
+export const actividadPrincipal = (actividad) => {
+
+    return {
+        type: ACTIVIDAD_PRINCIPAL,
+        payload: actividad
+    };
+};
+
 export const mensajeAsanas = (code) => {
 
     return {
         type: ASANA,
         payload: code
+    };
+};
+
+export const imagenOKRs = (imagenOKR) => {
+
+    return {
+        type: IMAGEN_OKR,
+        payload: imagenOKR
     };
 };
 export const usuarioDetails = (usuarioDetail) => {

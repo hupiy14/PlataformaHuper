@@ -76,10 +76,11 @@ class FomrularioGlobal extends React.Component {
     }
 
     render() {
+
         return (
             <Modal size='tiny' open={this.state.open} >
                 <Modal.Header>Bienvenido a hupity registrate</Modal.Header>
-                <Modal.Content image>
+                <Modal.Content >
                     <Modal.Description >
                         <Form error={this.state.formError} >
                             <Form.Input label='Cual es tu empresa u organización:' placeholder='Cual es la razon social de la empresa'
@@ -102,7 +103,7 @@ class FomrularioGlobal extends React.Component {
                                 onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, area: value })}
                                 error={this.state.errorArea}
                             />
-                            <Message
+                            <Message 
                                 error
                                 header={this.state.mensajeCodigo.titulo}
                                 content={this.state.mensajeCodigo.detalle}
@@ -111,7 +112,7 @@ class FomrularioGlobal extends React.Component {
                     </Modal.Description>
                 </Modal.Content>
                 <Modal.Actions>
-                    <Button style={{background: "#d5d6d5"}} onClick={this.cancelar}>
+                    <Button style={{ background: "#d5d6d5" }} onClick={this.cancelar}>
                         Cancelar
                     </Button>
                     <Button

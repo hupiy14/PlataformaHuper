@@ -1,15 +1,15 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import './efect.scss';
-import acAnimated from "./splitText";
+import '../HuperModules/efectText/efect.scss';
+import acAnimated from "../HuperModules/efectText/splitText";
 import { ApiAiClient } from 'api-ai-javascript';
-import { sendMessage, chatOff, endChatMes, popupBot, mensajeChat } from '../../../actions';
-import { consultas } from '../../modules/chatBot/actions';
-import TimerClock from '../timerClock/timerr';
+import { sendMessage, chatOff, endChatMes, popupBot, mensajeChat } from '../../actions';
+import { consultas } from '../modules/chatBot/actions';
+import TimerClock from '../HuperModules/timerClock/timerr';
 import firebase from 'firebase';
 import moment from 'moment';
-import asanaH from '../../../apis/asana';
-import { clientIdAsana, clientSecrectAsana } from '../../../apis/stringConnection';
+import asanaH from '../../apis/asana';
+import { clientIdAsana, clientSecrectAsana } from '../../apis/stringConnection';
 import axios from 'axios';
 import chroma from 'chroma-js';
 let Trello = require("trello");
@@ -569,13 +569,13 @@ class listActividades extends React.Component {
                     }
                     if (this.paramAnt.find(element => element.value === value)) {
                         Object.keys(this.paramAnt).map((key, index) => {
-                            if (this.paramAnt[key].value === value){
+                            if (this.paramAnt[key].value === value) {
                                 registro[this.state.propertieBD] = this.paramAnt[key].key;
                             }
                             return this.paramAnt[key];
                         });
                     }
-                  
+
                     if (this.state.stay !== null) {
                         this.setState({ stayValue: registro[this.state.propertieBD] });
                     }
@@ -801,18 +801,17 @@ class listActividades extends React.Component {
             let opciones = <React.Fragment  >
                 <input
                     value={this.state.inputC}
-
                     onChange={this.onInputChange}
                     onKeyPress={(e) => { this.addNewMessage(e) }}
                     list='opciones' placeholder='Escoge una Opcion...'
                     className='select'
-                    style={{ top: '25%', position: 'relative', width: '100%' }}
+                    style={{ top: '25%', position: 'relative', width: '100%', height: '2em' }}
                 />
                 {this.state.opcionesDB}
 
             </React.Fragment >
             this.setState({
-                t2: <div className="Wrapper" style={{ top: window.innerHeight * 0.7 }}>
+                t2: <div className="Wrapper" style={{ top: '55%' }}>
                     <div className="ui container" style={{ height: '5em', width: '50%' }}>
                         {opciones}
                     </div>
@@ -881,7 +880,7 @@ class listActividades extends React.Component {
                 let topTiempo = '4em';
                 if (this.state.flagTiempo) {
                     topTiempo = '20em';
-                    tiempo = <TimerClock programa={true}></TimerClock>
+                    tiempo = <TimerClock programa={'PWA'}></TimerClock>
                 }
 
                 let opciones = null;
@@ -896,15 +895,15 @@ class listActividades extends React.Component {
 
                 if (this.state.tipoIn === 1) {
                     this.setState({
-                        t2: <div className="Wrapper" style={{ top: window.innerHeight * 0.5, height: '19em' }}>
-                            <div className="ui container" style={{ height: topTiempo, width: '40%' }}>
+                        t2: <div className="Wrapper" style={{ top: '50%', height: '19em', transform: 'scale(0.85)', position: 'absolute' }}>
+                            <div className="ui container" style={{ height: topTiempo, width: '100%' }}>
 
-                                <div className="Input" style={{ top: '25%' }}>
-                                    <input type="text" id="input" className="Input-text"
+                                <div className="Input" style={{ top: '10%' }}>
+                                    <input type="text" id="input" className="Input-text" style={{ height: '2em' }}
                                         value={this.state.inputC}
                                         onChange={(event) => this.setState({ inputC: event.target.value })}
                                         onKeyPress={(e) => { this.addNewMessage(e) }} placeholder="Escribe tu respuesta" />
-                                    <label className="Input-label">{this.state.textAux}</label>
+                                    <label className="Input-label" style={{ transform: 'scale(0.7)' }}>{this.state.textAux}</label>
                                 </div>
 
                                 {tiempo}
@@ -914,8 +913,8 @@ class listActividades extends React.Component {
                 }
                 else if (this.state.tipoIn === 4) {
                     this.setState({
-                        t2: <div className="Wrapper" style={{ top: window.innerHeight * 0.5, height: '18em' }}>
-                            <div className="ui container" style={{ height: topTiempo, width: '40%' }}>
+                        t2: <div className="Wrapper" style={{ top: '50%', height: '18em' }}>
+                            <div className="ui container" style={{ height: topTiempo, width: '100%' }}>
 
                                 {tiempo}
                                 <h5 href="#" style={{
@@ -938,29 +937,21 @@ class listActividades extends React.Component {
                         let cCon = this.state.opciones;
                         let tabla = [];
                         opciones = Object.keys(cCon).map((key, index) => {
-                            tabla.push(<div style={{ width: '110%', paddingLeft: '15%' }}>
-                                <h5 href="#" className="action-button animate purple" key={cCon[key]} onClick={() => { this.clickOpcion(cCon[key]) }}>{cCon[key]}</h5>
+                            tabla.push(<div style={{ width: '100%' }}>
+                                <h5 href="#" className="action-button animate purple" style={{ fontSize: 'small', width: window.innerWidth * 0.65 }} key={cCon[key]} onClick={() => { this.clickOpcion(cCon[key]) }}>{cCon[key]}</h5>
+                                <br style={{ height: '2em' }}></br>
                             </div>)
-
-                            let tabla2 = tabla;
-                            if ((index !== 0 && (index + 1) % 3 === 0) || Object.keys(cCon).length - 1 === index) {
-                                tabla = [];
-
-                                let pad = '13em';
-                                if ((index + 1) % 3 === 0)
-                                    pad = '0.4em';
-
-                                return <div className="Wrapper" style={{ top: window.innerHeight * 0.6, paddingLeft: pad }}  >
-                                    {tabla2}
-                                </div>
-                            }
                             return null;
                         });
                         //   this.props.sendMessage(this.state.opciones.title);
 
+                        let menus = <div className="Wrapper" style={{ top: window.innerHeight * 0.60, height: '16em' }}  >
+                            {tabla}
+                        </div>
+
                         this.setState({
-                            t2: <div style={{ left: '-2%', position: 'relative' }} >
-                                {opciones}
+                            t2: <div style={{ left: '3%', position: 'relative' }} >
+                                {menus}
                             </div>
                         });
                     }
@@ -1042,8 +1033,12 @@ class listActividades extends React.Component {
             </div>;
         }
         else {
+            let xLetter = this.state.mensajeUs && this.state.mensajeUs.length > 35 ? '1.2em' : '1.8em';
+            let x1Letter = this.state.mensajeUs && this.state.mensajeUs.length > 35 ? '-0.15em' : '-1.5em';
+            let tLetter = this.state.mensajeUs && this.state.mensajeUs.length > 35 ? '-3.5em' : '-2em';
+
             t1 = <div className='text' id='text' style={{ opacity: '1' }}>
-                <p className="split" style={{ opacity: '1', fontSize: '1.8em', color: '#e8f5e8', position: 'relative', top: '-0.4em', height: '2em' }} >
+                <p className="split" style={{ opacity: '1', fontSize: xLetter, width: '8em', left: x1Letter, color: '#e8f5e8', position: 'relative', top: tLetter, height: '3em', transform: 'scale(0.75)' }} >
                     {this.state.mensajeUs}
                 </p>
             </div>

@@ -65,10 +65,12 @@ class FomrularioGlobal extends React.Component {
             styleSlack = null;
         }           
 
+        
+      
         return (
             <Modal size='tiny' open={this.state.open} >
                 <Modal.Header>Comienza tu experiencia</Modal.Header>
-                <Modal.Content image>
+                <Modal.Content >
                     <Modal.Description >
                         <Form error={this.state.formError}>
                             <Form.Input label='¿Como te llamas?' placeholder='Como te gustaría que te llamaran'
@@ -85,7 +87,7 @@ class FomrularioGlobal extends React.Component {
                             <a  style={styleSlack}
                                 href={`https://slack.com/oauth/authorize?scope=bot&redirect_uri=https://app.hupity.com&client_id=482555533539.532672221010`}>
                                 <img src="https://api.slack.com/img/sign_in_with_slack.png"  onClick={this.clickGuardarTemporal} alt="sincroniza oauth slack" /></a>
-                            <Message
+                            <Message 
                                 error
                                 header={this.state.mensajeCodigo.titulo}
                                 content={this.state.mensajeCodigo.detalle}

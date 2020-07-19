@@ -1,15 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
-import { chatOn, chatOff } from '../../actions';
-import { Button, Popup, Input, Modal, Progress, Icon } from 'semantic-ui-react';
+import { chatOn, chatOff, actividadPrincipal, imagenOKRs } from '../../actions';
+import { Button, Popup, Input, Modal, Progress, Icon, Image } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, estadochats, objTIMs } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
 import ImagenObj from '../HuperModules/objPrincipal';
 import '../HuperModules/objetivodet.css';
 import '../styles/styleLoader.css';
 import perfil from '../../images/perfil.png';
-import ButtonImport from '../HuperModules/importObjetic/importButton';
 import { responsefontHeaderObj } from '../../lib/responseUtils';
 
 const timeoutLength2 = 1000;
@@ -22,12 +21,13 @@ class listImportante extends React.Component {
         titulo: null, selectedFile: null, loaded: 0, WorkFlow: null, files: null, keyF: null,
         prioridadx: [{ prio: 'inmediato', color: 'red' }, { prio: 'urgente', color: 'yellow' }, { prio: 'normal', color: 'olive' }], activiadesObj: null, comentariosObj: null, adjuntosObj: null,
         factores: null, UtilFactors: null, objStateObj: null, objInicial: null,
-        modalOpen: false, comentario: null, modalOpen2: null,
+        comentario: null, modalOpen2: null, modalOpen: false,
 
         resultRoot: null, resultCurrent: null, shResult: null, objSelResul: null, impactoUtils: null,
+        objAnterior: null,
 
-        selectCurrent : null, selectLast: null
 
+        selectCurrent: null, selectLast: null
     };
 
 
@@ -40,12 +40,13 @@ class listImportante extends React.Component {
         });
         this.setState({ images: response.data.results })
     }
+
+
     componentDidMount() {
 
         this.onSearchSubmit()
         let variable = {};
-
-
+        this.selectCurrent = null;
         let impactoFlujo = firebase.database().ref().child(`Utils/Impacto-Objetivo`);
         impactoFlujo.on('value', (snapshot) => {
             this.setState({ impactoUtils: snapshot.val() })
@@ -188,6 +189,7 @@ class listImportante extends React.Component {
 
     handleOpen = () => {
         this.setState({ modalOpen: true });
+        //this.modalO = true;
     }
 
     renderTareas(tareas) {
@@ -246,20 +248,9 @@ class listImportante extends React.Component {
                 }
 
                 let imagenComen = this.state.objetivoS.comentarios[key3].imagen ? this.state.objetivoS.comentarios[key3].imagen : perfil;
-                /*
-                <div key={key3} style={{ width: '120px' }}>
-                <div className={className} style={{ left: leftObj, height: sizeTarget, borderRadius: recbox }} key={key3}>
-                    <i className="quote right icon"> </i>  {this.state.objetivoS.comentarios[key3].usuario} :
-                    <Card color={color} style={{ height: sizeComent, left: '5px', position: 'relative', top: '-3px' }}
-                        description={this.state.objetivoS.comentarios[key3].concepto}
-                    />
-                </div>
-                <br></br>
-                <br></br>
-            </div>
-*/
+
                 return (
-                    <div className="ui cards" style={{ left: '60%', borderRadius: recbox, position: 'relative' }}>
+                    <div className="ui cards" style={{ left: '38%', borderRadius: recbox, position: 'relative' }}>
                         <div className="card" style={{ background: color }}>
                             <div className="content">
                                 <img alt='tus comentarios en tus objetivos' className="right floated circular mini ui image" src={imagenComen} />
@@ -288,6 +279,93 @@ class listImportante extends React.Component {
         this.setState({ resultCurrent: objetivo });
     }
 
+
+
+    renderObjetivoPrincipalApp(objPrincipal, imgy, iconoImpacto, colorImpacto, key2, visiKresult, resultado, avancePadre) {
+
+        this.props.imagenOKRs(this.state.images[imgy] ? this.state.images[imgy].urls.small : '');
+        let heightHup = objPrincipal.concepto.length > 17 ? '-12em' : '-12em';
+        return (
+            <div className="user-profile" style={{ height: '2.5em' }}>
+
+                <h2 style={{ position: 'relative', top: '-6em', left: '1em', width: '80%', transform: 'scale(1.2)', font: 'inherit' }}>{objPrincipal.concepto}</h2>
+                <div className="user-details" style={{ top: heightHup }}>
+                    <p style={{ color: 'White', top: '5.5em', width: '17em', textAlign: 'center', position: 'relative' }}>{objPrincipal.keyResult1}</p>
+                    <p style={{ color: 'White', top: '5em', width: '17em', textAlign: 'center', position: 'relative' }}>{objPrincipal.keyResult2}</p>
+                </div>
+                <div style={{ color: colorImpacto, top: '-7em', position: 'relative', transform: 'scale(1.4)' }}>
+                    <Icon name={iconoImpacto} style={{ left: '3%', position: 'relative' }} />
+                </div>
+                <Modal
+                    trigger={
+                        <button className="ui basic  button comment alternate outline icon" circular="true"
+                            style={{ top: '-14em', borderRadius: '2em', zIndex: 50, position: 'relative', left: '-8.5em' }}
+
+                            onClick={(e, s) => {
+                                this.setState({ keyF: key2 });
+                                this.setState({ objetivoS: objPrincipal });
+                                this.setState({ comentariosObj: this.renderComentarios() });
+                                this.setState({ comentario: null });
+                                this.handleOpen();
+
+                            }}>
+
+                            <i style={{ color: 'white' }} className="comment alternate outline icon "></i>
+                        </button>
+                    }
+
+                    open={this.state.modalOpen}
+                    basic
+                    size='small'>
+                    <Modal.Content>
+
+                        <h2 style={{ 'text-align': 'center' }} >Agrega un nuevo comentario a tu objetivo</h2>
+                        <br />
+                        <div style={{ 'text-align': 'center' }}>
+                            <div style={{ height: '21em', overflow: 'auto' }}>
+                                {this.renderComentarios()}
+                            </div>
+                            <br></br>
+                            <Input style={{ width: '90%' }} value={this.state.comentario}
+                                onChange={e => this.setState({ comentario: e.target.value })}>
+                            </Input>
+                        </div>
+                        <h4 style={{ 'text-align': 'center' }}>"Los hombres sabios hablan porque tienen algo que decir;<br></br>los necios porque tienen que decir algo".</h4>
+                        <h6 style={{ 'text-align': 'center' }}>-Platón</h6>
+                    </Modal.Content>
+                    <Modal.Actions>
+                        <Button color='pink' onClick={() => { this.setState({ modalOpen: false }) }} inverted>
+                            <Icon name='close' /> Cancelar</Button>
+                        <Button color='teal' onClick={() => { this.setState({ modalOpen: false }); this.guardarDetalle(this); }} inverted>
+                            <Icon name='checkmark' /> Agregar</Button>
+                    </Modal.Actions>
+                </Modal>
+                <div style={{ left: '1.6%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-19.5em' }} onClick={() => { this.renderConsultarEW(objPrincipal.carpeta) }}>
+                    <Popup
+                        trigger={<Icon name="paperclip" style={{ left: '-11.5em', position: 'relative', top: '8.2em', transform: 'scale(1.2)' }} />}
+                        content='Consulta tus archivos'
+                        on='hover' />
+                </div>
+                <div style={{ left: '1.5%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-6.2em' }} onClick={() => { this.setState({ objetivoS: objPrincipal }); }}>
+                    <Popup
+                        trigger={<Icon name="telegram" style={{ transform: 'scale(1.7)', left: '-2em', position: 'relative', top: '-6.5em' }} />}
+                        on='hover'>
+                        <Popup.Content>
+                            <h5>trabajando en ello</h5>
+                            <div className="ui relaxed divided list">
+                                {this.renderTareas(objPrincipal.tasks)}
+                            </div>
+                        </Popup.Content>
+                    </Popup>
+                </div>
+                <div style={{ position: 'relative', top: '-20em', zIndex: 20, visibility: visiKresult }}>
+                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ width: '90%' }} />
+                </div>
+                {avancePadre}
+
+            </div>);
+    }
+
     renderConstruirObj(images) {
         if (this.props.listaObjetivo && this.props.listaObjetivo.objetivos) {
             let flagObjetivosTerminados = null;
@@ -301,7 +379,7 @@ class listImportante extends React.Component {
                 let resultado = 0;
                 if (cconsulta[key2].estado === 'activo' || cconsulta[key2].estado === 'validar') {
 
-                    console.log('---->' + cconsulta[key2].concepto);
+
                     //factor de progreso por horas 
                     let factorSemana = 0;
                     let factorObjetivo = 0;
@@ -381,7 +459,6 @@ class listImportante extends React.Component {
                     const tAvanceTitulo = Math.round((cconsulta[key2].concepto.length + 9) / 40);
                     let imageComp = null;
                     let objPrincipal = cconsulta[key2];
-                    console.log('---->' + objPrincipal.concepto);
                     let topkeyResult = '-4em';
                     let topkeyResult2 = '-5.5em';
                     let topObjKey = '0em';
@@ -399,10 +476,10 @@ class listImportante extends React.Component {
                             </div>
                             ;
                         avancePadre =
-                            <div style={{ left: '6%', position: 'relative', top: '-30em', transform: 'scale(0.7)' }}>
-                                <h5 style={{ top: '-1.5em', left: '-10em', position: 'relative' }}>Avance del equipo:</h5>
+                            <div style={{ left: '6%', position: 'relative', top: '-24em', transform: 'scale(0.7)' }}>
+                                <h5 style={{ top: '-1.5em', left: '-8em', position: 'relative' }}>Avance del equipo:</h5>
                                 <Progress percent={objPrincipal.avancePadre >= 100 ? 100 : objPrincipal.avancePadre === 0 ? 15 : objPrincipal.avancePadre} inverted size='small' indicating progress
-                                    style={{ top: '-2.5em', width: '58%', position: 'relative' }} />
+                                    style={{ top: '-2.5em', width: '70%', position: 'relative' }} />
                             </div>
                     }
                     else if (objPrincipal.tipologia === '2') {
@@ -438,98 +515,14 @@ class listImportante extends React.Component {
                         </div>
                     }
                     let fontS = objPrincipal.concepto.length <= 20 ? 25 : 25 - (Math.round((objPrincipal.concepto.length - 20) / 3));
-                    if (objPrincipal.concepto)
-                        return (
-                            <div className="item segment" key={key2} style={{ height: '14.2em', top: topObjKey, position: 'relative', left: '10%' }}  >
-                                <div>
-                                    {imageComp}
-                                    <div style={{ position: 'relative', top: '2.2em', left: '10%', zIndex: '5' }}>
-                                        <ImagenObj imageXV={this.state.images[imgy] ? this.state.images[imgy].urls.thumb : ''} />
-                                    </div>
+                    //       <img src={this.state.images[imgy] ? this.state.images[imgy].urls.thumb : ''} style={{ left: '-15%', top: '-6em' }} />
 
-                                    <figure className="snip1361" style={{ position: 'relative', top: '-5em' }} onMouseOver={(e, s) => {
-                                        this.setState({ objSelResul: key2 });
-                                    }}
-                                        onMouseLeave={() => {
-                                            this.setState({ objSelResul: null });
-                                        }}>
-                                        <figcaption>
-                                            <div className="header" style={{ left: '55%', width: '35%', fontStyle: 'arial', fontSize: fontS, top: responsefontHeaderObj(fontS), position: 'relative' }}  >{objPrincipal.concepto}</div>
-                                            <div style={{ color: colorImpacto, left: '50%', position: 'relative', transform: 'scale(0.9)', top: '-7.5em' }}>
-                                                <Icon name={iconoImpacto} style={{ left: '3%', position: 'relative' }} />
-                                            </div>
-                                            {kresultx}
-                                        </figcaption>
-
-                                    </figure>
-                                </div>
-                                <Modal
-                                    trigger={
-                                        <button className="ui basic button comment alternate outline icon" circular="true"
-                                            style={{ top: '-20em', borderRadius: '2em', zIndex: 50, position: 'relative', left: '-34%' }}
-
-                                            onClick={(e, s) => {
-                                                this.setState({ keyF: key2 });
-                                                this.setState({ objetivoS: cconsulta[key2] });
-                                                this.setState({ comentariosObj: this.renderComentarios() });
-                                                this.setState({ comentario: null });
-                                                this.handleOpen();
-                                            }}>.
-
-                                            <i className="comment alternate outline icon "></i>
-                                        </button>
-                                    }
-
-                                    open={this.state.modalOpen}
-                                    basic
-                                    size='small'>
-                                    <Modal.Content>
-
-                                        <h2 style={{ 'text-align': 'center' }} >Agrega un nuevo comentario a tu objetivo</h2>
-                                        <br />
-                                        <div style={{ 'text-align': 'center' }}>
-                                            <div style={{ height: '21em', overflow: 'auto' }}>
-                                                {this.renderComentarios()}
-                                            </div>
-                                            <br></br>
-                                            <Input style={{ width: '25em' }} value={this.state.comentario}
-                                                onChange={e => this.setState({ comentario: e.target.value })}>
-                                            </Input>
-                                        </div>
-                                        <h4 style={{ 'text-align': 'center' }}>"Los hombres sabios hablan porque tienen algo que decir;<br></br>los necios porque tienen que decir algo".</h4>
-                                        <h6 style={{ 'text-align': 'center' }}>-Platón</h6>
-                                    </Modal.Content>
-                                    <Modal.Actions>
-                                        <Button color='pink' onClick={() => { this.setState({ modalOpen: false }) }} inverted>
-                                            <Icon name='close' /> Cancelar</Button>
-                                        <Button color='teal' onClick={() => { this.setState({ modalOpen: false }); this.guardarDetalle(this); }} inverted>
-                                            <Icon name='checkmark' /> Agregar</Button>
-                                    </Modal.Actions>
-                                </Modal>
-                                <div style={{ left: '1.6%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-18.5em' }} onClick={() => { this.renderConsultarEW(objPrincipal.carpeta) }}>
-                                    <Popup
-                                        trigger={<Icon name="paperclip" style={{ left: '-43%', position: 'relative', top: '-0.7em', transform: 'scale(1.2)' }} />}
-                                        content='Consulta tus archivos'
-                                        on='hover' />
-                                </div>
-                                <div style={{ left: '1.5%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-6.2em' }} onClick={() => { this.setState({ objetivoS: objPrincipal }); }}>
-                                    <Popup
-                                        trigger={<Icon name="telegram" style={{ transform: 'scale(1.7)', left: '-43%', position: 'relative', top: '-13em' }} />}
-                                        on='hover'>
-                                        <Popup.Content>
-                                            <h5>trabajando en ello</h5>
-                                            <div className="ui relaxed divided list">
-                                                {this.renderTareas(objPrincipal.tasks)}
-                                            </div>
-                                        </Popup.Content>
-                                    </Popup>
-                                </div>
-                                <div style={{ position: 'relative', top: '-17em', left: '14%', zIndex: 20, visibility: visiKresult }}>
-                                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ width: '32%' }} />
-                                </div>
-                                {avancePadre}
-                            </div>
-                        );
+                    if (objPrincipal.concepto) {
+                        if (this.selectCurrent === null || key2 === this.props.actividadPrin) {
+                            this.selectCurrent = this.props.actividadPrin;
+                            return this.renderObjetivoPrincipalApp(objPrincipal, imgy, iconoImpacto, colorImpacto, key2, visiKresult, resultado, avancePadre);
+                        }
+                    }
                 }
                 return null;
             });
@@ -549,18 +542,10 @@ class listImportante extends React.Component {
         );
     }
 
-
     render() {
         const titulo = `${this.props.titulo}`;
-        return (
-            <div >
-                <div className=" maximo-list" style={{ transform: 'scale(1.3)' }}>
-                    <h1 style={{ color: '#947d0e', left: '1%', position: 'relative' }}>{titulo}</h1>
-                    {this.renderConstruirObj(this.state.images)}
+        return (this.renderConstruirObj(this.state.images)
 
-                </div>
-                <ButtonImport />
-            </div>
         )
     };
 };
@@ -568,6 +553,7 @@ class listImportante extends React.Component {
 const mapAppStateToProps = (state) => (
     {
         popupDetalle: state.chatReducer.popupDetalle,
+        actividadPrin: state.chatReducer.actividadPrin,
         listaObjetivo: state.chatReducer.listaObjetivo,
         prioridadObj: state.chatReducer.prioridadObj,
         selObjetivo: state.chatReducer.selObjetivo,
@@ -577,4 +563,4 @@ const mapAppStateToProps = (state) => (
         userId: state.auth.userId,
     });
 
-export default connect(mapAppStateToProps, { listaObjetivos, estadochats, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, chatOn, chatOff, objTIMs })(listImportante);
+export default connect(mapAppStateToProps, { imagenOKRs, actividadPrincipal, listaObjetivos, estadochats, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, chatOn, chatOff, objTIMs })(listImportante);

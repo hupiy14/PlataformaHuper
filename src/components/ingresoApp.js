@@ -29,7 +29,7 @@ class ingresoPlataforma extends React.Component {
    }
     render() {
         return (
-            <div className="ui placeholder segment icon-right" style={{ borderColor: '#e03997', 'height': '100%', "background": "#fffffF" }}>
+            <div className="ui placeholder segment icon-right" style={{ borderColor: '#e03997', height: '100%', background: "#fffffF" }}>
                 <br></br>
                 <br></br>
                 <div className="inline center">

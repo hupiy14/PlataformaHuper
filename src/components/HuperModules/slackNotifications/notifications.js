@@ -49,9 +49,11 @@ class notifiactions extends React.Component {
             /* this.setState({
                  client: SlackOAuthClient.connect(snapshot2.val().tokenP)
              });*/
-            this.setState({ canales: snapshot2.val() });
-            token = snapshot2.val().tokenSlack;
-            console.log(snapshot2.val());
+            if (snapshot2.val()) {
+                this.setState({ canales: snapshot2.val() });
+                token = snapshot2.val().tokenSlack;
+                //console.log(snapshot2.val());
+            }
         });
 
         this.notificationPriority();
