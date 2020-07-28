@@ -58,48 +58,50 @@ class listActividades extends React.Component {
                     Object.keys(act).map((key, index) => {
 
                         let flag = true;
-                        Object.keys(this.eventCalendar.result.items).map((key2, index) => {
-                            if (this.eventCalendar.result.items[key2].summary === act[key].concepto && this.eventCalendar.result.items[key2].description === key)
-                                flag = false;
-                            return this.eventCalendar.result.items[key2];
-                        });
-
-                        if (flag && act[key].concepto !== undefined && act[key].synCalendar === undefined && ((this.calendarAcum !== undefined && !this.calendarAcum.includes(key)) || this.calendarAcum === undefined)) {
-                            console.log(act[key]);
-
-                            let event = {
-                                'summary': act[key].concepto,
-                                'description': key,
-                                'start': {
-                                    'dateTime': moment(act[key]['h-inicio'], 'h:mm:ss a'),
-                                    'timeZone': 'America/Los_Angeles'
-                                },
-                                'end': {
-                                    'dateTime': moment(act[key]['h-fin'], 'h:mm:ss a'),
-                                    'timeZone': 'America/Los_Angeles'
-                                },
-                                'attendees': [],
-                                'reminders': {
-                                    'useDefault': false,
-                                    'overrides': [
-                                        { 'method': 'popup', 'minutes': 10 }
-                                    ]
-                                }
-                            };
-                            if (this.calendarAcum === undefined) {
-                                this.calendarAcum = [];
-                                this.calendarL = [];
-                            }
-                            this.calendarAcum[key] = act[key].concepto;
-                            this.calendarL[key] = event;
-                            firebase.database().ref(`Usuario-Task/${this.props.usuarioDetail.idUsuario}/${moment().format("YYYYMMDD")}/${key}`).update({
-                                synCalendar: true
+                        if (this.eventCalendar) {
+                            Object.keys(this.eventCalendar.result.items).map((key2, index) => {
+                                if (this.eventCalendar.result.items[key2].summary === act[key].concepto && this.eventCalendar.result.items[key2].description === key)
+                                    flag = false;
+                                return this.eventCalendar.result.items[key2];
                             });
-                            if (flagFirst === false)
-                                this.createEventTrabajo(this.Calendar.idCalendar.value, 0);
-                            flagFirst = true;
+
+                            if (flag && act[key].concepto !== undefined && act[key].synCalendar === undefined && ((this.calendarAcum !== undefined && !this.calendarAcum.includes(key)) || this.calendarAcum === undefined)) {
+                                console.log(act[key]);
+
+                                let event = {
+                                    'summary': act[key].concepto,
+                                    'description': key,
+                                    'start': {
+                                        'dateTime': moment(act[key]['h-inicio'], 'h:mm:ss a'),
+                                        'timeZone': 'America/Los_Angeles'
+                                    },
+                                    'end': {
+                                        'dateTime': moment(act[key]['h-fin'], 'h:mm:ss a'),
+                                        'timeZone': 'America/Los_Angeles'
+                                    },
+                                    'attendees': [],
+                                    'reminders': {
+                                        'useDefault': false,
+                                        'overrides': [
+                                            { 'method': 'popup', 'minutes': 10 }
+                                        ]
+                                    }
+                                };
+                                if (this.calendarAcum === undefined) {
+                                    this.calendarAcum = [];
+                                    this.calendarL = [];
+                                }
+                                this.calendarAcum[key] = act[key].concepto;
+                                this.calendarL[key] = event;
+                                firebase.database().ref(`Usuario-Task/${this.props.usuarioDetail.idUsuario}/${moment().format("YYYYMMDD")}/${key}`).update({
+                                    synCalendar: true
+                                });
+                                if (flagFirst === false)
+                                    this.createEventTrabajo(this.Calendar.idCalendar.value, 0);
+                                flagFirst = true;
+                            }
+                            return act[key];
                         }
-                        return act[key];
                     })
                 }
             });
@@ -292,44 +294,46 @@ class listActividades extends React.Component {
 
                     if (actividadesU[key2].concepto === undefined)
                         return null;
+                    if (this.state.aux !== key2) {
+                        if (this.state.aux == null && f == null && actividadesU[key2].estado === "activo" && actividadesU[key2].concepto !== undefined) {
+                            f = '1';
+                            let titlelengt = actividadesU[key2].concepto.length > 17 ? '25%' : '30%';
+                            let scalet = actividadesU[key2].concepto.length > 17 ? '1.6' : '3';
+                            this.setState({ aux: key2 });
+                            this.setState({
+                                primero: <div style={{ height: '7.5em' }}>
+                                    <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '8.5em', widt: '130%', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '1em' }}>
+                                        <h1 style={{ position: 'relative', top: '7%', left: '-42%', transform: 'scale(2.5)' }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
+                                        <Image src={task} size="mini" style={{ left: '1em', top: '1.5em' }} alt='task hupper'></Image>
+                                        <div style={{ position: 'relative', top: '5px', left: '-40%', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].prioridad} </div>
+                                        <Step.Content style={{ left: '8%', width: '90%', top: '-4em', position: 'relative' }}>
+                                            <Step.Description style={{ position: 'relative', top: '4em', left: '20%', fontSize: 'smaller' }}>
+                                                <Icon name="clock outline"></Icon>{tiempo}
+                                            </Step.Description>
+                                            <Step.Title style={{ width: '50%', color: '#947d0e', top: '-3em', position: 'relative', transform: `scale(${scalet})`, left: titlelengt }}>{actividadesU[key2].concepto}</Step.Title>
+                                        </Step.Content>
+                                    </Step>
+                                </div>
+                            });
 
-                    if (this.state.aux == null && f == null && actividadesU[key2].estado === "activo" && actividadesU[key2].concepto !== undefined) {
-                        f = '1';
-                        let titlelengt = actividadesU[key2].concepto.length > 17 ? '25%' : '30%';
-                        let scalet = actividadesU[key2].concepto.length > 17 ? '1.6' : '3';
-                        this.setState({ aux: 'primera' });
-                        this.setState({
-                            primero: <div style={{ height: '7.5em' }}>
-                                <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '8.5em', widt: '130%', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '1em' }}>
-                                    <h1 style={{ position: 'relative', top: '7%', left: '-42%', transform: 'scale(2.5)' }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
-                                    <Image src={task} size="mini" style={{ left: '1em', top: '1.5em' }} alt= 'task hupper'></Image>
-                                    <div style={{ position: 'relative', top: '5px', left: '-40%', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].prioridad} </div>
-                                    <Step.Content style={{ left: '8%', width: '90%', top: '-4em', position: 'relative' }}>
-                                        <Step.Description style={{ position: 'relative', top: '4em', left: '20%', fontSize: 'smaller' }}>
-                                            <Icon name="clock outline"></Icon>{tiempo}
-                                        </Step.Description>
-                                        <Step.Title style={{ width: '50%', color: '#947d0e', top: '-3em', position: 'relative', transform: `scale(${scalet})`, left: titlelengt }}>{actividadesU[key2].concepto}</Step.Title>
-                                    </Step.Content>
-                                </Step>
-                            </div>
-                        });
+                        }
 
-                    }
-                    else {
-                        if (x !== 1 && actividadesU[key2].estado === "activo")
-                            return (<div style={{ height: '7.5em', width: '80%', position: 'relative', left: '20%' }}>
-                                <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '6.5em', background: '#fff6fb', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '1em', 'z-index': '-1' }}>
-                                    <h1 style={{ position: 'relative', top: '5%', left: '-5%', transform: 'scale(1.4)' }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
-                                    <Image src={task} size="mini" style={{ left: '-3.5em', top: '2.8em', transform: 'scale(0.75)' }} alt= 'task hupper'></Image>
-                                    <div style={{ position: 'relative', top: '2.5em', left: '-3.5em', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].prioridad} </div>
-                                    <Step.Content style={{ left: '8%', width: '90%', top: '-5em', position: 'relative' }}>
-                                        <Step.Description style={{ position: 'relative', top: '6em', left: '18%', fontSize: 'smaller' }}>
-                                            <Icon name="clock outline"></Icon>{tiempo}
-                                        </Step.Description>
-                                        <Step.Title style={{ color: '#947d0e', top: '0.5em', position: 'relative', left: '2%' }}>{actividadesU[key2].concepto}</Step.Title>
-                                    </Step.Content>
-                                </Step>
-                            </div>);
+                        else {
+                            if (x !== 1 && actividadesU[key2].estado === "activo")
+                                return (<div style={{ height: '7.5em', width: '80%', position: 'relative', left: '20%' }}>
+                                    <Step completed={actividadT.completed} className={anima} active={actividadT.active} style={{ height: '6.5em', background: '#fff6fb', boxShadow: '#fed510 0px 1.1px 0.2px 0.1px', borderRadius: '1em', 'z-index': '-1' }}>
+                                        <h1 style={{ position: 'relative', top: '5%', left: '-5%', transform: 'scale(1.4)' }}>{actividadesU[key2].estado === "finalizado" ? '✓' : x}</h1>
+                                        <Image src={task} size="mini" style={{ left: '-3.5em', top: '2.8em', transform: 'scale(0.75)' }} alt='task hupper'></Image>
+                                        <div style={{ position: 'relative', top: '2.5em', left: '-3.5em', fontSize: 'medium', fontWeight: 'bolder', color: ' #fe10bd' }}> {actividadesU[key2].prioridad} </div>
+                                        <Step.Content style={{ left: '8%', width: '90%', top: '-5em', position: 'relative' }}>
+                                            <Step.Description style={{ position: 'relative', top: '6em', left: '18%', fontSize: 'smaller' }}>
+                                                <Icon name="clock outline"></Icon>{tiempo}
+                                            </Step.Description>
+                                            <Step.Title style={{ color: '#947d0e', top: '0.5em', position: 'relative', left: '2%' }}>{actividadesU[key2].concepto}</Step.Title>
+                                        </Step.Content>
+                                    </Step>
+                                </div>);
+                        }
                     }
                 }
                 return null;
@@ -359,7 +363,7 @@ class listActividades extends React.Component {
             const element = <div key={index} style={{ height: '7.5em', width: '80%', position: 'relative', left: '20%', filter: 'grayscale(0.5)' }}>
                 <Step completed={false} style={{ background: '#efefef', height: '6.5em', borderRadius: '1em' }}>
                     <h1 style={{ position: 'relative', top: '5%', left: margin, transform: 'scale(1.4)' }}>{x}</h1>
-                    <Image src={task} size="mini" style={{ transform: 'scale(0.75)' }} alt= 'task hupper'></Image>
+                    <Image src={task} size="mini" style={{ transform: 'scale(0.75)' }} alt='task hupper'></Image>
                     <Step.Content style={{ left: '8%', width: '90%', top: '-5em', position: 'relative' }}>
                         <Step.Description style={{ position: 'relative', top: '4.5em', left: '25%', fontSize: 'smaller' }}>
                             <Icon name="clock outline"></Icon>00:00 a 00:00
@@ -403,7 +407,7 @@ class listActividades extends React.Component {
         else
             contenido = this.actividadesEmpty(5, 0, [])
 
-        return (<div style={{ position: 'relative', top: '-4em'}} >
+        return (<div style={{ position: 'relative', top: '-4em' }} >
             <div style={{ position: 'relative', top: '-4em', width: '130%' }}>
                 {this.state.primero}
             </div>

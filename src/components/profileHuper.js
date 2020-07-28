@@ -30,15 +30,15 @@ let trello = null;// new Trello("bb3cab1a303c7bf996d56bb46db2a46f", "136434ae14c
 ///pantalla de  perfil del usuario
 //limpiar variables
 const nivel = [
-    { key: 1, text: 'Normal', value: '105' },
-    { key: 2, text: 'Competitivo', value: '115' },
-    { key: 3, text: 'Altamente Competitivo', value: '125' },
+    { key: 1, label: 'Normal', value: '105' },
+    { key: 2, label: 'Competitivo', value: '115' },
+    { key: 3, label: 'Altamente Competitivo', value: '125' },
 
 ]
 const Semana = [
-    { key: 1, text: 'Viernes', value: 5 },
-    { key: 2, text: 'Sabado', value: 6 },
-    { key: 3, text: 'Domingo', value: 7 },
+    { key: 1, label: 'Viernes', value: 5 },
+    { key: 2, label: 'Sabado', value: 6 },
+    { key: 3, label: 'Domingo', value: 7 },
 
 ]
 class Profile extends React.Component {
@@ -771,15 +771,30 @@ class Profile extends React.Component {
     renderUsuario() {
         let nnivel = null;
         if (this.props.usuarioDetail.rol === '2') {
-            nnivel = <Form.Select label='Define el nivel de competitividad de tu equipo' options={nivel} placeholder='Selecciona uno'
-                search
-                onChange={(e, { value }) => this.setState({ nivelEquipo: { ...this.state.nivelEquipo, nivel: value } })}
-                value={this.state.nivelEquipo ? this.state.nivelEquipo.nivel : 105}
+            nnivel = <div>
+                <h3>Define el nivel de competitividad de tu equipo</h3>
+                <Select options={nivel}
+                    search
+                    styles={st}
+                    onChange={(e, { value }) => { this.setState({ nivelEquipo: e }); }}
+                    value={this.state.nivelEquipo ? this.state.nivelEquipo.nivel : 105}
 
-            />
+                />
+            </div>
+
+            /*
+              <h5>Cual es tu Empresa?</h5>
+                                <Select options={this.renderOpcionesEmpresa()}
+                                    search
+                                    styles={st}
+                                    onChange={(e, { value }) => { this.setState({ empresa: e }); }}
+                                    value={this.state.empresa}
+                                    disabled={true}
+            
+                                />*/
         }
 
-
+        let st = this.renderStyles();
         return (
 
 
@@ -791,39 +806,33 @@ class Profile extends React.Component {
                         onChange={e => this.setState({ nombreUsuario: e.target.value })}
                         error={this.state.errorNombreUsuario}
                     />
-                    <Form.Select label='Empresa' options={this.renderOpcionesEmpresa()} placeholder='Cual es tu Empresa?'
-                        search
-                        onChange={(e, { value }) => this.setState({ empresa: value })}
-                        value={this.state.empresa}
-                        error={this.state.errorEmpresa}
-                        disabled={true}
-                    />
+
+
+
+                    <br></br>
                     <Form.Input label='Cargo' placeholder='Que cargo tienes?'
                         value={this.state.cargo}
                         onChange={e => this.setState({ cargo: e.target.value })}
                         error={this.state.errorCargo}
                     />
-
+                    <br></br>
                     <Form.Input label='Area' placeholder='¿En qué departamento de la empresa laboras? '
                         value={this.state.area}
                         onChange={e => this.setState({ area: e.target.value })}
                         error={this.state.errorArea}
                     />
 
-                    <Form.Select label='En que dia termina tu semana' options={Semana}
+
+                    <h5>En que dia termina tu semana</h5>
+                    <Select options={Semana}
                         search
-                        onChange={(e, { value }) => this.setState({ diaSemana: value })}
+                        styles={st}
+                        onChange={(e, { value }) => { this.setState({ diaSemana: e }); }}
                         value={this.state.diaSemana}
 
                     />
 
-                    <Form.Select label='Lugar de residencia' options={this.renderOpcionesZona()}
-                        search
-                        onChange={(e, { value }) => this.setState({ lugar: value })}
-                        value={this.state.lugar}
-                        error={this.state.errorLugar}
-                    />
-
+                    <br></br>
                     <Form.Input label='Teléfono' placeholder='¿Dondé te podemos contactar? '
                         value={this.state.telefono}
                         onChange={e => this.setState({ telefono: e.target.value })}
@@ -838,8 +847,8 @@ class Profile extends React.Component {
                         content='Debes diligenciar todos los campos'
                     />
                 </Form>
-
-                <button disabled={this.state.activo} onClick={() => { this.renderGuardar() }} className="ui pink button inverted " style={{ left: "10%" }}>
+                <br></br>
+                <button disabled={this.state.activo} onClick={() => { this.renderGuardar() }} className="ui pink button inverted " style={{ left: "25%" }}>
                     <i class="save icon"></i>
                                 Guardar
                             </button>

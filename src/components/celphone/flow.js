@@ -59,7 +59,7 @@ class pointWork extends React.Component {
 
     renderCrearComponentInicial(nombre, titulo, detalle) {
 
-        return <div style={{ height: '12em' }}>
+        return <div style={{ height: '12em',  width: '90%' }}>
             <VerticalTimelineElement
                 className="vertical-timeline-element--work"
                 contentStyle={{ background: '#e03997', color: '#fff' }}
@@ -81,7 +81,7 @@ class pointWork extends React.Component {
 
     renderCrearComponenteNormal(nombre, titulo, detalle, item) {
 
-        return <div style={{ height: '12em' }}>
+        return <div style={{ height: '12em', width: '90%' }}>
             <VerticalTimelineElement
                 position={item % 2 === 1 ? "right" : "left"}
                 className="vertical-timeline-element--work"
@@ -121,7 +121,7 @@ class pointWork extends React.Component {
 
     renderCrearComponenteFin() {
 
-        return <div style={{ height: '12em', key: 15 }}>
+        return <div style={{ height: '12em', key: 15,width: '90%'}}>
             <VerticalTimelineElement
                 iconStyle={{ background: '#b5cc18', color: '#fff' }}
                 icon={<div style={{ position: 'relative', top: '25%' }}>
@@ -131,13 +131,21 @@ class pointWork extends React.Component {
             />
         </div>;
     }
+    componentDidUpdate() {
+        let cont = document.getElementById('flowCont');
+        if (cont) {
+            console.log(cont.scrollTop);
+            cont.scrollTop = 0;
+        }
+    }
+
 
     render() {
 
 
         return (
-            <div style={{ overflow: 'auto', height: window.innerHeight * 0.7 }}>
-                 <VerticalTimeline>
+            <div id="flowCont" style={{ overflow: 'auto', height: window.innerHeight * 0.7 }}>
+                <VerticalTimeline style={{ width: '90%' }}>
                     {this.renderCrearFases()}
                 </VerticalTimeline>
                 <Form style={{ width: '100%', top: '-5em' }}>
@@ -155,7 +163,7 @@ class pointWork extends React.Component {
                 <br />
                 <br />
                 <button disabled={!this.state.tituloFase}
-                    onClick={() => { this.renderguardarFase() }} className="ui pink button inverted " style={{width: '100%', left: '50%',  top: '-5em' }}>
+                    onClick={() => { this.renderguardarFase() }} className="ui pink button inverted " style={{ width: '100%', left: '50%', top: '-5em' }}>
                     <i class="save icon"></i>
                 Agrega una nuevo fase
                             </button>

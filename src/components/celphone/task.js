@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import '../styles/celHupp.css';
+
 import Actividades from './actividades';
 import unsplash from '../../apis/unsplash';
 import history from '../../history';
@@ -31,12 +31,18 @@ class listActividades extends React.Component {
         });
         this.setState({ images: response.data.results })
     }
+    timerTrabajo = () => {
+        this.timeout = setTimeout(() => {
+            this.setState({ tipo: 'Task' });
+        }, 10000)
+    }
 
     componentWillMount() {
-        if (!this.props.isSignedIn) {
+        if (!this.props.isSignedIn || !this.props.usuarioDetail) {
             history.push('/');
             return;
         }
+        //  this.timerTrabajo();
         this.setState({ tipo: 'Task' });
         this.onSearchSubmit();
         window.$('#all').click(function () {
@@ -63,11 +69,21 @@ class listActividades extends React.Component {
             });
         });
     }
+    componentDidUpdate()
+    {
+       /* let messages = document.getElementById('AppH');
+        if (messages) {
+            console.log(messages.scrollTop);
+            messages.scrollTop = 0;
+        }*/
+    }
 
     render() {
 
         if (this.state.images) {
             /*
+
+            
                             <li className="two green2">
                                 <span className="task-title">Design Explorations</span>
                                 <span className="task-time">2pm</span>
@@ -117,16 +133,15 @@ class listActividades extends React.Component {
                     </li>
             */
             let extraComponent = null;
-            let principal = null;
+            let principal = <div style={{height: '5em'}}></div>;
             let styleAjuste = null;
             let tiempo = null;
-            console.log(this.props.homeApps);
             if (this.props.actividadPrin) {
                 principal = this.props.actividadPrin;
                 styleAjuste = { position: 'relative', top: '-5em' }
-                if (this.props.actividadProg === 1)
-                    styleAjuste = { position: 'relative', left: '-6em' }
-                else if (this.props.actividadProg === 2)
+                // if (this.props.actividadProg === 1)
+                //    styleAjuste = { position: 'relative', left: '-6em' }
+                if (this.props.actividadProg === 2)
                     styleAjuste = { position: 'relative', left: '3.5em', width: '13em' }
 
             }
@@ -153,7 +168,7 @@ class listActividades extends React.Component {
             else if (this.state.tipo === 'Flow' && !this.props.homeApps) {
                 imageFondo = `url(https://cdn.pixabay.com/photo/2016/08/09/21/54/yellowstone-national-park-1581879_960_720.jpg)`;
                 title = 'Mi flujo';
-                principal = null;
+                principal =  <div style={{height: '5em'}}></div>;
                 item = <FLujoCreate />
 
             }
@@ -168,6 +183,8 @@ class listActividades extends React.Component {
                 this.props.homeApp();
             }
 
+           
+
             /*
                 <div className="overlay" style={{ background: `url(${this.state.images ? this.state.images[0].urls.regular : null})` }}></div>
                 <div className="overlay" style={{ background: `url(https://images.unsplash.com/photo-1517764415784-a0a8e4e659e8?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80)` }}></div>
@@ -176,7 +193,7 @@ class listActividades extends React.Component {
             */
             return (
 
-                <div className="muck-up">
+                <div className="muck-up" id="muck">
 
 
                     <div className="overlay" style={{ background: imageFondo }}></div>
@@ -187,10 +204,10 @@ class listActividades extends React.Component {
                     </div>
                     <div className="clearfix"></div>
                     <div className="filter-btn" >
-                        <a onClick={() => { this.props.actividadPrincipal(); window.$('.filter-btn').removeClass('open'); this.setState({ tipo: 'OKR' }); }} id="one" href="#one"><i className="ion-ios-star-outline"></i></a>
-                        <a onClick={() => { this.props.actividadPrincipal(); window.$('.filter-btn').removeClass('open'); this.setState({ tipo: 'Task' }); }} id="two" href="#two"><i className="ion-ios-checkmark-outline"></i></a>
-                        <a onClick={() => { this.props.actividadPrincipal(); window.$('.filter-btn').removeClass('open'); this.setState({ tipo: 'Flow' }); }} id="three" href="#three"><i className="ion-ios-bookmarks-outline"></i></a>
-                        <a onClick={() => { this.props.actividadPrincipal(); window.$('.filter-btn').removeClass('open'); this.setState({ tipo: 'Profile' }); }} id="all" href="#all"><i className="ion-ios-person-outline"></i></a>
+                        <a onClick={() => { window.$('.filter-btn').removeClass('open'); if (this.state.tipo !== 'OKR') { this.setState({ tipo: 'OKR' }); this.props.actividadPrincipal(); } }} id="one" href="#one"><i className="ion-ios-star-outline"></i></a>
+                        <a onClick={() => { window.$('.filter-btn').removeClass('open'); if (this.state.tipo !== 'Task') { this.setState({ tipo: 'Task' }); this.props.actividadPrincipal(); } }} id="two" href="#two"><i className="ion-ios-checkmark-outline"></i></a>
+                        <a onClick={() => { window.$('.filter-btn').removeClass('open'); if (this.state.tipo !== 'Flow') { this.setState({ tipo: 'Flow' }); this.props.actividadPrincipal(); } }} id="three" href="#three"><i className="ion-ios-bookmarks-outline"></i></a>
+                        <a onClick={() => { window.$('.filter-btn').removeClass('open'); if (this.state.tipo !== 'Profile') { this.setState({ tipo: 'Profile' }); this.props.actividadPrincipal(); } }} id="all" href="#all"><i className="ion-ios-person-outline"></i></a>
                         <span className="toggle-btn ion-android-funnel" onClick={() => { window.$('.filter-btn').toggleClass('open'); }}></span>
                     </div>
                     {extraComponent}

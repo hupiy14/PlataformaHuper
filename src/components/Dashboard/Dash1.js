@@ -6,6 +6,7 @@ import ListEjemplo from '../utilidades/ListaEjemplo';
 import CrearGrafica from '../utilidades/CrearGrafica';
 import CrearGrafica2 from '../utilidades/CrearGrafica2';
 import '../styles/ingresoHupity.css';
+import '../modules/chatBot/chatHupApp.css';
 import randomScalingFactor from '../../lib/randomScalingFactor';
 import ListaActividades from '../HuperModules/actividadesHuper';
 import DashGestor from '../gestorModules/dashboardG';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
-import { chatOn, chatOff, actividadPrincipal, imagenOKRs } from '../../actions';
+import { chatOn, chatOff, actividadPrincipal, imagenOKRs, popupBot } from '../../actions';
 import { Button, Popup, Input, Modal, Progress, Icon, Image } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, estadochats, objTIMs } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
@@ -9,6 +9,7 @@ import ImagenObj from '../HuperModules/objPrincipal';
 import '../HuperModules/objetivodet.css';
 import '../styles/styleLoader.css';
 import perfil from '../../images/perfil.png';
+import { avanceOKR } from '../../lib/utils';
 import { responsefontHeaderObj } from '../../lib/responseUtils';
 
 const timeoutLength2 = 1000;
@@ -82,7 +83,7 @@ class listImportante extends React.Component {
             this.setState({ UtilFactors: snapshot.val() });
         });
 
-        const starCountRef2 = firebase.database().ref().child(`Usuario-OKR/${this.props.userId}`);
+        const starCountRef2 = firebase.database().ref().child(`Usuario-Task/${this.props.userId}`);
         starCountRef2.on('value', (snapshot) => {
             variable = { ...variable, tareas: snapshot.val() }
             this.props.listaObjetivos(variable);
@@ -286,7 +287,12 @@ class listImportante extends React.Component {
         this.props.imagenOKRs(this.state.images[imgy] ? this.state.images[imgy].urls.small : '');
         let heightHup = objPrincipal.concepto.length > 17 ? '-12em' : '-12em';
         return (
-            <div className="user-profile" style={{ height: '2.5em' }}>
+            <div className="user-profile" style={{ height: '2.5em', top: '2.5em', position: 'relative' }}>
+                {avancePadre}
+                <div style={{ position: 'relative', top: '-4.7em', zIndex: 3, visibility: visiKresult }}>
+                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ width: '90%' }} />
+                </div>
+
 
                 <h2 style={{ position: 'relative', top: '-6em', left: '1em', width: '80%', transform: 'scale(1.2)', font: 'inherit' }}>{objPrincipal.concepto}</h2>
                 <div className="user-details" style={{ top: heightHup }}>
@@ -299,7 +305,7 @@ class listImportante extends React.Component {
                 <Modal
                     trigger={
                         <button className="ui basic  button comment alternate outline icon" circular="true"
-                            style={{ top: '-14em', borderRadius: '2em', zIndex: 50, position: 'relative', left: '-8.5em' }}
+                            style={{ top: '-14em', borderRadius: '2em', zIndex: 5, position: 'relative', left: '-8.5em' }}
 
                             onClick={(e, s) => {
                                 this.setState({ keyF: key2 });
@@ -340,13 +346,13 @@ class listImportante extends React.Component {
                             <Icon name='checkmark' /> Agregar</Button>
                     </Modal.Actions>
                 </Modal>
-                <div style={{ left: '1.6%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-19.5em' }} onClick={() => { this.renderConsultarEW(objPrincipal.carpeta) }}>
+                <div style={{ left: '1.6%', position: 'relative', zIndex: 5, transform: 'scale(0.9)', top: '-19.5em' }} onClick={() => { this.renderConsultarEW(objPrincipal.carpeta) }}>
                     <Popup
                         trigger={<Icon name="paperclip" style={{ left: '-11.5em', position: 'relative', top: '8.2em', transform: 'scale(1.2)' }} />}
                         content='Consulta tus archivos'
                         on='hover' />
                 </div>
-                <div style={{ left: '1.5%', position: 'relative', zIndex: 50, transform: 'scale(0.9)', top: '-6.2em' }} onClick={() => { this.setState({ objetivoS: objPrincipal }); }}>
+                <div style={{ left: '1.5%', position: 'relative', zIndex: 5, transform: 'scale(0.9)', top: '-6.2em' }} onClick={() => { this.setState({ objetivoS: objPrincipal }); }}>
                     <Popup
                         trigger={<Icon name="telegram" style={{ transform: 'scale(1.7)', left: '-2em', position: 'relative', top: '-6.5em' }} />}
                         on='hover'>
@@ -358,11 +364,6 @@ class listImportante extends React.Component {
                         </Popup.Content>
                     </Popup>
                 </div>
-                <div style={{ position: 'relative', top: '-20em', zIndex: 20, visibility: visiKresult }}>
-                    <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ width: '90%' }} />
-                </div>
-                {avancePadre}
-
             </div>);
     }
 
@@ -396,43 +397,18 @@ class listImportante extends React.Component {
                     }
 
 
+
+
                     if (this.props.listaObjetivo.tareas) {
-                        Object.keys(this.props.listaObjetivo.tareas).map((key3, index) => {
 
-                            const consultaTareaTT = this.props.listaObjetivo.tareas[key3];
-                            Object.keys(consultaTareaTT).map((key33, index) => {
-                                if (key3 === key2) {
-                                    if (consultaTareaTT[key33].estado === 'finalizado') {
-                                        tareasCompleta = tareasCompleta + 1;
-                                    }
-                                }
-                                return consultaTareaTT[key33];
-                            });
-
-                            const horasAtrabajar = 40;
-                            const horasObj = horasAtrabajar * (factorObjetivo / factorSemana);
-                            const atrabajo = Math.round(horasObj) / 3;
-                            const atrabajo2 = ((Math.round(horasObj) * 0.35) / 2) + 1;
-                            let resul = 15;
-
-                            if (atrabajo < tareasCompleta) {
-                                const ob = (tareasCompleta - atrabajo) / atrabajo2 > 1 ? 1 : (tareasCompleta - atrabajo) / atrabajo2;
-                                resul = 65 + Math.round(ob * 35);
-                            }
-
-                            else
-                                resul = Math.round((tareasCompleta / atrabajo) * 65);
-
-                            resultado = cconsulta[key2].avance ? resultado : resul;
-
-                            // console.log(resultado);
-                            if (resultado === 100 && !cconsulta[key2].estadoTIM && this.props.estadochat !== 'TIM objetivo') {
-                                this.props.estadochats('TIM objetivo');
-                                this.props.objTIMs({ obj: cconsulta[key2], key: key2 });
-                                this.TIMOBJ();
-                            }
-                            return this.props.listaObjetivo.tareas[key3];
-                        });
+                        resultado = avanceOKR(cconsulta[key2], key2, this.props.listaObjetivo.tareas);
+                        // console.log(resultado);
+                        /*     if (resultado === 100 && !cconsulta[key2].estadoTIM && this.props.estadochat !== 'TIM objetivo') {
+                                 this.props.estadochats('TIM objetivo');
+                                 this.props.objTIMs({ obj: cconsulta[key2], key: key2 });
+                                 this.TIMOBJ();
+                             }
+                      */
                         if (resultado < 100)
                             flagObjetivosTerminados = false;
                         else if (resultado >= 100) {
@@ -473,13 +449,13 @@ class listImportante extends React.Component {
                                 height: '0.2em'
                             }}>
                                 <ImagenObj imageXV={this.state.images[y] ? this.state.images[y].urls.thumb : ''} />
-                            </div>
-                            ;
+                            </div>;
+
                         avancePadre =
-                            <div style={{ left: '6%', position: 'relative', top: '-24em', transform: 'scale(0.7)' }}>
-                                <h5 style={{ top: '-1.5em', left: '-8em', position: 'relative' }}>Avance del equipo:</h5>
+                            <div style={{ left: '5em', position: 'absolute', top: '-6.2em', transform: 'scale(0.7)' }}>
+                                <h5 style={{ top: '-1.5em', left: '-4em', position: 'relative' }}>Avance del equipo:</h5>
                                 <Progress percent={objPrincipal.avancePadre >= 100 ? 100 : objPrincipal.avancePadre === 0 ? 15 : objPrincipal.avancePadre} inverted size='small' indicating progress
-                                    style={{ top: '-2.5em', width: '70%', position: 'relative' }} />
+                                    style={{ top: '-2.5em', width: '100%', position: 'relative' }} />
                             </div>
                     }
                     else if (objPrincipal.tipologia === '2') {
@@ -523,11 +499,15 @@ class listImportante extends React.Component {
                             return this.renderObjetivoPrincipalApp(objPrincipal, imgy, iconoImpacto, colorImpacto, key2, visiKresult, resultado, avancePadre);
                         }
                     }
+                    if (flagObjetivosTerminados === true)
+                        this.props.popupBot({ mensaje: 'hemos terminado el objetivo  ' + objPrincipal.concepto, sleep: 35000 });
                 }
+
+
                 return null;
+
             });
-            if (flagObjetivosTerminados === true)
-                this.props.estadochats('Objetivos Terminados');
+
             return opciones;
 
         }
@@ -563,4 +543,4 @@ const mapAppStateToProps = (state) => (
         userId: state.auth.userId,
     });
 
-export default connect(mapAppStateToProps, { imagenOKRs, actividadPrincipal, listaObjetivos, estadochats, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, chatOn, chatOff, objTIMs })(listImportante);
+export default connect(mapAppStateToProps, { imagenOKRs, actividadPrincipal, listaObjetivos, estadochats, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, chatOn, chatOff, objTIMs, popupBot })(listImportante);

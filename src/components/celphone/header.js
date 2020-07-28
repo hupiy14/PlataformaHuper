@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import GoogleAuth from '../../components/loginGoogle/GoogleAuth';
@@ -8,6 +9,8 @@ import perfil from '../../images/perfil.png';
 import Noti from '../HuperModules/slackNotifications/notifications';
 import NotiHupp from '../HuperModules/notificationsHuoo/notifications';
 import { homeApp } from '../../actions';
+import '../styles/celHupp.css';
+
 
 class Headers extends React.Component {
 

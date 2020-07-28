@@ -6,17 +6,24 @@ import { actividadPrincipal, actividadProgramas } from '../../actions';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, estadochats, MensajeIvilys } from '../modules/chatBot/actions';
 import moment from 'moment';
 import task from '../../images/task.svg';
+import history from '../../history';
 
 
 const timeoutLength = 900000;
 let timeoutLength2 = 500;
-let timeoutLength4 = 1000;
-let timeoutLength3 = 1000;
+let timeoutLength4 = 500;
+let timeoutLength3 = 500;
 class listActividades extends React.Component {
 
     state = { actividades: null, tiempos: 0, horamaxima: 8, primero: null, aux: null, contenido: null }
 
     componentDidMount() {
+
+        if (!this.props.isSignedIn) {
+            history.push('/');
+            return;
+        }
+
         this.props.actividadPrincipal(null);
         this.flag = true;
         if (this.props.usuarioDetail) {
@@ -25,10 +32,11 @@ class listActividades extends React.Component {
                     const starCountRef2 = firebase.database().ref().child(`Usuario-CalendarGoogle/${this.props.usuarioDetail.idUsuario}`);
                     starCountRef2.on('value', (snapshot) => {
                         this.Calendar = snapshot.val();
-                        window.gapi.client.calendar.events.list({ calendarId: this.Calendar.idCalendar.value, }).then((response) => {
-                            this.eventCalendar = response;
-                        }, (err) => { console.error("Execute error", err); });
-
+                        if (snapshot.val()) {
+                            window.gapi.client.calendar.events.list({ calendarId: this.Calendar.idCalendar.value, }).then((response) => {
+                                this.eventCalendar = response;
+                            }, (err) => { console.error("Execute error", err); });
+                        }
                     });
                 }, function (err) { console.error("Error loading GAPI client for API", err); });
             this.actividadesTrabajoActividades();
@@ -37,7 +45,7 @@ class listActividades extends React.Component {
         this.props.actividadPrincipal(
 
             <div className="user-profile">
-                <img src={task} style={{ left: '-15%', top: '-10em' }} />
+                <img src={task} style={{ left: '-15%', transform: 'scale(0.8)' }} />
                 <div className="user-details">
                     <h2>Planifica tu actividad</h2>
                     <p style={{ color: 'White' }}>Es hora de tener el control de nuestro tiempo</p>
@@ -63,49 +71,52 @@ class listActividades extends React.Component {
                     Object.keys(act).map((key, index) => {
 
                         let flag = true;
-                        Object.keys(this.eventCalendar.result.items).map((key2, index) => {
-                            if (this.eventCalendar.result.items[key2].summary === act[key].concepto && this.eventCalendar.result.items[key2].description === key)
-                                flag = false;
-                            return this.eventCalendar.result.items[key2];
-                        });
-
-                        if (flag && act[key].concepto !== undefined && act[key].synCalendar === undefined && ((this.calendarAcum !== undefined && !this.calendarAcum.includes(key)) || this.calendarAcum === undefined)) {
-                            console.log(act[key]);
-
-                            let event = {
-                                'summary': act[key].concepto,
-                                'description': key,
-                                'start': {
-                                    'dateTime': moment(act[key]['h-inicio'], 'h:mm:ss a'),
-                                    'timeZone': 'America/Los_Angeles'
-                                },
-                                'end': {
-                                    'dateTime': moment(act[key]['h-fin'], 'h:mm:ss a'),
-                                    'timeZone': 'America/Los_Angeles'
-                                },
-                                'attendees': [],
-                                'reminders': {
-                                    'useDefault': false,
-                                    'overrides': [
-                                        { 'method': 'popup', 'minutes': 10 }
-                                    ]
-                                }
-                            };
-                            if (this.calendarAcum === undefined) {
-                                this.calendarAcum = [];
-                                this.calendarL = [];
-                            }
-                            this.calendarAcum[key] = act[key].concepto;
-                            this.calendarL[key] = event;
-                            firebase.database().ref(`Usuario-Task/${this.props.usuarioDetail.idUsuario}/${moment().format("YYYYMMDD")}/${key}`).update({
-                                synCalendar: true
+                        if (this.eventCalendar) {
+                            Object.keys(this.eventCalendar.result.items).map((key2, index) => {
+                                if (this.eventCalendar.result.items[key2].summary === act[key].concepto && this.eventCalendar.result.items[key2].description === key)
+                                    flag = false;
+                                return this.eventCalendar.result.items[key2];
                             });
-                            if (flagFirst === false)
-                                this.createEventTrabajo(this.Calendar.idCalendar.value, 0);
-                            flagFirst = true;
+
+                            if (flag && act[key].concepto !== undefined && act[key].synCalendar === undefined && ((this.calendarAcum !== undefined && !this.calendarAcum.includes(key)) || this.calendarAcum === undefined)) {
+                                console.log(act[key]);
+
+                                let event = {
+                                    'summary': act[key].concepto,
+                                    'description': key,
+                                    'start': {
+                                        'dateTime': moment(act[key]['h-inicio'], 'h:mm:ss a'),
+                                        'timeZone': 'America/Los_Angeles'
+                                    },
+                                    'end': {
+                                        'dateTime': moment(act[key]['h-fin'], 'h:mm:ss a'),
+                                        'timeZone': 'America/Los_Angeles'
+                                    },
+                                    'attendees': [],
+                                    'reminders': {
+                                        'useDefault': false,
+                                        'overrides': [
+                                            { 'method': 'popup', 'minutes': 10 }
+                                        ]
+                                    }
+                                };
+                                if (this.calendarAcum === undefined) {
+                                    this.calendarAcum = [];
+                                    this.calendarL = [];
+                                }
+                                this.calendarAcum[key] = act[key].concepto;
+                                this.calendarL[key] = event;
+                                firebase.database().ref(`Usuario-Task/${this.props.usuarioDetail.idUsuario}/${moment().format("YYYYMMDD")}/${key}`).update({
+                                    synCalendar: true
+                                });
+                                if (flagFirst === false)
+                                    this.createEventTrabajo(this.Calendar.idCalendar.value, 0);
+                                flagFirst = true;
+                            }
+                            return act[key];
                         }
-                        return act[key];
-                    })
+                    });
+
                 }
             });
         }, timeoutLength4)
@@ -298,44 +309,46 @@ class listActividades extends React.Component {
                     if (actividadesU[key2].concepto === undefined)
                         return null;
 
-                    if (this.state.aux == null && f == null && actividadesU[key2].estado === "activo" && actividadesU[key2].concepto !== undefined) {
-                        f = '1';
-                        let heightHup = actividadesU[key2].concepto.length > 17 ? '-12em' : '-10.5em';
-                        this.setState({ aux: 'primera' });
-                        this.props.actividadProgramas(1);
-
-                        this.props.actividadPrincipal(
-                            <div className="user-profile" style={{ height: '2.5em', top: heightHup }}>
-                                <img src={task} style={{ left: '-15%', top: '-8em' }} />
-                                <h3 style={{ top: '-4.7em', left: '-70%', position: 'relative' }} >  {actividadesU[key2].prioridad} </h3>
-                                <h2 style={{ position: 'relative', top: '-5.5em' }}>{actividadesU[key2].concepto}</h2>
-                                <div className="user-details">
-                                    <p style={{ color: 'White', left: '25%', position: 'relative' }}>{tiempo}</p>
-                                </div>
-                            </div>
-                        );
-
-
-
-                    }
-                    else {
-                        if (x !== 1 && actividadesU[key2].estado === "activo") {
+                    if (this.state.aux !== key2) {
+                        if (this.state.aux == null && f == null && actividadesU[key2].estado === "activo" && actividadesU[key2].concepto !== undefined) {
+                            f = '1';
+                            let heightHup = actividadesU[key2].concepto.length > 17 ? '-12em' : '-10.5em';
+                            this.setState({ aux: key2 });
                             this.props.actividadProgramas(1);
-                            let leftX = '-2.5em';
-                            if (x === 2)
-                                leftX = '-4.5em';
-                            return (
-                                <li className="one red2" style={{ height: '4em' }}>
-                                    <h1 style={{ position: 'relative', top: '5%', left: leftX, transform: 'scale(1)' }}>{x}</h1>
-                                    <span className="task-title" style={{ top: '-3em', position: 'relative', width: '13em' }}>{actividadesU[key2].concepto} </span>
-                                    <span className="task-time" style={{ top: '-4em', position: 'relative', left: '-8em' }}>{tiempo} </span>
-                                    <span className="task-cat" style={{ top: '-5.5em', position: 'relative' }}>    <Image src={task} size="mini" style={{
-                                        transform: 'scale(0.5)', left: '5em',
-                                        top: '2em'
-                                    }} alt='task hupper'></Image>
-                                    Prioridad  {actividadesU[key2].prioridad}</span>
-                                </li>
+
+                            this.props.actividadPrincipal(
+                                <div className="user-profile" style={{ height: '2.5em', top: heightHup }}>
+                                    <img src={task} style={{ left: '-15%', top: '-8em' }} />
+                                    <h3 style={{ top: '-4.7em', left: '-70%', position: 'relative' }} >  {actividadesU[key2].prioridad} </h3>
+                                    <h2 style={{ position: 'relative', top: '-5.5em' }}>{actividadesU[key2].concepto}</h2>
+                                    <div className="user-details">
+                                        <p style={{ color: 'White', left: '25%', position: 'relative' }}>{tiempo}</p>
+                                    </div>
+                                </div>
                             );
+
+
+
+                        }
+                        else {
+                            if (x !== 1 && actividadesU[key2].estado === "activo") {
+                                this.props.actividadProgramas(1);
+                                let topX = '-7%';
+                                if (x === 2)
+                                topX = '5%';
+                                return (
+                                    <li className="one red2" style={{ height: '5.5em' }}>
+                                        <h1 style={{ position: 'relative', top: topX, left: '-45%', transform: 'scale(1)' }}>{x}</h1>
+                                        <span className="task-title" style={{ top: '-3em', position: 'relative', width: '13em' }}>{actividadesU[key2].concepto} </span>
+                                        <span className="task-time" style={{ top: '-4em', position: 'relative', width: '100%' }}>{tiempo} </span>
+                                        <span className="task-cat" style={{ top: '-7em', position: 'relative',  width: '100%' }}>    <Image src={task} size="mini" style={{
+                                            transform: 'scale(0.5)', left: '5em',
+                                            top: '2em'
+                                        }} alt='task hupper'></Image>
+                                    Prioridad  {actividadesU[key2].prioridad}</span>
+                                    </li>
+                                );
+                            }
                         }
                     }
                 }
@@ -358,20 +371,18 @@ class listActividades extends React.Component {
     actividadesEmpty(limite, actNum, opcionesX) {
 
         let x = 0;
-        let margin = '-2.4em';
+        let margin = '-45%';
         if (this.props.actividadProg === 1)
             this.props.actividadProgramas(2);
         for (let index = actNum; index <= limite; index++) {
             x++;
 
-            if (index !== actNum || actNum === 0)
-                margin = '-45%';
             const element = <li className="one red2" key={index} style={{ height: '4em', filter: 'invert(0.8)' }}>
                 <h1 style={{ position: 'relative', top: '5%', left: margin, transform: 'scale(1)' }}>{x}</h1>
                 <span className="task-title" style={{ top: '-3em', position: 'relative' }}>Programa tu nueva actividad</span>
                 <span className="task-time" style={{ top: '-3.5em', position: 'relative' }}>00:00 </span>
                 <span className="task-cat" style={{ top: '-5.5em', position: 'relative' }}>    <Image src={task} size="mini" style={{
-                    transform: 'scale(0.5)', left: '5em',
+                    transform: 'scale(0.5)', left: '10%',
                     top: '2em'
                 }} alt='task hupper'></Image>
                     Da un paso a tu libertad</span>
@@ -420,6 +431,7 @@ class listActividades extends React.Component {
 const mapAppStateToProps = (state) => (
     {
         numeroTareasTerminadas: state.chatReducer.numeroTareasTerminadas,
+        isSignedIn: state.auth.isSignedIn,
         popupDetalle: state.chatReducer.popupDetalle,
         actividadPrin: state.chatReducer.actividadPrin,
         listaObjetivo: state.chatReducer.listaObjetivo,

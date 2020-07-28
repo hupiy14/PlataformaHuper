@@ -12,7 +12,8 @@ import {
     ACTIVIDAD_PROGRAMA,
     IMAGEN_OKR,
     IMAGEN_FONDO, 
-    HOME_APP
+    HOME_APP, 
+    SIGN_OUT_OBJ
    
 } from './types';
 
@@ -138,6 +139,13 @@ export const nombreUsuario = (nombreUser) => {
 export const signOut = () => {
     return {
         type: SIGN_OUT
+    };
+};
+
+export const Singauth = (obj) => {
+    return {
+        type: SIGN_OUT_OBJ,
+        payload: obj
     };
 };
 

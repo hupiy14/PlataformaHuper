@@ -2,6 +2,7 @@ import React from 'react';
 import { Router, Route, Switch } from 'react-router-dom';
 import history from '../history';
 import dashboardCel from './celPhone/task';
+import HomeCel from './celPhone/home';
 //import MenuChat from './HuperModules/chat3X/chatZ';
 import MenuChat from './HuperModules/chat3X/chatZ';
 import MenuChat2 from './celPhone/chatz';
@@ -20,7 +21,6 @@ import dashboard from './Dashboard/Dash1';
 //import dashboard from './HuperModules/timerClock/timerr';
 import Hupps from './modules/Hupps';
 import { connect } from 'react-redux';
-import './modules/chatBot/chatHupApp.css';
 //import Feedback from '../components/feedbackHupity';
 import Onboard from './PruebaP';
 import Profile from './profileHuper';
@@ -84,22 +84,32 @@ class App extends React.Component {
 
         let menuC = null;
 
+
+
         //  let menuC = <MenuChat></MenuChat>;
         if (this.props.isSignedIn)
             menuC = <MenuChat></MenuChat>;
         let apps = null;
         if (window.innerWidth < 450 || (window.innerWidth < 850 && window.innerHeight < 450)) {
+
+            let messages = document.getElementById('AppH');
+            if (messages) {
+                console.log(messages.scrollTop);
+                messages.scrollTop = 0;
+            }
+
             menuC = <MenuChat2 />;
             apps = <div  >
-                <div className="ui container " style={{ height: window.innerHeight, overflow: 'auto' }} >
+                <div className="ui container " style={{ height: window.innerHeight, overflow: 'auto' }} id="AppH"  >
                     <div className="ui items ">
                         <div className="item  ">
-                            <div className="content  ">
+                            <div className="content" >
                                 <Router history={history}>
                                     <div>
                                         <Header2 />
                                         <Switch>
                                             <Route path="/" exact component={hupityIngreso} />
+                                            <Route path="/home" exact component={HomeCel} />
                                             <Route path="/login" exact component={ingreso} />
                                             <Route path="/dashboard" component={dashboardCel} />
                                             <Route path="/hupps" exact component={Hupps} />

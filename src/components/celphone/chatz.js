@@ -663,7 +663,7 @@ class THREEScene extends React.Component {
         return (
             <div>
                 {this.renderControlNotification()}
-                <div style={{ width: '400px', height: '400px', position: 'fixed', left: '80%', bottom: window.innerHeight * -0.2, zIndex: '6' }} ref={(mount) => { this.mount = mount }} onClick={() => { this.cambioEstado() }}></div>
+                <div style={{ width: '2em', height: '8em', position: 'fixed', left: '80%', bottom: '20%', zIndex: '6' }} ref={(mount) => { this.mount = mount }} onClick={() => { this.cambioEstado() }}></div>
                 {this.renderAuthButton()}
                 {this.renderControlVideo()}
             </div>

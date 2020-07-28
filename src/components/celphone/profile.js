@@ -30,16 +30,15 @@ let trello = null;// new Trello("bb3cab1a303c7bf996d56bb46db2a46f", "136434ae14c
 ///pantalla de  perfil del usuario
 //limpiar variables
 const nivel = [
-    { key: 1, text: 'Normal', value: '105' },
-    { key: 2, text: 'Competitivo', value: '115' },
-    { key: 3, text: 'Altamente Competitivo', value: '125' },
+    { key: 1, label: 'Normal', value: '105' },
+    { key: 2, label: 'Competitivo', value: '115' },
+    { key: 3, label: 'Altamente Competitivo', value: '125' },
 
 ]
 const Semana = [
-    { key: 1, text: 'Viernes', value: 5 },
-    { key: 2, text: 'Sabado', value: 6 },
-    { key: 3, text: 'Domingo', value: 7 },
-
+    { key: 1, label: 'Viernes', value: 5 },
+    { key: 2, label: 'Sabado', value: 6 },
+    { key: 3, label: 'Domingo', value: 7 },
 ]
 class Profile extends React.Component {
 
@@ -111,7 +110,7 @@ class Profile extends React.Component {
         const listaX = this.state.listaEmpresas;
         let lista = {};
         const opciones = Object.keys(listaX).map(function (key, index) {
-            lista = { ...lista, key: key, text: listaX[key].industria, value: listaX[key].industria };
+            lista = { ...lista, key: key, label: listaX[key].industria, value: listaX[key].industria };
             return lista;
         });
         return opciones;
@@ -773,15 +772,32 @@ class Profile extends React.Component {
     renderUsuario() {
         let nnivel = null;
         if (this.props.usuarioDetail.rol === '2') {
-            nnivel = <Form.Select label='Define el nivel de competitividad de tu equipo' options={nivel} placeholder='Selecciona uno'
-                search
-                onChange={(e, { value }) => this.setState({ nivelEquipo: { ...this.state.nivelEquipo, nivel: value } })}
-                value={this.state.nivelEquipo ? this.state.nivelEquipo.nivel : 105}
+            nnivel = <div>
+                <h3>Define el nivel de competitividad de tu equipo</h3>
+                <Select options={nivel}
+                    search
+                    styles={st}
+                    onChange={(e, { value }) => { this.setState({ nivelEquipo: e }); }}
+                    value={this.state.nivelEquipo ? this.state.nivelEquipo.nivel : 105}
 
-            />
+                />
+            </div>
+            /*
+            <h5>Cual es tu Empresa?</h5>
+                                <Select options={this.renderOpcionesEmpresa()}
+                                    search
+                                    styles={st}
+                                    onChange={(e, { value }) => { this.setState({ empresa: e }); }}
+                                    value={this.state.empresa}
+                                    disabled={true}
+            
+                                />
+                                <br></br>
+            */
+
         }
 
-
+        let st = this.renderStyles();
         return (
 
 
@@ -793,39 +809,32 @@ class Profile extends React.Component {
                         onChange={e => this.setState({ nombreUsuario: e.target.value })}
                         error={this.state.errorNombreUsuario}
                     />
-                    <Form.Select label='Empresa' options={this.renderOpcionesEmpresa()} placeholder='Cual es tu Empresa?'
-                        search
-                        onChange={(e, { value }) => this.setState({ empresa: value })}
-                        value={this.state.empresa}
-                        error={this.state.errorEmpresa}
-                        disabled={true}
-                    />
+
+
+
                     <Form.Input label='Cargo' placeholder='Que cargo tienes?'
                         value={this.state.cargo}
                         onChange={e => this.setState({ cargo: e.target.value })}
                         error={this.state.errorCargo}
                     />
-
+                    <br></br>
                     <Form.Input label='Area' placeholder='¿En qué departamento de la empresa laboras? '
                         value={this.state.area}
                         onChange={e => this.setState({ area: e.target.value })}
                         error={this.state.errorArea}
                     />
 
-                    <Form.Select label='En que dia termina tu semana' options={Semana}
+
+                    <h5>En que dia termina tu semana</h5>
+                    <Select options={Semana}
                         search
-                        onChange={(e, { value }) => this.setState({ diaSemana: value })}
+                        styles={st}
+                        onChange={(e, { value }) => { this.setState({ diaSemana: e }); }}
                         value={this.state.diaSemana}
 
                     />
 
-                    <Form.Select label='Lugar de residencia' options={this.renderOpcionesZona()}
-                        search
-                        onChange={(e, { value }) => this.setState({ lugar: value })}
-                        value={this.state.lugar}
-                        error={this.state.errorLugar}
-                    />
-
+                    <br></br>
                     <Form.Input label='Teléfono' placeholder='¿Dondé te podemos contactar? '
                         value={this.state.telefono}
                         onChange={e => this.setState({ telefono: e.target.value })}
@@ -840,7 +849,7 @@ class Profile extends React.Component {
                         content='Debes diligenciar todos los campos'
                     />
                 </Form>
-
+                <br></br>
                 <button disabled={this.state.activo} onClick={() => { this.renderGuardar() }} className="ui pink button inverted " style={{ left: "25%" }}>
                     <i class="save icon"></i>
                                 Guardar
@@ -1165,15 +1174,27 @@ class Profile extends React.Component {
 
         return (
             <div className="ui form">
-                <div className="column sixteen wide" style={{height: '2.5em'}}>
-                    <Image alt='sincroniza slack' src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.setState({ activo: false }); this.renderCargar('slack'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.slackIn + ')', background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-11em', position: 'relative', top: '-1.2em' }} />
-                    <Image alt='sincroniza drive' src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.driveIn + ')', background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-7em', position: 'relative', top: '-4em' }} />
-                    <Image alt='sincroniza calendar' src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.calendarIn + ')', background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '12em', position: 'relative', top: '-7em' }} />
-                    <Image alt='sincroniza asana' src={asana} onClick={() => { this.state.open === 'asana' ? this.setState({ open: null }) : this.setState({ open: 'asana' }); this.renderCargar('asana'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.asanaIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '16em', top: '-10em', position: 'relative' }} />
+                <div className="column sixteen wide" style={{ height: '2.5em' }}>
+                    <div>
+                        <Image alt='sincroniza slack' src={slack} onClick={() => { this.state.open === 'slack' ? this.setState({ open: null }) : this.setState({ open: 'slack' }); this.setState({ activo: false }); this.renderCargar('slack'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.slackIn + ')', background: this.state.open === 'slack' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '13%', position: 'absolute', top: '-1.2em' }} />
+                    </div>
+                    <div>
+                        <Image alt='sincroniza drive' src={drive} onClick={() => { this.state.open === 'drive' ? this.setState({ open: null }) : this.setState({ open: 'drive' }); this.renderCargar('drive'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.driveIn + ')', background: this.state.open === 'drive' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '28%', position: 'absolute', top: '-1em' }} />
+                    </div>
+                    <div>
+                        <Image alt='sincroniza calendar' src={calendar} onClick={() => { this.state.open === 'calendar' ? this.setState({ open: null }) : this.setState({ open: 'calendar' }); this.renderCargar('calendar'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.calendarIn + ')', background: this.state.open === 'calendar' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '45%', position: 'absolute', top: '-1em' }} />
+                    </div>
+                    <div>
+                        <Image alt='sincroniza asana' src={asana} onClick={() => { this.state.open === 'asana' ? this.setState({ open: null }) : this.setState({ open: 'asana' }); this.renderCargar('asana'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.asanaIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '60%', top: '-1em', position: 'absolute' }} />
+                    </div>
                 </div>
-                <div className="column sixteen wide" style={{height: '4em'}}>
-                    <Image alt='sincroniza trello' src={trelloImg} onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.trelloIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '-7em', position: 'relative' }} />
-                    <Image alt='sincroniza clickup' src={clickup} onClick={() => { this.state.open === 'clickup' ? this.setState({ open: null }) : this.setState({ open: 'clickup' }); this.renderCargar('clickup'); }} circular size="mini" style={{ filter: 'grayscale(1)', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '12em', top: '-3em', position: 'relative' }} />
+                <div className="column sixteen wide" style={{ height: '4em' }}>
+                    <div>
+                        <Image alt='sincroniza trello' src={trelloImg} onClick={() => { this.state.open === 'trello' ? this.setState({ open: null }) : this.setState({ open: 'trello' }); this.renderCargar('trello'); }} circular size="mini" style={{ filter: 'grayscale(' + this.state.trelloIn + ')', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '28%', position: 'absolute' }} />
+                    </div>
+                    <div>
+                        <Image alt='sincroniza clickup' src={clickup} onClick={() => { this.state.open === 'clickup' ? this.setState({ open: null }) : this.setState({ open: 'clickup' }); this.renderCargar('clickup'); }} circular size="mini" style={{ filter: 'grayscale(1)', background: this.state.open === 'trello' ? 'rgb(222, 181, 243)' : '#f7f7e3', left: '45%', position: 'absolute' }} />
+                    </div>
                 </div>
                 <div className="column sixteen wide">
                     <div className="ui segment" style={{ height: tamano, background: 'linear-gradient(to top, #e0399738 0.5%, rgb(255, 255, 255) 0.6%, rgba(245, 242, 224, 0) 200%)' }}>

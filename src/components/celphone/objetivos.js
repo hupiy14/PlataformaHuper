@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
-import { chatOn, chatOff, actividadPrincipal, imagenOKRs } from '../../actions';
+import { chatOn, chatOff, actividadPrincipal, imagenOKRs, popupBot } from '../../actions';
 import {  Image } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, estadochats, objTIMs } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
@@ -107,7 +107,7 @@ class listImportante extends React.Component {
             let y = 0;
             const opciones = Object.keys(cconsulta).map((key2, index) => {
                 y++;
-                if (y > this.state.images.length)
+                if (y >= this.state.images.length)
                     y = 1;
                 let tareasCompleta = 0;
                 let resultado = 0;
@@ -187,4 +187,4 @@ const mapAppStateToProps = (state) => (
         userId: state.auth.userId,
     });
 
-export default connect(mapAppStateToProps, { imagenOKRs, actividadPrincipal, listaObjetivos, estadochats, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, chatOn, chatOff, objTIMs })(listImportante);
+export default connect(mapAppStateToProps, { imagenOKRs, actividadPrincipal, listaObjetivos, estadochats, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, chatOn, chatOff, objTIMs, popupBot })(listImportante);

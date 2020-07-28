@@ -1,6 +1,6 @@
 {
   "short_name": "Hupity",
-  "name": "Platform Hupity",
+  "name": "Hupity, tu nuevo compañero",
   "icons": [
     {
       "src": "hupIcono.ico",
@@ -8,7 +8,7 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "logo.png",
       "type": "image/png",
       "sizes": "192x192"
     },
@@ -18,7 +18,7 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "200",
+  "start_url": "/home",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"

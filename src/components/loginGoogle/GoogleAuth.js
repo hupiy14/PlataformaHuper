@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { signIn, signOut, nombreUsuario, usuarioDetails, chatOn, chatOff, mensajeAsanas } from '../../actions';
+import { signIn, signOut, nombreUsuario, usuarioDetails, chatOn, chatOff, mensajeAsanas, Singauth } from '../../actions';
 import history from '../../history';
 import { nuevoUsuarios, detailUsNews } from '../../components/modules/chatBot/actions';
 import '../../components/styles/ingresoHupity.css';
@@ -28,6 +28,7 @@ class GoogleAuth extends React.Component {
             }).then(() => {
 
                 this.auth = window.gapi.auth2.getAuthInstance();
+                this.props.Singauth(this.auth);
                 this.onAuthChange(this.auth.isSignedIn.get());
                 this.auth.isSignedIn.listen(this.onAuthChange);
 
@@ -193,8 +194,8 @@ class GoogleAuth extends React.Component {
                 else {
 
                     let direccion = '/formulario';
-                    console.log(this.auth.currentUser.get());
-                    let usuarioNuevo = { nombre: this.auth.currentUser.get().Qt.Bd, email: this.auth.currentUser.get().Qt.Au, id: this.auth.currentUser.get().getId(), rol: '2' };
+                    console.log(this.auth.currentUser.get().getBasicProfile().getEmail());
+                    let usuarioNuevo = { nombre: this.auth.currentUser.get().getBasicProfile().getName(), email: this.auth.currentUser.get().getBasicProfile().getEmail(), id: this.auth.currentUser.get().getId(), rol: '2' };
                     this.props.usuarioDetails({ usuarioNuevo });
 
                     const starCountRef = firebase.database().ref().child(`Usuario-Temporal/${this.auth.currentUser.get().getId()}`);
@@ -293,10 +294,17 @@ class GoogleAuth extends React.Component {
                             history.push('/dashboard');
                         }*/
 
+            let leftLogo = '-0.2em';
+            let leftSign = '1.6em';
+            if (window.innerWidth < 450 || (window.innerWidth < 850 && window.innerHeight < 450)) {
+                leftLogo = '-1.3em';
+                leftSign = '1.2em';
+            }
+
             return (
                 <div style={{ height: '1.2em' }}>
-                    <i className="google icon"></i>
-                    <List.Content style={{ top: '-15px', left: '25px', position: 'relative' }} onClick={this.onSignOutClick}>
+                    <i style={{ left: leftLogo, position: 'relative' }} className="google icon"></i>
+                    <List.Content style={{ top: '-15px', left: leftSign, position: 'relative' }} onClick={this.onSignOutClick}>
                         <List.Header> Sign Out</List.Header>
                     </List.Content>
                 </div>
@@ -309,7 +317,7 @@ class GoogleAuth extends React.Component {
                 return (
                     <div style={{ height: '1.2em' }}>
                         <i className="google icon"></i>
-                        <List.Content style={{ top: '-15px', left: '25px', position: 'relative' }}>
+                        <List.Content style={{ top: '-15px', left: '1.2em', position: 'relative' }}>
                             <List.Header> Tu cuenta Google</List.Header>
                         </List.Content>
                     </div>
@@ -343,4 +351,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, { signIn, signOut, nombreUsuario, usuarioDetails, chatOn, chatOff, nuevoUsuarios, detailUsNews, mensajeAsanas })(GoogleAuth);
+export default connect(mapStateToProps, { signIn, signOut, nombreUsuario, usuarioDetails, chatOn, chatOff, nuevoUsuarios, detailUsNews, mensajeAsanas, Singauth })(GoogleAuth);

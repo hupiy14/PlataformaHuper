@@ -12,6 +12,9 @@ import asanaH from '../../apis/asana';
 import { clientIdAsana, clientSecrectAsana } from '../../apis/stringConnection';
 import axios from 'axios';
 import chroma from 'chroma-js';
+import { IconGroup } from 'semantic-ui-react';
+import { listTemporalObject, listTemporalOpciones } from '../../lib/utils';
+
 let Trello = require("trello");
 const timeoutLength = 1500;
 const timeoutLength2 = 2000;
@@ -45,7 +48,8 @@ class listActividades extends React.Component {
         , index: 0, delay: .02, mensaje: null, messages: [], inputC: null, flag: false, response: null, tipoIn: 1, flagTiempo: false, textAux: null, opciones: null,
         consulta: null, criteria: null, parametros: null, mensajeUs: null, propertieBD: null, registro: [], opcionValue: [], nivel: null, addProperties: null, nuevoParam: null,
         paso: null, nivelAnt: null, stay: null, property: null, stayValue: null, pasoFlujo: 1, flujo: null, etapa: null, consultaParams: null, optionSelect: null, options: null,
-        opcionesDB: null, keyNivel: '', flujoAux: null, pendingOk: null, pendingConsulta: null, onlyOptions: null, workFlow: null, passflow: 0, objTask: null, carpeta: null
+        opcionesDB: null, keyNivel: '', flujoAux: null, pendingOk: null, pendingConsulta: null, onlyOptions: null, workFlow: null, passflow: 0, objTask: null, carpeta: null,
+        otherFlow: null, objetoX: null, objetoP: null, pasoAux: null, btAux: null, vartemp: null, varstemp: [],
     }
 
     componentWillMount() {
@@ -158,9 +162,7 @@ class listActividades extends React.Component {
             }
             else {
                 this.mensaje = this.props.mensajeChatBot && this.props.mensajeChatBot.mensaje ? this.props.mensajeChatBot.mensaje : 'hola';
-                ///this.props.mensajeChatBot
-                console.log('trabajo');
-                console.log(this.mensaje);
+
                 this.client.textRequest(this.mensaje, { sessionId: 'test' }).then(this.onResponse, this);
 
             }
@@ -182,6 +184,12 @@ class listActividades extends React.Component {
                     this.setState({ nivel: key });
                     this.setState({ keyNivel: key });
                     this.setState({ etapa: 1 });
+
+
+                    let varTemporales = this.state.varstemp;
+                    varTemporales['concepto'] = pending[key].concepto;
+                    this.setState({ varstemp: varTemporales });
+
                     let registro = []
                     for (const prop2 in pending[key]) {
                         if (prop2 !== 'flujoAux' && prop2 !== 'id') {
@@ -189,7 +197,7 @@ class listActividades extends React.Component {
                         }
                     }
                     let reg = [];
-                    reg[key] = { ...this.state.registro[key], ...registro };
+                    reg[key] = { ...this.state.registro[key] ? this.state.registro[key] : null, ...registro };
                     this.setState({ registro: { ...this.state.registro, ...reg } });
                     pending[key].estado = 'completo';
                     this.setState({ pendingOk: pending[key] });
@@ -208,7 +216,6 @@ class listActividades extends React.Component {
     adelantar(flujo) {
         let men = null;
         let etapa = 0;
-        console.log(flujo);
         for (const prop2 in flujo) {
             if (this.state.pasoFlujo === parseInt(prop2, 16)) {
                 men = flujo[prop2];
@@ -247,7 +254,6 @@ class listActividades extends React.Component {
                 men = workflow[prop2];
             }
         }
-        console.log(men)
         this.client.textRequest(men, { sessionId: 'test' }).then(this.onResponse, this);
     }
 
@@ -264,12 +270,12 @@ class listActividades extends React.Component {
     onResponse = (activity) => {
         let that = this;
         let ind = 0;
+        let wd = Math.round(Math.random() * (Object.keys(activity.result.fulfillment.messages).length - 1));
         activity.result.fulfillment.messages.forEach(function (element) {
-            console.log(element);
 
-            if (ind === 0)
+            if (ind === wd)
                 if (element.payload !== undefined) {
-                    ind++;
+
                     let nuevo = element.payload;
 
                     if (that.state.pasoFlujo > 1 && that.state.pasoFlujo - 1 <= that.state.etapa && that.state.etapa != null) {
@@ -277,7 +283,6 @@ class listActividades extends React.Component {
                         that.adelantar(that.state.flujo);
                     }
                     else {
-                        console.log(nuevo);
                         if (nuevo.tipo === "flujo") {
                             that.setState({ flujo: nuevo.flujo });
                             that.adelantar(nuevo.flujo);
@@ -287,7 +292,7 @@ class listActividades extends React.Component {
                             that.setState({ workflow: nuevo.workFlow });
                             that.setState({ passflow: 2 });
                             that.validateWork(nuevo.workFlow, "1");
-
+                    
 
                         }
                         else if (nuevo.tipo === "consulta") {
@@ -298,15 +303,21 @@ class listActividades extends React.Component {
                             that.setState({ addProperties: nuevo.add });
                             that.setState({ criteria: nuevo.criteria });
                             that.setState({ parametros: that.organizarConsulta(nuevo.parametros !== undefined ? nuevo.parametros.split(',') : '') });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario) });
+                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.variablesT, that.state.varstemp[nuevo.variablesT]) });
+                   
                             that.setState({ propertieBD: nuevo.bd });
                             that.setState({ property: nuevo.property });
                             that.setState({ stay: nuevo.stay });
+                            that.setState({ btAux: nuevo.btAux });
+                            that.setState({ pasoAux: nuevo.pasoAux });
+                            that.setState({ objetoX: nuevo.objeto });
                             that.setState({ paso: nuevo.paso });
                             that.setState({ onlyOptions: nuevo.onlyOptions });
                             that.setState({ consultParam: nuevo.consultParam });
                             that.setState({ tipoIn: 3 });
+                            that.setState({ vartemp: nuevo.vartemp });
                             that.urlBsaseDatos(nuevo.structure);
+
                             if (nuevo.carpeta)
                                 that.crearCarpeta();
                         }
@@ -318,11 +329,14 @@ class listActividades extends React.Component {
                             that.setState({ property: nuevo.property });
                             that.setState({ stay: nuevo.stay });
                             that.setState({ addProperties: nuevo.add });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario) });
+                            that.setState({ btAux: nuevo.btAux });
+                            that.setState({ pasoAux: nuevo.pasoAux });
+                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
                             that.setState({ textAux: nuevo.labelAux });
                             that.setState({ paso: nuevo.paso });
                             that.setState({ flagTiempo: nuevo.tiempo });
                             that.setState({ propertieBD: nuevo.bd });
+                            that.setState({ vartemp: nuevo.vartemp });
                             that.urlBsaseDatos(nuevo.structure);
                             if (nuevo.carpeta)
                                 that.crearCarpeta();
@@ -334,7 +348,7 @@ class listActividades extends React.Component {
                             that.setState({ property: nuevo.property });
                             that.setState({ stay: nuevo.stay });
                             that.setState({ addProperties: nuevo.add });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario) });
+                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
                             that.setState({ flagTiempo: nuevo.tiempo });
                             that.setState({ propertieBD: nuevo.bd });
                             that.setState({ paso: nuevo.paso });
@@ -343,18 +357,20 @@ class listActividades extends React.Component {
                         else if (nuevo.tipo === "opciones") {
 
                             that.setState({ consultParam: nuevo.consultParam });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario) });
+                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
                             that.setState({ tipoIn: 2 });
                             that.setState({ paso: nuevo.paso });
+                            that.setState({ otherFlow: nuevo.otherFlow });
                             that.setState({ opciones: nuevo.opciones });
 
                         }
                         else {
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario) });
+                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
                             that.Cerrar();
                         }
                     }
                 }
+            ind++;
 
             /*    newMessage = {
                     text: messageN,
@@ -401,7 +417,6 @@ class listActividades extends React.Component {
         if (this.state.registro[undefined].estado && queryConsulta.includes('OKR')) {
 
             let id = queryConsulta.split('/')[2];
-            console.log(id);
             const starCountRef2 = firebase.database().ref().child(queryConsulta);
             starCountRef2.on('value', (snapshot2) => {
                 if (snapshot2.val() && snapshot2.val().tipo) {
@@ -426,7 +441,7 @@ class listActividades extends React.Component {
                                         body
                                         , { headers: { Authorization: 'Bearer ' + res.data.access_token, 'Accept': 'application/json', 'Content-Type': 'application/json' }, }).then((res2) => {
 
-                                            console.log('bien');
+
                                         }).catch(err => { this.props.popupBot({ mensaje: 'He tenido un probema !!!' }); });
                                 }
                                 ).catch(err => { this.props.popupBot({ mensaje: 'He tenido un probema  en confimar tu usuario!!!' }); })
@@ -440,7 +455,7 @@ class listActividades extends React.Component {
                                 let trelloClient = snapshot.val();
                                 let trello = new Trello(trelloClient.trelloApi, trelloClient.tokenTrello);
                                 trello.makeRequest('put', '/1/cards/' + id, { webhooks: true, idList: trelloClient.listaOBjetivosDone.value }).then((res) => {
-                                    console.log(res);
+
                                 }).catch(err => { this.props.popupBot({ mensaje: 'He tenido un probema !!!' }); });
 
                             });
@@ -515,8 +530,7 @@ class listActividades extends React.Component {
 
 
     addNewMessage = (event) => {
-        console.log(event);
-        if (event.key === "Enter" || event.key === "13") {
+        if (event.key === "Enter" || event.key === "13" || event === 'btAux') {
             let value = this.state.inputC;
 
             if (value !== null) {
@@ -526,6 +540,26 @@ class listActividades extends React.Component {
                 if (this.state.propertieBD) {
                     let registro = [];
                     registro[this.state.propertieBD] = value;
+
+                    if (this.state.vartemp) {
+                        let varTemporales = this.state.varstemp;
+                        varTemporales[this.state.vartemp] = value;
+                        this.setState({ varstemp: varTemporales });
+                    }
+
+                    if (this.state.objetoX) {
+                        Object.keys(this.state.objetoP).map((key, index) => {
+                            if (key === value) {
+                                let keyReg = [];
+                                keyReg[this.state.objetoP[key].fase ? this.state.objetoP[key].fase + 1 : 1] = this.state.objetoP[key];
+                                registro[this.state.propertieBD] = keyReg;
+                                registro['fase'] = this.state.objetoP[key].fase ? this.state.objetoP[key].fase + 1 : 2;
+                                console.log(registro);
+                            }
+
+                        });
+                    }
+
                     registro["facha"] = moment().format("MMM Do YY");
 
                     if (this.state.flagTiempo) {
@@ -607,11 +641,13 @@ class listActividades extends React.Component {
                         firebase.database().ref(this.queryConsulta + consultP + '/' + this.state.propertieBD).set(registro[this.state.propertieBD]);
                     }
                     else {
-
+                        console.log(reg);
                         firebase.database().ref(this.queryConsulta).update({
                             ...reg
                         });
                     }
+
+
 
 
                 }
@@ -622,6 +658,16 @@ class listActividades extends React.Component {
                 }
 
                 let pass = this.state.paso !== undefined && this.state.paso !== null ? this.state.paso : '';
+                pass = event === 'btAux' ? this.state.pasoAux : pass;
+                if (this.state.otherFlow) {
+                    Object.keys(this.state.otherFlow).map((key, index) => {
+                        if (this.state.otherFlow[key] === value) {
+                            alert(value);
+                            pass = pass + value;
+                        }
+                        return null;
+                    });
+                }
 
 
                 if (this.state.workflow !== undefined && this.state.workflow !== null) {
@@ -646,7 +692,14 @@ class listActividades extends React.Component {
         this.setState({ flagTiempo: null });
         this.setState({ addProperties: null });
         this.setState({ paso: null });
+        this.setState({ otherFlow: null });
         this.setState({ nivelAnt: null });
+        this.setState({ vartemp: null });
+
+        this.setState({ objetoX: null });
+        this.setState({ pasoAux: null });
+        this.setState({ btAux: null });
+        this.setState({ objetoP: null });
         this.setState({ consultParam: null });
         this.setState({ opcionesDB: null });
         this.setState({ onlyOptions: null });
@@ -755,8 +808,10 @@ class listActividades extends React.Component {
             const starCountRef3 = firebase.database().ref().child(consulta);
             return starCountRef3.on('value', (snapshot) => {
                 let objetos = snapshot.val();
+                let opcionesCombo = [];
+                let objetosOp = [];
                 if (snapshot.val()) {
-                    opciones = Object.keys(objetos).map((key, index) => {
+                    Object.keys(objetos).map((key, index) => {
                         let objeto = objetos[key];
                         this.setState({ UtilFactors: snapshot.val() });
                         let flagCriteria = 0;
@@ -776,15 +831,28 @@ class listActividades extends React.Component {
                             let opciones = this.state.opcionValue;
 
                             opciones[objeto.concepto] = key;
+                            objetosOp[key] = objeto;
+
                             this.setState({ opcionValue: opciones })
-                            return <option value={objeto.concepto} key={key} />
+                            opcionesCombo.push(<option value={objeto.concepto} key={key} />)
                         }
 
                         return null;
                     });
+
+
+                }
+                this.setState({ objetoP: objetosOp })
+                opcionesCombo = listTemporalObject(this.state.propertieBD, opcionesCombo, this.pendingConsulta);
+                this.setState({ opcionValue: listTemporalOpciones(this.state.propertieBD, this.state.opcionValue, this.pendingConsulta) })
+
+                if (this.state.onlyOptions && Object.keys(opcionesCombo).length === 0) {
+                    this.client.textRequest(this.state.paso).then(this.onResponse, this);
+                }
+                else {
                     this.setState({
                         opcionesDB: <datalist id='opciones'>
-                            {opciones}
+                            {opcionesCombo}
                         </datalist>
                     });
                 }
@@ -797,6 +865,14 @@ class listActividades extends React.Component {
 
     opcionesLoad = () => {
         this.timeout = setTimeout(() => {
+            let btAuxiliar = null;
+            if (this.state.btAux) {
+                btAuxiliar = <div style={{ width: '100%', top: '35%', position: 'relative' }}>
+                    <h5 href="#" className="action-button animate purple" style={{ fontSize: 'smaller', width: window.innerWidth * 0.65, height: '3.5em' }} key={this.state.btAux} onClick={() => { this.addNewMessage('btAux') }}>{this.state.btAux}</h5>
+                </div>
+            }
+
+
 
             let opciones = <React.Fragment  >
                 <input
@@ -805,15 +881,16 @@ class listActividades extends React.Component {
                     onKeyPress={(e) => { this.addNewMessage(e) }}
                     list='opciones' placeholder='Escoge una Opcion...'
                     className='select'
-                    style={{ top: '25%', position: 'relative', width: '100%', height: '2em' }}
+                    style={{ top: '20%', position: 'relative', width: '100%', height: '2em' }}
                 />
                 {this.state.opcionesDB}
 
             </React.Fragment >
             this.setState({
-                t2: <div className="Wrapper" style={{ top: '55%' }}>
-                    <div className="ui container" style={{ height: '5em', width: '50%' }}>
+                t2: <div className="Wrapper" style={{ top: '60%', height: '10em' }}>
+                    <div className="ui container" style={{ height: '10em', width: '50%' }}>
                         {opciones}
+                        {btAuxiliar}
                     </div>
                 </div>
             });
@@ -840,7 +917,7 @@ class listActividades extends React.Component {
                 firebase.database().ref(this.pendingConsulta).set({});
             }
             let reg = this.state.registro;
-            reg["etapa"] = reg["etapa"] + 1;
+            reg["etapa"] = reg["etapa"] ? reg["etapa"] : 0 + 1;
             reg["estado"] = "completo";
             if (this.state.consultaParams === null || this.state.consultaParams === undefined) {
                 firebase.database().ref(this.queryConsulta).update({
@@ -877,7 +954,14 @@ class listActividades extends React.Component {
             if (!this.state.t2 && this.state.response === null) {
 
                 let tiempo = null;
-                let topTiempo = '4em';
+                let btAuxiliar = null;
+
+                if (this.state.btAux) {
+                    btAuxiliar = <div style={{ width: '100%', top: '25%', position: 'relative' }}>
+                        <h5 href="#" className="action-button animate purple" style={{ fontSize: 'smaller', width: window.innerWidth * 0.65, height: '5em' }} key={this.state.btAux} onClick={() => { this.addNewMessage('btAux') }}>{this.state.btAux}</h5>
+                    </div>
+                }
+                let topTiempo = '10em';
                 if (this.state.flagTiempo) {
                     topTiempo = '20em';
                     tiempo = <TimerClock programa={'PWA'}></TimerClock>
@@ -905,7 +989,7 @@ class listActividades extends React.Component {
                                         onKeyPress={(e) => { this.addNewMessage(e) }} placeholder="Escribe tu respuesta" />
                                     <label className="Input-label" style={{ transform: 'scale(0.7)' }}>{this.state.textAux}</label>
                                 </div>
-
+                                {btAuxiliar}
                                 {tiempo}
                             </div>
                         </div>

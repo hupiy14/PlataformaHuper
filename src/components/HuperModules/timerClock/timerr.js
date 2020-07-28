@@ -361,7 +361,7 @@ class timerClock extends React.Component {
         let planCurrent = null;
         let titulo = null;
         //  let style ={  top: '-30%', left: '-20%', position: 'fixed' };
-        let style = { top: '82%', position: 'fixed', transform: 'scale(0.3)', left: responseEmWidth(window.innerWidth) };
+        let style = { top: '82%', position: 'fixed', transform: 'scale(0.3)', left: '76%' };
 
 
 
@@ -389,7 +389,7 @@ class timerClock extends React.Component {
             </div>
         }
         else if (window.innerWidth < 600 || (window.innerHeight < 600)) {
-            style = { top: '6%', position: 'absolute', transform: 'scale(0.3)', left: '31%', width: '100%', zIndex: '20', filter: 'opacity(0.7)' };
+            style = { top: '6%', position: 'absolute', transform: 'scale(0.25)', left: '25%', width: '25em', zIndex: '20', filter: 'opacity(0.7)' };
 
             planCC = <div >
                 <h1 className="clock-title">{titulo}</h1>

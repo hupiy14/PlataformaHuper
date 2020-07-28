@@ -276,7 +276,7 @@
   
   .muck-up .bottomCel {
     background-color: #fff;
-    min-height: 303px;
+    min-height: 92%;
     z-index: 1;
     padding: 35px;
     position: relative;
@@ -285,11 +285,11 @@
   }
   
   .bottomLogo {
-    top: 32px;
+    top: 2em;
     background: rgb(255, 255, 255);
     left: -1px;
     right: 0;
-    height: 90px;
+    height: 7em;
     transform: rotate(5deg);
     width: 7em;
     z-index: 5;

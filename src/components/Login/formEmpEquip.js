@@ -69,6 +69,7 @@ class FomrularioGlobal extends React.Component {
     }
     close = () => this.setState({ open: false })
     cancelar = () => {
+        this.props.signOutObj.signOut();
         this.close();
         this.props.signOut();
         this.props.nuevoUsuarios(false);
@@ -138,6 +139,7 @@ class FomrularioGlobal extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
+        signOutObj: state.chatReducer.signOutObj,
         usuarioDetail: state.chatReducer.usuarioDetail,
         detailUsNew: state.chatReducer.detailUsNew,
     };

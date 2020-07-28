@@ -54,7 +54,8 @@ import {
     ACTIVIDAD_PROGRAMA,
     IMAGEN_OKR,
     IMAGEN_FONDO,
-    HOME_APP
+    HOME_APP,
+    SIGN_OUT_OBJ
 } from '../actions/types';
 import firebase from 'firebase';
 import { config } from '../apis/huperDB';
@@ -109,6 +110,7 @@ const INITIAL_STATE = {
     imagenOKR: null,
     imagef: null,
     homeApps: null,
+    signOutObj: null,
 };
 
 
@@ -214,6 +216,8 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, imagenOKR: action.payload };
         case IMAGEN_FONDO:
             return { ...state, imagef: action.payload };
+        case SIGN_OUT_OBJ:
+            return { ...state, signOutObj: action.payload };
         case HOME_APP:
             return { ...state, homeApps: action.payload };
         default:

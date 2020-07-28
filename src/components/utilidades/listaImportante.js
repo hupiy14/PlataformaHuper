@@ -11,6 +11,7 @@ import '../styles/styleLoader.css';
 import perfil from '../../images/perfil.png';
 import ButtonImport from '../HuperModules/importObjetic/importButton';
 import { responsefontHeaderObj } from '../../lib/responseUtils';
+import { avanceOKR } from '../../lib/utils';
 
 const timeoutLength2 = 1000;
 const timeoutLength3 = 60000;
@@ -26,7 +27,7 @@ class listImportante extends React.Component {
 
         resultRoot: null, resultCurrent: null, shResult: null, objSelResul: null, impactoUtils: null,
 
-        selectCurrent : null, selectLast: null
+
 
     };
 
@@ -81,7 +82,7 @@ class listImportante extends React.Component {
             this.setState({ UtilFactors: snapshot.val() });
         });
 
-        const starCountRef2 = firebase.database().ref().child(`Usuario-OKR/${this.props.userId}`);
+        const starCountRef2 = firebase.database().ref().child(`Usuario-Task/${this.props.userId}`);
         starCountRef2.on('value', (snapshot) => {
             variable = { ...variable, tareas: snapshot.val() }
             this.props.listaObjetivos(variable);
@@ -301,7 +302,6 @@ class listImportante extends React.Component {
                 let resultado = 0;
                 if (cconsulta[key2].estado === 'activo' || cconsulta[key2].estado === 'validar') {
 
-                    console.log('---->' + cconsulta[key2].concepto);
                     //factor de progreso por horas 
                     let factorSemana = 0;
                     let factorObjetivo = 0;
@@ -316,45 +316,16 @@ class listImportante extends React.Component {
                         });
 
                     }
-
-
                     if (this.props.listaObjetivo.tareas) {
-                        Object.keys(this.props.listaObjetivo.tareas).map((key3, index) => {
 
-                            const consultaTareaTT = this.props.listaObjetivo.tareas[key3];
-                            Object.keys(consultaTareaTT).map((key33, index) => {
-                                if (key3 === key2) {
-                                    if (consultaTareaTT[key33].estado === 'finalizado') {
-                                        tareasCompleta = tareasCompleta + 1;
-                                    }
-                                }
-                                return consultaTareaTT[key33];
-                            });
-
-                            const horasAtrabajar = 40;
-                            const horasObj = horasAtrabajar * (factorObjetivo / factorSemana);
-                            const atrabajo = Math.round(horasObj) / 3;
-                            const atrabajo2 = ((Math.round(horasObj) * 0.35) / 2) + 1;
-                            let resul = 15;
-
-                            if (atrabajo < tareasCompleta) {
-                                const ob = (tareasCompleta - atrabajo) / atrabajo2 > 1 ? 1 : (tareasCompleta - atrabajo) / atrabajo2;
-                                resul = 65 + Math.round(ob * 35);
-                            }
-
-                            else
-                                resul = Math.round((tareasCompleta / atrabajo) * 65);
-
-                            resultado = cconsulta[key2].avance ? resultado : resul;
-
-                            // console.log(resultado);
-                            if (resultado === 100 && !cconsulta[key2].estadoTIM && this.props.estadochat !== 'TIM objetivo') {
-                                this.props.estadochats('TIM objetivo');
-                                this.props.objTIMs({ obj: cconsulta[key2], key: key2 });
-                                this.TIMOBJ();
-                            }
-                            return this.props.listaObjetivo.tareas[key3];
-                        });
+                        resultado = avanceOKR(cconsulta[key2], key2, this.props.listaObjetivo.tareas);
+                        // console.log(resultado);
+                        /*     if (resultado === 100 && !cconsulta[key2].estadoTIM && this.props.estadochat !== 'TIM objetivo') {
+                                 this.props.estadochats('TIM objetivo');
+                                 this.props.objTIMs({ obj: cconsulta[key2], key: key2 });
+                                 this.TIMOBJ();
+                             }
+                      */
                         if (resultado < 100)
                             flagObjetivosTerminados = false;
                         else if (resultado >= 100) {
@@ -381,7 +352,6 @@ class listImportante extends React.Component {
                     const tAvanceTitulo = Math.round((cconsulta[key2].concepto.length + 9) / 40);
                     let imageComp = null;
                     let objPrincipal = cconsulta[key2];
-                    console.log('---->' + objPrincipal.concepto);
                     let topkeyResult = '-4em';
                     let topkeyResult2 = '-5.5em';
                     let topObjKey = '0em';
@@ -438,6 +408,8 @@ class listImportante extends React.Component {
                         </div>
                     }
                     let fontS = objPrincipal.concepto.length <= 20 ? 25 : 25 - (Math.round((objPrincipal.concepto.length - 20) / 3));
+                    if (flagObjetivosTerminados === true)
+                        this.props.popupBot({ mensaje: 'hemos terminado el objetivo  ' + objPrincipal.concepto, sleep: 35000 });
                     if (objPrincipal.concepto)
                         return (
                             <div className="item segment" key={key2} style={{ height: '14.2em', top: topObjKey, position: 'relative', left: '10%' }}  >
@@ -533,8 +505,6 @@ class listImportante extends React.Component {
                 }
                 return null;
             });
-            if (flagObjetivosTerminados === true)
-                this.props.estadochats('Objetivos Terminados');
             return opciones;
 
         }
