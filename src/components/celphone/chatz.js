@@ -615,7 +615,7 @@ class THREEScene extends React.Component {
 
     }
     renderControlNotification() {
-        let styleBot = { top: '78%', color: '#ffffff', position: 'fixed', transform: 'scale(1)', left: 0.88 * window.innerWidth };
+        let styleBot = { top: '83%', color: '#ffffff', position: 'fixed', transform: 'scale(1)', left: 0.88 * window.innerWidth };
         let link = this.props.popupMensaje && this.props.popupMensaje.link ? this.props.popupMensaje.link : null;
         let color = 'green';
         if (this.props.popupMensaje && this.props.popupMensaje.Priority) { timeoutLength2 = 30000; color = 'pink'; }

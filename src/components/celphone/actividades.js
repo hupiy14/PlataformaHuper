@@ -7,12 +7,14 @@ import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboa
 import moment from 'moment';
 import task from '../../images/task.svg';
 import history from '../../history';
+import '../styles/styleLoader.css';
 
 
 const timeoutLength = 900000;
 let timeoutLength2 = 500;
 let timeoutLength4 = 500;
 let timeoutLength3 = 500;
+let timeoutLength5 = 1300;
 class listActividades extends React.Component {
 
     state = { actividades: null, tiempos: 0, horamaxima: 8, primero: null, aux: null, contenido: null }
@@ -151,6 +153,15 @@ class listActividades extends React.Component {
         }, timeoutLength2)
     }
 
+    loaderTask = () => {
+        this.timeout = setTimeout(() => {
+            if (this.state.actividades) {
+                this.renderActividades();
+            }
+            else
+                this.setState({ contenido: this.actividadesEmpty(5, 0, []) });
+        }, timeoutLength5)
+    }
 
     consultaTiempo = () => {
         this.timeout = setTimeout(() => {
@@ -335,13 +346,13 @@ class listActividades extends React.Component {
                                 this.props.actividadProgramas(1);
                                 let topX = '-7%';
                                 if (x === 2)
-                                topX = '5%';
+                                    topX = '5%';
                                 return (
                                     <li className="one red2" style={{ height: '5.5em' }}>
                                         <h1 style={{ position: 'relative', top: topX, left: '-45%', transform: 'scale(1)' }}>{x}</h1>
                                         <span className="task-title" style={{ top: '-3em', position: 'relative', width: '13em' }}>{actividadesU[key2].concepto} </span>
                                         <span className="task-time" style={{ top: '-4em', position: 'relative', width: '100%' }}>{tiempo} </span>
-                                        <span className="task-cat" style={{ top: '-7em', position: 'relative',  width: '100%' }}>    <Image src={task} size="mini" style={{
+                                        <span className="task-cat" style={{ top: '-7em', position: 'relative', width: '100%' }}>    <Image src={task} size="mini" style={{
                                             transform: 'scale(0.5)', left: '5em',
                                             top: '2em'
                                         }} alt='task hupper'></Image>
@@ -395,7 +406,6 @@ class listActividades extends React.Component {
 
     renderActividades() {
 
-
         if (this.flag === true) {
             this.timeout = setTimeout(() => {
                 timeoutLength3 = 1000;
@@ -410,21 +420,26 @@ class listActividades extends React.Component {
 
     render() {
 
-        let contenido = null;
+        let contenido = <div className="box">
+            <div className="loader9"></div>
+            <p style={{
+                height: '3em',
+                borderRadius: '3em'
+            }}>A la espera de tus Objetivos</p>
+        </div >;
+
+        this.loaderTask();
         let styleAjuste = { position: 'relative', top: '-5em' }
-        if (this.state.actividades) {
-            this.renderActividades();
+
+        if (this.state.actividades)
             styleAjuste = { position: 'relative', top: '-2em' }
 
-        }
-        else
-            contenido = this.actividadesEmpty(5, 0, [])
-
-        return (
-            <ul className="tasks" style={styleAjuste}>
-                {contenido ? contenido : this.state.contenido}
+        if (this.state.contenido)
+            contenido = <ul className="tasks" style={styleAjuste}>
+                {this.state.contenido}
             </ul>
-        );
+
+        return (contenido);
     }
 };
 

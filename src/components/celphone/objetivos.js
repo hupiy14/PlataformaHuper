@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import firebase from 'firebase';
 import { chatOn, chatOff, actividadPrincipal, imagenOKRs, popupBot } from '../../actions';
-import {  Image } from 'semantic-ui-react';
+import { Image } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, estadochats, objTIMs } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
 import '../HuperModules/objetivodet.css';

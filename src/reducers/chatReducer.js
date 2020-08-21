@@ -40,6 +40,7 @@ import {
     CEL_CHAT,
     CEL_PERF,
     DATOS_EDIT_CEL,
+ 
 
 
 
@@ -55,7 +56,8 @@ import {
     IMAGEN_OKR,
     IMAGEN_FONDO,
     HOME_APP,
-    SIGN_OUT_OBJ
+    SIGN_OUT_OBJ,
+    W_SCREEN,
 } from '../actions/types';
 import firebase from 'firebase';
 import { config } from '../apis/huperDB';
@@ -111,6 +113,7 @@ const INITIAL_STATE = {
     imagef: null,
     homeApps: null,
     signOutObj: null,
+    whScreen: null,
 };
 
 
@@ -218,6 +221,8 @@ export default (state = INITIAL_STATE, action) => {
             return { ...state, imagef: action.payload };
         case SIGN_OUT_OBJ:
             return { ...state, signOutObj: action.payload };
+            case W_SCREEN:
+                return { ...state, whScreen: action.payload };
         case HOME_APP:
             return { ...state, homeApps: action.payload };
         default:

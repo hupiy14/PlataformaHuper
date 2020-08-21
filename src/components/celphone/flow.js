@@ -5,6 +5,7 @@ import { VerticalTimelineElement, VerticalTimeline } from 'react-vertical-timeli
 import 'react-vertical-timeline-component/style.min.css';
 import history from '../../history';
 import firebase from 'firebase';
+import color from '@material-ui/core/colors/amber';
 
 class pointWork extends React.Component {
 
@@ -145,7 +146,7 @@ class pointWork extends React.Component {
 
         return (
             <div id="flowCont" style={{ overflow: 'auto', height: window.innerHeight * 0.7 }}>
-                <VerticalTimeline style={{ width: '90%' }}>
+                <VerticalTimeline color= "red" style={{ width: '90%' }}>
                     {this.renderCrearFases()}
                 </VerticalTimeline>
                 <Form style={{ width: '100%', top: '-5em' }}>

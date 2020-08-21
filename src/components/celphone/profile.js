@@ -592,7 +592,7 @@ class Profile extends React.Component {
                 onChange={e => { this.setState({ trelloApi: e.target.value }); this.renderConsultaApiKeyTrello(e.target.value); }}
             />
             <div className="inline">
-                <Button basic color="blue" style={{ height: '3.3em' }} icon='trello' labelPosition='center' content='Generar' onClick={() => { this.myWindow2 = window.open('https://trello.com/app-key/', '', 'width=600,height=400,left=200,top=200'); }} />
+                <Button basic color="blue" style={{ height: '3.3em', left: '25%', position: 'relative' }} icon='trello' labelPosition='center' content='Generar' onClick={() => { this.myWindow2 = window.open('https://trello.com/app-key/', '', 'width=600,height=400,left=200,top=200'); }} />
             </div>
         </Form>
 
@@ -698,8 +698,8 @@ class Profile extends React.Component {
 
     renderAsana() {
 
-        let formAsana = <div style={{ height: '3.3em', top: '2.5em', left: '9%', position: 'relative' }}>
-            <button class="ui red basic button " style={{ width: '17em' }}>
+        let formAsana = <div style={{ height: '3.3em', top: '2.5em', left: '40%', position: 'relative' }}>
+            <button class="ui red basic button " style={{ width: '17em', height: '4em' }}>
                 <Image src={asana} circular size="mini" />
                 <a style={{ top: '-1.6em', position: 'relative', left: '1.6em' }} href={`https://app.asana.com/-/oauth_authorize?client_id=${clientIdAsana}&redirect_uri=${window.location.origin}&response_type=code&state=asana_0.8wpnz8r4jj8kaspekwp`}>Authenticate with Asana</a>
             </button>

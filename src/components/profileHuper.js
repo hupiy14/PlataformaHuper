@@ -700,7 +700,7 @@ class Profile extends React.Component {
     renderAsana() {
 
         let formAsana = <div style={{ height: '3.3em', top: '2.5em', left: '9%', position: 'relative' }}>
-            <button class="ui red basic button " style={{ width: '17em' }}>
+            <button class="ui red basic button " style={{ width: '17em', height: '4em' }}>
                 <Image src={asana} circular size="mini" />
                 <a style={{ top: '-1.6em', position: 'relative', left: '1.6em' }} href={`https://app.asana.com/-/oauth_authorize?client_id=${clientIdAsana}&redirect_uri=${window.location.origin}&response_type=code&state=asana_0.8wpnz8r4jj8kaspekwp`}>Authenticate with Asana</a>
             </button>

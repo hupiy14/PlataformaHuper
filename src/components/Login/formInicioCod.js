@@ -23,7 +23,7 @@ class FomrularioGlobal extends React.Component {
                 if (cod.estado !== 'activo' && cod.usuarios < cod.equipo) {
                     //codigo usado
                     history.push('/formulario/termcond');
-                    this.props.detailUsNews({ ...this.props.detailUsNew, rol: '2' })
+                    this.props.detailUsNews({ ...this.props.detailUsNew, rol: '3' })
                 }
                 else if (cod.estado !== 'activo' && cod.usuarios >= cod.equipo) {
                     //codigo usado
@@ -33,7 +33,7 @@ class FomrularioGlobal extends React.Component {
                 }
                 else {
                     history.push('/formulario/inicio');
-                    this.props.detailUsNews({ ...this.props.detailUsNew, rol: '3' })
+                    this.props.detailUsNews({ ...this.props.detailUsNew, rol: '2' })
                 }
             }
             else {

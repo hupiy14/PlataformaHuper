@@ -12,12 +12,14 @@ import asanaH from '../../../apis/asana';
 import { clientIdAsana, clientSecrectAsana } from '../../../apis/stringConnection';
 import axios from 'axios';
 import chroma from 'chroma-js';
-import { listTemporalObject, listTemporalOpciones } from '../../../lib/utils';
+import { IconGroup } from 'semantic-ui-react';
+import { listTemporalObject, listTemporalOpciones, rutaHupperSingle, randomMessage } from '../../../lib/utils';
 
 let Trello = require("trello");
 const timeoutLength = 1500;
-const timeoutLength2 = 2000;
+const timeoutLength2 = 1000;
 const timeoutLength3 = 3000;
+const sleepTime = 480;
 
 acAnimated.randomNumber = function (min, max) {
     var num = min + Math.floor(Math.random() * (max - (min - 1)));
@@ -48,14 +50,17 @@ class listActividades extends React.Component {
         consulta: null, criteria: null, parametros: null, mensajeUs: null, propertieBD: null, registro: [], opcionValue: [], nivel: null, addProperties: null, nuevoParam: null,
         paso: null, nivelAnt: null, stay: null, property: null, stayValue: null, pasoFlujo: 1, flujo: null, etapa: null, consultaParams: null, optionSelect: null, options: null,
         opcionesDB: null, keyNivel: '', flujoAux: null, pendingOk: null, pendingConsulta: null, onlyOptions: null, workFlow: null, passflow: 0, objTask: null, carpeta: null,
-        otherFlow: null, objetoX: null, objetoP: null, pasoAux: null, btAux: null, vartemp: null, varstemp: [],
+        otherFlow: null, objetoX: null, objetoP: null, pasoAux: null, btAux: null, vartemp: null, varstemp: [], acumTalento: null, acumImpacto: null, acumCompromiso: null, acumYo: null, acumEquipo: null, acumOrg: null, sleep: null,
     }
 
     componentWillMount() {
         this.secondsAcum = 0;
         this.stateAnt = null;
         this.pasoAnt = null;
+        this.ndescansos = 0;
+        this.acumTask = 0;
         this.paramAnt = [];
+        this.addAct = 0;
         this.st = this.renderStyles();
         if (this.mensaje === undefined || this.props.mensajeChatBot === null || (this.props.mensajeChatBot && this.mensaje !== this.props.mensajeChatBot.mensaje))
             this.chatBotSfot();
@@ -161,8 +166,22 @@ class listActividades extends React.Component {
             }
             else {
                 this.mensaje = this.props.mensajeChatBot && this.props.mensajeChatBot.mensaje ? this.props.mensajeChatBot.mensaje : 'hola';
+                console.log(this.props.usuarioDetail);
+                if (!this.props.usuarioDetail.usuario.task || this.props.usuarioDetail.usuario.task !== moment().format("YYYYMMDD")) {
+                    // this.client.textRequest('Quiero planificar mi día', { sessionId: 'test' }).then(this.onResponse, this);
+                    if (this.props.usuarioDetail.usuario.etapa > 10) {
+                        this.client.textRequest('Inicio con mis actividades dos', { sessionId: 'test' }).then(this.onResponse, this);
+                        this.addAct = 10;
+                    }
+                    else {
+                        this.client.textRequest('Inicio con mis actividades', { sessionId: 'test' }).then(this.onResponse, this);
+                        this.addAct = 0;
+                    }
 
-                this.client.textRequest(this.mensaje, { sessionId: 'test' }).then(this.onResponse, this);
+
+                }
+                else
+                    this.client.textRequest(this.mensaje, { sessionId: 'test' }).then(this.onResponse, this);
 
             }
 
@@ -183,8 +202,6 @@ class listActividades extends React.Component {
                     this.setState({ nivel: key });
                     this.setState({ keyNivel: key });
                     this.setState({ etapa: 1 });
-
-
                     let varTemporales = this.state.varstemp;
                     varTemporales['concepto'] = pending[key].concepto;
                     this.setState({ varstemp: varTemporales });
@@ -268,20 +285,28 @@ class listActividades extends React.Component {
 
     onResponse = (activity) => {
         let that = this;
-        let ind = 0;
-        let wd = Math.round(Math.random() * (Object.keys(activity.result.fulfillment.messages).length - 1));
-        activity.result.fulfillment.messages.forEach(function (element) {
+        let ind = 1;
 
-            if (ind === wd)
+        let wd = rutaHupperSingle(this.props.usuarioDetail.usuario.etapa);
+        //  let wd = 0;
+
+
+
+        activity.result.fulfillment.messages.forEach(function (element) {
+            if (ind  + that.addAct === Number(that.props.usuarioDetail.usuario.etapa))
                 if (element.payload !== undefined) {
 
                     let nuevo = element.payload;
-
+                
                     if (that.state.pasoFlujo > 1 && that.state.pasoFlujo - 1 <= that.state.etapa && that.state.etapa != null) {
                         that.borrarDatos();
                         that.adelantar(that.state.flujo);
                     }
                     else {
+
+                        if (nuevo.mensaje && wd > Object.keys(nuevo.mensaje).length)
+                            wd = 0;
+
                         if (nuevo.tipo === "flujo") {
                             that.setState({ flujo: nuevo.flujo });
                             that.adelantar(nuevo.flujo);
@@ -302,9 +327,7 @@ class listActividades extends React.Component {
                             that.setState({ addProperties: nuevo.add });
                             that.setState({ criteria: nuevo.criteria });
                             that.setState({ parametros: that.organizarConsulta(nuevo.parametros !== undefined ? nuevo.parametros.split(',') : '') });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.variablesT, that.state.varstemp[nuevo.variablesT]) });
-                            console.log(that.state.varstemp);
-                            console.log(that.state.varstemp[nuevo.variablesT]);
+                            that.setState({ mensajeUs: randomMessage(nuevo.mensaje, wd).replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.variablesT, that.state.varstemp[nuevo.variablesT]) });
                             that.setState({ propertieBD: nuevo.bd });
                             that.setState({ property: nuevo.property });
                             that.setState({ stay: nuevo.stay });
@@ -312,10 +335,19 @@ class listActividades extends React.Component {
                             that.setState({ pasoAux: nuevo.pasoAux });
                             that.setState({ objetoX: nuevo.objeto });
                             that.setState({ paso: nuevo.paso });
+                            that.setState({ usProperty: nuevo.usProperty });
                             that.setState({ onlyOptions: nuevo.onlyOptions });
                             that.setState({ consultParam: nuevo.consultParam });
                             that.setState({ tipoIn: 3 });
                             that.setState({ vartemp: nuevo.vartemp });
+
+                            that.setState({ acumTalento: nuevo.acumTalento });
+                            that.setState({ acumCompromiso: nuevo.acumCompromiso });
+                            that.setState({ acumImpacto: nuevo.acumImpacto });
+                            that.setState({ acumYo: nuevo.acumYo });
+                            that.setState({ acumEquipo: nuevo.acumEquipo });
+                            that.setState({ acumOrg: nuevo.acumOrg });
+
                             that.urlBsaseDatos(nuevo.structure);
                             if (nuevo.carpeta)
                                 that.crearCarpeta();
@@ -326,45 +358,66 @@ class listActividades extends React.Component {
                             that.validarNivel(nuevo.nivel, nuevo.ChangeLevel);
                             that.setState({ nivelAnt: nuevo.nivelAnt });
                             that.setState({ property: nuevo.property });
+                            that.setState({ usProperty: nuevo.usProperty });
                             that.setState({ stay: nuevo.stay });
                             that.setState({ addProperties: nuevo.add });
                             that.setState({ btAux: nuevo.btAux });
                             that.setState({ pasoAux: nuevo.pasoAux });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
+                            that.setState({ mensajeUs: randomMessage(nuevo.mensaje, wd).replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
                             that.setState({ textAux: nuevo.labelAux });
                             that.setState({ paso: nuevo.paso });
                             that.setState({ flagTiempo: nuevo.tiempo });
                             that.setState({ propertieBD: nuevo.bd });
                             that.setState({ vartemp: nuevo.vartemp });
+                            that.setState({ acumTalento: nuevo.acumTalento });
+                            that.setState({ acumCompromiso: nuevo.acumCompromiso });
+                            that.setState({ acumImpacto: nuevo.acumImpacto });
+                            that.setState({ acumYo: nuevo.acumYo });
+                            that.setState({ acumEquipo: nuevo.acumEquipo });
+                            that.setState({ acumOrg: nuevo.acumOrg });
                             that.urlBsaseDatos(nuevo.structure);
                             if (nuevo.carpeta)
                                 that.crearCarpeta();
                         }
                         else if (nuevo.tipo === "tiempo") {
                             that.setState({ pasoFlujo: null });
+                            that.setState({ usProperty: nuevo.usProperty });
                             that.validarNivel(nuevo.nivel, nuevo.ChangeLevel);
                             that.setState({ nivelAnt: nuevo.nivelAnt });
                             that.setState({ property: nuevo.property });
                             that.setState({ stay: nuevo.stay });
                             that.setState({ addProperties: nuevo.add });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
+                            that.setState({ mensajeUs: randomMessage(nuevo.mensaje, wd).replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
                             that.setState({ flagTiempo: nuevo.tiempo });
                             that.setState({ propertieBD: nuevo.bd });
                             that.setState({ paso: nuevo.paso });
+                            that.setState({ acumTalento: nuevo.acumTalento });
+                            that.setState({ acumCompromiso: nuevo.acumCompromiso });
+                            that.setState({ acumImpacto: nuevo.acumImpacto });
+                            that.setState({ acumYo: nuevo.acumYo });
+                            that.setState({ acumEquipo: nuevo.acumEquipo });
+                            that.setState({ acumOrg: nuevo.acumOrg });
                             that.setState({ tipoIn: 4 });
                         }
                         else if (nuevo.tipo === "opciones") {
 
                             that.setState({ consultParam: nuevo.consultParam });
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
+                            that.setState({ mensajeUs: randomMessage(nuevo.mensaje, wd).replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
                             that.setState({ tipoIn: 2 });
                             that.setState({ paso: nuevo.paso });
                             that.setState({ otherFlow: nuevo.otherFlow });
                             that.setState({ opciones: nuevo.opciones });
 
                         }
+                        else if (nuevo.tipo === "intro") {
+
+                            that.setState({ mensajeUs: randomMessage(nuevo.mensaje, wd).replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
+                            that.setState({ tipoIn: 0 });
+                            that.setState({ sleep: nuevo.timeSleep });
+                            that.setState({ paso: nuevo.paso });
+                        }
                         else {
-                            that.setState({ mensajeUs: nuevo.mensaje.replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
+                            that.setState({ mensajeUs: randomMessage(nuevo.mensaje, wd).replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
                             that.Cerrar();
                         }
                     }
@@ -525,6 +578,33 @@ class listActividades extends React.Component {
         return st;
     }
 
+    renderAcumUnd(value) {
+
+        let usProp = [];
+        if (this.state.acumTalento) {
+            usProp[this.state.acumTalento] = this.props.usuarioDetail.usuario.acumTalento ? this.props.usuarioDetail.usuario.acumTalento : 0 + Number(value);
+        }
+        if (this.state.acumCompromiso) {
+            usProp[this.state.acumCompromiso] = this.props.usuarioDetail.usuario.acumCompromiso ? this.props.usuarioDetail.usuario.acumCompromiso : 0 + Number(value);
+        }
+        if (this.state.acumImpacto) {
+            usProp[this.state.acumImpacto] = this.props.usuarioDetail.usuario.acumImpacto ? this.props.usuarioDetail.usuario.acumImpacto : 0 + Number(value);
+        }
+        if (this.state.acumYo) {
+            usProp[this.state.acumYo] = this.props.usuarioDetail.usuario.acumYo ? this.props.usuarioDetail.usuario.acumYo : 0 + Number(value);
+        }
+        if (this.state.acumEquipo) {
+            usProp[this.state.acumEquipo] = this.props.usuarioDetail.usuario.acumEquipo ? this.props.usuarioDetail.usuario.acumEquipo : 0 + Number(value);
+        }
+        if (this.state.acumOrg) {
+            usProp[this.state.acumOrg] = this.props.usuarioDetail.usuario.acumOrg ? this.props.usuarioDetail.usuario.acumOrg : 0 + Number(value);
+        }
+
+        firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).update({
+            ...usProp
+        });
+
+    }
 
     addNewMessage = (event) => {
         if (event.key === "Enter" || event.key === "13" || event === 'btAux') {
@@ -537,6 +617,9 @@ class listActividades extends React.Component {
                 if (this.state.propertieBD) {
                     let registro = [];
                     registro[this.state.propertieBD] = value;
+
+
+                    this.renderAcumUnd(value);
 
                     if (this.state.vartemp) {
                         let varTemporales = this.state.varstemp;
@@ -561,6 +644,12 @@ class listActividades extends React.Component {
                     if (this.state.flagTiempo) {
                         this.secondsAcum = this.secondsAcum ? this.secondsAcum : 180;
                         registro["duracion"] = this.props.onMessage;
+                        this.acumTask = this.props.onMessage + this.acumTask;
+
+                        if (this.ndescansos !== Math.round((this.acumTask / Number(this.props.usuarioDetail.usuario.descanso))) && (this.acumTask / Number(this.props.usuarioDetail.usuario.descanso)) > 1) {
+                            this.secondsAcum = this.secondsAcum + sleepTime;
+                            this.ndescansos = this.ndescansos + 1;
+                        }
                         registro["h-inicio"] = moment().add('seconds', this.secondsAcum).format('h:mm:ss a');
                         registro["h-fin"] = moment().add('seconds', this.secondsAcum).add('seconds', this.props.onMessage).format('h:mm:ss a');
 
@@ -671,6 +760,21 @@ class listActividades extends React.Component {
                 else
 
                     this.client.textRequest(pass + " " + value).then(this.onResponse, this);
+
+                if (this.state.usProperty) {
+
+                    let propType = [];
+
+                    if (this.state.usProperty === 'task')
+                        propType[this.state.usProperty] = moment().format("YYYYMMDD");
+
+                    firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).update({
+                        ...propType
+                    });
+                }
+
+
+
                 this.borrarDatos();
                 this.setState({ registro: reg });
 
@@ -689,7 +793,6 @@ class listActividades extends React.Component {
         this.setState({ otherFlow: null });
         this.setState({ nivelAnt: null });
         this.setState({ vartemp: null });
-
         this.setState({ objetoX: null });
         this.setState({ pasoAux: null });
         this.setState({ btAux: null });
@@ -699,6 +802,15 @@ class listActividades extends React.Component {
         this.setState({ onlyOptions: null });
         this.setState({ flag: true });
         this.setState({ textAux: true });
+
+        this.setState({ acumOrg: null });
+        this.setState({ acumImpacto: null });
+        this.setState({ acumEquipo: null });
+        this.setState({ acumCompromiso: null });
+        this.setState({ acumYo: null });
+        this.setState({ sleep: null });
+        this.setState({ acumTalento: null });
+
         this.setState({ tipoIn: 1 });
 
 
@@ -908,6 +1020,14 @@ class listActividades extends React.Component {
         }, timeoutLength2)
     }
 
+
+    MensajeIntro = () => {
+        this.timeout = setTimeout(() => {
+            this.client.textRequest(this.state.paso).then(this.onResponse, this);
+            this.borrarDatos();
+        }, this.state.sleep)
+    }
+
     Cerrar = () => {
         this.timeout = setTimeout(() => {
 
@@ -970,16 +1090,10 @@ class listActividades extends React.Component {
                 }
 
                 let opciones = null;
-
-                /*
-                  
-                       <a href="#" className="action-button  animate blue">Hello</a>
-                            <a href="#" className="action-button  animate red">How</a>
-                            <a href="#" className="action-button  animate green">Are</a>
-                            <a href="#" className="action-button  animate yellow">You?</a>
-                */
-
-                if (this.state.tipoIn === 1) {
+                if (this.state.tipoIn === 0) {
+                    this.MensajeIntro();
+                }
+                else if (this.state.tipoIn === 1) {
                     this.setState({
                         t2: <div className="Wrapper" style={{ top: '50%', height: '19em' }}>
                             <div className="ui container" style={{ height: topTiempo, width: '40%' }}>

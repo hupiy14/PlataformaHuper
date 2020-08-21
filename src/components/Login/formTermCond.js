@@ -4,13 +4,14 @@ import React from 'react';
 import { Button, Form, Modal, Message } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { nuevoUsuarios, detailUsNews } from '../modules/chatBot/actions';
-import { signOut } from '../../actions';
+import { signOut, popupBot } from '../../actions';
 import history from '../../history';
 import firebase from 'firebase';
 import axios from 'axios';
 import moment from 'moment';
+import { dataBaseManager } from '../../lib/utils';
 
-
+const timeoutLength = 1500;
 class FomrularioGlobal extends React.Component {
 
     state = {
@@ -62,6 +63,13 @@ class FomrularioGlobal extends React.Component {
         }
     }
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
+
     ingreso = () => {
         let error = false;
         if (this.props.detailUsNew.acepto === false) {
@@ -77,14 +85,25 @@ class FomrularioGlobal extends React.Component {
             if (this.state.cod && this.state.prueba != null) {
                 this.setState({ prueba: true });
                 this.close();
+
+                let objectId = { email: this.props.usuarioDetail.usuarioNuevo.email, ID: this.props.usuarioDetail.usuarioNuevo.userId };
+                console.log(objectId);
+                alert("155555");
+
+                this.componentDatabase("create", null, objectId);
+                this.componentDatabase("login", null, objectId);
                 this.renderCrearUsuario(this.state.cod, this.state.prueba);
                 history.push('/');
                 window.location.replace('');
+               
+
                 return;
             }
         }
 
     }
+
+
 
     crearCalendario = () => {
         //Carga la otra configurcion de gmail
@@ -97,7 +116,7 @@ class FomrularioGlobal extends React.Component {
                 .then((response) => {
                     this.setState({ calendar: response.result.id })
                     //calendario google
-                    firebase.database().ref(`Usuario-CalendarGoogle/${this.state.id}`).set({
+                    firebase.database().ref(`Usuario-CalendarGoogle/${firebase.auth().currentUser.uid}`).set({
                         idCalendar: response.result.id,
                         estado: 'activo',
                     });
@@ -117,6 +136,8 @@ class FomrularioGlobal extends React.Component {
         const keyEquipoEmp = this.props.detailUsNew.rol === '3' ? firebase.database().ref().child('Empresa-Equipo').push().key : cod.kequipo;
         const keyEmpresa = this.props.detailUsNew.rol === '3' ? firebase.database().ref().child('empresa').push().key : cod.empresa;
         //Crea una nueva empresa
+        console.log(this.props.detailUsNew);
+        alert('nnnnnn')
         if (this.props.detailUsNew.rol === '3') {
             firebase.database().ref(`empresa/${keyEmpresa}`).set({
                 empresa: this.props.detailUsNew.empresa,
@@ -129,11 +150,19 @@ class FomrularioGlobal extends React.Component {
                 cargo: this.props.detailUsNew.cargo,
                 nombreTeam: this.props.detailUsNew.equipo,
             });
+            firebase.database().ref(`Usuario-Perfil/3/${firebase.auth().currentUser.uid}`).set({
+                estado: 'activo',
+            });
+            //crear usuario rol
+            firebase.database().ref(`Usuario-Rol/${firebase.auth().currentUser.uid}`).set({
+                Rol: '3',
+            });
         }
+
         //crea el espacio de trabajo
 
         if (this.props.detailUsNew.codigoWSdrive) {
-            firebase.database().ref(`Usuario-WS/${keyEmpresa}/${keyEquipoEmp}/${this.state.id}`).set({
+            firebase.database().ref(`Usuario-WS/${keyEmpresa}/${keyEquipoEmp}/${firebase.auth().currentUser.uid}`).set({
                 fechaCreado: new Date().toString(),
                 linkWs: this.props.detailUsNew.codigoWSdrive,
                 // usuarioSlack: this.props.detailUsNew.userSlack,
@@ -152,33 +181,25 @@ class FomrularioGlobal extends React.Component {
          */
 
         //crear usuario perfil
-        if (this.props.detailUsNew.tipo === 'Huper') {
-            firebase.database().ref(`Usuario-Perfil/1/${this.state.id}`).set({
+        if (this.props.detailUsNew.rol === '2') {
+            firebase.database().ref(`Usuario-Perfil/1/${firebase.auth().currentUser.uid}`).set({
                 estado: 'activo',
             });
             //crear usuario rol
-            firebase.database().ref(`Usuario-Rol/${this.state.id}`).set({
+
+            firebase.database().ref(`Usuario-Rol/${firebase.auth().currentUser.uid}`).set({
                 Rol: '2',
-            });
-        }
-        else if (this.props.detailUsNew.tipo === 'Gestor') {
-            firebase.database().ref(`Usuario-Perfil/3/${this.state.id}`).set({
-                estado: 'activo',
-            });
-            //crear usuario rol
-            firebase.database().ref(`Usuario-Rol/${this.state.id}`).set({
-                Rol: '3',
             });
         }
 
         //crear empresa- usuario
-        firebase.database().ref(`empresa-Usuario/${keyEmpresa}/${this.state.id}`).set({
+        firebase.database().ref(`empresa-Usuario/${keyEmpresa}/${firebase.auth().currentUser.uid}`).set({
             estado: 'activo',
         });
 
         //crea usuario
-        firebase.database().ref(`Usuario/${this.state.id}`).set({
-        //    area: this.props.detailUsNew.rol === '3' ? this.props.detailUsNew.area : cod.area,
+        firebase.database().ref(`Usuario/${firebase.auth().currentUser.uid}`).set({
+            //    area: this.props.detailUsNew.rol === '3' ? this.props.detailUsNew.area : cod.area,
             cargo: this.props.detailUsNew.cargo,
             // canalSlack: this.props.detailUsNew.userSlack,
             email: this.props.usuarioDetail.usuarioNuevo.email,
@@ -189,11 +210,13 @@ class FomrularioGlobal extends React.Component {
             fechaCreado: new Date().toString(),
             codigo: this.props.detailUsNew.codigo,
             estado: 'activo',
+            sleep: 1500,
+            id: this.props.usuarioDetail.usuarioNuevo.userId,
             onboarding: false,
         });
 
         // gener  la primera formacion 
-        firebase.database().ref(`Usuario-Formcion/${this.state.id}/-LYWrWd_8M174-vlIkwv`).set({
+        firebase.database().ref(`Usuario-Formcion/${firebase.auth().currentUser.uid}/-LYWrWd_8M174-vlIkwv`).set({
             fecha: new Date().toString(),
             concepto: "El método de la Caja de Eisenhower para impulsar tu productividad",
             detalle: "Aprende a diferencias tus actividades urgentes de las importantes",
@@ -201,7 +224,7 @@ class FomrularioGlobal extends React.Component {
             link: "mfN_JVLHlbQ",
         });
         //         area: this.props.detailUsNew.rol === '3' ? this.props.detailUsNew.area ? this.props.detailUsNew.area : "" : cod.area ? cod.area : ""
-   
+
 
         firebase.database().ref(`Codigo-Acceso/${this.props.detailUsNew.codigo}`).set({
             ...cod,
@@ -212,8 +235,8 @@ class FomrularioGlobal extends React.Component {
             empresa: keyEmpresa,
         })
 
-        firebase.database().ref(`Usuario-CodeTemporal/${this.state.id}`).remove();
-        firebase.database().ref(`Usuario-Temporal/${this.state.id}`).remove();
+        firebase.database().ref(`Usuario-CodeTemporal/${firebase.auth().currentUser.uid}`).remove();
+        firebase.database().ref(`Usuario-Temporal/${firebase.auth().currentUser.uid}`).remove();
     }
 
     cancelar = () => {
@@ -288,4 +311,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, { nuevoUsuarios, signOut, detailUsNews })(FomrularioGlobal);
+export default connect(mapStateToProps, { nuevoUsuarios, signOut, detailUsNews, popupBot })(FomrularioGlobal);

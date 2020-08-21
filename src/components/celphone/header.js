@@ -9,6 +9,7 @@ import perfil from '../../images/perfil.png';
 import Noti from '../HuperModules/slackNotifications/notifications';
 import NotiHupp from '../HuperModules/notificationsHuoo/notifications';
 import { homeApp } from '../../actions';
+import history from '../../history';
 import '../styles/celHupp.css';
 
 
@@ -17,6 +18,27 @@ class Headers extends React.Component {
     state = {
         opcion: null, close: false, menu: null
     };
+
+    
+    timerIn = () => {
+        this.timeout = setTimeout(() => {
+            this.validacionScreen();
+        }, 150)
+    }
+    validacionScreen() {
+        console.log(window.innerWidth)
+        if (window.innerWidth > 600) {
+            history.push('/dashboardgi');
+        }
+        else
+            history.push('/dashboard');
+    }
+    componentDidMount() {
+        this.validacionScreen();
+        window.addEventListener("orientationchange", () => {
+            this.timerIn();
+        }, false);
+    }
 
 
     render() {

@@ -619,6 +619,17 @@ class DashBoard extends React.Component {
 
     render() {
         let varriable
+
+        if (this.props.usuarioDetail && this.props.usuarioDetail.rol === '2') {
+            varriable = <div>
+                {this.renderGestor()}
+            </div>
+        }
+        else if (this.props.usuarioDetail && this.props.usuarioDetail.rol === '3') {
+            varriable = <div>
+                {this.renderTeletrabajador()}
+            </div>
+        }/*
         if (this.props.usuarioDetail && this.props.usuarioDetail.rol === '3') {
 
             let pageActivi = null;
@@ -764,7 +775,7 @@ class DashBoard extends React.Component {
                             <MenuChat />
                         </Dimmer>
                     }
-        */
+        
             varriable = <div>
                 {pageActivi}
                 {this.renderTeletrabajador()}
@@ -884,7 +895,7 @@ class DashBoard extends React.Component {
             </div>
 
         }
-
+*/
         let errorMessage = null;
         if (!this.props.isSignedIn) {
             errorMessage = <Modal

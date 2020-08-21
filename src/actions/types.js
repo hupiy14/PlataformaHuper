@@ -13,3 +13,4 @@ export const IMAGEN_OKR = "IMAGEN_OKR";
 export const IMAGEN_FONDO = "IMAGEN_FONDO";
 export const HOME_APP = "HOME_APP";
 export const SIGN_OUT_OBJ = "SIGN_OUT_OBJ";
+export const W_SCREEN = "W_SCREEN";

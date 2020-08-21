@@ -145,12 +145,13 @@ class timerClock extends React.Component {
         });
     }
     changeSessionTime(time) {
-        if ((this.sessionTime + time >= 0) && (this.sessionTime + time <= 5400)) {
+        if ((this.sessionTime + time >= 600) && (this.sessionTime + time <= 5600)) {
             this.stopAllClocks();
             this.sessionTime += time;
             this.props.sendMessage(this.sessionTime);
             this.sessionClock.setTime(this.sessionTime);
         }
+   
     }
 
 
@@ -369,8 +370,8 @@ class timerClock extends React.Component {
 
             style = { top: '4.5em', transform: 'scale(0.78)' };
             planCurrent = <div style={{ top: '-3em', position: 'relative', left: '-4.25em' }}>
-                <button type="button" onClick={() => { this.changeSessionTime(-900); }} className="btn btn-lg btn-edit" id="btn-reduce-session-minute">-</button>
-                <button type="button" onClick={() => { this.changeSessionTime(900); }} style={{ position: 'relative', left: '6.5em' }} className="btn btn-lg btn-edit" id="btn-increase-session-minute">+</button>
+                <button type="button" onClick={() => { this.changeSessionTime(-600); }} className="btn btn-lg btn-edit" id="btn-reduce-session-minute">-</button>
+                <button type="button" onClick={() => { this.changeSessionTime(600); }} style={{ position: 'relative', left: '6.5em' }} className="btn btn-lg btn-edit" id="btn-increase-session-minute">+</button>
             </div>
             titulo = "¿Cuanto tiempo esperas demorarte?";
 

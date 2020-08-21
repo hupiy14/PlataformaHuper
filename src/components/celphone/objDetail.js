@@ -235,7 +235,7 @@ class listImportante extends React.Component {
         if (this.state.objetivoS && this.state.objetivoS.comentarios) {
             let numero = 0;
             const opciones = Object.keys(this.state.objetivoS.comentarios).map((key3, index) => {
-                //    console.log(tareas[key3]);
+               
                 numero = numero + 1;
 
                 let recbox = '15px 20px 15px 5px';
@@ -292,8 +292,6 @@ class listImportante extends React.Component {
                 <div style={{ position: 'relative', top: '-4.7em', zIndex: 3, visibility: visiKresult }}>
                     <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ width: '90%' }} />
                 </div>
-
-
                 <h2 style={{ position: 'relative', top: '-6em', left: '1em', width: '80%', transform: 'scale(1.2)', font: 'inherit' }}>{objPrincipal.concepto}</h2>
                 <div className="user-details" style={{ top: heightHup }}>
                     <p style={{ color: 'White', top: '5.5em', width: '17em', textAlign: 'center', position: 'relative' }}>{objPrincipal.keyResult1}</p>
@@ -315,7 +313,6 @@ class listImportante extends React.Component {
                                 this.handleOpen();
 
                             }}>
-
                             <i style={{ color: 'white' }} className="comment alternate outline icon "></i>
                         </button>
                     }
@@ -324,7 +321,6 @@ class listImportante extends React.Component {
                     basic
                     size='small'>
                     <Modal.Content>
-
                         <h2 style={{ 'text-align': 'center' }} >Agrega un nuevo comentario a tu objetivo</h2>
                         <br />
                         <div style={{ 'text-align': 'center' }}>
@@ -395,9 +391,6 @@ class listImportante extends React.Component {
                         });
 
                     }
-
-
-
 
                     if (this.props.listaObjetivo.tareas) {
 
@@ -491,8 +484,7 @@ class listImportante extends React.Component {
                         </div>
                     }
                     let fontS = objPrincipal.concepto.length <= 20 ? 25 : 25 - (Math.round((objPrincipal.concepto.length - 20) / 3));
-                    //       <img src={this.state.images[imgy] ? this.state.images[imgy].urls.thumb : ''} style={{ left: '-15%', top: '-6em' }} />
-
+               
                     if (objPrincipal.concepto) {
                         if (this.selectCurrent === null || key2 === this.props.actividadPrin) {
                             this.selectCurrent = this.props.actividadPrin;
@@ -511,14 +503,10 @@ class listImportante extends React.Component {
             return opciones;
 
         }
+
+      
         return (
-            <div className="box">
-                <div className="loader9"></div>
-                <p style={{
-                    height: '3em',
-                    borderRadius: '3em'
-                }}>A la espera de tus Objetivos</p>
-            </div >
+            <div style={{ height: '20em' }}></div>
         );
     }
 

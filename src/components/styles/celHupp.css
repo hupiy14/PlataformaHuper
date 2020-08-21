@@ -28,7 +28,7 @@
     overflow: hidden;
   }
   
-  .overlay {
+  .overlayT {
     position: absolute;
     left: 0;
     top: 0;
@@ -36,14 +36,69 @@
     bottom: 0;
   }
   
-  .overlay:after {
+  .overlayT:after {
     content: '';
     position: absolute;
     left: 0;
     top: 0;
     right: 0;
     bottom: 0;
-    background: rgba(110, 18, 87, 0.8);
+    background:#A71689bf;
+  }
+
+
+  .overlayO {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
+  
+  .overlayO:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: #AD198Bbb;
+  }
+
+  .overlayF {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
+  
+  .overlayF:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: #DEBCE0aa;
+  }
+
+  .overlayP {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
+  
+  .overlayP:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: #800D7E88;
   }
   
   .muck-up > .top {    

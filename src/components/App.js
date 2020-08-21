@@ -3,6 +3,7 @@ import { Router, Route, Switch } from 'react-router-dom';
 import history from '../history';
 import dashboardCel from './celPhone/task';
 import HomeCel from './celPhone/home';
+import HomeChange from './celPhone/dashboardgi';
 //import MenuChat from './HuperModules/chat3X/chatZ';
 import MenuChat from './HuperModules/chat3X/chatZ';
 import MenuChat2 from './celPhone/chatz';
@@ -41,6 +42,10 @@ import equipoDash from './gestorModules/equipoData';
 
 class App extends React.Component {
 
+    componentDidMount() {
+
+        this.innerWidth = window.innerWidth;
+    }
 
     renderMenuChat() {
 
@@ -87,16 +92,13 @@ class App extends React.Component {
 
 
         //  let menuC = <MenuChat></MenuChat>;
+
+     
         if (this.props.isSignedIn)
             menuC = <MenuChat></MenuChat>;
         let apps = null;
         if (window.innerWidth < 450 || (window.innerWidth < 850 && window.innerHeight < 450)) {
 
-            let messages = document.getElementById('AppH');
-            if (messages) {
-                console.log(messages.scrollTop);
-                messages.scrollTop = 0;
-            }
 
             menuC = <MenuChat2 />;
             apps = <div  >
@@ -110,6 +112,8 @@ class App extends React.Component {
                                         <Switch>
                                             <Route path="/" exact component={hupityIngreso} />
                                             <Route path="/home" exact component={HomeCel} />
+
+                                            <Route path="/dashboardgi" exact component={HomeChange} />
                                             <Route path="/login" exact component={ingreso} />
                                             <Route path="/dashboard" component={dashboardCel} />
                                             <Route path="/hupps" exact component={Hupps} />

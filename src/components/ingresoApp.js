@@ -3,33 +3,29 @@ import image from '../images/logo.png';
 import GoogleAuth from '../components/loginGoogle/GoogleAuth';
 import { connect } from 'react-redux';
 import history from '../history';
-class ingresoPlataforma extends React.Component {
-    /*
-      <Link to="" style={{
-                            background: 'linear-gradient(to right, #fce64d -30%, rgb(255, 106, 0)100%)',
-                            color:'#fffcfc', height: '52px', width:'8em',    
-                            'border-radius': '20px',
-                            top: '52px',
-                            left: '-64px',
-                            position: 'relative'
-                        
-                        }} className=" big button">
-    
-                            <b style={{ position: 'relative', left:'25px', top: '16px',  'font-size': 'large'}}> Ingresar</b>
-                            
-                            </Link>
-    */
+import packageJson from '../../package.json';
+import { popupBot } from '../actions';
+import { dataBaseManager } from '../lib/utils';
 
-   componentDidUpdate()
-   {
-       if (this.props.isSignedIn) {
-           history.push('/dashboard');
-           return;
-       }
-   }
+class ingresoPlataforma extends React.Component {
+
+
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+    }
+
+    componentDidUpdate() {
+
+        if (this.props.isSignedIn) {
+            history.push('/dashboard');
+            return;
+        }
+    }
     render() {
 
-      
+
         return (
             <div className="ui placeholder segment icon-right" style={{ borderColor: '#e03997', height: '100%', background: "#fffffF" }}>
                 <br></br>
@@ -39,7 +35,11 @@ class ingresoPlataforma extends React.Component {
                 </div>
                 <div className="inline center" >
                     <br></br>
-                        <GoogleAuth />
+                    <GoogleAuth />
+                </div>
+                <div style={{ left: '30%', position: 'relative' }} >
+                    <br></br>
+                    Version :  {packageJson.version}
                 </div>
             </div>
         );
@@ -56,7 +56,7 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, {})(ingresoPlataforma);
+export default connect(mapStateToProps, { popupBot })(ingresoPlataforma);
 
 
 

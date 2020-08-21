@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { signIn, signOut, nombreUsuario, usuarioDetails, chatOn, chatOff, mensajeAsanas, Singauth } from '../../actions';
+import { signIn, signOut, nombreUsuario, usuarioDetails, chatOn, chatOff, mensajeAsanas, Singauth, popupBot } from '../../actions';
 import history from '../../history';
 import { nuevoUsuarios, detailUsNews } from '../../components/modules/chatBot/actions';
 import '../../components/styles/ingresoHupity.css';
@@ -10,12 +10,15 @@ import moment from 'moment';
 import { List } from 'semantic-ui-react'
 import { clientIdGoogle, apiKeyGoogle } from '../../apis/stringConnection';
 import { clientIdAsana, clientSecrectAsana, clientSlack, clientSecrectSlack } from '../../apis/stringConnection';
+import { etapaHupper, dataBaseManager } from '../../lib/utils';
+
 
 const timeoutLength = 5000;
 const timeoutLength2 = 2000;
+const timeoutLength3 = 2000;
 class GoogleAuth extends React.Component {
 
-    state = { selectedFile: null, loaded: 0, codigo: null, direccion: null, tokenTrello: false, }
+    state = { selectedFile: null, loaded: 0, codigo: null, direccion: null, tokenTrello: false, uid: null }
 
     componentDidMount() {
 
@@ -29,6 +32,10 @@ class GoogleAuth extends React.Component {
 
                 this.auth = window.gapi.auth2.getAuthInstance();
                 this.props.Singauth(this.auth);
+
+                //login de firebase
+                let objectId = { email: this.auth.currentUser.get().getBasicProfile().getEmail(), ID: this.auth.currentUser.get().getId() }
+                this.componentDatabase("login", null, objectId);
                 this.onAuthChange(this.auth.isSignedIn.get());
                 this.auth.isSignedIn.listen(this.onAuthChange);
 
@@ -38,10 +45,20 @@ class GoogleAuth extends React.Component {
 
 
 
+
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
+
     renderValidAsana = (Usuario) => {
+
         this.timeout = setTimeout(() => {
-            const starCountRef = firebase.database().ref().child(`Usuario-CodeTemporal/${this.auth.currentUser.get().getId()}`);
-            let us = this.auth.currentUser.get().getId();
+
+            const starCountRef = this.componentDatabase("get", `Usuario-CodeTemporal/${this.state.uid}`);
+            let us = this.state.uid;
             starCountRef.on('value', (snapshot) => {
                 const cod = snapshot.val();
                 if (cod) {
@@ -57,11 +74,12 @@ class GoogleAuth extends React.Component {
                             }
                         }).then(res => {
 
-                            firebase.database().ref(`Usuario-Asana/${us}`).update({
+                            firebase.database().ref(`Usuario-Asana/${this.state.uid}`).update({
                                 token: res.data.access_token,
                                 rToken: res.data.refresh_token,
                                 code
                             })
+
                             this.props.mensajeAsanas('Asana');
                             this.renderBorrarAsana(us);
                             history.push('/profile');
@@ -74,12 +92,12 @@ class GoogleAuth extends React.Component {
                             .then((res, tres) => {
                                 console.log(res);
                                 if (res.data.bot) {
-                                    firebase.database().ref(`Usuario-Slack/${us}`).set({
+                                    firebase.database().ref(`Usuario-Slack/${this.state.uid}`).set({
                                         tokenSlack: res.data.access_token,
                                         tokenBot: res.data.bot.bot_access_token,
                                         userSlack: res.data.user_id
                                     });
-                                    firebase.database().ref(`Usuario/${us}`).update({
+                                    firebase.database().ref(`Usuario/${this.state.uid}`).update({
                                         userSlack: res.data.user_id
                                     });
                                     this.props.mensajeAsanas('Slack');
@@ -95,13 +113,13 @@ class GoogleAuth extends React.Component {
 
     renderBorrarAsana = (Usuario) => {
         this.timeout = setTimeout(() => {
-            firebase.database().ref(`Usuario-CodeTemporal/${Usuario}`).set({});
+            firebase.database().ref(`Usuario-CodeTemporal/${this.stateuid}`).set({});
         }, timeoutLength)
     }
 
     validaCodigoAcc = (Usuario) => {
         this.timeout = setTimeout(() => {
-            const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${Usuario.codigo}`);
+            const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${Usuario.codigo}`)
             starCountRef.on('value', (snapshot) => {
                 const cod = snapshot.val();
                 if (cod) {
@@ -117,7 +135,7 @@ class GoogleAuth extends React.Component {
                                 fechaTer: new Date().toString(),
                             })
 
-                            firebase.database().ref(`Usuario/${this.auth.currentUser.get().getId()}`).set({
+                            firebase.database().ref(`Usuario/${this.state.uid}`).set({
                                 ...us,
                             })
                             this.auth.signOut();
@@ -128,96 +146,102 @@ class GoogleAuth extends React.Component {
         }, timeoutLength)
     }
 
-    onAuthChange = isSignedIn => {
-        console.log(this.auth.currentUser.get().getId());
-        if (this.auth.currentUser.get().w3)
-            this.props.nombreUsuario(this.auth.currentUser.get().w3.ofa);
+    createUsuario() {
+        let direccion = '/formulario';
+        //   console.log(this.auth.currentUser.get().getBasicProfile().getEmail());
+        let usuarioNuevo = { nombre: this.auth.currentUser.get().getBasicProfile().getName(), email: this.auth.currentUser.get().getBasicProfile().getEmail(), id: this.auth.currentUser.get().getId(), rol: '2', userId: this.auth.currentUser.get().getId() };
+        this.props.usuarioDetails({ usuarioNuevo });
 
-        if (isSignedIn) {
-            //Valida si se ha cerrado la session 
-            //  if (isSignedIn && this.props.isSignedIn === false)
-            //    return;
+        const starCountRef = firebase.database().ref().child(`Usuario-Temporal/${this.state.uid}`)
+        starCountRef.on('value', (snapshot) => {
 
-            //recupera codigo de acceso de slack
-            this.recuperarDatoSlack(window.location.search);
+            if (snapshot.val()) {
+                const starCountRef2 = firebase.database().ref().child(`Usuario-CodeTemporal/${this.state.uid}`);
+                starCountRef2.on('value', (snapshot2) => {
 
-            //recupera el token trello
-            this.recuperarDatoToken(window.location.href);
-
-            this.props.nuevoUsuarios(true);
-            this.renderValidAsana();
-
-            //Encuentra el Rol,
-            const nameRef = firebase.database().ref().child('Usuario').child(this.auth.currentUser.get().getId());
-            nameRef.on('value', (snapshot) => {
-                console.log('ENtroooooo');
-                const Usuario = snapshot.val();
-                if (Usuario) {
-
-                    //invalida codigo de acceso
-                    if (Usuario.codigo) {
-                        if (Usuario.estado === 'activo')
-                            this.validaCodigoAcc(Usuario);
-                        else ///puedo hacer la reactivacion dependiendo. ****************Importante                  
-                            this.auth.signOut();
-                    }
-
-                    let slack = null;
-                    //obtien la configuracion de slack
-                    const nameRef4 = firebase.database().ref().child(`Usuario-Slack/${this.auth.currentUser.get().getId()}`)
-                    nameRef4.on('value', (snapshot3) => {
-                        if (snapshot3.val())
-                            slack = snapshot3.val();
-                    });
-
-                    let calendar = null;
-                    const nameRef5 = firebase.database().ref().child(`Usuario-CalendarGoogle/${this.auth.currentUser.get().getId()}`);
-                    nameRef5.on('value', (snapshot) => {
-                        if (snapshot.val()) {
-                            calendar = snapshot.val().idCalendar.value;
-                        }
-                    });
-
-                    let rol = null;
-                    const nameRef2 = firebase.database().ref().child('Usuario-Rol').child(this.auth.currentUser.get().getId());
-                    nameRef2.on('value', (snapshot2) => {
-                        rol = snapshot2.val().Rol;
-                    });
-
-                    const nameRef3 = firebase.database().ref().child(`Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${this.auth.currentUser.get().getId()}`)
-                    nameRef3.on('value', (snapshot3) => {
-                        if (snapshot3.val())
-                            this.props.usuarioDetails({ usuario: Usuario, calendar, idUsuario: this.auth.currentUser.get().getId(), linkws: snapshot3.val().linkWs, slack, rol });
-                    });
-
-                }
-                else {
-
-                    let direccion = '/formulario';
-                    console.log(this.auth.currentUser.get().getBasicProfile().getEmail());
-                    let usuarioNuevo = { nombre: this.auth.currentUser.get().getBasicProfile().getName(), email: this.auth.currentUser.get().getBasicProfile().getEmail(), id: this.auth.currentUser.get().getId(), rol: '2' };
-                    this.props.usuarioDetails({ usuarioNuevo });
-
-                    const starCountRef = firebase.database().ref().child(`Usuario-Temporal/${this.auth.currentUser.get().getId()}`);
-                    starCountRef.on('value', (snapshot) => {
-
-                        if (snapshot.val()) {
-                            const starCountRef2 = firebase.database().ref().child(`Usuario-CodeTemporal/${this.auth.currentUser.get().getId()}`);
-                            starCountRef2.on('value', (snapshot2) => {
-
-                                if (snapshot2.val()) {
-                                    this.props.detailUsNews({ ...snapshot.val(), recupero: true, codeSlack: snapshot2.val().code });
-                                    direccion = '/formulario/herramientas';
-
-                                    history.push(direccion);
-                                }
-                            });
-                        }
+                    if (snapshot2.val()) {
+                        this.props.detailUsNews({ ...snapshot.val(), recupero: true, codeSlack: snapshot2.val().code });
+                        direccion = '/formulario/herramientas';
                         history.push(direccion);
-                    });
+                    }
+                });
+            }
+            history.push(direccion);
+        });
+    }
+    renderUsarioLogin(uid) {
+        this.props.signIn(uid);
+        const nameRef = firebase.database().ref().child('Usuario').child(uid);
+        nameRef.on('value', (snapshot) => {
+            console.log('ENtroooooo');
+            const Usuario = snapshot.val();
+
+            //invalida codigo de acceso
+            let etapa = etapaHupper(Usuario, uid, `/Utils/Hupper`)
+            if (Usuario.codigo) {
+                if (Usuario.estado === 'activo')
+                    this.validaCodigoAcc(Usuario);
+                else ///puedo hacer la reactivacion dependiendo. ****************Importante                  
+                    this.auth.signOut();
+            }
+
+            let slack = null;
+            //obtien la configuracion de slack
+            const nameRef4 = firebase.database().ref().child(`Usuario-Slack/${uid}`)
+            nameRef4.on('value', (snapshot3) => {
+                if (snapshot3.val())
+                    slack = snapshot3.val();
+            });
+
+            let calendar = null;
+            const nameRef5 = firebase.database().ref().child(`Usuario-CalendarGoogle/${uid}`);
+            nameRef5.on('value', (snapshot) => {
+                if (snapshot.val()) {
+                    calendar = snapshot.val().idCalendar.value;
                 }
             });
-            this.props.signIn(this.auth.currentUser.get().getId());
+
+            let rol = null;
+            const nameRef2 = firebase.database().ref().child('Usuario-Rol').child(uid);
+            nameRef2.on('value', (snapshot2) => {
+                rol = snapshot2.val().Rol;
+            });
+
+            const nameRef3 = firebase.database().ref().child(`Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${uid}`)
+            nameRef3.on('value', (snapshot3) => {
+                if (snapshot3.val()) {
+
+                    this.props.usuarioDetails({ usuario: Usuario, calendar, idUsuario: uid, id: this.auth.currentUser.get().getId(), linkws: snapshot3.val().linkWs, slack, rol, etapa });
+                }
+            });
+        });
+    }
+
+    onAuthChange = isSignedIn => {
+        //   console.log(this.auth.currentUser.get().getId());
+
+        if (isSignedIn) {
+
+            this.props.nombreUsuario(this.auth.currentUser.get().getBasicProfile().getName());
+            //recupera codigo de acceso de slack
+            this.recuperarDatoSlack(window.location.search);
+            //recupera el token trello
+            this.recuperarDatoToken(window.location.href);
+            this.props.nuevoUsuarios(true);
+            //render valida si el usuario se ha creado en Asana
+            this.renderValidAsana();
+            //Encuentra el Rol,
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    this.renderUsarioLogin(user.uid);
+                    // User is signed in.
+                } else {
+                    this.createUsuario();
+                    this.props.popupBot({ mensaje: "vamos a comenzar crenado tu usuario" });
+                    // No user is signed in.
+                }
+            })
+
         } else {
             this.props.signOut();
         }
@@ -236,9 +260,9 @@ class GoogleAuth extends React.Component {
             var pair = e.split("=");
             if (pair[0] === 'code') {
                 code = pair[1];
-                firebase.database().ref(`Usuario-CodeTemporal/${this.auth.currentUser.get().getId()}`).set({
+                firebase.database().ref(`Usuario-CodeTemporal/${this.state.uid}`).set({
                     code, asana
-                });
+                })
             }
         });
 
@@ -256,14 +280,16 @@ class GoogleAuth extends React.Component {
             var pair = e.split("=");
             if (pair[0] === 'token') {
                 token = pair[1];
-                firebase.database().ref(`Usuario-TokenTrelloTemp/${this.auth.currentUser.get().getId()}`).set({
+                firebase.database().ref(`Usuario-TokenTrelloTemp/${this.state.uid}`).set({
                     token
-                });
+                })
                 this.setState({ tokenTrello: true })
             }
         });
         return token;
     }
+
+
 
     componentDidUpdate() {
         if (this.props.nuevoUsuario === false)
@@ -351,4 +377,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, { signIn, signOut, nombreUsuario, usuarioDetails, chatOn, chatOff, nuevoUsuarios, detailUsNews, mensajeAsanas, Singauth })(GoogleAuth);
+export default connect(mapStateToProps, { signIn, signOut, nombreUsuario, usuarioDetails, chatOn, chatOff, popupBot, nuevoUsuarios, detailUsNews, mensajeAsanas, Singauth })(GoogleAuth);

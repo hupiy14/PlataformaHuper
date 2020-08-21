@@ -5,8 +5,8 @@ import moment from 'moment';
 import { popupBot } from '../../../actions';
 import { ApiAiClient } from 'api-ai-javascript';
 
-let timeoutLength = 12000;
-
+let timeoutLength = 10000;
+let timeoutLengthG = 10000;
 class notifiactions extends React.Component {
 
     state = { dia: [], etapa: 1, mensajes: null }
@@ -30,13 +30,14 @@ class notifiactions extends React.Component {
                 this.dia['entrada'] = moment().format('x');
                 this.dia['cantIn'] = 0;
                 console.log(this.dia);
-                timeoutLength = 300000;
+                timeoutLength = timeoutLengthG;
                 this.notificationPriority();
 
             }
-            firebase.database().ref(`Usuario-Dia/${this.props.userId}/${moment().format("YYYYMMDD")}`).update({
+            //cambiar
+        /*    firebase.database().ref(`Usuario-Dia/${this.props.userId}/${moment().format("YYYYMMDD")}`).update({
                 ...this.dia
-            });
+            });*/
 
 
         }, timeoutLength)
@@ -110,6 +111,7 @@ class notifiactions extends React.Component {
             accessToken: '4cbf623fd1fc4e2d8ef3d48658a82030 '
         });
         this.client.textRequest('Dame un apoyo hupp', { sessionId: 'test' }).then(this.onResponse);
+       /* if(this.props.userId)
         const nameRef = firebase.database().ref().child(`Usuario-Dia/${this.props.userId}/${moment().format("YYYYMMDD")}`)
         nameRef.on('value', (snapshot2) => {
             if (snapshot2.val() !== null) {
@@ -117,6 +119,7 @@ class notifiactions extends React.Component {
                 this.setState({ etapa: snapshot2.val().etapa ? snapshot2.val().etapa : 1 });
             }
         });
+        */
 
 
 

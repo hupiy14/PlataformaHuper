@@ -13,7 +13,8 @@ import {
     IMAGEN_OKR,
     IMAGEN_FONDO, 
     HOME_APP, 
-    SIGN_OUT_OBJ
+    SIGN_OUT_OBJ,
+    W_SCREEN
    
 } from './types';
 
@@ -27,6 +28,13 @@ import {
 } from '../components/modules/chatBot/types';
 import firebase from 'firebase';
 
+
+export const screenWH = (wh) =>(
+    {
+        type: W_SCREEN,
+        payload: wh
+    }
+)
 
 export const homeApp = (home) =>(
     {

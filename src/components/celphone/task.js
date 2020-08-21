@@ -38,6 +38,8 @@ class listActividades extends React.Component {
     }
 
     componentWillMount() {
+
+    
         if (!this.props.isSignedIn || !this.props.usuarioDetail) {
             history.push('/');
             return;
@@ -69,17 +71,21 @@ class listActividades extends React.Component {
             });
         });
     }
-    componentDidUpdate()
-    {
-       /* let messages = document.getElementById('AppH');
-        if (messages) {
-            console.log(messages.scrollTop);
-            messages.scrollTop = 0;
-        }*/
+    componentDidUpdate() {
+      
+        /* let messages = document.getElementById('AppH');
+         if (messages) {
+             console.log(messages.scrollTop);
+             messages.scrollTop = 0;
+         }*/
     }
 
     render() {
 
+      
+       
+        
+       
         if (this.state.images) {
             /*
 
@@ -133,9 +139,11 @@ class listActividades extends React.Component {
                     </li>
             */
             let extraComponent = null;
-            let principal = <div style={{height: '5em'}}></div>;
+            let principal = <div style={{ height: '5em' }}></div>;
             let styleAjuste = null;
             let tiempo = null;
+
+            let styleOverlay = "overlayT";
             if (this.props.actividadPrin) {
                 principal = this.props.actividadPrin;
                 styleAjuste = { position: 'relative', top: '-5em' }
@@ -149,16 +157,18 @@ class listActividades extends React.Component {
             let imageFondo = `url(https://images.unsplash.com/photo-1517764415784-a0a8e4e659e8?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80)`;
             let title = 'My flow';
             if (this.state.tipo === 'OKR' && !this.props.homeApps) {
+                styleOverlay = "overlayO";
                 styleAjuste = { position: 'relative', left: '6em', width: '11em' }
                 item = <ul className="tasks">
                     <Objetivos />
                 </ul>;
                 title = 'Mis Objetivos';
-                imageFondo = `url(${this.props.imagenOKR})`;
+                imageFondo = this.props.imagenOKR ?  `url(${this.props.imagenOKR})`: imageFondo;
                 principal = <ObjetivoPrincial />
                 extraComponent = <ButtonImport />;
             }
             else if (this.state.tipo === 'Profile' && !this.props.homeApps) {
+                styleOverlay = "overlayP";
                 imageFondo = `url(${this.props.imagef})`;
                 styleAjuste = { position: 'relative', left: '-32%' }
                 title = 'Mi perfil';
@@ -166,9 +176,11 @@ class listActividades extends React.Component {
                 item = <Profile />
             }
             else if (this.state.tipo === 'Flow' && !this.props.homeApps) {
+                styleOverlay = "overlayF";
                 imageFondo = `url(https://cdn.pixabay.com/photo/2016/08/09/21/54/yellowstone-national-park-1581879_960_720.jpg)`;
                 title = 'Mi flujo';
-                principal =  <div style={{height: '5em'}}></div>;
+                styleAjuste = null;
+                principal = <div style={{ height: '5em' }}></div>;
                 item = <FLujoCreate />
 
             }
@@ -183,7 +195,7 @@ class listActividades extends React.Component {
                 this.props.homeApp();
             }
 
-           
+
 
             /*
                 <div className="overlay" style={{ background: `url(${this.state.images ? this.state.images[0].urls.regular : null})` }}></div>
@@ -196,7 +208,7 @@ class listActividades extends React.Component {
                 <div className="muck-up" id="muck">
 
 
-                    <div className="overlay" style={{ background: imageFondo }}></div>
+                    <div className={styleOverlay} style={{ background: imageFondo }}></div>
 
                     <div className="top">
                         {tiempo}
@@ -246,6 +258,7 @@ const mapAppStateToProps = (state) => (
         actividadProg: state.chatReducer.actividadProg,
         selObjetivo: state.chatReducer.selObjetivo,
         imagef: state.chatReducer.imagef,
+        whScreen: state.chatReducer.whScreen,
         userId: state.auth.userId,
         isSignedIn: state.auth.isSignedIn,
 
