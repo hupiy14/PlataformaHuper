@@ -3,9 +3,9 @@ import React from 'react';
 import { Button, Form, Modal, Message } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { nuevoUsuarios, detailUsNews } from '../modules/chatBot/actions';
-import { signOut } from '../../actions';
+import { signOut, popupBot } from '../../actions';
 import history from '../../history';
-import firebase from 'firebase';
+import { dataBaseManager } from '../../lib/utils';
 
 class FomrularioGlobal extends React.Component {
 
@@ -22,6 +22,13 @@ class FomrularioGlobal extends React.Component {
         if (this.props.detailUsNew && this.props.detailUsNew.recupero) {
             this.continuar();
         }
+    }
+
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
     }
 
     cancelar = () => {
@@ -48,9 +55,7 @@ class FomrularioGlobal extends React.Component {
     }
 
     clickGuardarTemporal = () => {
-        firebase.database().ref(`Usuario-Temporal/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
-            ...this.props.detailUsNew
-        });
+        this.componentDatabase('insert', `Usuario-Temporal/${this.props.usuarioDetail.usuarioNuevo.id}`, {...this.props.detailUsNew});
     }
 
     close = () => this.setState({ open: false })
@@ -61,13 +66,12 @@ class FomrularioGlobal extends React.Component {
             filter: 'grayscale(1)',
         };
 
-        if (this.props.detailUsNew && this.props.detailUsNew.nombreUsuario && this.props.detailUsNew.cargo)
-        {
+        if (this.props.detailUsNew && this.props.detailUsNew.nombreUsuario && this.props.detailUsNew.cargo) {
             styleSlack = null;
-        }           
+        }
 
-        
-      
+
+
         return (
             <Modal size='tiny' open={this.state.open} >
                 <Modal.Header>Comienza tu experiencia</Modal.Header>
@@ -85,10 +89,10 @@ class FomrularioGlobal extends React.Component {
                                 error={this.state.errorCargo}
                             />
                             <h3>Sincronizate tus herramientas para continuar</h3>
-                            <a  style={styleSlack}
+                            <a style={styleSlack}
                                 href={`https://slack.com/oauth/authorize?scope=bot&redirect_uri=https://app.hupity.com&client_id=482555533539.532672221010`}>
-                                <img src="https://api.slack.com/img/sign_in_with_slack.png"  onClick={this.clickGuardarTemporal} alt="sincroniza oauth slack" /></a>
-                            <Message 
+                                <img src="https://api.slack.com/img/sign_in_with_slack.png" onClick={this.clickGuardarTemporal} alt="sincroniza oauth slack" /></a>
+                            <Message
                                 error
                                 header={this.state.mensajeCodigo.titulo}
                                 content={this.state.mensajeCodigo.detalle}
@@ -97,7 +101,7 @@ class FomrularioGlobal extends React.Component {
                     </Modal.Description>
                 </Modal.Content>
                 <Modal.Actions>
-                    <Button style={{background: "#d5d6d5"}} onClick={this.cancelar}>
+                    <Button style={{ background: "#d5d6d5" }} onClick={this.cancelar}>
                         Cancelar
                         </Button>
                 </Modal.Actions>
@@ -117,4 +121,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, {nuevoUsuarios, signOut, detailUsNews})(FomrularioGlobal);
+export default connect(mapStateToProps, { nuevoUsuarios, signOut, detailUsNews, popupBot })(FomrularioGlobal);

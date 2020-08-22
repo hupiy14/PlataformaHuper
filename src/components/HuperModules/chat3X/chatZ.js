@@ -13,10 +13,10 @@ import ChatHup4 from '../efectText/efecto5';
 import '../../../lib/colladaLoader2';
 import { responseEmHeight } from '../../../lib/responseUtils';
 import TimerClock from '../timerClock/timerr';
-import firebase from 'firebase';
 import { Popup, Icon, Modal, Button } from 'semantic-ui-react';
 import moment from 'moment';
 import '../timerClock/./timer.css';
+import { dataBaseManager } from '../../../lib/utils';
 var THREE = require('three');
 
 const getRandom = (min, max) => Math.random() * (max - min + 1) + min;
@@ -39,7 +39,12 @@ class THREEScene extends React.Component {
             }
         });
     }
-
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     componentDidMount() {
 
@@ -485,7 +490,7 @@ class THREEScene extends React.Component {
                 ease: window.Power2.easeOut
             });
 
-            window.TweenMax.to(this.mesh.translateOnAxis, 1, {  
+            window.TweenMax.to(this.mesh.translateOnAxis, 1, {
                 y: THREE.Math.degToRad(getRandom(-10, 80))
             });
             this.soundRep++;
@@ -607,9 +612,8 @@ class THREEScene extends React.Component {
         this.Registro["tiempoVisto"] = moment().format('x') - this.Registro["ver"];
         let query = `Usuario-Forma/${this.props.userId}/${moment().format("YYYYMM")}/${moment().format("DD")}/`;
         this.Registro["lection"] = this.props.popupMensaje.lection;
-        let newPostKey2 = firebase.database().ref().child(query).push().key;
-        firebase.database().ref(query + newPostKey2).update(
-            { ...this.Registro });
+        let newPostKey2 = this.componentDatabase('key', query);
+        this.componentDatabase('update', query + newPostKey2, { ...this.Registro });
         this.Registro = [];
 
     }

@@ -9,6 +9,7 @@ import MenuChat from './HuperModules/chat3X/chatZ';
 import MenuChat2 from './celPhone/chatz';
 import Header from './Header';
 import Header2 from './celPhone/header';
+import inttroApp from './introAppPc';
 
 // formulario 
 import FomularioGlobal from './Login/formInicioCod';
@@ -112,7 +113,6 @@ class App extends React.Component {
                                         <Switch>
                                             <Route path="/" exact component={hupityIngreso} />
                                             <Route path="/home" exact component={HomeCel} />
-
                                             <Route path="/dashboardgi" exact component={HomeChange} />
                                             <Route path="/login" exact component={ingreso} />
                                             <Route path="/dashboard" component={dashboardCel} />
@@ -153,6 +153,7 @@ class App extends React.Component {
                                         <Header />
                                         <Switch>
                                             <Route path="/" exact component={hupityIngreso} />
+                                            <Route path="/home" exact component={inttroApp} />
                                             <Route path="/login" exact component={ingreso} />
                                             <Route path="/dashboard" component={dashboard} />
                                             <Route path="/hupps" exact component={Hupps} />

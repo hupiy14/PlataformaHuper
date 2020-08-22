@@ -4,7 +4,8 @@ import { connect } from 'react-redux';
 import { VerticalTimelineElement, VerticalTimeline } from 'react-vertical-timeline-component';
 import 'react-vertical-timeline-component/style.min.css';
 import history from '../../history';
-import firebase from 'firebase';
+import { popupBot } from '../../actions';
+import { dataBaseManager } from '../../lib/utils';
 
 class pointWork extends React.Component {
 
@@ -18,7 +19,7 @@ class pointWork extends React.Component {
             return;
         }
 
-        const nameRef2 = firebase.database().ref().child(`Usuario-Flujo-Trabajo/${this.props.usuarioDetail.idUsuario}`);
+        const nameRef2 = this.componentDatabase('get', `Usuario-Flujo-Trabajo/${this.props.usuarioDetail.idUsuario}`);
         nameRef2.on('value', (snapshot2) => {
             if (snapshot2.val()) {
                 const listaX = snapshot2.val().fases;
@@ -26,6 +27,12 @@ class pointWork extends React.Component {
             }
         });
 
+    }
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
     }
 
     renderguardarFase() {
@@ -35,7 +42,7 @@ class pointWork extends React.Component {
         const fases = Object.keys(listaX).length + 1;
 
         listaX.push({ titulo: this.state.tituloFase, detalle: this.state.detalleFase, id: fases });
-        firebase.database().ref(`Usuario-Flujo-Trabajo/${this.props.usuarioDetail.idUsuario}`).set({
+        this.componentDatabase('insert', `Usuario-Flujo-Trabajo/${this.props.usuarioDetail.idUsuario}`, {
             fechaCreado: new Date().toString(),
             cantidadFases: fases,
             fases: listaX,
@@ -50,11 +57,12 @@ class pointWork extends React.Component {
         const listaX = this.state.inputFase;
         listaX.splice(ind, 1);
         const fases = Object.keys(listaX).length + 1;
-        firebase.database().ref(`Usuario-Flujo-Trabajo/${this.props.usuarioDetail.idUsuario}`).set({
+        this.componentDatabase('insert', `Usuario-Flujo-Trabajo/${this.props.usuarioDetail.idUsuario}`, {
             fechaCreado: new Date().toString(),
             cantidadFases: fases,
             fases: listaX,
         });
+
     }
 
     renderCrearComponentInicial(nombre, titulo, detalle) {
@@ -173,4 +181,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, {})(pointWork);
+export default connect(mapStateToProps, { popupBot })(pointWork);

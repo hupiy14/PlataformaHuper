@@ -3,9 +3,10 @@ import { Button, Form, Icon, Modal, Segment, Dimmer, Loader, Message } from 'sem
 import { connect } from 'react-redux';
 import { nuevoUsuarios } from '../components/modules/chatBot/actions';
 import { slackApis } from '../actions/index';
-import { signOut, usuarioDetails } from '../actions';
+import { signOut, usuarioDetails, popupBot } from '../actions';
 import history from '../history';
-import firebase from 'firebase';
+import { dataBaseManager } from '../lib/utils'
+
 const AreasT = [
     { key: 1, text: 'Tecnología', value: 'Tecnología' },
     { key: 2, text: 'Ventas', value: 'Ventas' },
@@ -32,12 +33,19 @@ class FormIngresoHuper extends React.Component {
     componentDidMount() {
 
         //se consulta todas las empresas
-        const starCountRef = firebase.database().ref().child('empresa');
+        const starCountRef = this.componentDatabase("get", `empresa`);
         starCountRef.on('value', (snapshot) => {
             this.setState({ listaEmpresas: snapshot.val() })
         });
     }
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        console.log(men);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     handleAddition = (e, { value }) => {
         //se agrega un nuevo equipo
@@ -84,7 +92,7 @@ class FormIngresoHuper extends React.Component {
         this.setState({ formError: error });
         if (!error) {
 
-            const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${this.state.codigo}`);
+            const starCountRef = this.componentDatabase("get", `Codigo-Acceso/${this.state.codigo}`)
             starCountRef.on('value', (snapshot) => {
                 const cod = snapshot.val();
                 if (cod) {
@@ -100,7 +108,7 @@ class FormIngresoHuper extends React.Component {
                         //this.props.signOut();
                         // this.props.nuevoUsuarios(false);
                         this.renderCrearUsuario(cod);
-                        history.push('/dashboard');
+                        history.push('/home');
                     }
 
                 }
@@ -185,7 +193,7 @@ class FormIngresoHuper extends React.Component {
                     keyEquipo = key;
             });
             console.log(keyEquipo);
-            const starCountRef = firebase.database().ref().child(`Empresa-Equipo/${keyEquipo}`);
+            const starCountRef = this.componentDatabase("get", `Empresa-Equipo/${keyEquipo}`);
             starCountRef.on('value', (snapshot) => {
                 this.setState({ listaEquipos: snapshot.val() })
             });
@@ -203,6 +211,7 @@ class FormIngresoHuper extends React.Component {
     renderCrearUsuario(cod) {
 
         let keyEquipo;
+        let objectIn = {};
         this.renderDriveCarpeta();
         window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
             .then(() => {
@@ -218,18 +227,19 @@ class FormIngresoHuper extends React.Component {
         });
         console.log(this.props.usuarioDetail);
         //Crea un nuevo equipo
-        var newPostKey1 = firebase.database().ref().child('Empresa-Equipo').push().key;
+        var newPostKey1 = this.componentDatabase("key", `Empresa-Equipo`);
         if (this.state.listaEquipos.equipoNuevo && this.state.listaEquipos.equipoNuevo.nombreTeam === this.state.equipo) {
 
-            firebase.database().ref(`Empresa-Equipo/${keyEquipo}/${newPostKey1}`).set({
+
+            objectIn = {
                 cargo: this.state.cargo,
                 fechaCreado: new Date().toString(),
                 nombreTeam: this.state.equipo,
                 responsable: this.state.nombreUsuario,
                 idUsuario: this.props.usuarioDetail.usuarioNuevo.id,
-                estado: 'activo',
-
-            });
+                estado: 'activo'
+            }
+            this.componentDatabase("insert", `Empresa-Equipo/${keyEquipo}/${newPostKey1}`, objectIn);
         }
         else {
             //Encuentra el identificador del equipo
@@ -244,14 +254,17 @@ class FormIngresoHuper extends React.Component {
 
         //crea el espacio de trabajo
         if (this.state.codigoWSdrive) {
-            firebase.database().ref(`Usuario-WS/${keyEquipo}/${newPostKey1}/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+
+            objectIn = {
                 fechaCreado: new Date().toString(),
-                linkWs: this.state.codigoWSdrive,
-            });
+                linkWs: this.state.codigoWSdrive
+            }
+            this.componentDatabase("insert", `Usuario-WS/${keyEquipo}/${newPostKey1}/${this.props.usuarioDetail.usuarioNuevo.id}`, objectIn);
         }
         //crea el usuario slack
         if (this.state.codigoUsSlack) {
-            firebase.database().ref(`Usuario-Slack/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+
+            objectIn = {
                 tokenP: this.state.tokenUsSlack,
                 tokenB: this.state.tokenBotUsSlack,
                 usuarioSlack: this.state.codigoUsSlack,
@@ -261,29 +274,23 @@ class FormIngresoHuper extends React.Component {
                 reporting: this.state.canalReportesSlack,
                 notificaciones: this.state.canalNotifiacionesSlack,
                 fechaCreado: new Date().toString(),
-            });
+            }
+            this.componentDatabase("insert", `Usuario-Slack/${this.props.usuarioDetail.usuarioNuevo.id}`, objectIn);
         }
 
 
 
         //crear usuario perfil
         if (this.state.tipo === 'Huper') {
-            firebase.database().ref(`Usuario-Perfil/1/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
-                estado: 'activo',
-            });
+            this.componentDatabase("insert", `Usuario-Perfil/1/${this.props.usuarioDetail.usuarioNuevo.id}`, { estado: 'activo' });
             //crear usuario rol
-            firebase.database().ref(`Usuario-Rol/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
-                Rol: '3',
-            });
+            this.componentDatabase("insert", `Usuario-Rol/${this.props.usuarioDetail.usuarioNuevo.id}`, { Rol: '3' });
         }
         else if (this.state.tipo === 'Gestor') {
-            firebase.database().ref(`Usuario-Perfil/3/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
-                estado: 'activo',
-            });
+
+            this.componentDatabase("insert", `Usuario-Perfil/3/${this.props.usuarioDetail.usuarioNuevo.id}`, { estado: 'activo' });
             //crear usuario rol
-            firebase.database().ref(`Usuario-Rol/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
-                Rol: '2',
-            });
+            this.componentDatabase("insert", `Usuario-Rol/${this.props.usuarioDetail.usuarioNuevo.id}`, { Rol: '2' });
         }
 
         //Carga la otra configurcion de gmail
@@ -303,14 +310,10 @@ class FormIngresoHuper extends React.Component {
 
 
         //crear empresa- usuario
-
-        firebase.database().ref(`empresa-Usuario/${keyEquipo}/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
-            estado: 'activo',
-        });
-
+        this.componentDatabase("insert", `empresa-Usuario/${keyEquipo}/${this.props.usuarioDetail.usuarioNuevo.id}`, { estado: 'activo' });
 
         //crea usuario
-        firebase.database().ref(`Usuario/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+        objectIn = {
             area: this.state.area,
             cargo: this.state.cargo,
             canalSlack: this.state.codigoUsSlack,
@@ -322,37 +325,35 @@ class FormIngresoHuper extends React.Component {
             fechaCreado: new Date().toString(),
             codigo: this.state.codigo,
             estado: 'activo',
-
-        });
-
+        }
+        this.componentDatabase("insert", `Usuario/${this.props.usuarioDetail.usuarioNuevo.id}`, objectIn);
         // gener  la primera formacion 
-        firebase.database().ref(`Usuario-Formcion/${this.props.usuarioDetail.usuarioNuevo.id}/-LYWrWd_8M174-vlIkwv`).set({
+        objectIn = {
             fecha: new Date().toString(),
             concepto: "El método de la Caja de Eisenhower para impulsar tu productividad",
             detalle: "Aprende a diferencias tus actividades urgentes de las importantes",
             estado: 'activo',
             link: "mfN_JVLHlbQ",
-        });
-
+        }
+        this.componentDatabase("insert", `Usuario-Formcion/${this.props.usuarioDetail.usuarioNuevo.id}/-LYWrWd_8M174-vlIkwv`, objectIn);
         cod.estado = 'En Uso';
-
-        firebase.database().ref(`Codigo-Acceso/${this.state.codigo}`).set({
+        objectIn = {
             ...cod,
-            fechaUso: new Date().toString(),
-
-        })
-
+            fechaUso: new Date().toString()
+        }
+        this.componentDatabase("insert", `Codigo-Acceso/${this.state.codigo}`, objectIn);
 
 
 
 
         //calendario google
-        if (this.state.calendar)
-            firebase.database().ref(`Usuarios-CalendarGoogle/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
+        if (this.state.calendar) {
+            objectIn = {
                 idCalendar: this.state.calendar,
                 estado: 'activo',
-            });
-
+            }
+            this.componentDatabase("insert", `Usuarios-CalendarGoogle/${this.props.usuarioDetail.usuarioNuevo.id}`, objectIn);
+        }
     }
 
     renderOpcionesEmpresa() {
@@ -493,8 +494,8 @@ class FormIngresoHuper extends React.Component {
 
     renderFormularioPersona2() {
         window.open(`https://slack.com/oauth/authorize?scope=identity.basic&client_id=482555533539.532672221010`);
-  
-       
+
+
         const { open2, open3, open4 } = this.state
         if (this.props.slackApi)
             console.log(this.props.slackApi);
@@ -515,7 +516,7 @@ class FormIngresoHuper extends React.Component {
 
         />
         return (
-             <Form error={this.state.formError}>
+            <Form error={this.state.formError}>
                 {equipo}
 
 
@@ -702,6 +703,6 @@ const mapStateToProps = (state) => {
     };
 };
 export default
-    connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis })
+    connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis, popupBot })
 
         (FormIngresoHuper);

@@ -1,12 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
 import { chatOn, chatOff, actividadPrincipal, imagenOKRs, popupBot } from '../../actions';
 import { Image } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, estadochats, objTIMs } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
 import '../HuperModules/objetivodet.css';
 import '../styles/styleLoader.css';
+import { dataBaseManager } from '../../lib/utils';
 
 
 const timeoutLength2 = 1000;
@@ -26,7 +26,12 @@ class listImportante extends React.Component {
 
     };
 
-
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
     //vairble x aumento n cantidad terminada n*x
     //fotos de la tarjetas
     onSearchSubmit = async () => {
@@ -42,12 +47,11 @@ class listImportante extends React.Component {
 
         this.onSearchSubmit()
         let variable = {};
-
-        let impactoFlujo = firebase.database().ref().child(`Utils/Impacto-Objetivo`);
+        let impactoFlujo = this.componentDatabase('get', `Utils/Impacto-Objetivo`);
         impactoFlujo.on('value', (snapshot) => {
             this.setState({ impactoUtils: snapshot.val() })
         });
-        const starCountRef = firebase.database().ref().child(`Usuario-OKR/${this.props.userId}`);
+        const starCountRef =  this.componentDatabase('get', `Usuario-OKR/${this.props.userId}`);
         starCountRef.on('value', (snapshot) => {
 
             const ObjTrabajo = snapshot.val();
@@ -61,18 +65,18 @@ class listImportante extends React.Component {
             this.props.listaObjetivos(variable);
         });
 
-        const starCountRef33 = firebase.database().ref().child(`Utilidades-Valoraciones`);
+        const starCountRef33 =this.componentDatabase('get', `Utilidades-Valoraciones`);
         starCountRef33.on('value', (snapshot) => {
             this.setState({ UtilFactors: snapshot.val() });
         });
 
-        const starCountRef2 = firebase.database().ref().child(`Usuario-OKR/${this.props.userId}`);
+        const starCountRef2 = this.componentDatabase('get', `Usuario-OKR/${this.props.userId}`);
         starCountRef2.on('value', (snapshot) => {
             variable = { ...variable, tareas: snapshot.val() }
             this.props.listaObjetivos(variable);
         });
 
-        const starCountRef3 = firebase.database().ref().child(`Usuario-Flujo-Trabajo/${this.props.userId}`);
+        const starCountRef3 = this.componentDatabase('get', `Usuario-Flujo-Trabajo/${this.props.userId}`);
         starCountRef3.on('value', (snapshot) => {
             this.setState({ WorkFlow: snapshot.val() });
         });

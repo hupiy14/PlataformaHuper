@@ -1,11 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
 import { Image, Progress, Segment } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, selObjetivos } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
 import MaskedInput from 'react-text-mask';
-
+import { dataBaseManager } from '../../lib/utils';
+import { popupBot } from '../../actions';
 const timeoutLength = 1000;
 
 class ListaObjetivosEquipo extends React.Component {
@@ -19,11 +19,16 @@ class ListaObjetivosEquipo extends React.Component {
     };
 
 
-
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     componentDidMount() {
         this.onSearchSubmit();
-        const starCountRef = firebase.database().ref().child(`Usuario-Flujo-Trabajo`);
+        const starCountRef = this.componentDatabase('get', `Usuario-Flujo-Trabajo`);
         starCountRef.on('value', (snapshot) => {
             this.props.equipoConsultas({ ...this.props.equipoConsulta, flujo: snapshot.val() })
         });
@@ -68,9 +73,7 @@ class ListaObjetivosEquipo extends React.Component {
                 Object.keys(cconsulta).map((key3, index) => {
                     if (this.state.porInputs[key].key === key3) {
                         const data = { ...cconsulta[key3], porcentajeResp: this.state.porInputs[key].por }
-                        firebase.database().ref(`Usuario-Objetivos/${this.state.porInputs[key].idUsuario}/${this.state.porInputs[key].key}`).set({
-                            ...data
-                        });
+                        this.componentDatabase('update', `Usuario-Objetivos/${this.state.porInputs[key].idUsuario}/${this.state.porInputs[key].key}`, { ...data });
                     }
 
                     return cconsulta[key3];
@@ -100,8 +103,7 @@ class ListaObjetivosEquipo extends React.Component {
 
         if (estado)
             tarea.estado = 'activo';
-        updates[`Usuario-Objetivos/${key}/${this.state.detalleO.idObjetivo}`] = tarea;
-        firebase.database().ref().update(updates);
+        this.componentDatabase('update', `Usuario-Objetivos/${key}/${this.state.detalleO.idObjetivo}`, tarea);
         this.setState({ mensajeCodigo: null });
         this.setState({ error: null });
         this.setState({ ver: false });
@@ -161,9 +163,8 @@ class ListaObjetivosEquipo extends React.Component {
 
         this.props.equipoConsultas(this.props.equipoConsulta);
         this.renderObtenerInformacionEquipo();
-
-        firebase.database().ref(`Usuario-Objetivos/${key}/${idObjetivo}`).remove()
-        firebase.database().ref(`Usuario-Tareas/${key}/${idObjetivo}`).remove()
+        this.componentDatabase('delete', `Usuario-Objetivos/${key}/${idObjetivo}`);
+        this.componentDatabase('delete', `Usuario-Tareas/${key}/${idObjetivo}`);
     }
 
     renderInputsProcentaje(objetivo) {
@@ -312,7 +313,7 @@ class ListaObjetivosEquipo extends React.Component {
                                         tareasCompleta = tareasCompleta + 1;
                                     }
                                 }
-                               return consultaTareaTT[key33];
+                                return consultaTareaTT[key33];
                             });
 
 
@@ -466,7 +467,7 @@ const mapAppStateToProps = (state) => (
     });
 
 
-export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, selObjetivos, popupDetalles, numeroTareasTs, equipoConsultas })(ListaObjetivosEquipo);
+export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, selObjetivos, popupDetalles, numeroTareasTs, equipoConsultas, popupBot })(ListaObjetivosEquipo);
 
 
 

@@ -2,20 +2,11 @@ import React from 'react';
 import { Button, Form, Icon, Modal, Segment, Dimmer, Loader, Message } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { slackApis } from '../../actions/index';
-import { signOut, usuarioDetails } from '../../actions';
+import { signOut, usuarioDetails, popupBot } from '../../actions';
 import history from '../../history';
-import firebase from 'firebase';
 import { nuevoUsuarios, detailUsNews } from '../../components/modules/chatBot/actions';
-import { Link } from 'react-router-dom';
+import { dataBaseManager } from '../../lib/utils';
 
-const AreasT = [
-    { key: 1, text: 'Tecnología', value: 'Tecnología' },
-    { key: 2, text: 'Ventas', value: 'Ventas' },
-    { key: 3, text: 'Staff', value: 'Staff' },
-    { key: 4, text: 'Comercial', value: 'Comercial' },
-    { key: 5, text: 'RRHH', value: 'RRHH' },
-
-]
 
 
 class FomrularioGlobal extends React.Component {
@@ -30,12 +21,20 @@ class FomrularioGlobal extends React.Component {
 
         //   console.log(window.location.href); 
         //se consulta todas las empresas
-        const starCountRef = firebase.database().ref().child('empresa');
+        const starCountRef = this.componentDatabase('get','empresa')
         starCountRef.on('value', (snapshot) => {
             this.setState({ listaEmpresas: snapshot.val() })
             this.props.detailUsNews({ ...this.props.detailUsNew, listaEmpresas: snapshot.val() });
         });
     }
+
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
+
     handleAddition = (e, { value }) => {
         //se agrega un nuevo equipo
         const equipoNuevo = { nombreTeam: value };
@@ -54,7 +53,7 @@ class FomrularioGlobal extends React.Component {
         else {
             this.setState({ errorNombreUsuario: false });
         }
-       
+
         if (this.props.detailUsNew.cargo.trim() === '') {
             this.setState({ errorCargo: true });
             error = true;
@@ -65,10 +64,10 @@ class FomrularioGlobal extends React.Component {
 
         this.setState({ formError: error });
 
-            if (!error) {
-                this.props.detailUsNews({ ...this.props.detailUsNew, tipo: 'Huper' })
-                history.push('/formulario/herramientas');
-            }
+        if (!error) {
+            this.props.detailUsNews({ ...this.props.detailUsNew, tipo: 'Huper' })
+            history.push('/formulario/herramientas');
+        }
 
     }
     close = () => this.setState({ open: false })
@@ -132,7 +131,7 @@ class FomrularioGlobal extends React.Component {
           </Button>
 
                     <Button
-                        style={{ background: 'linear-gradient(to right, #fce64d -30%, rgb(255, 106, 0)100%)' }} 
+                        style={{ background: 'linear-gradient(to right, #fce64d -30%, rgb(255, 106, 0)100%)' }}
                         icon='arrow right'
                         labelPosition='right'
                         content="Un paso Mas"
@@ -165,4 +164,4 @@ const mapStateToProps = (state) => {
         slackApi: state.auth.slackApi,
     };
 };
-export default connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis, detailUsNews })(FomrularioGlobal);
+export default connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis, detailUsNews, popupBot })(FomrularioGlobal);

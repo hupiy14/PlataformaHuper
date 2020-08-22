@@ -1,11 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import './timer.css';
-import { responseEmWidth } from '../../../lib/responseUtils';
 import { sendMessage, popupBot } from '../../../actions';
 import moment from 'moment';
-import firebase from 'firebase';
 import { numeroTareasTs } from '../../modules/chatBot/actions';
+import { dataBaseManager } from '../../../lib/utils';
 
 let timeoutLength = 5000;
 let timeoutLength3 = 5000;
@@ -16,6 +15,13 @@ class timerClock extends React.Component {
         actividades: null, tiempos: 0, horamaxima: 8, primero: null, aux: null
         , index: 0, delay: .02, mensaje: null, actualD: false,
 
+    }
+    
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
     }
 
     componentDidMount() {
@@ -66,7 +72,7 @@ class timerClock extends React.Component {
 
     renderConsulta() {
         this.queryConsulta = `Usuario-Task/${this.props.userId}/${moment().format("YYYYMMDD")}`;
-        const starCountRef3 = firebase.database().ref().child(this.queryConsulta);
+        const starCountRef3 = this.componentDatabase('get', this.queryConsulta);
         this.press = true;
         if (this.timepoTask === undefined)
             starCountRef3.on('value', (snapshot) => {
@@ -151,7 +157,7 @@ class timerClock extends React.Component {
             this.props.sendMessage(this.sessionTime);
             this.sessionClock.setTime(this.sessionTime);
         }
-   
+
     }
 
 
@@ -171,9 +177,8 @@ class timerClock extends React.Component {
                 return task[key];
             });
             if (this.timepoAnt !== acum) {
-                firebase.database().ref(this.queryConsulta).update({
-                    ...this.task
-                });
+
+                this.componentDatabase('update', this.queryConsulta, { ...this.task });
                 this.timepoAnt = acum;
             }
         }
@@ -339,10 +344,7 @@ class timerClock extends React.Component {
                 }
                 return task[key];
             });
-
-            firebase.database().ref(this.queryConsulta).update({
-                ...this.timepoTask
-            });
+            this.componentDatabase('update', this.queryConsulta, {  ...this.timepoTask });
             this.sessionClock.setTime(this.sessionTime);
             this.sessionClock.start();
             return true;

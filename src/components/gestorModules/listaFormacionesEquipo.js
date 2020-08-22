@@ -1,9 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
 import { listaFormaciones } from '../modules/chatBot/actions';
 import { Progress, Segment, Modal, Header, Button, Popup, List } from 'semantic-ui-react';
-
+import { dataBaseManager } from '../../lib/utils';
+import { popupBot } from '../../actions';
 class ListaFormacionEquipo extends React.Component {
     state = { modalOpen: false, videoSrc0: 'r9SI6-yKCpA', videoSrc: '', listaFormacionesEquipo: {}, listaFormaciones: {}, seleccion: null, formacion: null, typeform: null }
 
@@ -11,12 +11,19 @@ class ListaFormacionEquipo extends React.Component {
 
     handleClose = () => this.setState({ modalOpen: false })
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     cargarInicio() {
         let variable = [];
         Object.keys(this.props.equipox).map((key, index) => {
             const us = key;
-            const starCountRef = firebase.database().ref().child(`Usuario-Formcion/${key}`);
+
+            const starCountRef = this.componentDatabase('get', `Usuario-Formcion/${key}`);
             starCountRef.on('value', (snapshot) => {
 
                 const valor = snapshot.val();
@@ -31,7 +38,7 @@ class ListaFormacionEquipo extends React.Component {
 
 
 
-        const starCountRef2 = firebase.database().ref().child(`Formacion`);
+        const starCountRef2 = this.componentDatabase('get', `Formacion`);
         starCountRef2.on('value', (snapshot) => {
 
             const valor = snapshot.val();
@@ -188,13 +195,10 @@ class ListaFormacionEquipo extends React.Component {
 
 
     AgregarFormacionHuper() {
-        if (this.state.seleccion) {
-            let updates = {};
-            updates[`Usuario-Formcion/${this.props.keytrabajo}/${this.state.seleccion}`] = this.state.formacion;
-            // console.log(updates);
-            firebase.database().ref().update(updates);
-            this.cargarInicio();
 
+        if (this.state.seleccion) {
+            this.componentDatabase('update', `Usuario-Formcion/${this.props.keytrabajo}/${this.state.seleccion}`, this.state.formacion);
+            this.cargarInicio();
         }
     }
 
@@ -447,7 +451,7 @@ const mapAppStateToProps = (state) => (
     });
 
 
-export default connect(mapAppStateToProps, { listaFormaciones })(ListaFormacionEquipo);
+export default connect(mapAppStateToProps, { listaFormaciones, popupBot })(ListaFormacionEquipo);
 
 
 

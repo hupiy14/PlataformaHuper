@@ -3,6 +3,7 @@ import image from '../../images/logo.png';
 import { connect } from 'react-redux';
 import history from '../../history';
 import '../styles/styleLoader.css';
+import GoogleAuth from '../loginGoogle/GoogleAuth';
 
 let timeoutLength2 = 30000;
 let timeoutLength = 3000;
@@ -35,7 +36,7 @@ class giroPlataforma extends React.Component {
             <div className="box" style={{ position: 'relative', top: "5em", width: '15em' }}>
                 <h1>Te recomendamos que gires tu pantalla...</h1>
                 <div className="loader9"></div>
-
+               
             </div >
 
         );

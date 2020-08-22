@@ -5,8 +5,7 @@ import { nuevoUsuarios, detailUsNews } from '../../components/modules/chatBot/ac
 import { slackApis } from '../../actions/index';
 import { signOut, usuarioDetails } from '../../actions';
 import history from '../../history';
-import firebase from 'firebase';
-import { Link } from 'react-router-dom';
+
 
 const opciones = [
     { key: 'H', text: 'Huper', value: 'Huper' },

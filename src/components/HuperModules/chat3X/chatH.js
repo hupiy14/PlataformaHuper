@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
 import './chat.scss';
 import texture1e from '../../../images/texture3.jpg';
 import boule from '../../../images/boule.DAE';

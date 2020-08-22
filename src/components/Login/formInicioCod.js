@@ -3,9 +3,9 @@ import React from 'react';
 import { Button, Form, Icon, Modal, Message } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { detailUsNews, nuevoUsuarios } from '../modules/chatBot/actions';
-import { signOut } from '../../actions';
+import { signOut, popupBot } from '../../actions';
 import history from '../../history';
-import firebase from 'firebase';
+import { dataBaseManager } from '../../lib/utils';
 
 class FomrularioGlobal extends React.Component {
 
@@ -15,8 +15,15 @@ class FomrularioGlobal extends React.Component {
         mensajeCodigo: { titulo: 'Falta campos por llenar', detalle: 'Debes diligenciar todos los campos' }
     }
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
+
     continuar = () => {
-        const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${this.props.detailUsNew? this.props.detailUsNew.codigo: null}`);
+        const starCountRef = this.componentDatabase('get', `Codigo-Acceso/${this.props.detailUsNew ? this.props.detailUsNew.codigo : null}`);
         starCountRef.on('value', (snapshot) => {
             const cod = snapshot.val();
             if (cod) {
@@ -46,13 +53,11 @@ class FomrularioGlobal extends React.Component {
     }
 
     cancelar = () => {
-       
+
         this.props.signOut();
         this.props.nuevoUsuarios(false);
         this.props.signOutObj.signOut();
         this.cerraForm();
-      
-      
     }
 
 
@@ -71,7 +76,7 @@ class FomrularioGlobal extends React.Component {
     }
     close = () => this.setState({ open: false })
     render() {
-      
+
         return (
             <Modal size='tiny' open={true} >
                 <Modal.Header>Bienvenido a Hupity</Modal.Header>
@@ -82,7 +87,7 @@ class FomrularioGlobal extends React.Component {
                                 value={this.props.detailUsNew ? this.props.detailUsNew.codigo : null}
                                 onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, codigo: value })}
                             />
-                            <Message  size="small"
+                            <Message size="small"
                                 error
                                 header={this.state.mensajeCodigo.titulo}
                                 content={this.state.mensajeCodigo.detalle}
@@ -91,10 +96,10 @@ class FomrularioGlobal extends React.Component {
                     </Modal.Description>
                 </Modal.Content>
                 <Modal.Actions >
-                    <Button style={{background: "#d5d6d5"}} onClick={this.cancelar}>
+                    <Button style={{ background: "#d5d6d5" }} onClick={this.cancelar}>
                         Cancelar
                     </Button>
-                    <Button style={{ background: '#fe10bd', color: "aliceblue"}} onClick={this.continuar}>
+                    <Button style={{ background: '#fe10bd', color: "aliceblue" }} onClick={this.continuar}>
                         Continuemos  <Icon name="arrow right"> </Icon>
                     </Button>
                 </Modal.Actions>
@@ -111,5 +116,5 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, { signOut, detailUsNews, nuevoUsuarios })(FomrularioGlobal);
+export default connect(mapStateToProps, { signOut, detailUsNews, nuevoUsuarios, popupBot })(FomrularioGlobal);
 

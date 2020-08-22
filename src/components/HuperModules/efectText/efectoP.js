@@ -6,9 +6,8 @@ import { ApiAiClient } from 'api-ai-javascript';
 import { sendMessage, chatOff, endChatMes, popupBot, mensajeChat } from '../../../actions';
 import { consultas } from '../../modules/chatBot/actions';
 import TimerClock from '../timerClock/timerr';
-import firebase from 'firebase';
 import moment from 'moment';
-
+import { dataBaseManager } from '../../../lib/utils';
 
 const timeoutLength = 2000;
 const timeoutLength2 = 2000;
@@ -43,6 +42,13 @@ class efectText extends React.Component {
     }
 
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
+
     componentWillMount() {
         this.secondsAcum = 0;
         this.stateAnt = null;
@@ -70,7 +76,7 @@ class efectText extends React.Component {
 
 
                 this.queryConsulta = `Usuario-Task/${this.props.userId}/${moment().format("YYYYMMDD")}`;
-                const consultaTask = firebase.database().ref().child(this.queryConsulta);
+                const consultaTask = this.componentDatabase('get', this.queryConsulta);
                 this.consultaTareas(consultaTask);
             }
             else {
@@ -78,7 +84,7 @@ class efectText extends React.Component {
             }
             //consulta pendientes
             this.pendingConsulta = `Usuario-Pendiente/${this.props.userId}`;
-            const consultaPending = firebase.database().ref().child(this.pendingConsulta);
+            const consultaPending = this.componentDatabase('get', this.pendingConsulta);
             let pending = null;
             consultaPending.on('value', (snapshot) => {
                 if (snapshot.val() !== null) {
@@ -178,7 +184,7 @@ class efectText extends React.Component {
         if (nivel !== 'key')
             this.setState({ nivel });
         else if (nivel === 'key' && keyN !== this.state.nivel) {
-            let newPostKey2 = firebase.database().ref().child(this.queryConsulta).push().key;
+            let newPostKey2 = this.componentDatabase('key', this.queryConsulta);
             this.setState({ keyNivel: newPostKey2 });
             this.setState({ nivel: newPostKey2 });
         }
@@ -359,12 +365,10 @@ class efectText extends React.Component {
                     }
 
                     if (this.state.nuevoParam === value) {
-                        let newPostKey2 = firebase.database().ref().child('Usario-Pendiente').push().key;
+                        let newPostKey2 = this.componentDatabase('key', 'Usario-Pendiente');
                         registro[this.state.propertieBD] = newPostKey2;
-                        firebase.database().ref(`Usuario-Pendiente/${this.props.userId}/${newPostKey2}`).update({
-                            "concepto": value, "id": newPostKey2, flujoAux: this.state.flujoAux, "estado": "activo", "tipo": this.state.propertieBD
-                        });
 
+                        this.componentDatabase('update', `Usuario-Pendiente/${this.props.userId}/${newPostKey2}`, { "concepto": value, "id": newPostKey2, flujoAux: this.state.flujoAux, "estado": "activo", "tipo": this.state.propertieBD });
                     }
                     if (this.state.stay !== null) {
                         this.setState({ stayValue: registro[this.state.propertieBD] });
@@ -389,12 +393,12 @@ class efectText extends React.Component {
                     this.state.registro["etapa"] = this.state.registro["etapa"] + 1;
                     let consultP = this.state.consultaParams === null || this.state.consultaParams === undefined ? '' : this.state.consultaParams;
                     if (this.state.consultaParams) {
-                        firebase.database().ref(this.queryConsulta + consultP + '/' + this.state.propertieBD).set(registro[this.state.propertieBD]);
+
+                        this.componentDatabase('insert', this.queryConsulta + consultP + '/' + this.state.propertieBD, registro[this.state.propertieBD]);
                     }
                     else {
-                        firebase.database().ref(this.queryConsulta).update({
-                            ... this.state.registro
-                        });
+
+                        this.componentDatabase('update', this.queryConsulta, { ... this.state.registro });
                     }
 
                 }
@@ -505,7 +509,7 @@ class efectText extends React.Component {
                         break;
                 }
 
-            }, timeoutLength *2)
+            }, timeoutLength * 2)
     }
 
     organizarConsulta(parametros) {
@@ -524,7 +528,7 @@ class efectText extends React.Component {
                 consulta = consulta.replace(prop, parametros[prop]);
             }
 
-            const starCountRef3 = firebase.database().ref().child(consulta);
+            const starCountRef3 = this.componentDatabase('key', consulta);
             return starCountRef3.on('value', (snapshot) => {
                 let objetos = snapshot.val();
 
@@ -603,16 +607,12 @@ class efectText extends React.Component {
     Cerrar = () => {
         this.timeout10 = setTimeout(() => {
             if (this.state.pendingOk !== null) {
-                firebase.database().ref(this.pendingConsulta).update({
-                    ... this.state.pendingOk
-                });
+                this.componentDatabase('update', this.pendingConsulta, { ...this.state.pendingOk });
             }
             this.state.registro["etapa"] = this.state.registro["etapa"] + 1;
             this.state.registro["estado"] = "completo";
             if (this.state.consultaParams === null || this.state.consultaParams === undefined) {
-                firebase.database().ref(this.queryConsulta).update({
-                    ... this.state.registro
-                });
+                this.componentDatabase('update', this.queryConsulta, { ...this.state.registro });
             }
             this.setState({ registro: null })
             this.props.endChatMes(true);
@@ -721,9 +721,8 @@ class efectText extends React.Component {
                 registro["h-fin"] = moment().add('seconds', this.props.onMessage).format('h:mm:ss a');
                 registro["facha"] = moment().format("MMM Do YY");
             }
+            this.componentDatabase('update', this.queryConsulta + consultP, { ...registro });
 
-            firebase.database().ref(this.queryConsulta + consultP).update(
-                { ...registro });
         }
 
         else {

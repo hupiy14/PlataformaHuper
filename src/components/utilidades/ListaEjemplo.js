@@ -1,8 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
 import { listaFormaciones, pasoOnboardings } from '../modules/chatBot/actions';
 import { Progress, Segment, Modal, Header, Button } from 'semantic-ui-react';
+import { dataBaseManager } from '../../lib/utils';
+import { popupBot } from '../../actions';
 const timeoutLength = 100000;
 
 class ListEjemplo extends React.Component {
@@ -13,12 +14,19 @@ class ListEjemplo extends React.Component {
     handleClose = () => this.setState({ modalOpen: false })
 
     componentDidMount() {
-        // console.log(this.example2);
-        const starCountRef = firebase.database().ref().child(`Usuario-Formcion/${this.props.userId}`);
+
+        const starCountRef = this.componentDatabase('get', `Usuario-Formcion/${this.props.userId}`);
         starCountRef.on('value', (snapshot) => {
             this.props.listaFormaciones(snapshot.val());
         });
 
+    }
+
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
     }
 
     handlePaso6 = () => {
@@ -171,7 +179,7 @@ const mapAppStateToProps = (state) => (
     });
 
 
-export default connect(mapAppStateToProps, { listaFormaciones, pasoOnboardings })(ListEjemplo);
+export default connect(mapAppStateToProps, { listaFormaciones, pasoOnboardings, popupBot })(ListEjemplo);
 
 
 

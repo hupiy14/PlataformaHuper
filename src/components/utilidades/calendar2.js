@@ -1,9 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import Calendar from 'react-calendar';
-import firebase from 'firebase';
 import { Popup, Button } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
+import { dataBaseManager } from '../../lib/utils';
+import { popupBot } from '../../actions';
 
 class CalendarApp extends React.Component {
     state = {
@@ -22,12 +23,18 @@ class CalendarApp extends React.Component {
         return Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
     };
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     componentDidMount() {
 
         const fecha = new Date();
 
-        const nameRef2 = firebase.database().ref().child(`Usuario-DiaTeletrabajo/${this.props.userId}/${fecha.getFullYear()}/${this.getWeekNumber(fecha)}`)
+        const nameRef2 = this.componentDatabase('get', `Usuario-DiaTeletrabajo/${this.props.userId}/${fecha.getFullYear()}/${this.getWeekNumber(fecha)}`);
         nameRef2.on('value', (snapshot2) => {
             if (snapshot2.val()) {
                 this.setState({ date: new Date(snapshot2.val().year, snapshot2.val().mes, snapshot2.val().dia) });
@@ -42,13 +49,13 @@ class CalendarApp extends React.Component {
     SelecionarDiaTeletrabajo = () => {
 
         const diat = this.state.date;
-
-        firebase.database().ref(`Usuario-DiaTeletrabajo/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}`).set({
+        this.componentDatabase('insert', `Usuario-DiaTeletrabajo/${this.props.userId}/${diat.getFullYear()}/${this.getWeekNumber(diat)}`, {
             FecgaRegistro: new Date().toString(),
             dia: diat.getDate(),
             mes: diat.getMonth(),
             year: diat.getFullYear(),
         });
+
     }
 
     validarFechaSemana() {
@@ -90,10 +97,10 @@ class CalendarApp extends React.Component {
                 {btAtras}
                 <Popup trigger={
 
-                        <button className="ui button center yellow  calendarioF" onClick={this.SelecionarDiaTeletrabajo}>
-                            <i className="calendar check outline icon"></i>
+                    <button className="ui button center yellow  calendarioF" onClick={this.SelecionarDiaTeletrabajo}>
+                        <i className="calendar check outline icon"></i>
                             Seleccionar </button>
-                    }
+                }
 
                     on='click'
                     hideOnScroll
@@ -115,4 +122,4 @@ const mapAppStateToProps = (state) => (
 
     });
 
-export default connect(mapAppStateToProps)(CalendarApp);
+export default connect(mapAppStateToProps, { popupBot })(CalendarApp);

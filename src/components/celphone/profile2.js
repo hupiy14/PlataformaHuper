@@ -2,25 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import '../../components/styles/ingresoHupity.css';
 import { chatOn, chatOff, mensajeAsanas, popupBot, changeImage } from '../../actions';
-import { Card, Image, Button, Form, Message, Modal, Header, Input } from 'semantic-ui-react';
+import { Image, Button, Form, Modal, Header, Input } from 'semantic-ui-react';
 import history from '../../history';
-import firebase from 'firebase';
-import zonaEspana from '../utilidades/zonaEspana';
 import axios from 'axios';
-import drive from '../../images/drive.png';
-import calendar from '../../images/calendar.png';
-import slack from '../../images/slack.png';
-import trelloImg from '../../images/trello.png';
-import asana from '../../images/asana.png';
-import googleSheet from '../../images/googleSheet.png';
-import clickup from '../../images/clickup.png';
-import asanaH from '../../apis/asana';
-import { clientIdAsana, clientSecrectAsana, clientSlack } from '../../apis/stringConnection';
-
-import Select from 'react-select';
-import chroma from 'chroma-js';
-
-let timelenght = 20000;
+import { clientIdAsana, clientSecrectAsana } from '../../apis/stringConnection';
+import { dataBaseManager } from '../../lib/utils';
 //const Asana = require('asana');
 let Trello = require("trello");
 let trello = null;// new Trello("bb3cab1a303c7bf996d56bb46db2a46f", "136434ae14c54519e4af94ed7f48ec43d710e777bb1bbe0b06cdda6368f1d44e");
@@ -65,6 +51,7 @@ class Profile extends React.Component {
             return;
         }
     }
+
     componentDidMount() {
 
         //se consulta todas las empresas
@@ -74,7 +61,7 @@ class Profile extends React.Component {
             return;
         }
 
-        const starCountRef = firebase.database().ref().child('empresa');
+        const starCountRef = this.componentDatabase('get', 'empresa');
         starCountRef.on('value', (snapshot) => {
             this.setState({ listaEmpresas: snapshot.val() })
         });
@@ -88,8 +75,6 @@ class Profile extends React.Component {
             this.setState({ calendarIn: 0 });
         if (this.props.usuarioDetail.usuario.slack)
             this.setState({ slackIn: 0 });
-
-
 
 
         if (this.props.mensajeAsana === 'Slack') {
@@ -106,19 +91,24 @@ class Profile extends React.Component {
 
     }
 
-  
+
+
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
 
 
-
-   
 
 
 
 
     componentDidUpdate() {
         if (this.state.trelloApi && !this.state.tokenTrello) {
-            const starCountRef2 = firebase.database().ref().child(`Usuario-TokenTrelloTemp/${this.props.usuarioDetail.idUsuario}`);
+            const starCountRef2 = this.componentDatabase('get', `Usuario-TokenTrelloTemp/${this.props.usuarioDetail.idUsuario}`);
             starCountRef2.on('value', (snapshot2) => {
 
                 if (snapshot2.val()) {
@@ -129,11 +119,10 @@ class Profile extends React.Component {
                         this.setState({ usuarioTrello: res[0].idMember });
                         trello.getBoards(res[0].idMember).then((Response) => { this.setState({ trelloListaDashBoard: Response }) })
 
-
-                        firebase.database().ref(`Usuario-Trello/${this.props.usuarioDetail.idUsuario}`).set({
+                        this.componentDatabase('insert', `Usuario-Trello/${this.props.usuarioDetail.idUsuario}`, {
                             usuarioTrello: res[0].idMember,
                             trelloApi: this.state.trelloApi,
-                            tokenTrello: snapshot2.val().token,
+                            tokenTrello: snapshot2.val().token
                         });
 
                         this.renderCloseTrello();
@@ -145,10 +134,10 @@ class Profile extends React.Component {
             });
         }
     }
-    
 
 
-    
+
+
     renderConstruccion() {
         let contruir = <Form >
             <div className="box" style={{ top: '2.2em' }}>
@@ -189,24 +178,23 @@ class Profile extends React.Component {
             if (!this.state.canalEquipoSlack || this.state.canalEquipoSlack === '')
                 this.setState({ slackIn: '100%' });
 
-
-
-            firebase.database().ref(`Usuario-Slack/${this.props.usuarioDetail.idUsuario}`).update({
+            this.componentDatabase('update', `Usuario-Slack/${this.props.usuarioDetail.idUsuario}`, {
                 gestor: this.state.canalGestorSlack,
                 notifiacaiones: this.state.canalNotifiacionesSlack,
                 reporting: this.state.canalReportesSlack,
                 equipo: this.state.canalEquipoSlack,
             });
-            firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).update({
+
+            this.componentDatabase('update', `Usuario/${this.props.usuarioDetail.idUsuario}`, {
                 slack: true,
             });
+
         }
         else if (this.state.open === 'drive') {
             this.setState({ driveIn: '0%' });
             if (!this.state.codigoWSdrive || this.state.codigoWSdrive === '')
                 this.setState({ driveIn: '100%' });
-
-            firebase.database().ref(`Usuario-WS/${this.props.usuarioDetail.usuario.empresa}/${this.props.usuarioDetail.usuario.equipo}/${this.props.usuarioDetail.idUsuario}`).set({
+            this.componentDatabase('insert', `Usuario-WS/${this.props.usuarioDetail.usuario.empresa}/${this.props.usuarioDetail.usuario.equipo}/${this.props.usuarioDetail.idUsuario}`, {
                 linkWs: this.state.codigoWSdrive,
                 fechaCreado: new Date(),
             });
@@ -217,12 +205,11 @@ class Profile extends React.Component {
             this.setState({ calendarIn: '0%' });
             if (!this.state.calendar || this.state.calendar === '')
                 this.setState({ calendarIn: '100%' });
-
-            firebase.database().ref(`Usuario-CalendarGoogle/${this.props.usuarioDetail.idUsuario}`).set({
+            this.componentDatabase('insert', `Usuario-CalendarGoogle/${this.props.usuarioDetail.idUsuario}`, {
                 idCalendar: this.state.idCalendar,
                 fechaCreado: new Date(),
             });
-            firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).update({
+            this.componentDatabase('update', `Usuario/${this.props.usuarioDetail.idUsuario}`, {
                 calendar: true,
             });
         }
@@ -231,7 +218,7 @@ class Profile extends React.Component {
             if (!this.state.trelloApi || this.state.trelloApi === '' || !this.state.trelloDashboard || this.state.trelloDashboard === '' || !this.state.listaObjetivostoDO || this.state.listaObjetivostoDO === '')
                 this.setState({ trelloIn: '100%' });
 
-            firebase.database().ref(`Usuario-Trello/${this.props.usuarioDetail.idUsuario}`).update({
+            this.componentDatabase('update', `Usuario-Trello/${this.props.usuarioDetail.idUsuario}`, {
                 usuarioTrello: this.state.usuarioTrello,
                 trelloApi: this.state.trelloApi,
                 tokenTrello: this.state.tokenTrello,
@@ -239,28 +226,27 @@ class Profile extends React.Component {
                 listaObjetivostoDO: this.state.listaObjetivostoDO ? this.state.listaObjetivostoDO : null,
                 listaOBjetivosDone: this.state.listaOBjetivosDone ? this.state.listaOBjetivosDone : null,
                 listaObjetivosTheEnd: this.state.listaObjetivosTheEnd ? this.state.listaObjetivosTheEnd : null,
-
             });
-            firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).update({
+
+            this.componentDatabase('update', `Usuario/${this.props.usuarioDetail.idUsuario}`, {
                 trello: true,
             });
         }
 
+
         else if (this.state.open === 'asana') {
 
-            firebase.database().ref(`Usuario-Asana/${this.props.usuarioDetail.idUsuario}`).update({
+            this.componentDatabase('update', `Usuario-Asana/${this.props.usuarioDetail.idUsuario}`, {
                 project: this.state.projectsIdAsana,
                 section: this.state.sectionsAsana,
-
             });
 
-            firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).update({
+            this.componentDatabase('update', `Usuario/${this.props.usuarioDetail.idUsuario}`, {
                 asana: true,
             });
         }
         else {
-            firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).set({
-                ...this.props.usuarioDetail.usuario,
+            this.componentDatabase('update', `Usuario/${this.props.usuarioDetail.idUsuario}`, {
                 usuario: this.state.nombreUsuario,
                 cargo: this.state.cargo,
                 area: this.state.area,
@@ -275,14 +261,13 @@ class Profile extends React.Component {
                 wsCompartida: this.state.codigoWSdrive ? this.state.codigoWSdrive : this.props.usuarioDetail.usuario.wsCompartida ? this.props.usuarioDetail.usuario.wsCompartida : null,
                 diaSemana: this.state.diaSemana ? this.state.diaSemana : 0,
             });
+
             if (this.props.usuarioDetail.rol === '2')
-                firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`).set({
+                this.componentDatabase('update', `Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`, {
                     ...this.state.nivelEquipo,
                     nivel: this.state.nivelEquipo.nivel,
                 });
-
         }
-
         //  this.setState({ activo: true });
     }
 
@@ -291,7 +276,7 @@ class Profile extends React.Component {
     renderCargar(pantalla) {
         this.setState({ activo: false });
         if (pantalla === 'slack') {
-            const starCountRef = firebase.database().ref().child(`Usuario-Slack/${this.props.usuarioDetail.idUsuario}`);
+            const starCountRef =  this.componentDatabase('get', `Usuario-Slack/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
                     console.log(snapshot.val());
@@ -318,7 +303,7 @@ class Profile extends React.Component {
             });
         }
         else if (pantalla === 'drive') {
-            const starCountRef = firebase.database().ref().child(`Usuario-WS/${this.props.usuarioDetail.usuario.empresa}/${this.props.usuarioDetail.usuario.equipo}/${this.props.usuarioDetail.idUsuario}`);
+            const starCountRef =  this.componentDatabase('get', `Usuario-WS/${this.props.usuarioDetail.usuario.empresa}/${this.props.usuarioDetail.usuario.equipo}/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
                     this.setState({ codigoWSdrive: snapshot.val().linkWs ? snapshot.val().linkWs : '' });
@@ -334,7 +319,7 @@ class Profile extends React.Component {
         }
 
         else if (pantalla === 'calendar') {
-            const starCountRef = firebase.database().ref().child(`Usuario-CalendarGoogle/${this.props.usuarioDetail.idUsuario}`);
+            const starCountRef = this.componentDatabase('get', `Usuario-CalendarGoogle/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
                     this.setState({ idCalendar: snapshot.val().idCalendar ? snapshot.val().idCalendar : '' });
@@ -351,7 +336,7 @@ class Profile extends React.Component {
         }
 
         else if (pantalla === 'asana') {
-            const starCountRef = firebase.database().ref().child(`Usuario-Asana/${this.props.usuarioDetail.idUsuario}`);
+            const starCountRef = this.componentDatabase('get', `Usuario-Asana/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
                     this.setState({ asana: snapshot.val() });
@@ -378,8 +363,7 @@ class Profile extends React.Component {
             });
         }
         else if (pantalla === 'trello') {
-
-            const starCountRef = firebase.database().ref().child(`Usuario-Trello/${this.props.usuarioDetail.idUsuario}`);
+            const starCountRef = this.componentDatabase('get', `Usuario-Trello/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
                     this.setState({ trelloApi: snapshot.val().trelloApi ? snapshot.val().trelloApi : '' });
@@ -421,14 +405,13 @@ class Profile extends React.Component {
             this.setState({ imagenPerfil: this.props.usuarioDetail.usuario.imagenPerfil ? this.props.usuarioDetail.usuario.imagenPerfil : null });
             this.setState({ telefono: this.props.usuarioDetail.usuario.telefono ? this.props.usuarioDetail.usuario.telefono : null });
             this.setState({ lugar: this.props.usuarioDetail.usuario.lugar ? this.props.usuarioDetail.usuario.lugar : null });
-
-            const starCountRef = firebase.database().ref().child(`empresa/${this.props.usuarioDetail.usuario.empresa}`);
+            const starCountRef = this.componentDatabase('get', `empresa/${this.props.usuarioDetail.usuario.empresa}`);
             starCountRef.on('value', (snapshot) => {
                 this.setState({ empresa: snapshot.val().industria })
             });
 
             if (this.props.usuarioDetail.rol === '2') {
-                const starCountRef2 = firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`);
+                const starCountRef2 = this.componentDatabase('get', `Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`);
                 starCountRef2.on('value', (snapshot) => {
                     if (snapshot.val())
                         this.setState({ nivelEquipo: snapshot.val() })
@@ -496,7 +479,7 @@ class Profile extends React.Component {
                         top: '-13em'
                     }} />
                 <Button circular color="pink" style={{ position: 'relative', top: '-4.5em', left: '-48%' }} icon="image" onClick={() => { this.setState({ open: null }); this.renderCambiarImagenPerfil(); }}></Button>
-        
+
                 <div className="ui segment" style={{ height: tamano, top: '-1.8em', left: '34%', width: '56%', background: 'linear-gradient(to top, #e0399738 0.5%, rgb(255, 255, 255) 0.6%, rgba(245, 242, 224, 0) 200%)' }}>
                     <Modal open={this.state.openImagen}
                         closeOnEscape={false}
@@ -511,13 +494,13 @@ class Profile extends React.Component {
                                 this.state.imagenMostrar ? this.state.imagenMostrar : 'https://react.semantic-ui.com/images/avatar/large/rachel.png'} />
                             <Modal.Description >
                                 <Header>Selecciona tu fondo</Header>
-                                <Input   label='Url de la imagen' placeholder='https://react.semantic-ui.com/images...'
+                                <Input label='Url de la imagen' placeholder='https://react.semantic-ui.com/images...'
                                     onClick={() => { this.renderCargarImagen(this.state.imagenFondo); }}
                                     value={this.state.imagenFondo}
                                     onChange={(e) => { this.setState({ imagenFondo: e.target.value }); this.renderCargarImagen(e.target.value); }}>
                                 </Input>
                                 <Header>Selecciona tu perfil</Header>
-                                <Input  label='Url de la imagen' placeholder='https://react.semantic-ui.com/images...'
+                                <Input label='Url de la imagen' placeholder='https://react.semantic-ui.com/images...'
                                     onClick={() => { this.renderCargarImagen(this.state.imagenPerfil); }}
                                     value={this.state.imagenPerfil}
                                     onChange={(e) => { this.setState({ imagenPerfil: e.target.value }); this.renderCargarImagen(e.target.value); }}>
@@ -537,7 +520,7 @@ class Profile extends React.Component {
                         </Modal.Actions>
 
                     </Modal>
-        
+
                 </div>
             </div>
 

@@ -6,14 +6,13 @@ import { ApiAiClient } from 'api-ai-javascript';
 import { sendMessage, chatOff, endChatMes, popupBot, mensajeChat } from '../../../actions';
 import { consultas } from '../../modules/chatBot/actions';
 import TimerClock from '../timerClock/timerr';
-import firebase from 'firebase';
 import moment from 'moment';
 import asanaH from '../../../apis/asana';
 import { clientIdAsana, clientSecrectAsana } from '../../../apis/stringConnection';
 import axios from 'axios';
 import chroma from 'chroma-js';
-import { IconGroup } from 'semantic-ui-react';
 import { listTemporalObject, listTemporalOpciones, rutaHupperSingle, randomMessage } from '../../../lib/utils';
+import { dataBaseManager } from '../../../lib/utils';
 
 let Trello = require("trello");
 const timeoutLength = 1500;
@@ -53,6 +52,13 @@ class listActividades extends React.Component {
         otherFlow: null, objetoX: null, objetoP: null, pasoAux: null, btAux: null, vartemp: null, varstemp: [], acumTalento: null, acumImpacto: null, acumCompromiso: null, acumYo: null, acumEquipo: null, acumOrg: null, sleep: null,
     }
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
+
     componentWillMount() {
         this.secondsAcum = 0;
         this.stateAnt = null;
@@ -72,10 +78,6 @@ class listActividades extends React.Component {
         this.setState({ registro: { ...this.state.registro, 'etapa': 0 } });
         //this.props.mensajeChat({ mensaje: 'prueba', agent: 'task' });
         let etapa = null;
-        //     console.log(this.props.mensajeChatBot)
-
-
-        ///tareas
 
         if (this.props.mensajeChatBot && this.props.mensajeChatBot.agent === 'soft') {
 
@@ -94,7 +96,7 @@ class listActividades extends React.Component {
             }
             else {
                 this.queryConsulta = `Usuario-Task/${this.props.userId}/${moment().format("YYYYMMDD")}`;
-                const starCountRef3 = firebase.database().ref().child(this.queryConsulta);
+                const starCountRef3 = this.componentDatabase('get', this.queryConsulta);
                 let ttiempo = 0;
                 starCountRef3.on('value', (snapshot) => {
                     if (snapshot.val() !== null && snapshot.val().estado !== 'completo') {
@@ -145,7 +147,7 @@ class listActividades extends React.Component {
     pendingC = () => {
         this.timeout = setTimeout(() => {
             this.pendingConsulta = `Usuario-Pendiente/${this.props.userId}`;
-            const starCountRef4 = firebase.database().ref().child(this.pendingConsulta);
+            const starCountRef4 = this.componentDatabase('get', this.pendingConsulta);
             let pending = null;
             starCountRef4.on('value', (snapshot) => {
                 if (snapshot.val() !== null && this.state.etapa === null) {
@@ -254,7 +256,7 @@ class listActividades extends React.Component {
         if (nivel !== 'key')
             this.setState({ nivel });
         else if (nivel === 'key' && keyN !== this.state.nivel) {
-            let newPostKey2 = firebase.database().ref().child(this.queryConsulta).push().key;
+            let newPostKey2 = this.componentDatabase('key', this.queryConsulta);
             this.setState({ keyNivel: newPostKey2 });
             this.setState({ nivel: newPostKey2 });
         }
@@ -293,11 +295,11 @@ class listActividades extends React.Component {
 
 
         activity.result.fulfillment.messages.forEach(function (element) {
-            if (ind  + that.addAct === Number(that.props.usuarioDetail.usuario.etapa))
+            if (ind + that.addAct === Number(that.props.usuarioDetail.usuario.etapa))
                 if (element.payload !== undefined) {
 
                     let nuevo = element.payload;
-                
+
                     if (that.state.pasoFlujo > 1 && that.state.pasoFlujo - 1 <= that.state.etapa && that.state.etapa != null) {
                         that.borrarDatos();
                         that.adelantar(that.state.flujo);
@@ -469,12 +471,12 @@ class listActividades extends React.Component {
         if (this.state.registro[undefined].estado && queryConsulta.includes('OKR')) {
 
             let id = queryConsulta.split('/')[2];
-            const starCountRef2 = firebase.database().ref().child(queryConsulta);
+            const starCountRef2 = this.componentDatabase('get', queryConsulta);
             starCountRef2.on('value', (snapshot2) => {
                 if (snapshot2.val() && snapshot2.val().tipo) {
                     switch (snapshot2.val().tipo) {
                         case 'asana':
-                            const starCountRef = firebase.database().ref().child(`Usuario-Asana/${this.props.usuarioDetail.idUsuario}`);
+                            const starCountRef = this.componentDatabase('get', `Usuario-Asana/${this.props.usuarioDetail.idUsuario}`);
                             starCountRef.on('value', (snapshot) => {
 
                                 axios.post(`https://cors-anywhere.herokuapp.com/https://app.asana.com/-/oauth_token`, null, {
@@ -500,7 +502,7 @@ class listActividades extends React.Component {
 
                             break;
                         case 'trello':
-                            const starCountRef2 = firebase.database().ref().child(`Usuario-Trello/${this.props.usuarioDetail.idUsuario}`);
+                            const starCountRef2 = this.componentDatabase('get', `Usuario-Trello/${this.props.usuarioDetail.idUsuario}`);
                             starCountRef2.on('value', (snapshot) => {
 
                                 let trelloClient = snapshot.val();
@@ -600,9 +602,8 @@ class listActividades extends React.Component {
             usProp[this.state.acumOrg] = this.props.usuarioDetail.usuario.acumOrg ? this.props.usuarioDetail.usuario.acumOrg : 0 + Number(value);
         }
 
-        firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).update({
-            ...usProp
-        });
+        this.componentDatabase('update', `Usuario/${this.props.usuarioDetail.idUsuario}`, { ...usProp });
+
 
     }
 
@@ -678,10 +679,10 @@ class listActividades extends React.Component {
 
                     if (this.state.nuevoParam === value && (this.paramAnt === null || !this.paramAnt.find(element => element.value === value))) {
 
-                        let newPostKey2 = firebase.database().ref().child('Usario-Pendiente').push().key;
+                        let newPostKey2 = this.componentDatabase('key', `Usario-Pendiente`);
                         registro[this.state.propertieBD] = newPostKey2;
                         this.paramAnt.push({ key: newPostKey2, value });
-                        firebase.database().ref(`Usuario-Pendiente/${this.props.userId}/${newPostKey2}`).update({
+                        this.componentDatabase('update', `Usuario-Pendiente/${this.props.userId}/${newPostKey2}`, {
                             "concepto": value, "id": newPostKey2, flujoAux: this.state.flujoAux, "estado": "activo", "tipo": this.state.propertieBD
                         });
 
@@ -723,13 +724,10 @@ class listActividades extends React.Component {
 
                     if (this.state.consultaParams) {
                         this.renderUpdateApis(this.queryConsulta + consultP);
-                        firebase.database().ref(this.queryConsulta + consultP + '/' + this.state.propertieBD).set(registro[this.state.propertieBD]);
+                        this.componentDatabase('insert', this.queryConsulta + consultP + '/' + this.state.propertieBD, registro[this.state.propertieBD]);
                     }
                     else {
-
-                        firebase.database().ref(this.queryConsulta).update({
-                            ...reg
-                        });
+                        this.componentDatabase('update', this.queryConsulta, { ...reg });
                     }
 
 
@@ -768,9 +766,8 @@ class listActividades extends React.Component {
                     if (this.state.usProperty === 'task')
                         propType[this.state.usProperty] = moment().format("YYYYMMDD");
 
-                    firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).update({
-                        ...propType
-                    });
+                    this.componentDatabase('update', `Usuario/${this.props.usuarioDetail.idUsuario}`, { ...propType });
+
                 }
 
 
@@ -911,7 +908,7 @@ class listActividades extends React.Component {
                 consulta = consulta.replace(prop, parametros[prop]);
             }
 
-            const starCountRef3 = firebase.database().ref().child(consulta);
+            const starCountRef3 = this.componentDatabase('get', consulta);
             return starCountRef3.on('value', (snapshot) => {
                 let objetos = snapshot.val();
                 let opcionesCombo = [];
@@ -1033,15 +1030,13 @@ class listActividades extends React.Component {
 
             if (this.state.pendingOk !== null) {
                 this.pendingConsulta = this.pendingConsulta + '/' + this.state.nivel;
-                firebase.database().ref(this.pendingConsulta).set({});
+                this.componentDatabase('insert', this.pendingConsulta, {});
             }
             let reg = this.state.registro;
             reg["etapa"] = reg["etapa"] ? reg["etapa"] : 0 + 1;
             reg["estado"] = "completo";
             if (this.state.consultaParams === null || this.state.consultaParams === undefined) {
-                firebase.database().ref(this.queryConsulta).update({
-                    ...reg
-                });
+                this.componentDatabase('update', this.queryConsulta, { ...reg });
             }
             this.setState({ registro: null })
             this.props.endChatMes(true);
@@ -1184,9 +1179,7 @@ class listActividades extends React.Component {
                 registro["h-fin"] = moment().add('seconds', this.props.onMessage).format('h:mm:ss a');
                 registro["facha"] = moment().format("MMM Do YY");
             }
-
-            firebase.database().ref(this.queryConsulta + consultP).update(
-                { ...registro });
+            this.componentDatabase('update', this.queryConsulta + consultP, { ...registro });
 
         }
 

@@ -26,12 +26,11 @@ class Headers extends React.Component {
         }, 150)
     }
     validacionScreen() {
-        console.log(window.innerWidth)
         if (window.innerWidth > 600) {
             history.push('/dashboardgi');
         }
-        else
-            history.push('/dashboard');
+        //else
+         //   history.push('/dashboard');
     }
     componentDidMount() {
         this.validacionScreen();

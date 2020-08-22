@@ -1,8 +1,6 @@
 import firebase from 'firebase';
 import React from 'react';
 import moment from 'moment';
-import { popupBot } from '../actions';
-import { connect } from 'react-redux';
 
 export const listTemporalObject = (tipo, list, consulta) => {
 
@@ -183,26 +181,10 @@ export const dataBaseManager = (tipo, path, objectIn, mensaje, mensajeError) => 
                 })
 
             break;
+        case "delete":
+            return firebase.database().ref().child(path).remove();
         case "get":
             return firebase.database().ref().child(path);
-        case "state":
-
-              firebase.auth().onAuthStateChanged((user, men) => {
-                if (user) {
-                    men = menajeok;
-                    uid= user.uid;
-                    alert(uid)
-                    return {mensaje: men, uid};
-                    // User is signed in.
-                } else {
-                    alert('no')
-                    men = menajeer;
-                    return {mensaje: men, uid};
-                    // No user is signed in.
-                }
-            })
-
-            break;
         case "create":
             firebase.auth().createUserWithEmailAndPassword(objectIn.email, objectIn.ID);
             break;
@@ -212,12 +194,14 @@ export const dataBaseManager = (tipo, path, objectIn, mensaje, mensajeError) => 
         case "logout":
             firebase.auth().signOut();
             break;
+        case "key":
+            return firebase.database().ref().child(path).push().key;
         default:
             break;
 
-        
+
     }
-  
-    return {mensaje: men, uid};
+
+    return { mensaje: men, uid };
 }
 

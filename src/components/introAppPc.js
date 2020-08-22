@@ -1,13 +1,11 @@
 import React from 'react';
-import image from '../../images/logo.png';
 import { connect } from 'react-redux';
-import history from '../../history';
-import {screenWH } from '../../actions';
-import '../styles/styleLoader.css';
-import GoogleAuth from '../loginGoogle/GoogleAuth';
+import history from '../history';
+import './styles/styleLoader.css';
+import GoogleAuth from './loginGoogle/GoogleAuth'; 
 
-let timeoutLength2 = 4000;
-class ingresoPlataforma extends React.Component {
+let timeoutLength2 = 2500;
+class giroPlataforma extends React.Component {
 
 
     timerIn = () => {
@@ -17,18 +15,17 @@ class ingresoPlataforma extends React.Component {
     }
 
     componentDidMount() {
-        this.props.screenWH(window.innerWidth);
         this.timerIn();
-    }
+     }
 
     render() {
         return (
 
-            <div className="box" style={{ position: 'relative', top: window.innerHeight * 0.35, width: '15em' }}>
-                <h1>Vamos a comenzar...</h1>
+            <div className="box" style={{ position: 'relative', top: "5em", width: '15em' }}>
+                <h1>Vamos a iniciar...</h1>
                 <div className="loader9"></div>
                 <br></br>
-                <GoogleAuth googleIn={true} />
+                <GoogleAuth />
             </div >
 
         );
@@ -40,12 +37,13 @@ const mapStateToProps = (state) => {
     return {
         usuarioDetail: state.chatReducer.usuarioDetail,
         pasoOnboarding: state.chatReducer.pasoOnboarding,
+        whScreen: state.chatReducer.whScreen,
         isSignedIn: state.auth.isSignedIn,
         userId: state.auth.userId,
     };
 };
 
-export default connect(mapStateToProps, {screenWH})(ingresoPlataforma);
+export default connect(mapStateToProps, {})(giroPlataforma);
 
 
 

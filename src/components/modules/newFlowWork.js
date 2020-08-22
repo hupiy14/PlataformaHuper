@@ -1,24 +1,25 @@
 import React from 'react';
-import { Button, Form, Icon, Modal, Segment, Input, Dimmer, Loader, Message } from 'semantic-ui-react';
+import { Button } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { inputDinamicos } from './chatBot/actions';
-import { slackApis } from '../../actions/index';
-import { signOut, usuarioDetails } from '../../actions';
 import history from '../../history';
-import firebase from 'firebase';
-//input dinamico
 import InputDinamico from './inputDinamico';
-import { object } from 'prop-types';
-
-import { VerticalTimeline, VerticalTimelineElement } from 'react-vertical-timeline-component';
+import { VerticalTimeline } from 'react-vertical-timeline-component';
 import 'react-vertical-timeline-component/style.min.css';
-import pointW from '../HuperModules/pointWork';
-
+import { dataBaseManager } from '../../lib/utils';
+import { popupBot } from '../../actions';
 
 class newFlowWork extends React.Component {
 
 
     state = { inputs: [], idInput: 0, objetosF: null }
+
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     componentDidMount() {
 
@@ -33,7 +34,7 @@ class newFlowWork extends React.Component {
                 <pointW nombreFase="primera etapa" tipofase="0" tituloFase=" trabajo con clientes" detalleFase="primer contacto con los clientes en sus trabajos" />
                 <pointW nombreFase="segunda etapa" tipofase="1" tituloFase=" trabajo con clientes" detalleFase="primer contacto con los clientes en sus trabajos" />
                 <pointW nombreFase="tercera etapa" tipofase="1" tituloFase=" trabajo con clientes" detalleFase="primer contacto con los clientes en sus trabajos" />
-            
+
             </VerticalTimeline>
         })
 
@@ -41,7 +42,7 @@ class newFlowWork extends React.Component {
         this.setState({ inputs: [...this.state.inputs, { label: 'Empieza en', id: this.state.idInput }] });
         this.setState({ idInput: this.state.idInput + 1 });
 
-        const nameRef2 = firebase.database().ref().child(`Usuario-Flujo-Trabajo/${this.props.usuarioDetail.idUsuario}`);
+        const nameRef2 = this.componentDatabase('get', `Usuario-Flujo-Trabajo/${this.props.usuarioDetail.idUsuario}`);
         nameRef2.on('value', (snapshot2) => {
             if (snapshot2.val()) {
                 const listaX = snapshot2.val().fases;
@@ -152,7 +153,7 @@ class newFlowWork extends React.Component {
 
         });
 
-        firebase.database().ref(`Usuario-Flujo-Trabajo/${this.props.usuarioDetail.idUsuario}`).set({
+        this.componentDatabase('insert', `Usuario-Flujo-Trabajo/${this.props.usuarioDetail.idUsuario}`, {
             fechaCreado: new Date().toString(),
             cantidadFases: fases,
             fases: nuevoLista,
@@ -176,4 +177,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, { inputDinamicos })(newFlowWork);
+export default connect(mapStateToProps, { inputDinamicos, popupBot })(newFlowWork);

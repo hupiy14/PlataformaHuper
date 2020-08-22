@@ -1,11 +1,5 @@
 import React from 'react';
-import { Button, Form, Icon, Modal, Segment, Dimmer, Loader, Message } from 'semantic-ui-react';
-import { connect } from 'react-redux';
-import { nuevoUsuarios } from '../../components/modules/chatBot/actions';
-import { slackApis } from '../../actions/index';
-import { signOut, usuarioDetails } from '../../actions';
-import history from '../../history';
-import firebase from 'firebase';
+import { Form, Message } from 'semantic-ui-react';
 
 const opciones = [
     { key: 'H', text: 'Huper', value: 'Huper' },

@@ -3,8 +3,10 @@ import { connect } from 'react-redux';
 import '../styles/ingresoHupity.css';
 import { Button, Header, Icon, Modal, Input, Image, Card } from 'semantic-ui-react';
 import { equipoConsultas, pasoOnboardings } from '../modules/chatBot/actions';
-import firebase from 'firebase';
 import history from '../../history';
+import { popupBot } from '../../actions';
+import { dataBaseManager } from '../../lib/utils';
+
 const timeoutLength = 150000;
 
 
@@ -17,6 +19,13 @@ class ListEjemplo extends React.Component {
     }
 
     onChange = valueR => this.setState({ valueR: !this.state.valueR })
+
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     componentDidMount() {
         if (this.props.objetivoF.resaltar)
@@ -37,24 +46,20 @@ class ListEjemplo extends React.Component {
         if (guardar && this.props) {
             let comentariosEnvio = {};
             const usuario = this.props.nombreUser;
-            const newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.propss.userId}/${key}/comentarios`).push().key;
-
+            const newPostKey2 = this.componentDatabase('key', `Usuario-Objetivos/${this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.propss.userId}/${key}/comentarios`);
             const tipologia = this.props.responsableX ? 'feedback' : 'responder';
             comentariosEnvio = { usuario, tipo: tipologia, concepto: this.state.comentario }
             const usuarioD = this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.props.userId;
             let updates = {};
             updates[`Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${key}/comentarios/${newPostKey2}`] = comentariosEnvio;
 
-
-            firebase.database().ref(`Usuario-Objetivos/${usuarioD}/${key}/comentarios/${newPostKey2}`).set({
+            this.componentDatabase('insert', `Usuario-Objetivos/${usuarioD}/${key}/comentarios/${newPostKey2}`, {
                 usuario,
                 tipo: tipologia,
                 concepto: this.state.comentario
             });
 
-
-            // console.log(updates);
-            firebase.database().ref().update(updates);
+            this.componentDatabase('update', `Usuario-Objetivos/${this.props.usuarioGesto ? this.props.usuarioGesto : this.props.userId}/${key}/comentarios/${newPostKey2}`, comentariosEnvio);
             this.setState({ guardar: false })
             if (this.props.usuarioGesto) {
                 let variableF = {};
@@ -127,10 +132,7 @@ class ListEjemplo extends React.Component {
 
 
         const objetivo = { ...this.props.objetivoF, numeroAdjuntos: this.props.objetivoF.numeroAdjuntos - 1 };
-        let updates = {};
-        updates[`Usuario-Objetivos/${this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.props.userId}/${this.props.keyF}`] = objetivo;
-        firebase.database().ref().update(updates);
-
+        this.componentDatabase('update', `Usuario-Objetivos/${this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.props.userId}/${this.props.keyF}`, objetivo);
     }
 
 
@@ -164,28 +166,21 @@ class ListEjemplo extends React.Component {
             this.setState({ files: imprimir });
 
             const objetivo = { ...this.props.objetivoF, numeroAdjuntos: files.length };
-            let updates = {};
-            updates[`Usuario-Objetivos/${this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.props.userId}/${this.props.keyF}`] = objetivo;
-            firebase.database().ref().update(updates);
-
+            this.componentDatabase('update', `Usuario-Objetivos/${this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.props.userId}/${this.props.keyF}`, objetivo);
         });
     }
 
 
     guardarResaltar(objetivox, user, key) {
-        //     console.log(this.state.valueR);
-        const objetivo = { ...objetivox, resaltar: this.state.valueR };
-        let updates = {};
-        updates[`Usuario-Objetivos/${user}/${key}`] = objetivo;
-        firebase.database().ref().update(updates);
 
+        const objetivo = { ...objetivox, resaltar: this.state.valueR };
+        this.componentDatabase('update', `Usuario-Objetivos/${user}/${key}`, objetivo);
     }
 
 
     ConcluirObjetivo(objetivox, user, key) {
         this.props.equipoConsultas({ ...this.props.equipoConsulta, trabajo: { objetivox, user, key } })
         history.push('/formulario/validacion');
-
     }
 
 
@@ -227,9 +222,7 @@ class ListEjemplo extends React.Component {
                 //}
             });
             const objetivo = { ...this.props.objetivoF, numeroComentarios: numero };
-            let updates = {};
-            updates[`Usuario-Objetivos/${tareas.idUsuario ? tareas.idUsuario : this.props.userId}/${this.props.keyF}`] = objetivo;
-            firebase.database().ref().update(updates);
+            this.componentDatabase('update', `Usuario-Objetivos/${tareas.idUsuario ? tareas.idUsuario : this.props.userId}/${this.props.keyF}`, objetivo);
             return opciones;
         }
 
@@ -422,4 +415,4 @@ const mapAppStateToProps = (state) => (
 
     });
 
-export default connect(mapAppStateToProps, { equipoConsultas, pasoOnboardings })(ListEjemplo);
+export default connect(mapAppStateToProps, { equipoConsultas, pasoOnboardings, popupBot })(ListEjemplo);

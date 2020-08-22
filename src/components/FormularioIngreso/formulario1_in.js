@@ -3,12 +3,9 @@ import { Button, Form, Icon, Modal, Segment, Dimmer, Loader, Message } from 'sem
 import { connect } from 'react-redux';
 import { nuevoUsuarios, detailUsNews } from '../../components/modules/chatBot/actions';
 import { slackApis } from '../../actions/index';
-import { signOut, usuarioDetails } from '../../actions';
+import { signOut, usuarioDetails, popupBot } from '../../actions';
 import history from '../../history';
-import firebase from 'firebase';
-import axios from 'axios';
-import moment from 'moment';
-import { Link } from 'react-router-dom';
+import { dataBaseManager } from '../../lib/utils';
 const timeoutLength = 3000;
 
 
@@ -19,7 +16,7 @@ class FomrularioGlobal extends React.Component {
 
     continuar = () => {
 
-        const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${this.props.detailUsNew.codigo}`);
+        const starCountRef = this.componentDatabase('get', `Codigo-Acceso/${this.props.detailUsNew.codigo}`);
         starCountRef.on('value', (snapshot) => {
             const cod = snapshot.val();
             if (cod) {
@@ -31,7 +28,7 @@ class FomrularioGlobal extends React.Component {
                     //codigo usado
                     this.setState({ errorCodigo: true });
                     this.setState({ formError: true });
-                    this.setState({ mensajeCodigo: { titulo: 'Codigo incorrecto', detalle: 'El codigo ya ha sido utilizado' } });            
+                    this.setState({ mensajeCodigo: { titulo: 'Codigo incorrecto', detalle: 'El codigo ya ha sido utilizado' } });
                 }
                 else {
                     history.push('/formulario/inicio');
@@ -49,20 +46,24 @@ class FomrularioGlobal extends React.Component {
 
     }
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     cancelar = () => {
         this.close();
         this.props.signOut();
         this.props.nuevoUsuarios(false);
         history.push('/');
-        
+
     }
 
     close = () => this.setState({ open: false })
     render() {
         const { open2, open3, open4 } = this.state
-        if (this.props.slackApi)
-            console.log(this.props.slackApi);
         let propiedad;
         let activado = false;
         if (this.state.tipo === 'Gestor') {
@@ -94,7 +95,7 @@ class FomrularioGlobal extends React.Component {
                             </Modal.Description>
                         </div></div>
                 </Modal.Content>
-                <Modal.Actions style={{position: 'relative', top: '100px'}}>
+                <Modal.Actions style={{ position: 'relative', top: '100px' }}>
                     <Button color='grey' onClick={this.cancelar}>
                         Cancelar
                     </Button>
@@ -120,4 +121,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis, detailUsNews })(FomrularioGlobal);
+export default connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis, detailUsNews, popupBot })(FomrularioGlobal);

@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
-import { chatOn, chatOff } from '../../actions';
+import { chatOn, chatOff, popupBot } from '../../actions';
 import { Button, Popup, Input, Modal, Progress, Icon } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, estadochats, objTIMs } from '../modules/chatBot/actions';
 import unsplash from '../../apis/unsplash';
@@ -11,7 +10,8 @@ import '../styles/styleLoader.css';
 import perfil from '../../images/perfil.png';
 import ButtonImport from '../HuperModules/importObjetic/importButton';
 import { responsefontHeaderObj } from '../../lib/responseUtils';
-import { avanceOKR } from '../../lib/utils';
+import { avanceOKR, dataBaseManager } from '../../lib/utils';
+
 
 const timeoutLength2 = 1000;
 const timeoutLength3 = 60000;
@@ -26,12 +26,15 @@ class listImportante extends React.Component {
         modalOpen: false, comentario: null, modalOpen2: null,
 
         resultRoot: null, resultCurrent: null, shResult: null, objSelResul: null, impactoUtils: null,
-
-
-
     };
 
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
     //vairble x aumento n cantidad terminada n*x
     //fotos de la tarjetas
     onSearchSubmit = async () => {
@@ -47,11 +50,11 @@ class listImportante extends React.Component {
         let variable = {};
 
 
-        let impactoFlujo = firebase.database().ref().child(`Utils/Impacto-Objetivo`);
+        let impactoFlujo = this.componentDatabase('get', `Utils/Impacto-Objetivo`);
         impactoFlujo.on('value', (snapshot) => {
             this.setState({ impactoUtils: snapshot.val() })
         });
-        const starCountRef = firebase.database().ref().child(`Usuario-OKR/${this.props.userId}`);
+        const starCountRef = this.componentDatabase('get', `Usuario-OKR/${this.props.userId}`);
         starCountRef.on('value', (snapshot) => {
 
             const ObjTrabajo = snapshot.val();
@@ -59,7 +62,7 @@ class listImportante extends React.Component {
             if (!snapshot.val()) return;
             Object.keys(ObjTrabajo).map((key2, index) => {
                 /*  if (ObjTrabajo[key2].tipologia === '3') {
-                      const starCountRef = firebase.database().ref().child(`Usuario-OKR/${ObjTrabajo[key2].idUsuarioGestor}/${ObjTrabajo[key2].objetivoPadre}`);
+                      const starCountRef = this.componentDatabase('get',`Usuario-OKR/${ObjTrabajo[key2].idUsuarioGestor}/${ObjTrabajo[key2].objetivoPadre}` );
                       starCountRef.on('value', (snapshot) => {
                           if (snapshot.val()) {
                               const resultado2 = { ...ObjTrabajo[key2], avancePadre: snapshot.val().avance }
@@ -77,18 +80,18 @@ class listImportante extends React.Component {
             this.props.listaObjetivos(variable);
         });
 
-        const starCountRef33 = firebase.database().ref().child(`Utilidades-Valoraciones`);
+        const starCountRef33 = this.componentDatabase('get', `Utilidades-Valoraciones`);
         starCountRef33.on('value', (snapshot) => {
             this.setState({ UtilFactors: snapshot.val() });
         });
 
-        const starCountRef2 = firebase.database().ref().child(`Usuario-Task/${this.props.userId}`);
+        const starCountRef2 = this.componentDatabase('get', `Usuario-Task/${this.props.userId}`);
         starCountRef2.on('value', (snapshot) => {
             variable = { ...variable, tareas: snapshot.val() }
             this.props.listaObjetivos(variable);
         });
 
-        const starCountRef3 = firebase.database().ref().child(`Usuario-Flujo-Trabajo/${this.props.userId}`);
+        const starCountRef3 = this.componentDatabase('get', `Usuario-Flujo-Trabajo/${this.props.userId}`);
         starCountRef3.on('value', (snapshot) => {
             this.setState({ WorkFlow: snapshot.val() });
         });
@@ -147,14 +150,15 @@ class listImportante extends React.Component {
     guardarDetalle() {
 
         if (this.state.comentario) {
-            const newPostKey2 = firebase.database().ref().child(`Usuario-OKR/${this.props.userId}/${this.state.keyF}`).push().key;
+            const newPostKey2 = this.componentDatabase('key', `Usuario-OKR/${this.props.userId}/${this.state.keyF}`);
             if (this.state.keyF != null)
-                firebase.database().ref(`Usuario-OKR/${this.props.userId}/${this.state.keyF}/comentarios/${newPostKey2}`).set({
+                this.componentDatabase('update', `Usuario-OKR/${this.props.userId}/${this.state.keyF}/comentarios/${newPostKey2}`, {
                     usuario: this.props.usuarioDetail.usuario.usuario,
                     tipo: 'responder',
                     concepto: this.state.comentario,
                     imagen: this.props.usuarioDetail.usuario.imagenPerfil ? this.props.usuarioDetail.usuario.imagenPerfil : ''
                 });
+
             this.setState({ comentario: null });
             return;
         }
@@ -162,7 +166,7 @@ class listImportante extends React.Component {
         let objAux = this.state.resultRoot ? this.state.resultRoot : this.state.objetivoS;
         const tarea = { ...objAux, detalle: this.state.detalleO ? this.state.detalleO : null, prioridad: this.state.prioridadx[this.props.prioridadObj].prio };
         if (this.state.keyF != null)
-            firebase.database().ref(`Usuario-OKR/${this.props.userId}/${this.state.keyF}`).set({
+            this.componentDatabase('insert', `Usuario-OKR/${this.props.userId}/${this.state.keyF}`, {
                 ...tarea
             });
         this.setState({ detalleO: '' });  // this.setState({ prioridadO: true });
@@ -547,4 +551,4 @@ const mapAppStateToProps = (state) => (
         userId: state.auth.userId,
     });
 
-export default connect(mapAppStateToProps, { listaObjetivos, estadochats, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, chatOn, chatOff, objTIMs })(listImportante);
+export default connect(mapAppStateToProps, { popupBot, listaObjetivos, estadochats, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, selObjetivos, chatOn, chatOff, objTIMs })(listImportante);

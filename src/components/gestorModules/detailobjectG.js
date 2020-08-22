@@ -1,12 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
 import { Button, Popup, Input, Icon, Modal, Image, Message, Form, Progress, Segment } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas } from '../modules/chatBot/actions';
 import MaskedInput from 'react-text-mask';
 import perfil from '../../images/perfil.png';
 import history from '../../history';
-
+import { dataBaseManager } from '../../lib/utils';
+import { popupBot } from '../../actions';
 const timeoutLength = 1500;
 class ListaObjetivosEquipo extends React.Component {
 
@@ -28,6 +28,12 @@ class ListaObjetivosEquipo extends React.Component {
         }
     }
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
     guardarDetalle(objetivo, key) {
         var updates = {};
         const cconsulta = this.props.equipoConsulta;
@@ -43,9 +49,8 @@ class ListaObjetivosEquipo extends React.Component {
                 Object.keys(cconsulta).map((key3, index) => {
                     if (this.state.porInputs[key].key === key3) {
                         const data = { ...cconsulta[key3], porcentajeResp: this.state.porInputs[key].por }
-                        firebase.database().ref(`Usuario-Objetivos/${this.state.porInputs[key].idUsuario}/${this.state.porInputs[key].key}`).set({
-                            ...data
-                        });
+                        this.componentDatabase('insert', `Usuario-Objetivos/${this.state.porInputs[key].idUsuario}/${this.state.porInputs[key].key}`, { ...data });
+
                     }
                     return cconsulta[key];
                 });
@@ -74,7 +79,8 @@ class ListaObjetivosEquipo extends React.Component {
 
 
         updates[`Usuario-Objetivos/${objetivo.idUsuario}/${key}`] = tarea;
-        //  firebase.database().ref().update(updates);
+        //this.componentDatabase('update', `Usuario-Objetivos/${objetivo.idUsuario}/${key}`, tarea);
+
         this.setState({ mensajeCodigo: null });
         this.setState({ error: null });
 
@@ -132,9 +138,9 @@ class ListaObjetivosEquipo extends React.Component {
         });
 
         this.renderObtenerInformacionEquipo();
+        this.componentDatabase('delete', `Usuario-Objetivos/${key}/${idObjetivo}`);
+        this.componentDatabase('delete', `Usuario-Tareas/${key}/${idObjetivo}`);
 
-        firebase.database().ref(`Usuario-Objetivos/${key}/${idObjetivo}`).remove()
-        firebase.database().ref(`Usuario-Tareas/${key}/${idObjetivo}`).remove()
     }
 
     renderInputsProcentaje(objetivo) {
@@ -377,7 +383,8 @@ class ListaObjetivosEquipo extends React.Component {
                 const objetivo = { ...this.props.objetivoF, numeroAdjuntos: files.length };
                 let updates = {};
                 updates[`Usuario-Objetivos/${this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.props.userId}/${this.props.keyF}`] = objetivo;
-                firebase.database().ref().update(updates);
+
+                this.componentDatabase('update', `Usuario-Objetivos/${this.props.objetivoF.idUsuario ? this.props.objetivoF.idUsuario : this.props.userId}/${this.props.keyF}`, objetivo);
 
             });
 
@@ -469,8 +476,8 @@ class ListaObjetivosEquipo extends React.Component {
                 });
                 const objetivo = { ...this.props.objetivoF, numeroComentarios: numero };
                 let updates = {};
-                updates[`Usuario-Objetivos/${tareas.idUsuario ? tareas.idUsuario : this.props.userId}/${this.props.keyF}`] = objetivo;
-                firebase.database().ref().update(updates);
+                this.componentDatabase('update', `Usuario-Objetivos/${tareas.idUsuario ? tareas.idUsuario : this.props.userId}/${this.props.keyF}`, objetivo);
+
                 const com = <div style={{ height: '8em', top: '-200px', overflow: 'auto', position: 'relative' }}>
                     {opciones}
                 </div>
@@ -723,12 +730,13 @@ class ListaObjetivosEquipo extends React.Component {
 
         if (this.state.comentario) {
             const usuario = this.props.nombreUser;
-            let newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${objetivo.idUsuario}/${key}`).push().key;
-            firebase.database().ref(`Usuario-Objetivos/${objetivo.idUsuario}/${key}/comentarios/${newPostKey2}`).set({
+            let newPostKey2 = this.componentDatabase('key', `Usuario-Objetivos/${objetivo.idUsuario}/${key}`);
+            this.componentDatabase('update', `Usuario-Objetivos/${objetivo.idUsuario}/${key}/comentarios/${newPostKey2}`, {
                 usuario,
                 tipo: 'feedback',
                 concepto: this.state.comentario
             });
+
 
 
             if (objetivo.compartidoEquipo && !objetivo.idUsuarioGestor) {
@@ -739,13 +747,15 @@ class ListaObjetivosEquipo extends React.Component {
                     Object.keys(listaEOB).map((key3, index) => {
 
                         if (key3 === equipo[key].key) {
-                            newPostKey2 = firebase.database().ref().child(`Usuario-Objetivos/${listaEOB[key3].idUsuario}/${key3}`).push().key;
-                            firebase.database().ref(`Usuario-Objetivos/${listaEOB[key3].idUsuario}/${key3}/comentarios/${newPostKey2}`).set({
+                            newPostKey2 = this.componentDatabase('key', `Usuario-Objetivos/${listaEOB[key3].idUsuario}/${key3}`);
+                            this.componentDatabase('update', `Usuario-Objetivos/${listaEOB[key3].idUsuario}/${key3}/comentarios/${newPostKey2}`, {
                                 usuario,
                                 tipo: 'feedback',
                                 equipo: true,
                                 concepto: this.state.comentario
                             });
+
+
                         }
                         return listaEOB[key3];
                     });
@@ -1140,7 +1150,7 @@ const mapAppStateToProps = (state) => (
     });
 
 
-export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas })(ListaObjetivosEquipo);
+export default connect(mapAppStateToProps, { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, equipoConsultas, popupBot })(ListaObjetivosEquipo);
 
 
 

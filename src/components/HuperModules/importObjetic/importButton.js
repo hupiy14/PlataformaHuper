@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
 import { Image, Popup } from 'semantic-ui-react';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, estadochats, MensajeIvilys } from '../../modules/chatBot/actions';
 import './importBut.scss';
@@ -12,6 +11,7 @@ import asanaH from '../../../apis/asana';
 import { clientIdAsana, clientSecrectAsana } from '../../../apis/stringConnection';
 import axios from 'axios';
 import { popupBot } from '../../../actions';
+import { dataBaseManager } from '../../../lib/utils';
 var Trello = require("trello");
 
 class importButton extends React.Component {
@@ -19,9 +19,15 @@ class importButton extends React.Component {
 
     state = { asana: null }
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
     renderActivitisAsana() {
         if (this.props.usuarioDetail.usuario.asana) {
-            const starCountRef = firebase.database().ref().child(`Usuario-Asana/${this.props.usuarioDetail.idUsuario}`);
+            const starCountRef = this.componentDatabase('get', `Usuario-Asana/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
                     this.setState({ asana: snapshot.val() });
@@ -56,13 +62,13 @@ class importButton extends React.Component {
                                 return listObj[key];
                             });
 
-                            const starCountRef2 = firebase.database().ref().child(`Usuario-OKR/${this.props.usuarioDetail.idUsuario}`);
+                            const starCountRef2 = this.componentDatabase('get', `Usuario-OKR/${this.props.usuarioDetail.idUsuario}`);
                             starCountRef2.on('value', (snapshot) => {
                                 if (snapshot.val()) {
 
                                     list = { ...snapshot.val(), ...list };
-                                    console.log(list);
-                                    firebase.database().ref(`Usuario-OKR/${this.props.usuarioDetail.idUsuario}`).set({ ...list });
+                                    this.componentDatabase('insert', `Usuario-OKR/${this.props.usuarioDetail.idUsuario}`,{...list});
+                                   
                                 }
                             });
                             this.props.popupBot({ mensaje: 'He cargado tus nuevos objetivos de Asana' });
@@ -87,7 +93,7 @@ class importButton extends React.Component {
     renderActivitisTrello() {
         if (this.props.usuarioDetail.usuario.trello) {
 
-            const starCountRef = firebase.database().ref().child(`Usuario-Trello/${this.props.usuarioDetail.idUsuario}`);
+            const starCountRef = this.componentDatabase('get', `Usuario-Trello/${this.props.usuarioDetail.idUsuario}`);
             starCountRef.on('value', (snapshot) => {
                 if (snapshot.val()) {
 
@@ -117,13 +123,12 @@ class importButton extends React.Component {
                             return listObj[key];
                         });
 
-                        const starCountRef2 = firebase.database().ref().child(`Usuario-OKR/${this.props.usuarioDetail.idUsuario}`);
+                        const starCountRef2 = this.componentDatabase('get', `Usuario-OKR/${this.props.usuarioDetail.idUsuario}`);
                         starCountRef2.on('value', (snapshot) => {
                             if (snapshot.val()) {
 
                                 list = { ...snapshot.val(), ...list };
-                                console.log(list);
-                                firebase.database().ref(`Usuario-OKR/${this.props.usuarioDetail.idUsuario}`).set({ ...list });
+                                this.componentDatabase('insert', `Usuario-OKR/${this.props.usuarioDetail.idUsuario}`,{...list});
                             }
                         });
                         this.props.popupBot({ mensaje: 'He cargado tus nuevos objetivos de Asana' });

@@ -1,12 +1,11 @@
 import React from 'react';
-import { Button, Form, Icon, Modal, Segment, Dimmer, Loader, Message } from 'semantic-ui-react';
+import { Button, Form, Modal, Message } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { slackApis } from '../../actions/index';
-import { signOut, usuarioDetails } from '../../actions';
+import { signOut, usuarioDetails, popupBot } from '../../actions';
 import history from '../../history';
-import firebase from 'firebase';
 import { nuevoUsuarios, detailUsNews } from '../../components/modules/chatBot/actions';
-import { Link } from 'react-router-dom';
+import { dataBaseManager } from '../../lib/utils';
 
 const AreasT = [
     { key: 1, text: 'Tecnología', value: 'Tecnología' },
@@ -30,11 +29,17 @@ class FomrularioGlobal extends React.Component {
 
     componentDidMount() {
         //se consulta todas las empresas
-        const starCountRef = firebase.database().ref().child('empresa');
+        const starCountRef = this.componentDatabase('get', 'empresa');
         starCountRef.on('value', (snapshot) => {
             this.setState({ listaEmpresas: snapshot.val() })
             this.props.detailUsNews({ ...this.props.detailUsNew, listaEmpresas: snapshot.val() });
         });
+    }
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
     }
     handleAddition = (e, { value }) => {
         //se agrega un nuevo equipo
@@ -222,4 +227,4 @@ const mapStateToProps = (state) => {
         slackApi: state.auth.slackApi,
     };
 };
-export default connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis, detailUsNews })(FomrularioGlobal);
+export default connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis, detailUsNews, popupBot })(FomrularioGlobal);

@@ -3,11 +3,9 @@ import { Button, Form, Icon, Modal, Segment, Dimmer, Loader, Message } from 'sem
 import { connect } from 'react-redux';
 import { nuevoUsuarios, detailUsNews } from '../../components/modules/chatBot/actions';
 import { slackApis } from '../../actions/index';
-import { signOut, usuarioDetails } from '../../actions';
+import { signOut, usuarioDetails, popupBot } from '../../actions';
 import history from '../../history';
-import firebase from 'firebase';
-import { Link } from 'react-router-dom';
-import { relativeTimeRounding } from 'moment';
+import { dataBaseManager } from '../../lib/utils';
 
 const opciones = [
     { key: 'H', text: 'Huper', value: 'Huper' },
@@ -23,7 +21,12 @@ class FomrularioGlobal extends React.Component {
 
 
 
-
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
 
     componentDidMount() {
@@ -94,10 +97,8 @@ class FomrularioGlobal extends React.Component {
 
     clickGuardarTemporal = () => {
         const variale = this.props.detailUsNew;
-        firebase.database().ref(`Usuario-Temporal/${this.props.usuarioDetail.usuarioNuevo.id}`).set({
-            ...variale
-        });
-
+        this.componentDatabase('insert', `Usuario-Temporal/${this.props.usuarioDetail.usuarioNuevo.id}`, {  ...variale})
+    
     }
     close = () => this.setState({ open: false })
     render() {
@@ -131,7 +132,7 @@ class FomrularioGlobal extends React.Component {
                 <Modal.Content image>
                     <div className="ui form" >
                         <div className="ui grid">
-                            <Modal.Description style={{width: '38em'}}>
+                            <Modal.Description style={{ width: '38em' }}>
                                 <Form error={this.state.formError}>
                                     {equipo}
 
@@ -170,4 +171,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis, detailUsNews })(FomrularioGlobal);
+export default connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis, detailUsNews, popupBot })(FomrularioGlobal);

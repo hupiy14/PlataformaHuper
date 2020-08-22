@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import ListFormacion from './listaFormacionesEquipo';
-import '../styles/ingresoHupity.css';
 import ListaObjetivosE from '../../components/gestorModules/objetivosG';
 import DetailObj from '../../components/gestorModules/detailobjectG';
 import ListaPersonasEquipo from '../utilidades/listaPersonasEquipo';
@@ -9,12 +8,11 @@ import {
     Checkbox,
 }
     from 'semantic-ui-react';
-
 import GraficaG1 from '../gestorModules/CrearGraficaGestor';
-import firebase from 'firebase';
 import { listaObjetivos, equipoConsultas, verEquipos } from '../modules/chatBot/actions';
 import moment from 'moment';
-
+import { popupBot } from '../../actions';
+import { dataBaseManager } from '../../lib/utils';
 const timeoutLength = 1000;
 const timeoutLength2 = 300;
 const timeoutLength3 = 1200;
@@ -33,6 +31,13 @@ class DashBoard extends React.Component {
         valorSlide: 0, actDif: [], calidadSubjetiva: null, factorCalidad: null,
 
     };
+
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     handleVariables = (x) => {
         this.timeout = setTimeout(() => {
@@ -102,7 +107,7 @@ class DashBoard extends React.Component {
         }
 
         if (valido === false) {
-            firebase.database().ref(`Equipo-Puntospro/${tipo}/${year}/${Nsemana}`).set({
+            this.componentDatabase('insert', `Equipo-Puntospro/${tipo}/${year}/${Nsemana}`, {
                 fechaCreado: moment(new Date()).format('YYYY-MM-DD'),
                 unidadesTrabajadas: puntos,
                 unidadesPlan: puntosP ? puntosP : 0,
@@ -111,7 +116,6 @@ class DashBoard extends React.Component {
                 mes,
                 nsemanaMest: nsemanaMes
             });
-
         }
     }
 
@@ -131,7 +135,7 @@ class DashBoard extends React.Component {
         }
 
         if (valido === false) {
-            firebase.database().ref(`Usuario-Puntospro/${tipo}/${year}/${Nsemana}`).set({
+            this.componentDatabase('insert', `Usuario-Puntospro/${tipo}/${year}/${Nsemana}`, {
                 fechaCreado: moment(new Date()).format('YYYY-MM-DD'),
                 unidadesTrabajadas: puntos,
                 unidadesPlan: puntosP,
@@ -205,7 +209,7 @@ class DashBoard extends React.Component {
                 return null;
             });
 
-            
+
             Object.keys(datosA).map((key, index2) => {
                 const dt = [];
                 dt.push(datosA[key].te);
@@ -232,8 +236,7 @@ class DashBoard extends React.Component {
 
 
     actualizarequipoConsulta() {
-
-        const starCountRef = firebase.database().ref().child(`Usuario-WS/${this.props.usuarioDetail.usuario.empresa}/${this.props.usuarioDetail.usuario.equipo}`);
+        const starCountRef = this.componentDatabase('get', `Usuario-WS/${this.props.usuarioDetail.usuario.empresa}/${this.props.usuarioDetail.usuario.equipo}`);
         starCountRef.on('value', (snapshot) => {
 
             const equipo = snapshot.val();
@@ -241,7 +244,7 @@ class DashBoard extends React.Component {
             let usuariosCompletos = [];
 
             //carga todos los usuarios
-            const starCountRef2 = firebase.database().ref().child(`Usuario`);
+            const starCountRef2 = this.componentDatabase('get', `Usuario`);
             starCountRef2.on('value', (snapshot2) => {
                 const consulta = snapshot2.val();
                 let variable = [];
@@ -251,7 +254,8 @@ class DashBoard extends React.Component {
 
 
                     //tareas de cada persona
-                    const starCountRef2 = firebase.database().ref().child(`Usuario-Tareas/${key}`);
+                    const starCountRef2 = this.componentDatabase('get', `Usuario-Tareas/${key}`);
+
                     starCountRef2.on('value', (snapshot) => {
                         const valor = snapshot.val();
                         if (!valor)
@@ -261,7 +265,7 @@ class DashBoard extends React.Component {
                     });
 
                     //rol de cada persona
-                    const starCountRef3 = firebase.database().ref().child(`Usuario-Rol/${key}`);
+                    const starCountRef3 = this.componentDatabase('get', `Usuario-Rol/${key}`);
                     starCountRef3.on('value', (snapshot3) => {
                         const rol = snapshot3.val();
                         usuariosCompletos[key] = { ...consulta[key], ...rol };
@@ -270,7 +274,7 @@ class DashBoard extends React.Component {
                     });
 
                     const diat = new Date();
-                    const nameRef3 = firebase.database().ref().child(`Usuario-TIC/${key}/${diat.getFullYear()}`)
+                    const nameRef3 = this.componentDatabase('get', `Usuario-TIC/${key}/${diat.getFullYear()}`);
                     nameRef3.on('value', (snapshot2) => {
                         const tic = snapshot2.val();
                         const info = this.state.listaPersonas ? this.state.listaPersonas[key] : null
@@ -290,7 +294,8 @@ class DashBoard extends React.Component {
             if (!equipo)
                 return;
             Object.keys(equipo).map((key, index) => {
-                const starCountRef2 = firebase.database().ref().child(`Usuario-DiaTeletrabajo/${key}/${fecha.getFullYear()}/${cal}`);
+
+                const starCountRef2 = this.componentDatabase('get', `Usuario-DiaTeletrabajo/${key}/${fecha.getFullYear()}/${cal}`);
                 starCountRef2.on('value', (snapshot2) => {
                     //dia = snapshot2.val().dia;
 
@@ -305,7 +310,7 @@ class DashBoard extends React.Component {
 
                 // console.log(key)
 
-                const starCountRef3 = firebase.database().ref().child(`Usuario-Objetivos/${key}`);
+                const starCountRef3 = this.componentDatabase('get', `Usuario-Objetivos/${key}`);
                 starCountRef3.on('value', (snapshot2) => {
                     const objetivo = snapshot2.val();
                     let objetivoT = [];
@@ -532,11 +537,12 @@ class DashBoard extends React.Component {
             .then(function () { console.log("GAPI client loaded for API"); },
                 function (err) { console.error("Error loading GAPI client for API", err); });
         this.actualizarequipoConsulta();
-        const starCountRef2 = firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`);
+        const starCountRef2 = this.componentDatabase('get', `Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`);
         starCountRef2.on('value', (snapshot) => {
             this.setState({ nivelEquipo: snapshot.val() })
             if (!snapshot.val()) {
-                firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`).set({
+
+                this.componentDatabase('insert', `Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`, {
                     nivel: 90,
                 });
                 this.setState({ nivelEquipo: { nivel: 90 } })
@@ -546,19 +552,19 @@ class DashBoard extends React.Component {
 
 
         this.handleOpen();
-        const starCountRef3 = firebase.database().ref().child(`Utilidades-Valoraciones`);
+        const starCountRef3 = this.componentDatabase('get', `Utilidades-Valoraciones`);
         starCountRef3.on('value', (snapshot) => {
             this.setState({ UtilFactors: snapshot.val() });
         });
 
 
-        const starCountRef = firebase.database().ref().child(`Equipo-Puntospro/${this.props.usuarioDetail.idUsuario}`);
+        const starCountRef = this.componentDatabase('get', `Equipo-Puntospro/${this.props.usuarioDetail.idUsuario}`);
         starCountRef.on('value', (snapshot) => {
             this.setState({ semanasP: snapshot.val() });
         });
 
 
-        const starCountRef4 = firebase.database().ref().child(`Equipo-Act-Dif/${this.props.usuarioDetail.usuario.equipo}`);
+        const starCountRef4 = this.componentDatabase('get', `Equipo-Act-Dif/${this.props.usuarioDetail.usuario.equipo}`);
         starCountRef4.on('value', (snapshot) => {
             if (snapshot.val()) {
                 this.setState({ actDif: snapshot.val() });
@@ -612,7 +618,7 @@ class DashBoard extends React.Component {
     }
 
     guardarDifultad() {
-        firebase.database().ref(`Equipo-Act-Dif/${this.props.usuarioDetail.usuario.equipo}`).set({
+        this.componentDatabase('insert', `Equipo-Act-Dif/${this.props.usuarioDetail.usuario.equipo}`, {
             ...this.state.actDif
         });
     }
@@ -772,7 +778,7 @@ class DashBoard extends React.Component {
         Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
             if (this.props.equipoConsulta.listaPersonas[key].Rol === '3')
                 numeroPersonas++;
-                return this.props.equipoConsulta.listaPersonas[key];
+            return this.props.equipoConsulta.listaPersonas[key];
         });
 
 
@@ -834,7 +840,8 @@ class DashBoard extends React.Component {
         }
         //actualiza la productividad
         if (!this.props.equipoConsulta || !this.props.equipoConsulta.sell || this.props.equipoConsulta.sell === 0) {
-            firebase.database().ref(`Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`).set({
+
+            this.componentDatabase('insert', `Equipo-Esfuerzo/${this.props.usuarioDetail.usuario.equipo}`, {
                 ...this.state.nivelEquipo,
                 unidades: maxfT * this.state.nivelEquipo.nivel * 0.01,
                 unidadesEquipo: afT,
@@ -854,7 +861,7 @@ class DashBoard extends React.Component {
             Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
                 if (key === this.props.equipoConsulta.sell)
                     titulo = this.props.equipoConsulta.listaPersonas[key].usuario;
-                    return this.props.equipoConsulta.listaPersonas[key];
+                return this.props.equipoConsulta.listaPersonas[key];
             });
             this.setState({ seleccion: titulo });
             return 'Lista de Formaciones ' + titulo;
@@ -875,7 +882,7 @@ class DashBoard extends React.Component {
 
                 if (key === this.props.equipoConsulta.sell)
                     carpeta = this.state.equipo[key].linkWs;
-                    return this.state.equipo[key];
+                return this.state.equipo[key];
             });
         }
         return carpeta;
@@ -891,7 +898,7 @@ class DashBoard extends React.Component {
             Object.keys(this.props.equipoConsulta.listaPersonas).map((key, index) => {
                 if (key === this.props.equipoConsulta.sell)
                     titulo = this.props.equipoConsulta.listaPersonas[key].usuario;
-                    return this.props.equipoConsulta.listaPersonas[key];
+                return this.props.equipoConsulta.listaPersonas[key];
             });
             this.setState({ seleccion: titulo });
         }
@@ -978,6 +985,6 @@ const mapStateToProps = (state) => {
         userId: state.auth.userId,
     };
 };
-export default connect(mapStateToProps, { equipoConsultas, listaObjetivos, verEquipos })(DashBoard);
+export default connect(mapStateToProps, { equipoConsultas, listaObjetivos, verEquipos, popupBot })(DashBoard);
 
 ///<ListAdjuntos />

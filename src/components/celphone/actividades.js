@@ -1,13 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
-import { Image, Icon, Step } from 'semantic-ui-react';
-import { actividadPrincipal, actividadProgramas } from '../../actions';
+import { Image } from 'semantic-ui-react';
+import { actividadPrincipal, actividadProgramas, popupBot } from '../../actions';
 import { listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, pasoOnboardings, estadochats, MensajeIvilys } from '../modules/chatBot/actions';
 import moment from 'moment';
 import task from '../../images/task.svg';
 import history from '../../history';
 import '../styles/styleLoader.css';
+import { dataBaseManager } from '../../lib/utils';
 
 
 const timeoutLength = 900000;
@@ -31,7 +31,7 @@ class listActividades extends React.Component {
         if (this.props.usuarioDetail) {
             window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
                 .then(() => {
-                    const starCountRef2 = firebase.database().ref().child(`Usuario-CalendarGoogle/${this.props.usuarioDetail.idUsuario}`);
+                    const starCountRef2 = this.componentDatabase("get", `Usuario-CalendarGoogle/${this.props.usuarioDetail.idUsuario}`);
                     starCountRef2.on('value', (snapshot) => {
                         this.Calendar = snapshot.val();
                         if (snapshot.val()) {
@@ -60,11 +60,19 @@ class listActividades extends React.Component {
     }
 
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        console.log(men);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
+
     actividadesTrabajoActividades = () => {
 
         this.timeout = setTimeout(() => {
             let flagFirst = false;
-            const starCountRef = firebase.database().ref().child(`Usuario-Task/${this.props.usuarioDetail.idUsuario}/${moment().format("YYYYMMDD")}`);
+            const starCountRef = this.componentDatabase("get", `Usuario-Task/${this.props.usuarioDetail.idUsuario}/${moment().format("YYYYMMDD")}`);
             starCountRef.on('value', (snapshot2) => {
                 this.setState({ actividades: snapshot2.val() });
                 let act = snapshot2.val();
@@ -108,9 +116,7 @@ class listActividades extends React.Component {
                                 }
                                 this.calendarAcum[key] = act[key].concepto;
                                 this.calendarL[key] = event;
-                                firebase.database().ref(`Usuario-Task/${this.props.usuarioDetail.idUsuario}/${moment().format("YYYYMMDD")}/${key}`).update({
-                                    synCalendar: true
-                                });
+                                this.componentDatabase("update", `Usuario-Task/${this.props.usuarioDetail.idUsuario}/${moment().format("YYYYMMDD")}/${key}`, { synCalendar: true });
                                 if (flagFirst === false)
                                     this.createEventTrabajo(this.Calendar.idCalendar.value, 0);
                                 flagFirst = true;
@@ -366,11 +372,6 @@ class listActividades extends React.Component {
                 return null;
             });
             return opciones2;
-
-            /* if (flag === true)
-                 firebase.database().ref(`Usuario-Tareas/${this.props.usuarioDetail.idUsuario}`).set({
-                     ...ObjetivosU,
-                 });*/
         });
 
         opcionesX = this.actividadesEmpty(6, actNum, opcionesX)
@@ -460,4 +461,4 @@ const mapAppStateToProps = (state) => (
     });
 
 
-export default connect(mapAppStateToProps, { actividadProgramas, actividadPrincipal, listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, estadochats, pasoOnboardings, MensajeIvilys })(listActividades);
+export default connect(mapAppStateToProps, { actividadProgramas, actividadPrincipal, listaObjetivos, prioridadObjs, popupDetalles, numeroTareasTs, estadochats, pasoOnboardings, MensajeIvilys, popupBot })(listActividades);

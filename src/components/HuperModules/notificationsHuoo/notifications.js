@@ -1,9 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
 import moment from 'moment';
 import { popupBot } from '../../../actions';
 import { ApiAiClient } from 'api-ai-javascript';
+import { dataBaseManager } from '../../../lib/utils';
 
 let timeoutLength = 10000;
 let timeoutLengthG = 10000;
@@ -11,6 +11,12 @@ class notifiactions extends React.Component {
 
     state = { dia: [], etapa: 1, mensajes: null }
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     notificationPriority = () => {
         this.timeout = setTimeout(() => {
@@ -34,10 +40,10 @@ class notifiactions extends React.Component {
                 this.notificationPriority();
 
             }
-            //cambiar
-        /*    firebase.database().ref(`Usuario-Dia/${this.props.userId}/${moment().format("YYYYMMDD")}`).update({
+
+            this.componentDatabase('update', `Usuario-Dia/${this.props.userId}/${moment().format("YYYYMMDD")}`, {
                 ...this.dia
-            });*/
+            });
 
 
         }, timeoutLength)
@@ -111,21 +117,17 @@ class notifiactions extends React.Component {
             accessToken: '4cbf623fd1fc4e2d8ef3d48658a82030 '
         });
         this.client.textRequest('Dame un apoyo hupp', { sessionId: 'test' }).then(this.onResponse);
-       /* if(this.props.userId)
-        const nameRef = firebase.database().ref().child(`Usuario-Dia/${this.props.userId}/${moment().format("YYYYMMDD")}`)
+        const nameRef = this.componentDatabase('get', `Usuario-Dia/${this.props.userId}/${moment().format("YYYYMMDD")}`);
         nameRef.on('value', (snapshot2) => {
             if (snapshot2.val() !== null) {
                 this.dia = snapshot2.val();
                 this.setState({ etapa: snapshot2.val().etapa ? snapshot2.val().etapa : 1 });
             }
-        });
-        */
 
+        });
 
 
     }
-
-
 
     onResponse = (activity) => {
         activity.result.fulfillment.messages.forEach((element) => {

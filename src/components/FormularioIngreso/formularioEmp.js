@@ -2,11 +2,10 @@ import React from 'react';
 import { Button, Form, Icon, Modal, Segment, Dimmer, Loader, Message } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { slackApis } from '../../actions/index';
-import { signOut, usuarioDetails } from '../../actions';
+import { signOut, usuarioDetails, popupBot } from '../../actions';
 import history from '../../history';
-import firebase from 'firebase';
 import { nuevoUsuarios, detailUsNews } from '../../components/modules/chatBot/actions';
-import { Link } from 'react-router-dom';
+import { dataBaseManager } from '../../lib/utils';
 
 const AreasT = [
     { key: 1, text: 'Tecnología', value: 'Tecnología' },
@@ -32,12 +31,20 @@ class FomrularioGlobal extends React.Component {
 
         //   console.log(window.location.href); 
         //se consulta todas las empresas
-        const starCountRef = firebase.database().ref().child('empresa');
+        const starCountRef = this.componentDatabase('get', `empresa`);
         starCountRef.on('value', (snapshot) => {
             this.setState({ listaEmpresas: snapshot.val() })
             this.props.detailUsNews({ ...this.props.detailUsNew, listaEmpresas: snapshot.val() });
         });
     }
+
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
+
     handleAddition = (e, { value }) => {
         //se agrega un nuevo equipo
         const equipoNuevo = { nombreTeam: value };
@@ -95,7 +102,7 @@ class FomrularioGlobal extends React.Component {
                     keyEquipo = key;
             });
             console.log(keyEquipo);
-            const starCountRef = firebase.database().ref().child(`Empresa-Equipo/${keyEquipo}`);
+            const starCountRef = this.componentDatabase('get', `Empresa-Equipo/${keyEquipo}`);
             starCountRef.on('value', (snapshot) => {
                 this.props.detailUsNews({ ...this.props.detailUsNew, listaEquipos: snapshot.val() });
                 this.setState({ listaEquipos: snapshot.val() })
@@ -123,7 +130,7 @@ class FomrularioGlobal extends React.Component {
         this.props.signOut();
         this.props.nuevoUsuarios(false);
         history.push('/');
-       // history.push('/login');
+        // history.push('/login');
     }
 
     render() {
@@ -136,7 +143,7 @@ class FomrularioGlobal extends React.Component {
                 <Modal.Content image>
                     <div className="ui form" >
                         <div className="ui grid">
-                            <Modal.Description style={{width: '38em'}} >
+                            <Modal.Description style={{ width: '38em' }} >
                                 <Form error={this.state.formError} >
 
                                     <Form.Input label='Nombre Usuario' placeholder='Cual es tu nombre?'
@@ -215,4 +222,4 @@ const mapStateToProps = (state) => {
         slackApi: state.auth.slackApi,
     };
 };
-export default connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis, detailUsNews })(FomrularioGlobal);
+export default connect(mapStateToProps, { nuevoUsuarios, signOut, usuarioDetails, slackApis, detailUsNews, popupBot })(FomrularioGlobal);

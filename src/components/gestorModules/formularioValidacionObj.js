@@ -1,10 +1,11 @@
 import React from 'react';
 import { Button, Modal, Form, Message, Dropdown, Rating } from 'semantic-ui-react';
 import moment from 'moment';
-import firebase from 'firebase';
 import { connect } from 'react-redux';
 import history from '../../history';
 import { equipoConsultas } from '../modules/chatBot/actions';
+import { dataBaseManager } from '../../lib/utils';
+import { popupBot } from '../../actions';
 
 
 const ajustarRespuesta = [
@@ -24,13 +25,17 @@ class modalFormValidacion extends React.Component {
         if (!this.props.equipoConsulta || !this.props.equipoConsulta.trabajo)
             history.push('/dashboard')
     }
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
     ConcluirObjetivo(objetivox, user, key) {
         let objetivo = objetivox;
         objetivo.estado = 'finalizado';
         let updates = {};
-        updates[`Usuario-Objetivos/${user}/${key}`] = { ...objetivo, dateEnd: moment().format('YYYY-MM-DD'), dificultadA: this.state.dificultad, tiempoA: this.state.tiempo, impactoA: this.state.impacto, feedback: this.state.feedback, calificacion: this.state.rank };
-        //console.log(updates);
-        firebase.database().ref().update(updates);
+        this.componentDatabase('insert', `Usuario-Objetivos/${user}/${key}`, { ...objetivo, dateEnd: moment().format('YYYY-MM-DD'), dificultadA: this.state.dificultad, tiempoA: this.state.tiempo, impactoA: this.state.impacto, feedback: this.state.feedback, calificacion: this.state.rank });
         this.props.equipoConsultas(this.props.equipoConsulta);
     }
 
@@ -154,4 +159,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, { equipoConsultas })(modalFormValidacion);
+export default connect(mapStateToProps, { equipoConsultas, popupBot })(modalFormValidacion);

@@ -6,10 +6,11 @@ import { connect } from 'react-redux';
 import { nuevoUsuarios, detailUsNews } from '../modules/chatBot/actions';
 import { signOut, popupBot } from '../../actions';
 import history from '../../history';
-import firebase from 'firebase';
 import axios from 'axios';
 import moment from 'moment';
+import firebase from 'firebase';
 import { dataBaseManager } from '../../lib/utils';
+import { clientSlack, clientSecrectSlack } from '../../apis/stringConnection';
 
 const timeoutLength = 1500;
 class FomrularioGlobal extends React.Component {
@@ -20,6 +21,7 @@ class FomrularioGlobal extends React.Component {
         mensajeCodigo: { titulo: 'Falta campos por llenar', detalle: 'Debes diligenciar todos los campos' }
     }
 
+
     componentDidMount() {
         if (!this.props.usuarioDetail) {
             history.push('/');
@@ -27,8 +29,8 @@ class FomrularioGlobal extends React.Component {
         }
         this.renderDriveCarpeta();
         //recuperar datos slack
-        const client = "482555533539.532672221010";
-        const clientSecret = "18c94d458dbe66c7f7fc0d3f2684e63f";
+        const client = clientSlack;
+        const clientSecret = clientSecrectSlack;
         const code = this.props.detailUsNew.codeSlack;
         this.setState({ id: this.props.usuarioDetail.usuarioNuevo.id })
         axios.get(`https://slack.com/api/oauth.access?client_id=${client}&redirect_uri=https://app.hupity.com&client_secret=${clientSecret}&code=${code}`)
@@ -37,7 +39,7 @@ class FomrularioGlobal extends React.Component {
                     this.props.detailUsNews({ ...this.props.detailUsNew, tokenSlack: res.data.access_token, tokenBot: res.data.bot.bot_access_token, userSlack: res.data.user_id });
             });
 
-        const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${this.props.detailUsNew.codigo}`);
+        const starCountRef = this.componentDatabase('get', `Codigo-Acceso/${this.props.detailUsNew.codigo}`);
         starCountRef.on('value', (snapshot) => {
             const cod = snapshot.val();
             if (cod && this.state.prueba == null) {
@@ -87,15 +89,20 @@ class FomrularioGlobal extends React.Component {
                 this.close();
 
                 let objectId = { email: this.props.usuarioDetail.usuarioNuevo.email, ID: this.props.usuarioDetail.usuarioNuevo.userId };
-                console.log(objectId);
-                alert("155555");
-
                 this.componentDatabase("create", null, objectId);
                 this.componentDatabase("login", null, objectId);
-                this.renderCrearUsuario(this.state.cod, this.state.prueba);
-                history.push('/');
-                window.location.replace('');
-               
+                firebase.auth().onAuthStateChanged((user) => {
+                    if (user) {
+                        this.renderCrearUsuario(this.state.cod, this.state.prueba, user.uid);
+                        history.push('/');
+                        window.location.replace('');
+                    }
+                    else {
+                        this.props.popupBot({ mensaje: 'oohhh! hemos tenido un problema al registrar tu usuario.' });
+                    }
+                });
+
+
 
                 return;
             }
@@ -116,16 +123,17 @@ class FomrularioGlobal extends React.Component {
                 .then((response) => {
                     this.setState({ calendar: response.result.id })
                     //calendario google
-                    firebase.database().ref(`Usuario-CalendarGoogle/${firebase.auth().currentUser.uid}`).set({
+                    this.componentDatabase('insert', `Usuario-CalendarGoogle/${firebase.auth().currentUser.uid}`, {
                         idCalendar: response.result.id,
-                        estado: 'activo',
-                    });
+                        estado: 'activo'
+                    })
+
                 },
                     function (err) { console.error("Execute error", err); });
         }
     }
 
-    renderCrearUsuario(cod, numUs) {
+    renderCrearUsuario(cod, numUs, uid) {
         //configuracion calendar window
         window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
             .then(() => {
@@ -133,75 +141,67 @@ class FomrularioGlobal extends React.Component {
             },
                 function (err) { console.error("Error loading GAPI client for API", err); });
 
-        const keyEquipoEmp = this.props.detailUsNew.rol === '3' ? firebase.database().ref().child('Empresa-Equipo').push().key : cod.kequipo;
-        const keyEmpresa = this.props.detailUsNew.rol === '3' ? firebase.database().ref().child('empresa').push().key : cod.empresa;
+        const keyEquipoEmp = this.props.detailUsNew.rol === '3' ? this.componentDatabase('key', 'Empresa-Equipo') : cod.kequipo;
+        const keyEmpresa = this.props.detailUsNew.rol === '3' ? this.componentDatabase('key', 'empresa') : cod.empresa;
         //Crea una nueva empresa
-        console.log(this.props.detailUsNew);
-        alert('nnnnnn')
         if (this.props.detailUsNew.rol === '3') {
-            firebase.database().ref(`empresa/${keyEmpresa}`).set({
+
+            this.componentDatabase('insert', `empresa/${keyEmpresa}`, {
                 empresa: this.props.detailUsNew.empresa,
                 industria: this.props.detailUsNew.sector,
                 nEquipos: 1
             });
+
             //Crea una nueva empresa
-            firebase.database().ref(`Empresa-Equipo/${keyEmpresa}/${keyEquipoEmp}`).set({
+
+            this.componentDatabase('insert', `Empresa-Equipo/${keyEmpresa}/${keyEquipoEmp}`, {
                 empresa: this.props.detailUsNew.empresa,
                 cargo: this.props.detailUsNew.cargo,
                 nombreTeam: this.props.detailUsNew.equipo,
             });
-            firebase.database().ref(`Usuario-Perfil/3/${firebase.auth().currentUser.uid}`).set({
+            this.componentDatabase('insert', `Usuario-Perfil/3/${uid}`, {
                 estado: 'activo',
             });
             //crear usuario rol
-            firebase.database().ref(`Usuario-Rol/${firebase.auth().currentUser.uid}`).set({
+            this.componentDatabase('insert', `Usuario-Rol/${uid}`, {
                 Rol: '3',
             });
+
         }
 
         //crea el espacio de trabajo
 
         if (this.props.detailUsNew.codigoWSdrive) {
-            firebase.database().ref(`Usuario-WS/${keyEmpresa}/${keyEquipoEmp}/${firebase.auth().currentUser.uid}`).set({
+
+            this.componentDatabase('insert', `Usuario-WS/${keyEmpresa}/${keyEquipoEmp}/${uid}`, {
                 fechaCreado: new Date().toString(),
                 linkWs: this.props.detailUsNew.codigoWSdrive,
-                // usuarioSlack: this.props.detailUsNew.userSlack,
                 usuario: this.props.detailUsNew.nombreUsuario,
             });
+
         }
-        //crea el usuario slack
-        /*
-         firebase.database().ref(`Usuario-Slack/${this.state.id}`).set({
-             tokenP: this.props.detailUsNew.tokenSlack,
-             tokenB: this.props.detailUsNew.tokenBot,
-             usuarioSlack: this.props.detailUsNew.userSlack,
-             fechaCreado: new Date().toString(),
-         });
- 
-         */
 
         //crear usuario perfil
         if (this.props.detailUsNew.rol === '2') {
-            firebase.database().ref(`Usuario-Perfil/1/${firebase.auth().currentUser.uid}`).set({
+            this.componentDatabase('insert', `Usuario-Perfil/1/${uid}`, {
                 estado: 'activo',
             });
-            //crear usuario rol
 
-            firebase.database().ref(`Usuario-Rol/${firebase.auth().currentUser.uid}`).set({
+            //crear usuario rol
+            this.componentDatabase('insert', `Usuario-Rol/${uid}`, {
                 Rol: '2',
             });
+
         }
 
         //crear empresa- usuario
-        firebase.database().ref(`empresa-Usuario/${keyEmpresa}/${firebase.auth().currentUser.uid}`).set({
+        this.componentDatabase('insert', `empresa-Usuario/${keyEmpresa}/${uid}`, {
             estado: 'activo',
         });
 
         //crea usuario
-        firebase.database().ref(`Usuario/${firebase.auth().currentUser.uid}`).set({
-            //    area: this.props.detailUsNew.rol === '3' ? this.props.detailUsNew.area : cod.area,
+        this.componentDatabase('insert', `Usuario/${uid}`, {
             cargo: this.props.detailUsNew.cargo,
-            // canalSlack: this.props.detailUsNew.userSlack,
             email: this.props.usuarioDetail.usuarioNuevo.email,
             empresa: keyEmpresa,
             equipo: keyEquipoEmp,
@@ -215,28 +215,30 @@ class FomrularioGlobal extends React.Component {
             onboarding: false,
         });
 
+
         // gener  la primera formacion 
-        firebase.database().ref(`Usuario-Formcion/${firebase.auth().currentUser.uid}/-LYWrWd_8M174-vlIkwv`).set({
+        this.componentDatabase('insert', `Usuario-Formcion/${uid}/-LYWrWd_8M174-vlIkwv`, {
             fecha: new Date().toString(),
             concepto: "El método de la Caja de Eisenhower para impulsar tu productividad",
             detalle: "Aprende a diferencias tus actividades urgentes de las importantes",
             estado: 'activo',
             link: "mfN_JVLHlbQ",
         });
+
         //         area: this.props.detailUsNew.rol === '3' ? this.props.detailUsNew.area ? this.props.detailUsNew.area : "" : cod.area ? cod.area : ""
 
 
-        firebase.database().ref(`Codigo-Acceso/${this.props.detailUsNew.codigo}`).set({
+        this.componentDatabase('insert', `Codigo-Acceso/${this.props.detailUsNew.codigo}`, {
             ...cod,
             usuarios: numUs,
             estado: "usado",
             fechaUso: moment().format('YYYY-MM-DD'),
             kequipo: keyEquipoEmp,
             empresa: keyEmpresa,
-        })
+        });
 
-        firebase.database().ref(`Usuario-CodeTemporal/${firebase.auth().currentUser.uid}`).remove();
-        firebase.database().ref(`Usuario-Temporal/${firebase.auth().currentUser.uid}`).remove();
+        this.componentDatabase('delete', `Usuario-CodeTemporal/${uid}`)
+        this.componentDatabase('delete', `Usuario-Temporal/${uid}`)
     }
 
     cancelar = () => {

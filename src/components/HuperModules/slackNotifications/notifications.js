@@ -1,8 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import firebase from 'firebase';
 import { popupBot } from '../../../actions';
-
+import { dataBaseManager } from '../../../lib/utils';
 
 let timeoutLength = 30000;
 let timeoutLength2 = 30000;
@@ -14,6 +13,12 @@ class notifiactions extends React.Component {
 
     state = { canales: null, ultimoMensaje: [], numdif: null, primerControl: 0 }
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     notificationPriority = () => {
         this.timeout = setTimeout(() => {
@@ -41,7 +46,7 @@ class notifiactions extends React.Component {
         }, timeoutLength3)
     }
     componentWillMount() {
-        const nameRef2 = firebase.database().ref().child(`Usuario-Slack/${this.props.userId}`)
+        const nameRef2 = this.componentDatabase('get', `Usuario-Slack/${this.props.userId}`);
         nameRef2.on('value', (snapshot2) => {
             /*this.setState({
               client: SlackOAuthClient.connect(snapshot2.val().tokenB)

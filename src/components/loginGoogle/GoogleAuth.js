@@ -32,10 +32,6 @@ class GoogleAuth extends React.Component {
 
                 this.auth = window.gapi.auth2.getAuthInstance();
                 this.props.Singauth(this.auth);
-
-                //login de firebase
-                let objectId = { email: this.auth.currentUser.get().getBasicProfile().getEmail(), ID: this.auth.currentUser.get().getId() }
-                this.componentDatabase("login", null, objectId);
                 this.onAuthChange(this.auth.isSignedIn.get());
                 this.auth.isSignedIn.listen(this.onAuthChange);
 
@@ -48,6 +44,7 @@ class GoogleAuth extends React.Component {
 
     componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
         let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        console.log(men);
         if (men && men.mensaje)
             this.props.popupBot({ mensaje: men.mensaje });
         return men;
@@ -65,7 +62,6 @@ class GoogleAuth extends React.Component {
                     let code = cod.code;
                     if (cod.asana) {
                         code = code.replace('%2F', '/').replace('%3A', ':');
-                        console.log(window.location);
                         axios.post(`https://cors-anywhere.herokuapp.com/https://app.asana.com/-/oauth_token`, null, {
                             params: {
                                 'grant_type': 'authorization_code',
@@ -74,12 +70,13 @@ class GoogleAuth extends React.Component {
                             }
                         }).then(res => {
 
-                            firebase.database().ref(`Usuario-Asana/${this.state.uid}`).update({
+                            //  const starCountRef = 
+                            let objectAr = {
                                 token: res.data.access_token,
                                 rToken: res.data.refresh_token,
                                 code
-                            })
-
+                            }
+                            this.componentDatabase("update", `Usuario-Asana/${this.state.uid}`, objectAr, 'Hemos actualizado correctamente tu usuario', 'default');
                             this.props.mensajeAsanas('Asana');
                             this.renderBorrarAsana(us);
                             history.push('/profile');
@@ -92,14 +89,17 @@ class GoogleAuth extends React.Component {
                             .then((res, tres) => {
                                 console.log(res);
                                 if (res.data.bot) {
-                                    firebase.database().ref(`Usuario-Slack/${this.state.uid}`).set({
+
+                                    let objectAr = {
                                         tokenSlack: res.data.access_token,
                                         tokenBot: res.data.bot.bot_access_token,
                                         userSlack: res.data.user_id
-                                    });
-                                    firebase.database().ref(`Usuario/${this.state.uid}`).update({
+                                    }
+                                    this.componentDatabase("insert", `Usuario-Slack/${this.state.uid}`, objectAr, 'Hemos actualizado correctamente tu usuario', 'default');
+                                    objectAr = {
                                         userSlack: res.data.user_id
-                                    });
+                                    }
+                                    this.componentDatabase("update", `Usuario/${this.state.uid}`, objectAr, 'Hemos actualizado correctamente tu usuario', 'default');
                                     this.props.mensajeAsanas('Slack');
                                     history.push('/profile');
                                 }
@@ -113,13 +113,15 @@ class GoogleAuth extends React.Component {
 
     renderBorrarAsana = (Usuario) => {
         this.timeout = setTimeout(() => {
-            firebase.database().ref(`Usuario-CodeTemporal/${this.stateuid}`).set({});
+            this.componentDatabase("insert", `Usuario-CodeTemporal/${this.stateuid}`, {});
         }, timeoutLength)
     }
 
     validaCodigoAcc = (Usuario) => {
         this.timeout = setTimeout(() => {
-            const starCountRef = firebase.database().ref().child(`Codigo-Acceso/${Usuario.codigo}`)
+            
+            
+            const starCountRef = this.componentDatabase("get", `Codigo-Acceso/${Usuario.codigo}`);
             starCountRef.on('value', (snapshot) => {
                 const cod = snapshot.val();
                 if (cod) {
@@ -130,14 +132,12 @@ class GoogleAuth extends React.Component {
                             us.estado = 'inactivo';
                             us.onboarding = true;
 
-                            firebase.database().ref(`Codigo-Acceso/${Usuario.codigo}`).set({
+                            let objectAr = {
                                 ...cod,
                                 fechaTer: new Date().toString(),
-                            })
-
-                            firebase.database().ref(`Usuario/${this.state.uid}`).set({
-                                ...us,
-                            })
+                            }
+                            this.componentDatabase("insert", `Codigo-Acceso/${Usuario.codigo}`, objectAr, 'Hemos actualizado correctamente tu usuario', 'default');
+                            this.componentDatabase("insert", `Usuario/${this.state.uid}`, {us}, 'Hemos actualizado correctamente tu usuario', 'default');
                             this.auth.signOut();
                         }
                     }
@@ -152,11 +152,11 @@ class GoogleAuth extends React.Component {
         let usuarioNuevo = { nombre: this.auth.currentUser.get().getBasicProfile().getName(), email: this.auth.currentUser.get().getBasicProfile().getEmail(), id: this.auth.currentUser.get().getId(), rol: '2', userId: this.auth.currentUser.get().getId() };
         this.props.usuarioDetails({ usuarioNuevo });
 
-        const starCountRef = firebase.database().ref().child(`Usuario-Temporal/${this.state.uid}`)
+        const starCountRef = this.componentDatabase("get", `Usuario-Temporal/${this.state.uid}`);
         starCountRef.on('value', (snapshot) => {
 
             if (snapshot.val()) {
-                const starCountRef2 = firebase.database().ref().child(`Usuario-CodeTemporal/${this.state.uid}`);
+                const starCountRef2 =  this.componentDatabase("get", `Usuario-CodeTemporal/${this.state.uid}`); 
                 starCountRef2.on('value', (snapshot2) => {
 
                     if (snapshot2.val()) {
@@ -171,11 +171,10 @@ class GoogleAuth extends React.Component {
     }
     renderUsarioLogin(uid) {
         this.props.signIn(uid);
-        const nameRef = firebase.database().ref().child('Usuario').child(uid);
+        const nameRef =  this.componentDatabase("get", `Usuario/${uid}`); 
         nameRef.on('value', (snapshot) => {
-            console.log('ENtroooooo');
+       
             const Usuario = snapshot.val();
-
             //invalida codigo de acceso
             let etapa = etapaHupper(Usuario, uid, `/Utils/Hupper`)
             if (Usuario.codigo) {
@@ -187,14 +186,14 @@ class GoogleAuth extends React.Component {
 
             let slack = null;
             //obtien la configuracion de slack
-            const nameRef4 = firebase.database().ref().child(`Usuario-Slack/${uid}`)
+            const nameRef4 = this.componentDatabase("get", `Usuario-Slack/${uid}`); 
             nameRef4.on('value', (snapshot3) => {
                 if (snapshot3.val())
                     slack = snapshot3.val();
             });
 
             let calendar = null;
-            const nameRef5 = firebase.database().ref().child(`Usuario-CalendarGoogle/${uid}`);
+            const nameRef5 = this.componentDatabase("get", `Usuario-CalendarGoogle/${uid}`);
             nameRef5.on('value', (snapshot) => {
                 if (snapshot.val()) {
                     calendar = snapshot.val().idCalendar.value;
@@ -202,12 +201,12 @@ class GoogleAuth extends React.Component {
             });
 
             let rol = null;
-            const nameRef2 = firebase.database().ref().child('Usuario-Rol').child(uid);
+            const nameRef2 = this.componentDatabase("get", `Usuario-Rol/${uid}`);
             nameRef2.on('value', (snapshot2) => {
                 rol = snapshot2.val().Rol;
             });
 
-            const nameRef3 = firebase.database().ref().child(`Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${uid}`)
+            const nameRef3 = this.componentDatabase("get", `Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${uid}`);
             nameRef3.on('value', (snapshot3) => {
                 if (snapshot3.val()) {
 
@@ -221,18 +220,21 @@ class GoogleAuth extends React.Component {
         //   console.log(this.auth.currentUser.get().getId());
 
         if (isSignedIn) {
+            let objectId = { email: this.auth.currentUser.get().getBasicProfile().getEmail(), ID: this.auth.currentUser.get().getId() }
+            this.componentDatabase("login", null, objectId);
 
-            this.props.nombreUsuario(this.auth.currentUser.get().getBasicProfile().getName());
-            //recupera codigo de acceso de slack
-            this.recuperarDatoSlack(window.location.search);
-            //recupera el token trello
-            this.recuperarDatoToken(window.location.href);
-            this.props.nuevoUsuarios(true);
-            //render valida si el usuario se ha creado en Asana
-            this.renderValidAsana();
-            //Encuentra el Rol,
             firebase.auth().onAuthStateChanged((user) => {
                 if (user) {
+                    this.setState({ uid: user.uid });
+                    this.props.nombreUsuario(this.auth.currentUser.get().getBasicProfile().getName());
+                    //recupera codigo de acceso de slack
+                    this.recuperarDatoSlack(window.location.search, user.uid);
+                    //recupera el token trello
+                    this.recuperarDatoToken(window.location.href, user.uid);
+                    this.props.nuevoUsuarios(true);
+                    //render valida si el usuario se ha creado en Asana
+                    this.renderValidAsana();
+                    //Encuentra el Rol,
                     this.renderUsarioLogin(user.uid);
                     // User is signed in.
                 } else {
@@ -247,7 +249,7 @@ class GoogleAuth extends React.Component {
         }
     };
 
-    recuperarDatoSlack(direccion) {
+    recuperarDatoSlack(direccion, uid) {
         if (!direccion.includes('code'))
             return null;
         const vars = direccion.split("?")[1].split("&");
@@ -260,19 +262,18 @@ class GoogleAuth extends React.Component {
             var pair = e.split("=");
             if (pair[0] === 'code') {
                 code = pair[1];
-                firebase.database().ref(`Usuario-CodeTemporal/${this.state.uid}`).set({
-                    code, asana
-                })
+                this.componentDatabase("insert", `Usuario-CodeTemporal/${uid}`, { code, asana});
             }
         });
 
         return code;
     }
 
-    recuperarDatoToken(direccion) {
+    recuperarDatoToken(direccion, uid) {
 
         if (!direccion.includes('token'))
             return null;
+
         const vars = direccion.split("#");
         let token = null;
 
@@ -280,9 +281,7 @@ class GoogleAuth extends React.Component {
             var pair = e.split("=");
             if (pair[0] === 'token') {
                 token = pair[1];
-                firebase.database().ref(`Usuario-TokenTrelloTemp/${this.state.uid}`).set({
-                    token
-                })
+                this.componentDatabase("insert", `Usuario-TokenTrelloTemp/${uid}`, { token});
                 this.setState({ tokenTrello: true })
             }
         });
@@ -321,7 +320,7 @@ class GoogleAuth extends React.Component {
                         }*/
 
             let leftLogo = '-0.2em';
-            let leftSign = '1.6em';
+            let leftSign = '2.5em';
             if (window.innerWidth < 450 || (window.innerWidth < 850 && window.innerHeight < 450)) {
                 leftLogo = '-1.3em';
                 leftSign = '1.2em';

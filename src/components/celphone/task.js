@@ -39,8 +39,8 @@ class listActividades extends React.Component {
 
     componentWillMount() {
 
-    
-        if (!this.props.isSignedIn || !this.props.usuarioDetail) {
+   
+        if (!this.props.usuarioDetail && (this.props.usuarioDetail  && !this.props.usuarioDetail.idUsuario)) {
             history.push('/');
             return;
         }

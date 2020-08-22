@@ -10,14 +10,12 @@ import '../modules/chatBot/chatHupApp.css';
 import randomScalingFactor from '../../lib/randomScalingFactor';
 import ListaActividades from '../HuperModules/actividadesHuper';
 import DashGestor from '../gestorModules/dashboardG';
-import firebase from 'firebase';
 import moment from 'moment';
 import history from '../../history';
-import { signOut } from '../../actions';
+import { signOut, popupBot } from '../../actions';
 import { Menu, Segment, Dimmer, Checkbox, Modal, Header } from 'semantic-ui-react';
-import MenuChat from '../HuperModules/chat3X/chatZ';
 import { pasoOnboardings, listaFormaciones, estadochats } from '../modules/chatBot/actions';
-
+import { dataBaseManager } from '../../lib/utils';
 
 var ReactRotatingText = require('react-rotating-text');
 const timeoutLength = 1800;
@@ -113,6 +111,12 @@ class DashBoard extends React.Component {
         this.setState({ open3: false })
     }
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     componentDidMount() {
 
@@ -121,7 +125,7 @@ class DashBoard extends React.Component {
             history.push('/');
         //    history.push('/login');
 
-        /*  const starCountRef3 = firebase.database().ref().child(`Utilidades-Valoraciones`);
+        /*  const starCountRef3 = this.componentDatabase('get', `Utilidades-Valoraciones`);
           starCountRef3.on('value', (snapshot) => {
               this.setState({ UtilFactors: snapshot.val() });
           });
@@ -142,13 +146,13 @@ class DashBoard extends React.Component {
     handleTareas = () => {
         this.timeout = setTimeout(() => {
 
-            const starCountRef3 = firebase.database().ref().child(`Usuario-Tareas/${this.props.userId}/${moment().format("YYYYMMDD")}`);
+            const starCountRef3 = this.componentDatabase('get', `Usuario-Tareas/${this.props.userId}/${moment().format("YYYYMMDD")}`);
             starCountRef3.on('value', (snapshot) => {
                 this.setState({ TareasObjs: snapshot.val() });
             });
 
             const diat = new Date();
-            const nameRef3 = firebase.database().ref().child(`Usuario-TIC/${this.props.userId}/${diat.getFullYear()}`)
+            const nameRef3 = this.componentDatabase('get', `Usuario-TIC/${this.props.userId}/${diat.getFullYear()}`);
             nameRef3.on('value', (snapshot2) => {
                 console.log(snapshot2.val());
                 this.setState({ ticUsuario: snapshot2.val() ? snapshot2.val() : [] })
@@ -607,8 +611,8 @@ class DashBoard extends React.Component {
                 onboarding: true,
             };
             updates[`Usuario/${this.props.usuarioDetail.idUsuario}`] = postData;
-            //  firebase.database().ref().update(updates);
-
+          //  this.componentDatabase('update', `Usuario/${this.props.usuarioDetail.idUsuario}`,postData);
+            
         }, timeoutLength5)
     }
 
@@ -745,9 +749,8 @@ class DashBoard extends React.Component {
                 }
 
                 if (this.props.pasoOnboarding === 21) {
-                    firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).set({
-                        ...this.props.usuarioDetail.usuario, onboarding: true
-                    })
+                    //  this.componentDatabase('insert', `Usuario/${this.props.usuarioDetail.idUsuario}`,{...this.props.usuarioDetail.usuario, onboarding: true});
+                  
                 }
 
                 pageActivi = <Dimmer active={true} page>
@@ -875,9 +878,7 @@ class DashBoard extends React.Component {
 
 
                 if (this.props.pasoOnboarding === 20) {
-                    firebase.database().ref(`Usuario/${this.props.usuarioDetail.idUsuario}`).set({
-                        ...this.props.usuarioDetail.usuario, onboarding: true
-                    })
+                  this.componentDatabase('insert', `Usuario/${this.props.usuarioDetail.idUsuario}`,{...this.props.usuarioDetail.usuario, onboarding: true});
                 }
 
                 pageActivi = <Dimmer active={true} page>
@@ -931,6 +932,6 @@ const mapStateToProps = (state) => {
 
     };
 };
-export default connect(mapStateToProps, { signOut, pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats })(DashBoard);
+export default connect(mapStateToProps, { signOut, pasoOnboardings, chatOff, chatOn, listaFormaciones, estadochats, popupBot })(DashBoard);
 
 ///<ListAdjuntos />

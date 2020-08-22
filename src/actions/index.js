@@ -15,7 +15,6 @@ import {
     HOME_APP, 
     SIGN_OUT_OBJ,
     W_SCREEN
-   
 } from './types';
 
 import {
@@ -23,11 +22,7 @@ import {
     CHAT_OFF,
     NOMBRE_USER,
     USUARIO_DETAIL,
-    
-
 } from '../components/modules/chatBot/types';
-import firebase from 'firebase';
-
 
 export const screenWH = (wh) =>(
     {
@@ -66,7 +61,7 @@ export const sendMessage = (text) =>(
 
 
 export const signIn = (userId) => {
-    escribirUsuario(userId);
+  
     return {
         type: SIGN_IN,
         payload: userId
@@ -168,8 +163,3 @@ export const chatOff = () => {
     };
 };
 
-const escribirUsuario = (userId) => {
-    const starCountRef = firebase.database().ref().child(`Preguntas-Chat/-LXt_TDJQilcvBxWh955`);
-    starCountRef.on('value', (snapshot) => {
-    });
-}

@@ -12,10 +12,10 @@ import ChatHup3 from '../HuperModules/efectText/efecto4';
 import ChatHup4 from '../HuperModules/efectText/efecto5';
 import '../../lib/colladaLoader2';
 import { responseEmHeight } from '../../lib/responseUtils';
-import firebase from 'firebase';
 import { Popup, Icon, Modal, Button } from 'semantic-ui-react';
 import moment from 'moment';
 import '../HuperModules/timerClock/./timer.css';
+import { dataBaseManager } from '../../lib/utils';
 var THREE = require('three');
 
 const getRandom = (min, max) => Math.random() * (max - min + 1) + min;
@@ -39,6 +39,13 @@ class THREEScene extends React.Component {
         });
     }
 
+    componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
+        let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        console.log(men);
+        if (men && men.mensaje)
+            this.props.popupBot({ mensaje: men.mensaje });
+        return men;
+    }
 
     componentDidMount() {
 
@@ -222,7 +229,7 @@ class THREEScene extends React.Component {
             this.body.children[0].material.map.minFilter = THREE.LinearFilter;
             this.body.children[3].castShadow = true;
             this.camera.lookAt(this.models.position);
-          //  alert(this.models.position);
+            //  alert(this.models.position);
 
             this.parameters = {
                 lunchIntro: true,
@@ -608,9 +615,8 @@ class THREEScene extends React.Component {
         this.Registro["tiempoVisto"] = moment().format('x') - this.Registro["ver"];
         let query = `Usuario-Forma/${this.props.userId}/${moment().format("YYYYMM")}/${moment().format("DD")}/`;
         this.Registro["lection"] = this.props.popupMensaje.lection;
-        let newPostKey2 = firebase.database().ref().child(query).push().key;
-        firebase.database().ref(query + newPostKey2).update(
-            { ...this.Registro });
+        let newPostKey2 = this.componentDatabase('key', query);
+        this.componentDatabase('update', query + newPostKey2, { ...this.Registro });
         this.Registro = [];
 
     }
