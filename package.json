@@ -14,7 +14,7 @@
     "emoji-mart": "^2.9.2",
     "firebase": "^5.7.3",
     "fs": "0.0.1-security",
-    "googleapis": "^27.0.0",
+    "googleapis": "^39.1.0",
     "jquery": "^3.3.1",
     "messaging-api-slack": "^0.7.11",
     "moment": "^2.24.0",
