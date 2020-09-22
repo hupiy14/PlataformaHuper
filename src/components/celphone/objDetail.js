@@ -293,17 +293,17 @@ class listImportante extends React.Component {
         this.props.imagenOKRs(this.state.images[imgy] ? this.state.images[imgy].urls.small : '');
         let heightHup = objPrincipal.concepto.length > 17 ? '-12em' : '-12em';
         return (
-            <div className="user-profile" style={{ height: '2.5em', top: '2.5em', position: 'relative' }}>
+            <div className="user-profile" style={{ height: '2.5em', top: '-3.0em', position: 'relative' }}>
                 {avancePadre}
                 <div style={{ position: 'relative', top: '-4.7em', zIndex: 3, visibility: visiKresult }}>
                     <Progress percent={resultado >= 100 ? 100 : resultado === 0 ? 15 : resultado} inverted size='small' indicating progress style={{ width: '90%' }} />
                 </div>
-                <h2 style={{ position: 'relative', top: '-6em', left: '1em', width: '80%', transform: 'scale(1.2)', font: 'inherit' }}>{objPrincipal.concepto}</h2>
+                <h4 style={{ position: 'relative','font-weight': '800',  top: '-6em', left: '1em', width: '80%', transform: 'scale(1.2)' }}>{objPrincipal.concepto}</h4>
                 <div className="user-details" style={{ top: heightHup }}>
-                    <p style={{ color: 'White', top: '5.5em', width: '17em', textAlign: 'center', position: 'relative' }}>{objPrincipal.keyResult1}</p>
-                    <p style={{ color: 'White', top: '5em', width: '17em', textAlign: 'center', position: 'relative' }}>{objPrincipal.keyResult2}</p>
+                    <h5 style={{ color: '#dbf4d6', top: '5.5em', width: '17em', textAlign: 'center', position: 'relative' }}>{objPrincipal.keyResult1}</h5>
+                    <h5 style={{ color: '#dbf4d6', top: '4em', width: '17em', textAlign: 'center', position: 'relative' }}>{objPrincipal.keyResult2}</h5>
                 </div>
-                <div style={{ color: colorImpacto, top: '-7em', position: 'relative', transform: 'scale(1.4)' }}>
+                <div style={{ color: colorImpacto, top: '-7.2em', position: 'relative', transform: 'scale(1.4)' }}>
                     <Icon name={iconoImpacto} style={{ left: '3%', position: 'relative' }} />
                 </div>
                 <Modal

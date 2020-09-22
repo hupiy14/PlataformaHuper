@@ -10,14 +10,14 @@ import moment from 'moment';
 import asanaH from '../../../apis/asana';
 import { clientIdAsana, clientSecrectAsana } from '../../../apis/stringConnection';
 import axios from 'axios';
-import chroma from 'chroma-js';
-import { listTemporalObject, listTemporalOpciones, rutaHupperSingle, randomMessage } from '../../../lib/utils';
-import { dataBaseManager } from '../../../lib/utils';
+import { listTemporalObject, listTemporalOpciones, rutaHupperSingle, randomMessage, selectStyle, dataBaseManager } from '../../../lib/utils';
+import { register } from '../../../serviceWorker';
 
 let Trello = require("trello");
 const timeoutLength = 1500;
+const timeoutLengthHelp = 12000;
 const timeoutLength2 = 1000;
-const timeoutLength3 = 3000;
+const timeoutLength3 = 6000;
 const sleepTime = 480;
 
 acAnimated.randomNumber = function (min, max) {
@@ -50,6 +50,8 @@ class listActividades extends React.Component {
         paso: null, nivelAnt: null, stay: null, property: null, stayValue: null, pasoFlujo: 1, flujo: null, etapa: null, consultaParams: null, optionSelect: null, options: null,
         opcionesDB: null, keyNivel: '', flujoAux: null, pendingOk: null, pendingConsulta: null, onlyOptions: null, workFlow: null, passflow: 0, objTask: null, carpeta: null,
         otherFlow: null, objetoX: null, objetoP: null, pasoAux: null, btAux: null, vartemp: null, varstemp: [], acumTalento: null, acumImpacto: null, acumCompromiso: null, acumYo: null, acumEquipo: null, acumOrg: null, sleep: null,
+        helpMessage: null,
+
     }
 
     componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
@@ -67,7 +69,7 @@ class listActividades extends React.Component {
         this.acumTask = 0;
         this.paramAnt = [];
         this.addAct = 0;
-        this.st = this.renderStyles();
+        this.st = selectStyle();
         if (this.mensaje === undefined || this.props.mensajeChatBot === null || (this.props.mensajeChatBot && this.mensaje !== this.props.mensajeChatBot.mensaje))
             this.chatBotSfot();
     }
@@ -295,7 +297,7 @@ class listActividades extends React.Component {
 
 
         activity.result.fulfillment.messages.forEach(function (element) {
-            if (ind + that.addAct === Number(that.props.usuarioDetail.usuario.etapa))
+            if (ind + that.addAct === Number(that.props.usuarioDetail.usuario.etapa) || activity.result.fulfillment.messages.length === 1)
                 if (element.payload !== undefined) {
 
                     let nuevo = element.payload;
@@ -342,7 +344,7 @@ class listActividades extends React.Component {
                             that.setState({ consultParam: nuevo.consultParam });
                             that.setState({ tipoIn: 3 });
                             that.setState({ vartemp: nuevo.vartemp });
-
+                            that.setState({ helpMessage: nuevo.helpMessage });
                             that.setState({ acumTalento: nuevo.acumTalento });
                             that.setState({ acumCompromiso: nuevo.acumCompromiso });
                             that.setState({ acumImpacto: nuevo.acumImpacto });
@@ -376,6 +378,7 @@ class listActividades extends React.Component {
                             that.setState({ acumImpacto: nuevo.acumImpacto });
                             that.setState({ acumYo: nuevo.acumYo });
                             that.setState({ acumEquipo: nuevo.acumEquipo });
+                            that.setState({ helpMessage: nuevo.helpMessage });
                             that.setState({ acumOrg: nuevo.acumOrg });
                             that.urlBsaseDatos(nuevo.structure);
                             if (nuevo.carpeta)
@@ -397,6 +400,7 @@ class listActividades extends React.Component {
                             that.setState({ acumCompromiso: nuevo.acumCompromiso });
                             that.setState({ acumImpacto: nuevo.acumImpacto });
                             that.setState({ acumYo: nuevo.acumYo });
+                            that.setState({ helpMessage: nuevo.helpMessage });
                             that.setState({ acumEquipo: nuevo.acumEquipo });
                             that.setState({ acumOrg: nuevo.acumOrg });
                             that.setState({ tipoIn: 4 });
@@ -407,6 +411,7 @@ class listActividades extends React.Component {
                             that.setState({ mensajeUs: randomMessage(nuevo.mensaje, wd).replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
                             that.setState({ tipoIn: 2 });
                             that.setState({ paso: nuevo.paso });
+                            that.setState({ helpMessage: nuevo.helpMessage });
                             that.setState({ otherFlow: nuevo.otherFlow });
                             that.setState({ opciones: nuevo.opciones });
 
@@ -419,6 +424,7 @@ class listActividades extends React.Component {
                             that.setState({ paso: nuevo.paso });
                         }
                         else {
+                            that.setState({ tipoIn: 99 });
                             that.setState({ mensajeUs: randomMessage(nuevo.mensaje, wd).replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
                             that.Cerrar();
                         }
@@ -523,63 +529,6 @@ class listActividades extends React.Component {
     }
 
 
-
-    renderStyles() {
-
-        let dot = (color = '#ccc') => ({
-            alignItems: 'center',
-            display: 'flex',
-
-            ':before': {
-                backgroundColor: '#48f70f',
-                borderRadius: 10,
-                content: '" "',
-                display: 'block',
-                marginRight: 8,
-                height: 10,
-                width: 10,
-            },
-        });
-
-
-
-        let st = {
-            control: styles => ({ ...styles, backgroundColor: 'white' }),
-
-            option: (styles, { data, isDisabled, isFocused, isSelected }) => {
-                const color = chroma('#48f70f');
-                return {
-                    ...styles,
-                    backgroundColor: isDisabled
-                        ? null
-                        : isSelected
-                            ? data.color
-                            : isFocused
-                                ? color.alpha(0.1).css()
-                                : null,
-                    color: isDisabled
-                        ? '#ccc'
-                        : isSelected
-                            ? chroma.contrast(color, 'white') > 2
-                                ? 'white'
-                                : 'black'
-                            : data.color,
-                    cursor: isDisabled ? 'not-allowed' : 'default',
-
-                    ':active': {
-                        ...styles[':active'],
-                        backgroundColor: !isDisabled && (isSelected ? data.color : color.alpha(0.3).css()),
-                    },
-                };
-            },
-            input: styles => ({ ...styles, ...dot }),
-            placeholder: styles => ({ ...styles, ...dot }),
-            singleValue: (styles, { data }) => ({ ...styles, ...dot('#48f70f') }),
-        };
-
-        return st;
-    }
-
     renderAcumUnd(value) {
 
         let usProp = [];
@@ -618,7 +567,7 @@ class listActividades extends React.Component {
                 if (this.state.propertieBD) {
                     let registro = [];
                     registro[this.state.propertieBD] = value;
-
+                    registro['mensgFlow'] = this.state.mensajeUs;
 
                     this.renderAcumUnd(value);
 
@@ -799,7 +748,7 @@ class listActividades extends React.Component {
         this.setState({ onlyOptions: null });
         this.setState({ flag: true });
         this.setState({ textAux: true });
-
+        this.setState({ helpMessage: null });
         this.setState({ acumOrg: null });
         this.setState({ acumImpacto: null });
         this.setState({ acumEquipo: null });
@@ -834,16 +783,17 @@ class listActividades extends React.Component {
             let i;
             switch (this.props.tipo) {
                 case 0:
-                    timeline = new window.TimelineMax({ repeat: -1, repeatDelay: 0 });
+                    timeline = new window.TimelineMax({ repeat: 1, repeatDelay: 5,  yoyo: true, });
                     for (i = 0; i <= split.chars.length - 1; i++) {
                         var char = split.chars[i];
                         timeline.add("animated_char_" + String(i), acAnimated.randomNumber(1, 20) / 10);
                         timeline.add(acAnimated.animateChar(char), "animated_char_" + String(i));
                     }
                     timeline.to(text, 3, {}).to(text, 1, { opacity: 0 });
+                    timeline.duration(5)
                     break;
                 case 1:
-                    timeline = new window.TimelineMax({ repeat: -1, repeatDelay: 0 });
+                    timeline = new window.TimelineMax({ repeat: 1, repeatDelay: 5,  yoyo: true, });
                     for (i = 0; i <= split.words.length - 1; i++) {
                         var word = split.words[i];
                         timeline
@@ -851,6 +801,7 @@ class listActividades extends React.Component {
                             .add(acAnimated.animateWord(word), "animated_word_" + String(i));
                     }
                     timeline.to(text, 3, {}).to(text, 1, { opacity: 0 });
+                    timeline.duration(5)
                     break;
                 case 2:
                     for (i = 0; i <= split.chars.length - 1; i++) {
@@ -860,9 +811,9 @@ class listActividades extends React.Component {
                             y: this.randomMax(-100, 100),
                             z: this.randomMax(-100, 100),
                             scale: .1,
-                            delay: i * .02,
-                            yoyo: true,
-                            repeat: -1,
+                            delay: i * .05,
+                            yoyo: false,
+                            repeat: 1,
                             repeatDelay: 10
                         });
                     };
@@ -875,9 +826,9 @@ class listActividades extends React.Component {
                             y: this.randomMax(-100, 100),
                             z: this.randomMax(-100, 100),
                             scale: 1,
-                            delay: i * .02,
-                            yoyo: true,
-                            repeat: -1,
+                            delay: i * .2,
+                            yoyo: false,
+                            repeat: 1,
                             repeatDelay: 10
                         });
                     };
@@ -995,7 +946,7 @@ class listActividades extends React.Component {
 
             </React.Fragment >
             this.setState({
-                t2: <div className="Wrapper" style={{ top: '55%', height: '10em' }}>
+                t2: <div className="Wrapper" style={{ top: '65%', height: '10em' }}>
                     <div className="ui container" style={{ height: '10em', width: '50%' }}>
                         {opciones}
                         {btAuxiliar}
@@ -1072,28 +1023,32 @@ class listActividades extends React.Component {
 
                 if (this.state.btAux) {
                     let styleLeft = { fontSize: 'smaller', width: '80%', left: '10%', height: '2.5em' };
-                    if (window.innerWidth < 450 || (window.innerWidth < 850 && window.innerHeight < 450))
-                        styleLeft = { fontSize: 'smaller', width: '80%', height: '5em' };
-                    btAuxiliar = <div style={{ width: '100%', top: '25%', position: 'relative' }}>
+               
+                    btAuxiliar = <div style={{ width: '100%', top: '30%', position: 'relative' }}>
                         <h5 href="#" className="action-button animate purple" style={styleLeft} key={this.state.btAux} onClick={() => { this.addNewMessage('btAux') }}>{this.state.btAux}</h5>
                     </div>
                 }
                 let topTiempo = '10em';
                 if (this.state.flagTiempo) {
                     topTiempo = '20em';
-                    tiempo = <TimerClock programa={true}></TimerClock>
+                    tiempo = <div style={{ top: '5%', position: 'relative' }} >
+                        <TimerClock programa={true}></TimerClock>
+                    </div>
                 }
 
                 let opciones = null;
                 if (this.state.tipoIn === 0) {
                     this.MensajeIntro();
                 }
+                else if (this.state.tipoIn === 99) {
+                   
+                }
                 else if (this.state.tipoIn === 1) {
                     this.setState({
-                        t2: <div className="Wrapper" style={{ top: '50%', height: '19em' }}>
+                        t2: <div className="Wrapper" style={{ top: '58%', height: '19em' }}>
                             <div className="ui container" style={{ height: topTiempo, width: '40%' }}>
 
-                                <div className="Input" style={{ top: '5%' }}>
+                                <div className="Input" style={{ top: '10%' }}>
                                     <input type="text" id="input" className="Input-text"
                                         value={this.state.inputC}
                                         onChange={(event) => this.setState({ inputC: event.target.value })}
@@ -1108,7 +1063,7 @@ class listActividades extends React.Component {
                 }
                 else if (this.state.tipoIn === 4) {
                     this.setState({
-                        t2: <div className="Wrapper" style={{ top: window.innerHeight * 0.5, height: '18em' }}>
+                        t2: <div className="Wrapper" style={{ top: '60%', height: '18em' }}>
                             <div className="ui container" style={{ height: topTiempo, width: '40%' }}>
 
                                 {tiempo}
@@ -1153,7 +1108,7 @@ class listActividades extends React.Component {
                         //   this.props.sendMessage(this.state.opciones.title);
 
                         this.setState({
-                            t2: <div style={{ left: '-2%', position: 'relative' }} >
+                            t2: <div style={{ left: '-2%', top: '7%', position: 'relative' }} >
                                 {opciones}
                             </div>
                         });
@@ -1198,6 +1153,15 @@ class listActividades extends React.Component {
         this.setState({ flag: true })
     }
 
+
+    Help = () => {
+        this.timeout = setTimeout(() => {
+            if (this.state.helpMessage)
+                this.props.popupBot({ mensaje: this.state.helpMessage, sleep: 2000, onbot: true });
+        }, timeoutLengthHelp)
+    }
+
+
     render() {
 
         let t1 = null;
@@ -1234,8 +1198,11 @@ class listActividades extends React.Component {
             </div>;
         }
         else {
+            this.Help();
+            let xfont = this.state.mensajeUs && this.state.mensajeUs.length > 60 ? '1.3em' : '1.8em';
+
             t1 = <div className='text' id='text' style={{ opacity: '1' }}>
-                <p className="split" style={{ opacity: '1', fontSize: '1.8em', color: '#e8f5e8', position: 'relative', top: '-0.4em', height: '2em' }} >
+                <p className="split" style={{ opacity: '1', fontSize: xfont, color: '#e8f5e8', position: 'relative', top: '-2em', height: '2em' }} >
                     {this.state.mensajeUs}
                 </p>
             </div>

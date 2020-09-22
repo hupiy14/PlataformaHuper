@@ -5,13 +5,15 @@ import { connect } from 'react-redux';
 import { signOut } from '../../actions';
 import history from '../../history';
 import { nuevoUsuarios, detailUsNews } from '../modules/chatBot/actions';
+import Select from 'react-select';
+import { selectStyle } from '../../lib/utils';
 
 const AreasT = [
-    { key: 1, text: 'Tecnología', value: 'Tecnología' },
-    { key: 2, text: 'Ventas', value: 'Ventas' },
-    { key: 3, text: 'Staff', value: 'Staff' },
-    { key: 4, text: 'Comercial', value: 'Comercial' },
-    { key: 5, text: 'RRHH', value: 'RRHH' },
+    { key: 1, label: 'Tecnología', value: 'Tecnología' },
+    { key: 2, label: 'Ventas', value: 'Ventas' },
+    { key: 3, label: 'Staff', value: 'Staff' },
+    { key: 4, label: 'Comercial', value: 'Comercial' },
+    { key: 5, label: 'RRHH', value: 'RRHH' },
 ]
 
 class FomrularioGlobal extends React.Component {
@@ -23,6 +25,9 @@ class FomrularioGlobal extends React.Component {
         errorSector: null, mensajeCodigo: { titulo: 'Falta campos por llenar', detalle: 'Debes diligenciar todos los campos' }
 
     }
+
+
+
     componentWillMount() {
         if (!this.props.usuarioDetail)
             history.push('/');
@@ -76,6 +81,7 @@ class FomrularioGlobal extends React.Component {
         history.push('/');
     }
 
+
     render() {
 
         return (
@@ -99,12 +105,16 @@ class FomrularioGlobal extends React.Component {
                                 onChange={e => this.props.detailUsNews({ ...this.props.detailUsNew, equipo: e.target.value })}
                                 error={this.state.errorEquipo}
                             />
-                            <Form.Select label='A que departamento de tu empresa pertenece tu equipo:' options={AreasT} placeholder='Escoge una opción'
-                                value={this.props.detailUsNew ? this.props.detailUsNew.area : null}
-                                onChange={(e, { value }) => this.props.detailUsNews({ ...this.props.detailUsNew, area: value })}
-                                error={this.state.errorArea}
+                            <h5>A que departamento de tu empresa pertenece tu equipo:</h5>
+                            <Select options={AreasT}
+                                search
+                                value={this.props.detailUsNew ?AreasT.find(x => x.value === this.props.detailUsNew.area)  : null}
+                                styles={selectStyle()}
+                                onChange={(e, { value }) => { console.log(this.props.detailUsNew); this.props.detailUsNews({ ...this.props.detailUsNew, area: e.value }); }}
+
                             />
-                            <Message 
+
+                            <Message
                                 error
                                 header={this.state.mensajeCodigo.titulo}
                                 content={this.state.mensajeCodigo.detalle}
@@ -118,9 +128,12 @@ class FomrularioGlobal extends React.Component {
                     </Button>
                     <Button
                         icon='arrow right'
-                        labelPosition='right'
                         content="Un paso mas"
-                        style={{ background: '#fe10bd', color: "aliceblue" }}
+                        style={{
+                            background: '#fe10bd', color: "aliceblue",
+                            left: '14%',
+                            position: 'relative'
+                        }}
                         onClick={this.continuar2}
                         disabled=
                         {

@@ -10,13 +10,13 @@ import moment from 'moment';
 import asanaH from '../../apis/asana';
 import { clientIdAsana, clientSecrectAsana } from '../../apis/stringConnection';
 import axios from 'axios';
-import chroma from 'chroma-js';
-import { listTemporalObject, listTemporalOpciones, rutaHupperSingle, randomMessage, dataBaseManager } from '../../lib/utils';
+import { listTemporalObject, listTemporalOpciones, rutaHupperSingle, randomMessage, dataBaseManager, selectStyle } from '../../lib/utils';
 
 let Trello = require("trello");
 const timeoutLength = 1500;
+const timeoutLengthHelp = 12000;
 const timeoutLength2 = 1000;
-const timeoutLength3 = 3000;
+const timeoutLength3 = 2000;
 const sleepTime = 480;
 
 acAnimated.randomNumber = function (min, max) {
@@ -49,10 +49,13 @@ class listActividades extends React.Component {
         paso: null, nivelAnt: null, stay: null, property: null, stayValue: null, pasoFlujo: 1, flujo: null, etapa: null, consultaParams: null, optionSelect: null, options: null,
         opcionesDB: null, keyNivel: '', flujoAux: null, pendingOk: null, pendingConsulta: null, onlyOptions: null, workFlow: null, passflow: 0, objTask: null, carpeta: null,
         otherFlow: null, objetoX: null, objetoP: null, pasoAux: null, btAux: null, vartemp: null, varstemp: [], acumTalento: null, acumImpacto: null, acumCompromiso: null, acumYo: null, acumEquipo: null, acumOrg: null, sleep: null,
+        helpMessage: null,
+
     }
 
     componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
         let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
+        this.efectoPass = false;
         if (men && men.mensaje)
             this.props.popupBot({ mensaje: men.mensaje });
         return men;
@@ -62,11 +65,12 @@ class listActividades extends React.Component {
         this.secondsAcum = 0;
         this.stateAnt = null;
         this.pasoAnt = null;
+        this.primeraV = false;
         this.ndescansos = 0;
         this.acumTask = 0;
         this.paramAnt = [];
         this.addAct = 0;
-        this.st = this.renderStyles();
+        this.st = selectStyle();
         if (this.mensaje === undefined || this.props.mensajeChatBot === null || (this.props.mensajeChatBot && this.mensaje !== this.props.mensajeChatBot.mensaje))
             this.chatBotSfot();
     }
@@ -300,11 +304,10 @@ class listActividades extends React.Component {
 
         let wd = rutaHupperSingle(this.props.usuarioDetail.usuario.etapa);
         //  let wd = 0;
-
-
+        this.efectoPass = false;
 
         activity.result.fulfillment.messages.forEach(function (element) {
-            if (ind + that.addAct === Number(that.props.usuarioDetail.usuario.etapa))
+            if (ind + that.addAct === Number(that.props.usuarioDetail.usuario.etapa) || activity.result.fulfillment.messages.length === 1)
                 if (element.payload !== undefined) {
 
                     let nuevo = element.payload;
@@ -350,7 +353,7 @@ class listActividades extends React.Component {
                             that.setState({ consultParam: nuevo.consultParam });
                             that.setState({ tipoIn: 3 });
                             that.setState({ vartemp: nuevo.vartemp });
-
+                            that.setState({ helpMessage: nuevo.helpMessage });
                             that.setState({ acumTalento: nuevo.acumTalento });
                             that.setState({ acumCompromiso: nuevo.acumCompromiso });
                             that.setState({ acumImpacto: nuevo.acumImpacto });
@@ -385,6 +388,7 @@ class listActividades extends React.Component {
                             that.setState({ acumImpacto: nuevo.acumImpacto });
                             that.setState({ acumYo: nuevo.acumYo });
                             that.setState({ acumEquipo: nuevo.acumEquipo });
+                            that.setState({ helpMessage: nuevo.helpMessage });
                             that.setState({ acumOrg: nuevo.acumOrg });
                             that.urlBsaseDatos(nuevo.structure);
                             if (nuevo.carpeta)
@@ -406,6 +410,7 @@ class listActividades extends React.Component {
                             that.setState({ acumCompromiso: nuevo.acumCompromiso });
                             that.setState({ acumImpacto: nuevo.acumImpacto });
                             that.setState({ acumYo: nuevo.acumYo });
+                            that.setState({ helpMessage: nuevo.helpMessage });
                             that.setState({ acumEquipo: nuevo.acumEquipo });
                             that.setState({ acumOrg: nuevo.acumOrg });
                             that.setState({ tipoIn: 4 });
@@ -416,6 +421,7 @@ class listActividades extends React.Component {
                             that.setState({ mensajeUs: randomMessage(nuevo.mensaje, wd).replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
                             that.setState({ tipoIn: 2 });
                             that.setState({ paso: nuevo.paso });
+                            that.setState({ helpMessage: nuevo.helpMessage });
                             that.setState({ otherFlow: nuevo.otherFlow });
                             that.setState({ opciones: nuevo.opciones });
 
@@ -428,6 +434,7 @@ class listActividades extends React.Component {
                             that.setState({ paso: nuevo.paso });
                         }
                         else {
+                            that.setState({ tipoIn: 99 });
                             that.setState({ mensajeUs: randomMessage(nuevo.mensaje, wd).replace("@nombre", that.props.usuarioDetail.usuario.usuario).replace("?" + nuevo.vairablesT, that.state.varstemp[nuevo.vairablesT]) });
                             that.Cerrar();
                         }
@@ -532,64 +539,6 @@ class listActividades extends React.Component {
         }
     }
 
-
-
-    renderStyles() {
-
-        let dot = (color = '#ccc') => ({
-            alignItems: 'center',
-            display: 'flex',
-
-            ':before': {
-                backgroundColor: '#48f70f',
-                borderRadius: 10,
-                content: '" "',
-                display: 'block',
-                marginRight: 8,
-                height: 10,
-                width: 10,
-            },
-        });
-
-
-
-        let st = {
-            control: styles => ({ ...styles, backgroundColor: 'white' }),
-
-            option: (styles, { data, isDisabled, isFocused, isSelected }) => {
-                const color = chroma('#48f70f');
-                return {
-                    ...styles,
-                    backgroundColor: isDisabled
-                        ? null
-                        : isSelected
-                            ? data.color
-                            : isFocused
-                                ? color.alpha(0.1).css()
-                                : null,
-                    color: isDisabled
-                        ? '#ccc'
-                        : isSelected
-                            ? chroma.contrast(color, 'white') > 2
-                                ? 'white'
-                                : 'black'
-                            : data.color,
-                    cursor: isDisabled ? 'not-allowed' : 'default',
-
-                    ':active': {
-                        ...styles[':active'],
-                        backgroundColor: !isDisabled && (isSelected ? data.color : color.alpha(0.3).css()),
-                    },
-                };
-            },
-            input: styles => ({ ...styles, ...dot }),
-            placeholder: styles => ({ ...styles, ...dot }),
-            singleValue: (styles, { data }) => ({ ...styles, ...dot('#48f70f') }),
-        };
-
-        return st;
-    }
-
     renderAcumUnd(value) {
 
         let usProp = [];
@@ -626,7 +575,7 @@ class listActividades extends React.Component {
                 if (this.state.propertieBD) {
                     let registro = [];
                     registro[this.state.propertieBD] = value;
-
+                    registro['mensgFlow'] = this.state.mensajeUs;
 
                     this.renderAcumUnd(value);
 
@@ -810,7 +759,7 @@ class listActividades extends React.Component {
         this.setState({ onlyOptions: null });
         this.setState({ flag: true });
         this.setState({ textAux: true });
-
+        this.setState({ helpMessage: null });
         this.setState({ acumOrg: null });
         this.setState({ acumImpacto: null });
         this.setState({ acumEquipo: null });
@@ -839,66 +788,76 @@ class listActividades extends React.Component {
     */
     handlePaso = () => {
         this.timeout = setTimeout(() => {
-            let text = document.body.querySelector(".text");
-            const split = acAnimated.Plugins.SplitText(text, { words: 1, chars: 1, spacing: 10 });
-            let timeline = null;
-            let i;
-            switch (this.props.tipo) {
-                case 0:
-                    timeline = new window.TimelineMax({ repeat: -1, repeatDelay: 0 });
-                    for (i = 0; i <= split.chars.length - 1; i++) {
-                        var char = split.chars[i];
-                        timeline.add("animated_char_" + String(i), acAnimated.randomNumber(1, 20) / 10);
-                        timeline.add(acAnimated.animateChar(char), "animated_char_" + String(i));
-                    }
-                    timeline.to(text, 3, {}).to(text, 1, { opacity: 0 });
-                    break;
-                case 1:
-                    timeline = new window.TimelineMax({ repeat: -1, repeatDelay: 0 });
-                    for (i = 0; i <= split.words.length - 1; i++) {
-                        var word = split.words[i];
-                        timeline
-                            .add("animated_word_" + String(i), acAnimated.randomNumber(1, 20) / 10)
-                            .add(acAnimated.animateWord(word), "animated_word_" + String(i));
-                    }
-                    timeline.to(text, 3, {}).to(text, 1, { opacity: 0 });
-                    break;
-                case 2:
-                    for (i = 0; i <= split.chars.length - 1; i++) {
-                        window.TweenMax.from(split.chars[i], 1.8, {
-                            opacity: 0,
-                            x: this.randomMax(-100, 100),
-                            y: this.randomMax(-100, 100),
-                            z: this.randomMax(-100, 100),
-                            scale: .1,
-                            delay: i * .02,
-                            yoyo: true,
-                            repeat: -1,
-                            repeatDelay: 10
-                        });
-                    };
-                    break;
-                case 3:
-                    for (i = 0; i <= split.words.length - 1; i++) {
-                        window.TweenMax.from(split.words[i], 1.8, {
-                            opacity: 0,
-                            x: this.randomMax(-100, 100),
-                            y: this.randomMax(-100, 100),
-                            z: this.randomMax(-100, 100),
-                            scale: 1,
-                            delay: i * .02,
-                            yoyo: true,
-                            repeat: -1,
-                            repeatDelay: 10
-                        });
-                    };
-                    break;
+            if (this.efectoPass === false && this.primeraV === false) {
+                this.primeraV = true;
+                this.efectoPass = true;
+                let text = document.body.querySelector(".text");
+                const split = acAnimated.Plugins.SplitText(text, { words: 1, chars: 1, spacing: 10 });
+                let timeline = null;
+                let i;
+                console.log(this.props.tipo)
+                switch (this.props.tipo) {
+                    case 0:
+                        console.log('entro ssda')
+                        timeline = new window.TimelineMax({ repeat: -1, repeatDelay: 100, yoyo: true, });
+                        for (i = 0; i <= split.chars.length - 1; i++) {
+                            var char = split.chars[i];
+                            timeline.add("animated_char_" + String(i), acAnimated.randomNumber(1, 20) / 10);
+                            timeline.add(acAnimated.animateChar(char), "animated_char_" + String(i));
+                        }
+                        timeline.to(text, 3, {}).to(text, 1, { opacity: 0 });
+                        timeline.duration(5);
+                        break;
+                    case 1:
+                        timeline = new window.TimelineMax({ repeat: -1, repeatDelay: 100,  yoyo: true, });
+                        for (i = 0; i <= split.words.length - 1; i++) {
+                            var word = split.words[i];
+                            timeline
+                                .add("animated_word_" + String(i), acAnimated.randomNumber(1, 20) / 10)
+                                .add(acAnimated.animateWord(word), "animated_word_" + String(i));
+                        }
+                        timeline.to(text, 3, {}).to(text, 1, { opacity: 0 });
+                        timeline.duration(5)
+                        break;
+                    case 2:
+                        for (i = 0; i <= split.chars.length - 1; i++) {
+                            window.TweenMax.from(split.chars[i], 1.8, {
+                                opacity: 0,
+                                x: this.randomMax(-100, 100),
+                                y: this.randomMax(-100, 100),
+                                z: this.randomMax(-100, 100),
+                                scale: .1,
+                                delay: i * .03,
+                                yoyo: false,
+                                repeat: -1,
+                                repeatDelay: 500
+                            });
+                        };
+                        break;
+                    case 3:
+                        for (i = 0; i <= split.words.length - 1; i++) {
+                            window.TweenMax.from(split.words[i], 1.8, {
+                                opacity: 0,
+                                x: this.randomMax(-100, 100),
+                                y: this.randomMax(-100, 100),
+                                z: this.randomMax(-100, 100),
+                                scale: 1,
+                                delay: i * .12,
+                                yoyo: false,
+                                repeat: -1,
+                                repeatDelay: 500
+                            });
+                        };
+                        break;
 
-                default:
-                    break;
+                    default:
+                        break;
+                }
+
             }
-
-
+            else {
+                this.efectoPass = false;
+            }
         }, timeoutLength)
     }
 
@@ -1090,13 +1049,16 @@ class listActividades extends React.Component {
                 if (this.state.tipoIn === 0) {
                     this.MensajeIntro();
                 }
+                else if (this.state.tipoIn === 99) {
+                    
+                }
                 else if (this.state.tipoIn === 1) {
                     this.setState({
                         t2: <div className="Wrapper" style={{ top: '50%', height: '19em', transform: 'scale(0.85)', position: 'absolute' }}>
                             <div className="ui container" style={{ height: topTiempo, width: '100%' }}>
 
                                 <div className="Input" style={{ top: '10%' }}>
-                                    <input type="text" id="input" className="Input-text" style={{ height: '2em' }}
+                                    <input type="text" id="input" className="Input-text" style={{ height: '2em', top: '0.3em', position: 'relative' }}
                                         value={this.state.inputC}
                                         onChange={(event) => this.setState({ inputC: event.target.value })}
                                         onKeyPress={(e) => { this.addNewMessage(e) }} placeholder="Escribe tu respuesta" />
@@ -1156,7 +1118,7 @@ class listActividades extends React.Component {
 
                 }
             }
-        }, timeoutLength * 3)
+        }, timeoutLength * 2)
     }
 
 
@@ -1191,6 +1153,15 @@ class listActividades extends React.Component {
         this.setState({ inputC: null })
         this.setState({ flag: true })
     }
+
+
+    Help = () => {
+        this.timeout = setTimeout(() => {
+            if (this.state.helpMessage)
+                this.props.popupBot({ mensaje: this.state.helpMessage, sleep: 2000, onbot: true });
+        }, timeoutLengthHelp)
+    }
+
 
     render() {
 
@@ -1228,10 +1199,10 @@ class listActividades extends React.Component {
             </div>;
         }
         else {
+            this.Help();
             let xLetter = this.state.mensajeUs && this.state.mensajeUs.length > 35 ? this.state.mensajeUs.length < 60 ? '1.5em' : '1.3em' : '1.8em';
-            let x1Letter = this.state.mensajeUs && this.state.mensajeUs.length > 35 ? this.state.mensajeUs.length < 60 ? '-2em' : '-1.2em' : '-2.5em';
-            let tLetter = this.state.mensajeUs && this.state.mensajeUs.length > 35 ? this.state.mensajeUs.length < 60 ? '-2.7em' : '-3.5em' : '-2em';
-
+            let x1Letter = this.state.mensajeUs && this.state.mensajeUs.length > 35 ? this.state.mensajeUs.length < 60 ? '-2.1em' : '-1.4em' : '-2.8em';
+            let tLetter = this.state.mensajeUs && this.state.mensajeUs.length > 35 ? this.state.mensajeUs.length < 60 ? '-3.5em' : '-6em' : '-3em';
             t1 = <div className='text' id='text' style={{ opacity: '1.5' }}>
                 <p className="split" style={{ opacity: '1', fontSize: xLetter, width: '10em', left: x1Letter, color: '#e8f5e8', position: 'relative', top: tLetter, height: '3em', transform: 'scale(0.75)' }} >
                     {this.state.mensajeUs}

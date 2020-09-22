@@ -15,7 +15,7 @@ import googleSheet from '../images/googleSheet.png';
 import clickup from '../images/clickup.png';
 import asanaH from '../apis/asana';
 import { clientIdAsana, clientSecrectAsana, clientSlack } from '../apis/stringConnection';
-import { dataBaseManager } from '../lib/utils';
+import { dataBaseManager, selectStyle } from '../lib/utils';
 import Select from 'react-select';
 import chroma from 'chroma-js';
 
@@ -188,62 +188,6 @@ class Profile extends React.Component {
     }
 
 
-    renderStyles() {
-
-        let dot = (color = '#ccc') => ({
-            alignItems: 'center',
-            display: 'flex',
-
-            ':before': {
-                backgroundColor: '#48f70f',
-                borderRadius: 10,
-                content: '" "',
-                display: 'block',
-                marginRight: 8,
-                height: 10,
-                width: 10,
-            },
-        });
-
-
-
-        let st = {
-            control: styles => ({ ...styles, backgroundColor: 'white' }),
-
-            option: (styles, { data, isDisabled, isFocused, isSelected }) => {
-                const color = chroma('#48f70f');
-                return {
-                    ...styles,
-                    backgroundColor: isDisabled
-                        ? null
-                        : isSelected
-                            ? data.color
-                            : isFocused
-                                ? color.alpha(0.1).css()
-                                : null,
-                    color: isDisabled
-                        ? '#ccc'
-                        : isSelected
-                            ? chroma.contrast(color, 'white') > 2
-                                ? 'white'
-                                : 'black'
-                            : data.color,
-                    cursor: isDisabled ? 'not-allowed' : 'default',
-
-                    ':active': {
-                        ...styles[':active'],
-                        backgroundColor: !isDisabled && (isSelected ? data.color : color.alpha(0.3).css()),
-                    },
-                };
-            },
-            input: styles => ({ ...styles, ...dot }),
-            placeholder: styles => ({ ...styles, ...dot }),
-            singleValue: (styles, { data }) => ({ ...styles, ...dot('#48f70f') }),
-        };
-
-        return st;
-    }
-
     renderValidateSlack() {
 
         if (this.state.canalEquipoSlack === undefined && this.state.canalReportesSlack === undefined && this.state.canalNotifiacionesSlack === undefined) {
@@ -288,7 +232,7 @@ class Profile extends React.Component {
         */
 
 
-        let st = this.renderStyles();
+        let st = selectStyle();
         let op = this.renderCanaleSlack();
         let formSlack = <div>
             <Form  >
@@ -454,7 +398,7 @@ class Profile extends React.Component {
                         console.log("Response", response);
                     },
                         function (err) { console.error("Execute error", err); });*/
-        let st = this.renderStyles();
+        let st = selectStyle();
         return (
             <div>
                 <Form >
@@ -613,7 +557,7 @@ class Profile extends React.Component {
             </div>
         </Form>
 
-        let st = this.renderStyles();
+        let st = selectStyle();
         if (this.state.trelloApi && this.state.tokenTrello) {
             contruir =
                 <div>
@@ -725,7 +669,7 @@ class Profile extends React.Component {
             </button>
         </div>
 
-        let st = this.renderStyles();
+        let st = selectStyle();
         if (this.state.asana) {
             formAsana =
                 <div>
@@ -813,7 +757,7 @@ class Profile extends React.Component {
                                 />*/
         }
 
-        let st = this.renderStyles();
+        let st = selectStyle();
         return (
 
 

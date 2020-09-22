@@ -85,7 +85,6 @@ class FomrularioGlobal extends React.Component {
 
         if (!error) {
             if (this.state.cod && this.state.prueba != null) {
-                this.setState({ prueba: true });
                 this.close();
 
                 let objectId = { email: this.props.usuarioDetail.usuarioNuevo.email, ID: this.props.usuarioDetail.usuarioNuevo.userId };
@@ -141,24 +140,11 @@ class FomrularioGlobal extends React.Component {
             },
                 function (err) { console.error("Error loading GAPI client for API", err); });
 
-        const keyEquipoEmp = this.props.detailUsNew.rol === '3' ? this.componentDatabase('key', 'Empresa-Equipo') : cod.kequipo;
-        const keyEmpresa = this.props.detailUsNew.rol === '3' ? this.componentDatabase('key', 'empresa') : cod.empresa;
+        const keyEquipoEmp = this.props.detailUsNew.rol === '2' ? this.componentDatabase('key', 'Empresa-Equipo') : cod.kequipo;
+        const keyEmpresa = this.props.detailUsNew.rol === '2' ? this.componentDatabase('key', 'empresa') : cod.empresa;
         //Crea una nueva empresa
         if (this.props.detailUsNew.rol === '3') {
 
-            this.componentDatabase('insert', `empresa/${keyEmpresa}`, {
-                empresa: this.props.detailUsNew.empresa,
-                industria: this.props.detailUsNew.sector,
-                nEquipos: 1
-            });
-
-            //Crea una nueva empresa
-
-            this.componentDatabase('insert', `Empresa-Equipo/${keyEmpresa}/${keyEquipoEmp}`, {
-                empresa: this.props.detailUsNew.empresa,
-                cargo: this.props.detailUsNew.cargo,
-                nombreTeam: this.props.detailUsNew.equipo,
-            });
             this.componentDatabase('insert', `Usuario-Perfil/3/${uid}`, {
                 estado: 'activo',
             });
@@ -183,13 +169,31 @@ class FomrularioGlobal extends React.Component {
 
         //crear usuario perfil
         if (this.props.detailUsNew.rol === '2') {
+
+            this.componentDatabase('insert', `empresa/${keyEmpresa}`, {
+                empresa: this.props.detailUsNew.empresa,
+                industria: this.props.detailUsNew.sector,
+                nEquipos: 1
+            });
+
+            //Crea una nueva empresa
+
+            this.componentDatabase('insert', `Empresa-Equipo/${keyEmpresa}/${keyEquipoEmp}`, {
+                empresa: this.props.detailUsNew.empresa,
+                cargo: this.props.detailUsNew.cargo,
+                nombreTeam: this.props.detailUsNew.equipo,
+            });
+
             this.componentDatabase('insert', `Usuario-Perfil/1/${uid}`, {
                 estado: 'activo',
             });
 
             //crear usuario rol
             this.componentDatabase('insert', `Usuario-Rol/${uid}`, {
-                Rol: '2',
+               // Rol: '2',
+                Rol: '3',
+                RolOriginal: '2',
+         
             });
 
         }

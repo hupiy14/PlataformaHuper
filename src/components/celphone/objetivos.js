@@ -134,9 +134,9 @@ class listImportante extends React.Component {
 
 
 
-                                let styleSel = { top: '-2em', position: 'relative', width: '20em', left: '2em' };
+                                let styleSel = { top: '-2em', position: 'relative', width: '18em', left: '3em' };
                                 if (this.props.actividadPrin === key2) {
-                                    styleSel = { top: '-2em', position: 'relative', width: '20em', left: '2em', color: '#c13292', fontWeight: 'bold' };
+                                    styleSel = { top: '-2em', position: 'relative', width: '18em', left: '3em', color: '#c13292', fontWeight: 'bold' };
                                     avanceOKR = objPrincipal.concepto.length > 43 ? 'one sel2' : 'one sel';
                                 }
 
@@ -144,7 +144,7 @@ class listImportante extends React.Component {
                                     <li className={avanceOKR} style={{ height: '4em' }} onClick={() => { this.props.actividadPrincipal(key2); }} >
                                         <Image style={{ height: '3em' }} src={this.state.images[y] ? this.state.images[y].urls.thumb : ''} size="mini" circular alt='task hupper'></Image>
                                         <span className="task-title" style={styleSel}>{objPrincipal.concepto} </span>
-                                        <span className="task-time" style={{ top: '-2em', position: 'relative', width: '23em' }}>{objPrincipal.keyResult1} </span>
+                                        <span className="task-time" style={{ top: '-2em', position: 'relative', width: '20em' }}>{objPrincipal.keyResult1} </span>
                                     </li>
 
                                 );

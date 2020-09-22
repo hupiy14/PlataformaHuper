@@ -26,7 +26,7 @@ class listActividades extends React.Component {
             return;
         }
 
-        this.props.actividadPrincipal(null);
+      //  this.props.actividadPrincipal(null);
         this.flag = true;
         if (this.props.usuarioDetail) {
             window.gapi.client.load("https://content.googleapis.com/discovery/v1/apis/calendar/v3/rest")
@@ -62,7 +62,6 @@ class listActividades extends React.Component {
 
     componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
         let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
-        console.log(men);
         if (men && men.mensaje)
             this.props.popupBot({ mensaje: men.mensaje });
         return men;
@@ -351,11 +350,15 @@ class listActividades extends React.Component {
                             if (x !== 1 && actividadesU[key2].estado === "activo") {
                                 this.props.actividadProgramas(1);
                                 let topX = '-7%';
-                                if (x === 2)
-                                    topX = '5%';
+                                
+                                let leftAct = '-7%';
+                                if (x === 2 ){
+                                    topX = '-5%';
+                                }
+                                 
                                 return (
-                                    <li className="one red2" style={{ height: '5.5em' }}>
-                                        <h1 style={{ position: 'relative', top: topX, left: '-45%', transform: 'scale(1)' }}>{x}</h1>
+                                    <li className="one red2" style={{ height: '5.5em'}}>
+                                        <h1 style={{ position: 'relative', top: topX, left: leftAct, width: '2em' }}>{x}</h1>
                                         <span className="task-title" style={{ top: '-3em', position: 'relative', width: '13em' }}>{actividadesU[key2].concepto} </span>
                                         <span className="task-time" style={{ top: '-4em', position: 'relative', width: '100%' }}>{tiempo} </span>
                                         <span className="task-cat" style={{ top: '-7em', position: 'relative', width: '100%' }}>    <Image src={task} size="mini" style={{

@@ -20,14 +20,13 @@ class notifiactions extends React.Component {
 
     notificationPriority = () => {
         this.timeout = setTimeout(() => {
-            //    timeoutLength = 90000;
+               timeoutLength = 90000;
 
             if (Object.keys(this.dia).length > 0) {
                 this.dia['ultimaConexion'] = moment().format('x');
                 this.dia['cantIn'] = this.dia.cantIn + 1;
                 let ahora = moment().format('x');
                 let dif = ahora - this.dia.entrada;
-                console.log(ahora - this.dia.entrada);
                 this.obtenerPaso(dif);
                 this.consultarMensajes(this.state.mensajes, dif);
                 this.notificationPriority();

@@ -44,7 +44,6 @@ class GoogleAuth extends React.Component {
 
     componentDatabase(tipo, path, objectIn, mensaje, mensajeError) {
         let men = dataBaseManager(tipo, path, objectIn, mensaje, mensajeError);
-        console.log(men);
         if (men && men.mensaje)
             this.props.popupBot({ mensaje: men.mensaje });
         return men;
@@ -87,7 +86,6 @@ class GoogleAuth extends React.Component {
                     else {
                         axios.get(`https://slack.com/api/oauth.access?client_id=${clientSlack}&redirect_uri=${window.location.origin}&client_secret=${clientSecrectSlack}&code=${code}`)
                             .then((res, tres) => {
-                                console.log(res);
                                 if (res.data.bot) {
 
                                     let objectAr = {
@@ -119,8 +117,8 @@ class GoogleAuth extends React.Component {
 
     validaCodigoAcc = (Usuario) => {
         this.timeout = setTimeout(() => {
-            
-            
+
+
             const starCountRef = this.componentDatabase("get", `Codigo-Acceso/${Usuario.codigo}`);
             starCountRef.on('value', (snapshot) => {
                 const cod = snapshot.val();
@@ -137,7 +135,7 @@ class GoogleAuth extends React.Component {
                                 fechaTer: new Date().toString(),
                             }
                             this.componentDatabase("insert", `Codigo-Acceso/${Usuario.codigo}`, objectAr, 'Hemos actualizado correctamente tu usuario', 'default');
-                            this.componentDatabase("insert", `Usuario/${this.state.uid}`, {us}, 'Hemos actualizado correctamente tu usuario', 'default');
+                            this.componentDatabase("insert", `Usuario/${this.state.uid}`, { ...us }, 'Hemos actualizado correctamente tu usuario', 'default');
                             this.auth.signOut();
                         }
                     }
@@ -156,7 +154,7 @@ class GoogleAuth extends React.Component {
         starCountRef.on('value', (snapshot) => {
 
             if (snapshot.val()) {
-                const starCountRef2 =  this.componentDatabase("get", `Usuario-CodeTemporal/${this.state.uid}`); 
+                const starCountRef2 = this.componentDatabase("get", `Usuario-CodeTemporal/${this.state.uid}`);
                 starCountRef2.on('value', (snapshot2) => {
 
                     if (snapshot2.val()) {
@@ -171,48 +169,53 @@ class GoogleAuth extends React.Component {
     }
     renderUsarioLogin(uid) {
         this.props.signIn(uid);
-        const nameRef =  this.componentDatabase("get", `Usuario/${uid}`); 
+        const nameRef = this.componentDatabase("get", `Usuario/${uid}`);
         nameRef.on('value', (snapshot) => {
-       
+
             const Usuario = snapshot.val();
             //invalida codigo de acceso
-            let etapa = etapaHupper(Usuario, uid, `/Utils/Hupper`)
-            if (Usuario.codigo) {
-                if (Usuario.estado === 'activo')
-                    this.validaCodigoAcc(Usuario);
-                else ///puedo hacer la reactivacion dependiendo. ****************Importante                  
-                    this.auth.signOut();
+            if (Usuario) {
+                let etapa = etapaHupper(Usuario, uid, `/Utils/Hupper`)
+                if (Usuario.codigo) {
+                    if (Usuario.estado === 'activo')
+                        this.validaCodigoAcc(Usuario);
+                    else ///puedo hacer la reactivacion dependiendo. ****************Importante                  
+                        this.auth.signOut();
+                }
+
+                let slack = null;
+                //obtien la configuracion de slack
+                const nameRef4 = this.componentDatabase("get", `Usuario-Slack/${uid}`);
+                nameRef4.on('value', (snapshot3) => {
+                    if (snapshot3.val())
+                        slack = snapshot3.val();
+                });
+
+                let calendar = null;
+                const nameRef5 = this.componentDatabase("get", `Usuario-CalendarGoogle/${uid}`);
+                nameRef5.on('value', (snapshot) => {
+                    if (snapshot.val()) {
+                        calendar = snapshot.val().idCalendar.value;
+                    }
+                });
+
+                let rol = null;
+                const nameRef2 = this.componentDatabase("get", `Usuario-Rol/${uid}`);
+                nameRef2.on('value', (snapshot2) => {
+                    rol = snapshot2.val().Rol;
+                });
+
+                const nameRef3 = this.componentDatabase("get", `Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${uid}`);
+                nameRef3.on('value', (snapshot3) => {
+                    if (snapshot3.val()) {
+
+                        this.props.usuarioDetails({ usuario: Usuario, calendar, idUsuario: uid, id: this.auth.currentUser.get().getId(), linkws: snapshot3.val().linkWs, slack, rol, etapa });
+                    }
+                });
             }
-
-            let slack = null;
-            //obtien la configuracion de slack
-            const nameRef4 = this.componentDatabase("get", `Usuario-Slack/${uid}`); 
-            nameRef4.on('value', (snapshot3) => {
-                if (snapshot3.val())
-                    slack = snapshot3.val();
-            });
-
-            let calendar = null;
-            const nameRef5 = this.componentDatabase("get", `Usuario-CalendarGoogle/${uid}`);
-            nameRef5.on('value', (snapshot) => {
-                if (snapshot.val()) {
-                    calendar = snapshot.val().idCalendar.value;
-                }
-            });
-
-            let rol = null;
-            const nameRef2 = this.componentDatabase("get", `Usuario-Rol/${uid}`);
-            nameRef2.on('value', (snapshot2) => {
-                rol = snapshot2.val().Rol;
-            });
-
-            const nameRef3 = this.componentDatabase("get", `Usuario-WS/${Usuario.empresa}/${Usuario.equipo}/${uid}`);
-            nameRef3.on('value', (snapshot3) => {
-                if (snapshot3.val()) {
-
-                    this.props.usuarioDetails({ usuario: Usuario, calendar, idUsuario: uid, id: this.auth.currentUser.get().getId(), linkws: snapshot3.val().linkWs, slack, rol, etapa });
-                }
-            });
+            else {
+                this.createUsuario();
+            }
         });
     }
 
@@ -222,6 +225,7 @@ class GoogleAuth extends React.Component {
         if (isSignedIn) {
             let objectId = { email: this.auth.currentUser.get().getBasicProfile().getEmail(), ID: this.auth.currentUser.get().getId() }
             this.componentDatabase("login", null, objectId);
+            this.props.nuevoUsuarios(true);
 
             firebase.auth().onAuthStateChanged((user) => {
                 if (user) {
@@ -231,7 +235,6 @@ class GoogleAuth extends React.Component {
                     this.recuperarDatoSlack(window.location.search, user.uid);
                     //recupera el token trello
                     this.recuperarDatoToken(window.location.href, user.uid);
-                    this.props.nuevoUsuarios(true);
                     //render valida si el usuario se ha creado en Asana
                     this.renderValidAsana();
                     //Encuentra el Rol,
@@ -262,7 +265,7 @@ class GoogleAuth extends React.Component {
             var pair = e.split("=");
             if (pair[0] === 'code') {
                 code = pair[1];
-                this.componentDatabase("insert", `Usuario-CodeTemporal/${uid}`, { code, asana});
+                this.componentDatabase("insert", `Usuario-CodeTemporal/${uid}`, { code, asana });
             }
         });
 
@@ -281,7 +284,7 @@ class GoogleAuth extends React.Component {
             var pair = e.split("=");
             if (pair[0] === 'token') {
                 token = pair[1];
-                this.componentDatabase("insert", `Usuario-TokenTrelloTemp/${uid}`, { token});
+                this.componentDatabase("insert", `Usuario-TokenTrelloTemp/${uid}`, { token });
                 this.setState({ tokenTrello: true })
             }
         });

@@ -1,6 +1,6 @@
 {
   "name": "hupp",
-  "version": "0.2.22",
+  "version": "0.2.34",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.9.1",

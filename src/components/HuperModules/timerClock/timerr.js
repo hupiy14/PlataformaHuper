@@ -357,9 +357,6 @@ class timerClock extends React.Component {
     }
 
 
-    componentWillMount() {
-        console.log('entor-->');
-    }
     render() {
         let planCurrent = null;
         let titulo = null;

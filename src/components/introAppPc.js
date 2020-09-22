@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import history from '../history';
 import './styles/styleLoader.css';
-import GoogleAuth from './loginGoogle/GoogleAuth'; 
+import GoogleAuth from './loginGoogle/GoogleAuth';
 
 let timeoutLength2 = 2500;
 class giroPlataforma extends React.Component {
@@ -10,13 +10,14 @@ class giroPlataforma extends React.Component {
 
     timerIn = () => {
         this.timeout = setTimeout(() => {
-            history.push('/dashboard');
+            if (this.props.usuarioDetail && this.props.usuarioDetail.usuario)
+                history.push('/dashboard');
         }, timeoutLength2)
     }
 
     componentDidMount() {
         this.timerIn();
-     }
+    }
 
     render() {
         return (

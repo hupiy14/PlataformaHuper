@@ -621,44 +621,46 @@ class THREEScene extends React.Component {
 
     }
     renderControlNotification() {
-        let styleBot = { top: '83%', color: '#ffffff', position: 'fixed', transform: 'scale(1)', left: 0.88 * window.innerWidth };
-        let link = this.props.popupMensaje && this.props.popupMensaje.link ? this.props.popupMensaje.link : null;
-        let color = 'green';
-        if (this.props.popupMensaje && this.props.popupMensaje.Priority) { timeoutLength2 = 30000; color = 'pink'; }
-        let numero = this.props.popupMensaje && this.props.popupMensaje.numero ? <div className={`ui ${color} floating label`} style={{ height: '30%' }}>{this.props.popupMensaje.numero}</div> : null;
-        let video = null;
-        if (this.props.popupMensaje && this.props.popupMensaje.video) {
-            video = 'video';
-            timeoutLength2 = this.props.popupMensaje.sleep ? this.props.popupMensaje.sleep : 300000;
-        }
-        if (this.props.popupMensaje && this.props.popupMensaje.chat) {
-            this.props.mensajeChat({ mensaje: this.props.popupMensaje.chat, agent: this.props.popupMensaje.agent });
-            timeoutLength2 = this.props.popupMensaje.sleep ? this.props.popupMensaje.sleep : 90000;
-        }
-        if (this.props.popupMensaje && this.props.popupMensaje.dormir) {
-            this.sleepBot = this.props.popupMensaje.sleep;
-            this.renderDescansaFiveminuts();
-        }
-        if (this.props.popupMensaje && this.props.popupMensaje.activate) {
-            this.sleepBot = this.props.popupMensaje.sleep;
-            this.renderMusic(this.props.popupMensaje.previous)
-            this.renderAnimo();
-        }
+        if (this.props.popupMensaje) {
+            let styleBot = { top: this.props.popupMensaje.onbot ? '78%' : '83%', color: '#ffffff', position: 'fixed', transform: 'scale(1)', left: 0.88 * window.innerWidth };
+            let link = this.props.popupMensaje.link ? this.props.popupMensaje.link : null;
+            let color = 'green';
+            if (this.props.popupMensaje.Priority) { timeoutLength2 = 30000; color = 'pink'; }
+            let numero = this.props.popupMensaje && this.props.popupMensaje.numero ? <div className={`ui ${color} floating label`} style={{ height: '30%' }}>{this.props.popupMensaje.numero}</div> : null;
+            let video = null;
+            if (this.props.popupMensaje.video) {
+                video = 'video';
+                timeoutLength2 = this.props.popupMensaje.sleep ? this.props.popupMensaje.sleep : 300000;
+            }
+            if (this.props.popupMensaje.chat) {
+                this.props.mensajeChat({ mensaje: this.props.popupMensaje.chat, agent: this.props.popupMensaje.agent });
+                timeoutLength2 = this.props.popupMensaje.sleep ? this.props.popupMensaje.sleep : 90000;
+            }
+            if (this.props.popupMensaje.dormir) {
+                this.sleepBot = this.props.popupMensaje.sleep;
+                this.renderDescansaFiveminuts();
+            }
+            if (this.props.popupMensaje.activate) {
+                this.sleepBot = this.props.popupMensaje.sleep;
+                this.renderMusic(this.props.popupMensaje.previous)
+                this.renderAnimo();
+            }
 
-        return (<Popup
-            trigger={<Icon style={styleBot} name='superpowers' />}
-            position='top right'
-            size='large'
-            open={this.state.push}
-            inverted
-        >
-            <h3>
-                <a href={link} onClick={(e) => { e.preventDefault(); if (video !== null) { this.Registro["ver"] = moment().format('x'); this.setState({ open: true }); } if (link !== null && video === null) window.open(link, '', 'width=600,height=400,left=200,top=200'); }} >{this.props.popupMensaje ? this.props.popupMensaje.header : null}</a>
-            </h3>
-            {numero}
-            {this.props.popupMensaje ? this.props.popupMensaje.mensaje : null}
+            return (<Popup
+                trigger={<Icon style={styleBot} name='superpowers' />}
+                position={this.props.popupMensaje.onbot ? 'bottom right' : 'top right'}
+                size='large'
+                open={this.state.push}
+                inverted
+            >
+                <h3>
+                    <a href={link} onClick={(e) => { e.preventDefault(); if (video !== null) { this.Registro["ver"] = moment().format('x'); this.setState({ open: true }); } if (link !== null && video === null) window.open(link, '', 'width=600,height=400,left=200,top=200'); }} >{this.props.popupMensaje ? this.props.popupMensaje.header : null}</a>
+                </h3>
+                {numero}
+                {this.props.popupMensaje ? this.props.popupMensaje.mensaje : null}
 
-        </Popup>);
+            </Popup>);
+        }
     }
 
 

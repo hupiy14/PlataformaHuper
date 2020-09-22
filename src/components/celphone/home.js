@@ -2,7 +2,7 @@ import React from 'react';
 import image from '../../images/logo.png';
 import { connect } from 'react-redux';
 import history from '../../history';
-import {screenWH } from '../../actions';
+import { screenWH } from '../../actions';
 import '../styles/styleLoader.css';
 import GoogleAuth from '../loginGoogle/GoogleAuth';
 
@@ -12,7 +12,8 @@ class ingresoPlataforma extends React.Component {
 
     timerIn = () => {
         this.timeout = setTimeout(() => {
-            history.push('/dashboard');
+            if (this.props.usuarioDetail.usuario)
+                history.push('/dashboard');
         }, timeoutLength2)
     }
 
@@ -45,7 +46,7 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, {screenWH})(ingresoPlataforma);
+export default connect(mapStateToProps, { screenWH })(ingresoPlataforma);
 
 
 

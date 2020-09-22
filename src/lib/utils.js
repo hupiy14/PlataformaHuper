@@ -1,6 +1,7 @@
 import firebase from 'firebase';
 import React from 'react';
 import moment from 'moment';
+import chroma from 'chroma-js';
 
 export const listTemporalObject = (tipo, list, consulta) => {
 
@@ -146,6 +147,62 @@ export const avanceOKR = (objetivo, keyObjetivo, Tasks) => {
 }
 
 
+
+export const selectStyle = () => {
+
+    let dot = (color = '#ccc') => ({
+        alignItems: 'center',
+        display: 'flex',
+
+        ':before': {
+            backgroundColor: '#48f70f',
+            borderRadius: 10,
+            content: '" "',
+            display: 'block',
+            marginRight: 8,
+            height: 10,
+            width: 10,
+        },
+    });
+
+
+
+    let st = {
+        control: styles => ({ ...styles, backgroundColor: 'white' }),
+
+        option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+            const color = chroma('#48f70f');
+            return {
+                ...styles,
+                backgroundColor: isDisabled
+                    ? null
+                    : isSelected
+                        ? data.color
+                        : isFocused
+                            ? color.alpha(0.1).css()
+                            : null,
+                color: isDisabled
+                    ? '#ccc'
+                    : isSelected
+                        ? chroma.contrast(color, 'white') > 2
+                            ? 'white'
+                            : 'black'
+                        : data.color,
+                cursor: isDisabled ? 'not-allowed' : 'default',
+
+                ':active': {
+                    ...styles[':active'],
+                    backgroundColor: !isDisabled && (isSelected ? data.color : color.alpha(0.3).css()),
+                },
+            };
+        },
+        input: styles => ({ ...styles, ...dot }),
+        placeholder: styles => ({ ...styles, ...dot }),
+        singleValue: (styles, { data }) => ({ ...styles, ...dot('#48f70f') }),
+    };
+
+    return st;
+}
 
 export const dataBaseManager = (tipo, path, objectIn, mensaje, mensajeError) => {
 
