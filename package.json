@@ -6,7 +6,7 @@
     "@material-ui/core": "^3.9.3",
     "anychart-react": "^1.4.1",
     "apexcharts": "^3.8.4",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "browserfs": "^1.4.3",
     "chart.js": "^2.1.4",
     "chartist": "^0.11.0",
