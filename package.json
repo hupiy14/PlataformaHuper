@@ -64,7 +64,7 @@
     "semantic-ui-calendar-react": "^0.12.2",
     "semantic-ui-react": "^0.84.0",
     "slack": "^11.0.1",
-    "swiper": "^4.5.0",
+    "swiper": "^6.5.1",
     "trello": "^0.9.1",
     "vue-stacked-carousel": "^1.0.14",
     "vue2-touch": "^1.0.8"
